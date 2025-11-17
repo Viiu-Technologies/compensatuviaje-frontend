@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 65">
+  <rect width="200" height="65" fill="#ffffff"/>
+  <path fill="#4285F4" d="M45 20c8.8 0 15 6.2 15 15s-6.2 15-15 15c-8.8 0-15-6.2-15-15s6.2-15 15-15z"/>
+  <path fill="#34A853" d="M75 20c8.8 0 15 6.2 15 15s-6.2 15-15 15c-8.8 0-15-6.2-15-15s6.2-15 15-15z"/>
+  <path fill="#FBBC05" d="M105 20c8.8 0 15 6.2 15 15s-6.2 15-15 15c-8.8 0-15-6.2-15-15s6.2-15 15-15z"/>
+  <path fill="#EA4335" d="M135 20c8.8 0 15 6.2 15 15s-6.2 15-15 15c-8.8 0-15-6.2-15-15s6.2-15 15-15z"/>
+  <text x="165" y="40" font-family="Product Sans, Arial, sans-serif" font-size="18" font-weight="400" fill="#5f6368">Pay</text>
+</svg>

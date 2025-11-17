@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22C55E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16A34A;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Avión -->
+  <g transform="translate(50,50)">
+    <!-- Fuselaje principal -->
+    <ellipse cx="0" cy="0" rx="35" ry="8" fill="url(#greenGradient)" transform="rotate(-15)"/>
+    
+    <!-- Alas principales -->
+    <ellipse cx="-8" cy="-3" rx="25" ry="4" fill="url(#greenGradient)" transform="rotate(-15)"/>
+    
+    <!-- Cola -->
+    <ellipse cx="15" cy="8" rx="12" ry="3" fill="url(#greenGradient)" transform="rotate(-15)"/>
+    
+    <!-- Detalle de ventana -->
+    <circle cx="-10" cy="-2" r="3" fill="#FFFFFF" opacity="0.8" transform="rotate(-15)"/>
+    
+    <!-- Estela de vuelo -->
+    <path d="M 20,5 Q 30,8 35,12 Q 30,10 20,7 Z" fill="#22C55E" opacity="0.6" transform="rotate(-15)"/>
+    <path d="M 22,8 Q 32,11 37,15 Q 32,13 22,10 Z" fill="#22C55E" opacity="0.4" transform="rotate(-15)"/>
+  </g>
+</svg>

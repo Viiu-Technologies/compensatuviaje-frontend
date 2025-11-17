@@ -1,0 +1,227 @@
+/* Importar Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Variables CSS para compatibilidad */
+:root {
+  --color-primary: #22c55e;
+  --color-primary-dark: #16a34a;
+  --color-secondary: #3b82f6;
+  --color-accent: #d97706;
+  --color-neutral-900: #171717;
+  --color-neutral-100: #f5f5f5;
+  
+  --font-display: 'Poppins', 'Inter', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  --shadow-glow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+/* Base Styles */
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  body {
+    @apply bg-neutral-50 text-neutral-900 font-sans antialiased;
+    font-family: var(--font-body);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold;
+  }
+  
+  /* Smooth scroll */
+  html {
+    @apply scroll-smooth;
+  }
+  
+  /* Selection color */
+  ::selection {
+    @apply bg-primary-500/30 text-primary-900;
+  }
+}
+
+/* Componentes reutilizables */
+@layer components {
+  /* Glassmorphism effect */
+  .glass {
+    @apply backdrop-blur-md bg-white/70 border border-white/20 shadow-glass;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-md bg-neutral-900/70 border border-white/10 shadow-glass;
+  }
+  
+  /* Buttons modernos */
+  .btn {
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-300 
+           inline-flex items-center justify-center gap-2;
+  }
+  
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-primary-500 to-primary-600 text-white
+           hover:from-primary-600 hover:to-primary-700 
+           hover:shadow-glow hover:scale-105 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gradient-to-r from-secondary-500 to-secondary-600 text-white
+           hover:from-secondary-600 hover:to-secondary-700
+           hover:shadow-lg hover:scale-105 active:scale-95;
+  }
+  
+  .btn-outline {
+    @apply btn border-2 border-primary-500 text-primary-600
+           hover:bg-primary-50 hover:border-primary-600 hover:scale-105 active:scale-95;
+  }
+  
+  .btn-ghost {
+    @apply btn text-neutral-700 hover:bg-neutral-100 hover:scale-105 active:scale-95;
+  }
+  
+  /* Cards modernas */
+  .card {
+    @apply bg-white rounded-2xl shadow-lg border border-neutral-200/50
+           transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+  
+  .card-glass {
+    @apply glass rounded-2xl p-6 transition-all duration-300
+           hover:shadow-xl hover:-translate-y-1;
+  }
+  
+  /* Gradientes */
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600;
+  }
+  
+  .gradient-secondary {
+    @apply bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600;
+  }
+  
+  .gradient-hero {
+    @apply bg-gradient-to-br from-primary-50 via-secondary-50 to-neutral-50;
+  }
+  
+  /* Text gradients */
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-700;
+  }
+  
+  .text-gradient-secondary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-secondary-500 to-secondary-700;
+  }
+  
+  /* Inputs modernos */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-neutral-300
+           focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20
+           transition-all duration-200 outline-none bg-white;
+  }
+  
+  .input-glass {
+    @apply input glass border-white/30;
+  }
+  
+  /* Container personalizado */
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Section spacing */
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  /* Badge/Tag */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-primary {
+    @apply badge bg-primary-100 text-primary-700;
+  }
+  
+  .badge-secondary {
+    @apply badge bg-secondary-100 text-secondary-700;
+  }
+  
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-neutral-200 rounded;
+  }
+}
+
+/* Utilities adicionales */
+@layer utilities {
+  /* Animaciones de scroll reveal */
+  .reveal {
+    @apply opacity-0 translate-y-8 transition-all duration-700;
+  }
+  
+  .reveal.active {
+    @apply opacity-100 translate-y-0;
+  }
+  
+  /* Efectos de hover en imágenes */
+  .img-hover {
+    @apply transition-transform duration-500 hover:scale-110;
+  }
+  
+  /* Texto con número grande (para estadísticas) */
+  .stat-number {
+    @apply text-5xl md:text-6xl font-bold text-gradient-primary;
+  }
+  
+  /* Divider decorativo */
+  .divider {
+    @apply h-1 w-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full;
+  }
+}
+
+/* Animaciones personalizadas adicionales */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #f5f5f5 4%, #e5e5e5 25%, #f5f5f5 36%);
+  background-size: 1000px 100%;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-neutral-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-400 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary-500;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #22c55e #f5f5f5;
+}

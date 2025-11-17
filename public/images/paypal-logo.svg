@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 65">
+  <rect width="200" height="65" fill="#ffffff"/>
+  <path fill="#003087" d="M30 18h18c7.5 0 13.5 6 13.5 13.5S55.5 45 48 45h-10.5v12H30V18zm12 19.5h9c3 0 5.25-2.25 5.25-5.25S54 26.25 51 26.25h-9v11.25z"/>
+  <path fill="#009CDE" d="M70 18h18c7.5 0 13.5 6 13.5 13.5S95.5 45 88 45h-10.5v12H70V18zm12 19.5h9c3 0 5.25-2.25 5.25-5.25S94 26.25 91 26.25h-9v11.25z"/>
+  <text x="110" y="42" font-family="PayPal Sans, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="normal" fill="#009CDE">ayPal</text>
+</svg>
