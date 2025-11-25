@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
 
 class OnboardingService {
   // Helper para headers con autenticación
