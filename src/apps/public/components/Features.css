@@ -1,0 +1,779 @@
+.features {
+  background: #ffffff;
+  position: relative;
+  padding: 80px 0 60px;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.features-header {
+  margin-bottom: 60px;
+}
+
+.features-header h2 {
+  font-size: 2.5rem;
+  color: #171717;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Payment methods */
+.payment-methods {
+  margin-bottom: 80px;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
+  align-items: center;
+  justify-items: center;
+}
+
+.payment-method {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 10px;
+  transition: transform 0.3s ease;
+}
+
+.payment-method:hover {
+  transform: translateY(-5px);
+}
+
+.payment-logo {
+  width: 120px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  background: #F9FAFB;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover .payment-logo {
+  border-color: #22c55e;
+  background: #F0FDF4;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+  transform: translateY(-2px);
+}
+
+.payment-name {
+  font-size: 1rem;
+  color: #525252;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Main content */
+.features-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+  margin-top: 60px;
+}
+
+.content-right {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Título principal centrado */
+.features-main-title {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 40px;
+}
+
+.calculator-badge-centered {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+  color: #059669;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.badge-icon {
+  color: #22c55e;
+  font-size: 1.1rem;
+}
+
+.main-title-large {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #171717;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.main-title-large .text-gradient {
+  background: linear-gradient(135deg, #22C55E 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.content-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.content-left h3 {
+  font-size: 2rem;
+  color: #171717;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+
+.content-left p {
+  color: #525252;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+/* Modern Calculator Card */
+.calculator-card-modern {
+  position: relative;
+  margin: 40px 0;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(34, 197, 94, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calculator-card-modern:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 
+    0 20px 60px rgba(34, 197, 94, 0.25),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* Animated gradient background */
+.card-gradient-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.1) 0%,
+    rgba(59, 130, 246, 0.1) 50%,
+    rgba(217, 119, 6, 0.1) 100%
+  );
+  background-size: 200% 200%;
+  animation: gradientFlow 8s ease infinite;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Icon section */
+.card-icon-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon {
+  font-size: 3rem;
+  color: #22C55E;
+  filter: drop-shadow(0 4px 12px rgba(34, 197, 94, 0.4));
+  position: relative;
+  z-index: 2;
+}
+
+.icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+}
+
+.card-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #171717;
+  margin-bottom: 12px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.inline-icon {
+  color: #D97706;
+  font-size: 1.5rem;
+}
+
+.card-description {
+  color: #525252;
+  font-size: 1rem;
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Benefits grid */
+.card-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  transition: all 0.3s ease;
+}
+
+.benefit-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: translateX(8px);
+}
+
+.benefit-icon {
+  font-size: 1.25rem;
+}
+
+.benefit-item span {
+  color: #171717;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* CTA Button */
+.calculator-cta-btn {
+  width: 100%;
+  padding: 18px 32px;
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 
+    0 4px 16px rgba(34, 197, 94, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.calculator-cta-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.calculator-cta-btn:hover::before {
+  left: 100%;
+}
+
+.calculator-cta-btn:hover {
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+  box-shadow: 
+    0 8px 24px rgba(34, 197, 94, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.calculator-cta-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 12px rgba(34, 197, 94, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-arrow {
+  font-size: 1.5rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+/* Features List */
+.features-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  border-color: #22c55e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.feature-icon {
+  font-size: 1.2rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.feature-item span:last-child {
+  color: #171717;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.nature-image {
+  position: relative;
+  height: auto;
+  max-height: 550px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  width: 100%;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 550px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: transform 0.5s ease, filter 0.3s ease;
+  filter: brightness(1) saturate(1.1);
+  background-color: #e5e7eb;
+}
+
+.nature-image:hover .image-placeholder {
+  filter: brightness(1.1) saturate(1.2);
+}
+
+/* Floating badge */
+.image-floating-badge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 16px 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  animation: floatBadge 3s ease-in-out infinite;
+}
+
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.badge-leaf-icon {
+  font-size: 2rem;
+  color: #22C55E;
+  filter: drop-shadow(0 2px 8px rgba(34, 197, 94, 0.4));
+}
+
+.image-floating-badge > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #22C55E;
+  line-height: 1.2;
+}
+
+.badge-label {
+  font-size: 0.75rem;
+  color: #525252;
+  font-weight: 600;
+}
+
+/* Fallback si la imagen no carga */
+.image-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #3B82F6 0%, #22C55E 50%, #10B981 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.image-placeholder[data-loaded="false"]::before {
+  opacity: 1;
+}
+
+.image-overlay {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20px 24px;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nature-image:hover .image-overlay {
+  transform: translateY(0);
+}
+
+.overlay-icon {
+  font-size: 1.5rem;
+  color: #22C55E;
+  flex-shrink: 0;
+}
+
+.image-overlay span {
+  color: #171717;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: left;
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .features-content {
+    gap: 40px;
+  }
+  
+  .payment-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    max-width: 600px;
+  }
+
+  .payment-logo {
+    width: 100px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-header h2 {
+    font-size: 2rem;
+  }
+
+  .main-title-large {
+    font-size: 2rem;
+  }
+
+  .payment-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 450px;
+  }
+
+  .payment-logo {
+    width: 90px;
+    height: 55px;
+  }
+
+  .features-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin-top: 40px;
+  }
+
+  .nature-image {
+    max-height: 450px;
+  }
+
+  .image-placeholder {
+    min-height: 450px;
+  }
+
+  .calculator-card-modern {
+    padding: 30px 24px;
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+  }
+
+  .card-title {
+    font-size: 1.5rem;
+  }
+
+  .calculator-cta-btn {
+    font-size: 1rem;
+    padding: 16px 28px;
+  }
+
+  .image-floating-badge {
+    top: 16px;
+    right: 16px;
+    padding: 12px 16px;
+  }
+
+  .badge-leaf-icon {
+    font-size: 1.5rem;
+  }
+
+  .badge-value {
+    font-size: 1.25rem;
+  }
+
+  .badge-label {
+    font-size: 0.7rem;
+  }
+
+  .features-list {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .feature-item {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-title-large {
+    font-size: 1.5rem;
+  }
+
+  .calculator-badge-centered {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+
+  .features-main-title {
+    margin-bottom: 30px;
+  }
+
+  .payment-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    max-width: 300px;
+  }
+
+  .payment-logo {
+    width: 80px;
+    height: 50px;
+  }
+
+  .payment-name {
+    font-size: 0.9rem;
+  }
+
+  .calculator-card-modern {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .card-icon-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+
+  .card-icon {
+    font-size: 2rem;
+  }
+
+  .card-title {
+    font-size: 1.3rem;
+  }
+
+  .card-description {
+    font-size: 0.9rem;
+  }
+
+  .benefit-item {
+    padding: 10px 12px;
+  }
+
+  .benefit-icon {
+    font-size: 1rem;
+  }
+
+  .benefit-item span {
+    font-size: 0.85rem;
+  }
+
+  .calculator-cta-btn {
+    font-size: 0.95rem;
+    padding: 14px 24px;
+  }
+
+  .content-left h3 {
+    font-size: 1.4rem;
+  }
+
+  .nature-image {
+    max-height: 350px;
+  }
+
+  .image-placeholder {
+    min-height: 350px;
+  }
+
+  .image-floating-badge {
+    top: 12px;
+    right: 12px;
+    padding: 10px 14px;
+  }
+
+  .badge-leaf-icon {
+    font-size: 1.25rem;
+  }
+
+  .badge-value {
+    font-size: 1.1rem;
+  }
+
+  .badge-label {
+    font-size: 0.65rem;
+  }
+
+  .image-overlay {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    padding: 16px 18px;
+  }
+
+  .overlay-icon {
+    font-size: 1.25rem;
+  }
+
+  .image-overlay span {
+    font-size: 0.85rem;
+  }
+
+  .feature-item {
+    padding: 10px 12px;
+  }
+
+  .feature-icon {
+    width: 25px;
+    height: 25px;
+    font-size: 1rem;
+  }
+
+  .feature-item span:last-child {
+    font-size: 0.8rem;
+  }
+}
