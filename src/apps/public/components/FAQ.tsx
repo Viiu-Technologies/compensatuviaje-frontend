@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronDown, FaQuestionCircle } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import ScrollReveal from '../../../shared/components/ScrollReveal';
+import './FAQ.css';
 
 const FAQ = () => {
   const [openFAQ, setOpenFAQ] = useState(1);

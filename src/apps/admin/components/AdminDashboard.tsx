@@ -26,9 +26,15 @@ import ScrollReveal from '../../../shared/components/ScrollReveal';
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
+  };
+  const openSidebar = () => setSidebarOpen(true);
+  const closeSidebar = () => setSidebarOpen(false);
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) closeSidebar();
   };
 
   // Admin stats
@@ -86,92 +92,99 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-blue-50/30 to-primary-50/20">
-      {/* Sidebar Navigation */}
-      <div className="fixed left-0 top-0 h-screen w-64 bg-neutral-900 text-white p-6 overflow-y-auto z-40">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 mb-8">
-          <motion.div
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.6 }}
-            className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center"
-          >
-            <FaShieldAlt className="text-white text-xl" />
-          </motion.div>
-          <div>
-            <span className="text-xl font-bold block">Admin Panel</span>
-            <span className="text-xs text-white/60">CompensaTuViaje</span>
-          </div>
-        </Link>
-
-        {/* Admin Profile */}
-        <div className="mb-8 p-4 rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 backdrop-blur-sm border border-white/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-amber-500/30">
-              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-white truncate">
-                {user?.firstName} {user?.lastName}
-              </h3>
-              <div className="flex items-center gap-1">
-                <FaUserShield className="text-amber-400 text-xs" />
-                <p className="text-xs text-amber-400 font-medium">Administrador</p>
+      {/* Sidebar Drawer & Overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity" onClick={handleOverlayClick}>
+          <div className="fixed left-0 top-0 h-full w-64 bg-neutral-900 text-white p-6 overflow-y-auto shadow-2xl transition-transform duration-300" style={{transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'}}>
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 mb-8" onClick={closeSidebar}>
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+                className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center"
+              >
+                <FaShieldAlt className="text-white text-xl" />
+              </motion.div>
+              <div>
+                <span className="text-xl font-bold block">Admin Panel</span>
+                <span className="text-xs text-white/60">CompensaTuViaje</span>
+              </div>
+            </Link>
+            {/* Admin Profile */}
+            <div className="mb-8 p-4 rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 backdrop-blur-sm border border-white/10">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-amber-500/30">
+                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-white truncate">
+                    {user?.firstName} {user?.lastName}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <FaUserShield className="text-amber-400 text-xs" />
+                    <p className="text-xs text-amber-400 font-medium">Administrador</p>
+                  </div>
+                </div>
               </div>
             </div>
+            {/* Menu Items */}
+            <nav className="space-y-2 mb-8">
+              {menuItems.map((item) => (
+                <motion.button
+                  key={item.id}
+                  whileHover={{ x: 5 }}
+                  onClick={() => { setActiveTab(item.id); closeSidebar(); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
+                    activeTab === item.id
+                      ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <item.icon className="text-xl" />
+                  <span className="font-medium flex-1 text-left">{item.label}</span>
+                  {item.badge && (
+                    <span className="px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                </motion.button>
+              ))}
+            </nav>
+            {/* Logout Button */}
+            <motion.button
+              whileHover={{ x: 5 }}
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-red-500/20 hover:text-red-400 transition-all"
+            >
+              <FaSignOutAlt className="text-xl" />
+              <span className="font-medium">Cerrar Sesión</span>
+            </motion.button>
+            {/* Close Button */}
+            <button className="absolute top-4 right-4 text-white/70 hover:text-white text-2xl" onClick={closeSidebar} aria-label="Cerrar menú">×</button>
           </div>
         </div>
-
-        {/* Menu Items */}
-        <nav className="space-y-2 mb-8">
-          {menuItems.map((item) => (
-            <motion.button
-              key={item.id}
-              whileHover={{ x: 5 }}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
-                activeTab === item.id
-                  ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <item.icon className="text-xl" />
-              <span className="font-medium flex-1 text-left">{item.label}</span>
-              {item.badge && (
-                <span className="px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full">
-                  {item.badge}
-                </span>
-              )}
-            </motion.button>
-          ))}
-        </nav>
-
-        {/* Logout Button */}
-        <motion.button
-          whileHover={{ x: 5 }}
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-red-500/20 hover:text-red-400 transition-all"
-        >
-          <FaSignOutAlt className="text-xl" />
-          <span className="font-medium">Cerrar Sesión</span>
-        </motion.button>
-      </div>
+      )}
 
       {/* Main Content */}
-      <div className="ml-64 min-h-screen">
+      <div className="min-h-screen transition-all duration-300" style={{ marginLeft: sidebarOpen ? 0 : 0 }}>
         {/* Top Bar */}
         <div className="bg-white/80 backdrop-blur-md border-b border-neutral-200/50 sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex items-center gap-4">
+                {/* Sidebar open button */}
+                <button className="lg:hidden p-2 rounded-md bg-neutral-200 hover:bg-neutral-300 transition-colors text-2xl" onClick={openSidebar} aria-label="Abrir menú">
+                  <span className="sr-only">Abrir menú</span>
+                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
                 <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-3">
                   <FaShieldAlt className="text-primary-500" />
                   Panel de Administración
                 </h1>
-                <p className="text-neutral-600 mt-1">
-                  Gestiona verificaciones y monitorea la plataforma
-                </p>
               </div>
-              
+              <p className="text-neutral-600 mt-1 hidden md:block">
+                Gestiona verificaciones y monitorea la plataforma
+              </p>
               <div className="flex items-center gap-4">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -183,7 +196,6 @@ const AdminDashboard = () => {
                     5
                   </span>
                 </motion.button>
-                
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

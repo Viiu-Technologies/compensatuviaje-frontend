@@ -15,7 +15,7 @@
 }
 
 .modal-content {
-  background: var(--white);
+  background: #ffffff;
   border-radius: 20px;
   width: 90%;
   max-width: 800px;
@@ -35,7 +35,7 @@
 
 .modal-header h2 {
   margin: 0;
-  color: var(--text-dark);
+  color: #171717;
   font-size: 1.8rem;
   font-weight: 700;
 }
@@ -44,7 +44,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--text-light);
+  color: #525252;
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
@@ -58,7 +58,7 @@
 
 .modal-close:hover {
   background: #F3F4F6;
-  color: var(--text-dark);
+  color: #171717;
 }
 
 .modal-body {
@@ -71,7 +71,7 @@
 }
 
 .calculator-intro p {
-  color: var(--text-light);
+  color: #525252;
   font-size: 1.1rem;
   margin: 0;
 }
@@ -99,7 +99,7 @@
 
 .form-group label {
   font-weight: 600;
-  color: var(--text-dark);
+  color: #171717;
   font-size: 0.95rem;
 }
 
@@ -110,13 +110,13 @@
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: var(--white);
+  background: #ffffff;
 }
 
 .form-select:focus,
 .form-input:focus {
   outline: none;
-  border-color: var(--primary-green);
+  border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
 }
 
@@ -140,7 +140,7 @@
 /* Result Styles */
 .calculation-result {
   background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
-  border: 2px solid var(--primary-green);
+  border: 2px solid #22c55e;
   border-radius: 20px;
   padding: 30px;
   text-align: center;
@@ -148,7 +148,7 @@
 }
 
 .calculation-result h3 {
-  color: var(--text-dark);
+  color: #171717;
   margin-bottom: 25px;
   font-size: 1.4rem;
 }
@@ -162,7 +162,7 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  background: var(--white);
+  background: #ffffff;
   border-radius: 16px;
   margin: 0 auto 25px;
   max-width: 250px;
@@ -172,20 +172,20 @@
 .result-number {
   font-size: 3rem;
   font-weight: 700;
-  color: var(--primary-green);
+  color: #22c55e;
   line-height: 1;
 }
 
 .result-unit {
   font-size: 1.2rem;
-  color: var(--text-light);
+  color: #525252;
   font-weight: 600;
   margin-top: 5px;
 }
 
 .result-label {
   font-size: 0.9rem;
-  color: var(--text-light);
+  color: #525252;
   margin-top: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -199,7 +199,7 @@
 }
 
 .stat {
-  background: var(--white);
+  background: #ffffff;
   padding: 20px;
   border-radius: 12px;
   text-align: center;
@@ -216,13 +216,13 @@
   display: block;
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--primary-green);
+  color: #22c55e;
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 0.8rem;
-  color: var(--text-light);
+  color: #525252;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -235,7 +235,7 @@
 }
 
 .compensation-btn {
-  background: var(--primary-green);
+  background: #22c55e;
   font-size: 1.1rem;
   padding: 15px 30px;
 }
@@ -249,12 +249,12 @@
   background: rgba(255, 255, 255, 0.8);
   padding: 20px;
   border-radius: 12px;
-  border-left: 4px solid var(--accent-yellow);
+  border-left: 4px solid #f59e0b;
 }
 
 .result-info p {
   margin: 0;
-  color: var(--text-dark);
+  color: #171717;
   font-size: 0.95rem;
   line-height: 1.5;
 }

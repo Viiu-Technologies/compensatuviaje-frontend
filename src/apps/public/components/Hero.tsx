@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaLeaf, FaPlane, FaChartLine, FaUsers } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
+import { FaLeaf, FaPlane, FaChartLine, FaUsers, FaBuilding } from 'react-icons/fa';
+import { HiSparkles, HiArrowRight } from 'react-icons/hi';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
+import './Hero.css';
 
 const Hero = () => {
   const [ref, inView] = useInView({
@@ -11,11 +12,34 @@ const Hero = () => {
     threshold: 0.1,
   });
 
-  // Estadísticas en tiempo real (simuladas)
   const stats = [
-    { icon: FaLeaf, value: 15420, label: 'Toneladas CO₂ Compensadas', suffix: '+', color: 'text-primary-500' },
-    { icon: FaPlane, value: 8234, label: 'Vuelos Compensados', suffix: '+', color: 'text-secondary-500' },
-    { icon: FaUsers, value: 3567, label: 'Empresas Certificadas', suffix: '+', color: 'text-accent-500' },
+    { 
+      icon: FaLeaf, 
+      value: 15420, 
+      label: 'Toneladas CO₂ Compensadas', 
+      suffix: '+', 
+      gradient: 'from-emerald-400 to-green-500',
+      iconBg: 'bg-gradient-to-br from-emerald-400 to-green-600',
+      glow: 'shadow-emerald-500/40'
+    },
+    { 
+      icon: FaPlane, 
+      value: 8234, 
+      label: 'Vuelos Compensados', 
+      suffix: '+', 
+      gradient: 'from-blue-400 to-cyan-500',
+      iconBg: 'bg-gradient-to-br from-blue-400 to-cyan-600',
+      glow: 'shadow-blue-500/40'
+    },
+    { 
+      icon: FaUsers, 
+      value: 3567, 
+      label: 'Empresas Certificadas', 
+      suffix: '+', 
+      gradient: 'from-amber-400 to-orange-500',
+      iconBg: 'bg-gradient-to-br from-amber-400 to-orange-600',
+      glow: 'shadow-amber-500/40'
+    },
   ];
 
   const scrollToCalculator = () => {
@@ -27,173 +51,254 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden" id="inicio">
-      {/* Background Image de Chile con overlay */}
+      {/* Background con overlay premium */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/images/hero-background.jpg)',
-        }}
+        style={{ backgroundImage: 'url(/images/hero-background.jpg)' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/80 via-secondary-900/70 to-neutral-900/80"></div>
+        {/* Overlay con gradiente más sofisticado */}
+        <div 
+          className="absolute inset-0"
+          style={{ 
+            background: `
+              linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%),
+              linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 58, 138, 0.55) 50%, rgba(15, 23, 42, 0.7) 100%)
+            `
+          }}
+        />
       </div>
 
-      {/* Animated background blobs encima del overlay */}
-      <div className="absolute inset-0 overflow-hidden opacity-30">
+      {/* Blobs decorativos sutiles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-primary-300/40 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px]"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-secondary-300/40 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -50, 0],
-            y: [0, -30, 0],
-          }}
+          className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px]"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.35, 0.2] }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px]"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
-      <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+      {/* Contenido Principal */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-28 lg:py-32" style={{ maxWidth: '1280px' }}>
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          
+          {/* Columna Izquierda */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center lg:text-left"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+            className="text-center lg:text-left flex flex-col items-center lg:items-start"
           >
-            {/* Badge */}
+            {/* Badge Premium */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 badge-primary mb-6"
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="inline-flex items-center !gap-3.5 bg-white/15 backdrop-blur-xl border border-white/25 !px-7 !py-0.5 rounded-full shadow-xl !mt-10 !mb-6"
             >
-              <HiSparkles className="text-primary-600" />
-              <span>Plataforma #1 en Chile para compensación de CO₂</span>
+              <HiSparkles className="text-emerald-400 text-lg animate-pulse shrink-0" />
+              <span className="text-sm font-semibold text-white/95 tracking-wide !leading-[1.2]">
+                Plataforma #1 en Chile
+              </span>
             </motion.div>
 
-            {/* Heading */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold mb-6 leading-tight">
-              <span className="block text-white">Compensa tu</span>
-              <span className="block text-gradient-primary bg-clip-text text-transparent bg-gradient-to-r from-primary-300 to-primary-500">
-                Viaje Sostenible
+            {/* Título Principal */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.2] tracking-tight mb-10"
+              style={{ textShadow: '0 4px 30px rgba(0,0,0,0.4)' }}
+            >
+              <span className="text-white">Compensa</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400" style={{ WebkitTextStroke: '0.5px rgba(255,255,255,0.1)' }}>
+                tu Viaje
               </span>
-            </h1>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400" style={{ WebkitTextStroke: '0.5px rgba(255,255,255,0.1)' }}>
+                Sostenible
+              </span>
+            </motion.h1>
 
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto lg:mx-0">
-              La forma más <span className="text-primary-300 font-semibold">transparente</span> y <span className="text-secondary-300 font-semibold">efectiva</span> de neutralizar el impacto ambiental de tus viajes.
-            </p>
+            {/* Subtítulo */}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
+              className="text-lg sm:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-lg !mb-14 sm:!mb-16 text-left"
+              style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}
+            >
+              La forma más <span className="text-white font-bold">transparente</span> y{' '}
+              <span className="text-white font-bold">efectiva</span> de neutralizar el impacto 
+              ambiental de tus viajes corporativos y personales.
+            </motion.p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+            {/* Botones CTA */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.7 }}
+              className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto mb-12"
+            >
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.04, y: -4 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={scrollToCalculator}
-                className="btn-primary text-lg px-8 py-4"
+                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-900 font-bold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl shadow-2xl shadow-amber-500/40 hover:shadow-amber-400/50 transition-all duration-300 overflow-hidden"
               >
-                <FaChartLine className="text-xl" />
-                Calcula tu Huella Ahora
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <FaChartLine className="text-xl group-hover:scale-110 transition-transform relative z-10" />
+                <span className="relative z-10">Calcula tu Huella</span>
               </motion.button>
               
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-outline text-lg px-8 py-4"
+                whileHover={{ scale: 1.04, y: -4 }}
+                whileTap={{ scale: 0.97 }}
+                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-xl text-white font-semibold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl border-2 border-white/40 hover:border-white/70 shadow-lg shadow-black/20 hover:shadow-xl transition-all duration-300"
               >
-                Ver Cómo Funciona
+                <span>Cómo Funciona</span>
+                <HiArrowRight className="text-xl group-hover:translate-x-1 transition-transform" />
               </motion.button>
-            </div>
+            </motion.div>
 
-            {/* Trust indicators */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="flex items-center gap-6 justify-center lg:justify-start text-sm text-white/80"
+            {/* Trust Indicators */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+              className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 !pt-8 lg:!pt-10"
             >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary-400 rounded-full animate-pulse"></div>
-                <span>100% Verificado</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-secondary-400 rounded-full animate-pulse"></div>
-                <span>Certificación ISO</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-accent-400 rounded-full animate-pulse"></div>
-                <span>Transparencia Total</span>
-              </div>
+              {[
+                { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
+                { color: 'bg-blue-400', glow: 'shadow-blue-400/80', text: 'Certificación ISO' },
+                { color: 'bg-amber-400', glow: 'shadow-amber-400/80', text: 'Transparencia Total' },
+              ].map((item, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center gap-2.5 text-white text-sm font-semibold"
+                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+                >
+                  <div className={`w-2.5 h-2.5 ${item.color} rounded-full shadow-lg ${item.glow}`} />
+                  <span>{item.text}</span>
+                </div>
+              ))}
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Stats Cards */}
+          {/* Columna Derecha - Cards */}
           <motion.div
             ref={ref}
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="space-y-6"
+            transition={{ duration: 0.9, delay: 0.3, ease: "easeOut" }}
+            className="flex flex-col gap-5 w-full max-w-[420px] mx-auto lg:mx-0 lg:ml-auto"
           >
+            {/* Stats Cards */}
             {stats.map((stat, index) => {
               const Icon = stat.icon;
+              
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  whileHover={{ scale: 1.03, y: -5 }}
-                  className="card-glass p-6 flex items-center gap-6"
+                  initial={{ opacity: 0, x: 40, y: 20 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.15, duration: 0.6 }}
+                  whileHover={{ 
+                    y: -6, 
+                    scale: 1.02, 
+                    transition: { duration: 0.25 } 
+                  }}
+                  className={`
+                    group relative overflow-hidden
+                    bg-white/10 backdrop-blur-2xl 
+                    rounded-2xl lg:rounded-3xl 
+                    !px-9 py-6 lg:!px-12 lg:py-7
+                    flex items-center gap-6
+                    border border-white/20 hover:border-white/40
+                    shadow-2xl ${stat.glow}
+                    transition-all duration-300
+                  `}
                 >
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${
-                    stat.color === 'text-primary-500' ? 'from-primary-100 to-primary-200' :
-                    stat.color === 'text-secondary-500' ? 'from-secondary-100 to-secondary-200' :
-                    'from-accent-100 to-accent-200'
-                  }`}>
-                    <Icon className={`text-4xl ${stat.color}`} />
+                  {/* Glow effect en hover */}
+                  <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${stat.gradient} blur-3xl -z-10`} />
+                  
+                  {/* Icono con gradiente vibrante */}
+                  <div className={`
+                    relative flex-shrink-0
+                    p-4 rounded-xl lg:rounded-2xl 
+                    ${stat.iconBg}
+                    shadow-lg ${stat.glow}
+                    group-hover:scale-110 group-hover:rotate-3
+                    transition-all duration-300
+                  `}>
+                    <Icon className="text-2xl lg:text-3xl text-white drop-shadow-md" />
                   </div>
                   
-                  <div className="flex-1">
+                  {/* Contenido */}
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-1">
                       {inView && (
                         <CountUp
                           end={stat.value}
                           duration={2.5}
                           separator=","
-                          className={`text-4xl font-bold ${stat.color}`}
+                          className="text-3xl lg:text-4xl font-black text-white tracking-tight"
                         />
                       )}
-                      <span className={`text-3xl font-bold ${stat.color}`}>{stat.suffix}</span>
+                      <span className="text-xl lg:text-2xl font-bold text-white/80">{stat.suffix}</span>
                     </div>
-                    <p className="text-neutral-600 font-medium mt-1">{stat.label}</p>
+                    <p className="text-white/60 font-medium text-sm lg:text-base mt-1 truncate">
+                      {stat.label}
+                    </p>
                   </div>
                 </motion.div>
               );
             })}
 
-            {/* Additional CTA card */}
+            {/* Card Empresa - Premium Glass */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-              className="card-glass p-6 bg-gradient-to-br from-primary-500 to-secondary-500 text-white"
+              initial={{ opacity: 0, x: 40, y: 20 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ delay: 0.95, duration: 0.6 }}
+              whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.25 } }}
+              className="group relative overflow-hidden rounded-2xl lg:rounded-3xl"
             >
-              <div className="flex items-center gap-4">
-                <FaLeaf className="text-5xl opacity-90" />
-                <div>
-                  <h3 className="text-2xl font-bold mb-2">¿Empresa?</h3>
-                  <p className="text-white/90 mb-3">Certifica tus operaciones y atrae más clientes</p>
-                  <button className="btn bg-white text-primary-600 hover:bg-neutral-100 px-6 py-2 text-sm font-semibold">
-                    Registro Empresarial →
+              {/* Background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
+              
+              {/* Glass overlay */}
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-sm" />
+              
+              {/* Pattern overlay sutil */}
+              <div className="absolute inset-0 opacity-[0.03]" 
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="20" height="20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0z" fill="none"/%3E%3Cpath d="M10 0v20M0 10h20" stroke="%23fff" stroke-width=".5"/%3E%3C/svg%3E")' }}
+              />
+              
+              {/* Contenido */}
+              <div className="relative !px-9 py-6 lg:!px-12 lg:py-7 flex items-center gap-6">
+                <div className="flex-shrink-0 p-4 rounded-xl lg:rounded-2xl bg-white/20 backdrop-blur-md shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <FaBuilding className="text-2xl lg:text-3xl text-white" />
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl lg:text-2xl font-bold text-white mb-1">
+                    ¿Eres Empresa?
+                  </h3>
+                  <p className="text-white/80 text-sm lg:text-base mb-3 leading-snug">
+                    Certifica tus operaciones y lidera el cambio sostenible.
+                  </p>
+                  <button className="group/btn inline-flex items-center gap-2 text-emerald-300 hover:text-white font-semibold text-sm transition-colors duration-200">
+                    Registro Empresarial
+                    <HiArrowRight className="text-lg group-hover/btn:translate-x-1 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -202,26 +307,34 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll Indicator mejorado */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5, duration: 0.6 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 cursor-pointer group"
+        onClick={() => {
+          const element = document.getElementById('calculadora');
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
+        }}
       >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="flex flex-col items-center gap-2 text-neutral-500"
+        <motion.span 
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="text-xs uppercase tracking-[0.25em] text-white/60 font-semibold group-hover:text-white/90 transition-colors"
         >
-          <span className="text-sm font-medium">Descubre más</span>
-          <div className="w-6 h-10 rounded-full border-2 border-neutral-400 flex items-start justify-center p-2">
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-1.5 h-1.5 bg-neutral-500 rounded-full"
-            />
-          </div>
+          Descubre más
+        </motion.span>
+        <motion.div 
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          className="w-7 h-11 rounded-full border-2 border-white/30 group-hover:border-white/60 flex justify-center pt-2.5 transition-colors"
+        >
+          <motion.div 
+            animate={{ y: [0, 6, 0], opacity: [1, 0.5, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            className="w-1.5 h-3 bg-white/60 group-hover:bg-white/90 rounded-full transition-colors" 
+          />
         </motion.div>
       </motion.div>
     </section>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaQuoteLeft, FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import ScrollReveal from '../../../shared/components/ScrollReveal';
+import './Testimonials.css';
 
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaLeaf, FaUser, FaChartBar, FaBars, FaTimes } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import './Header.css';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,6 +18,7 @@ const Header = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Run on mount
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -47,87 +49,104 @@ const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'glass shadow-lg py-3' 
-          : 'bg-transparent py-5'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
+        backdrop-blur-2xl bg-black/30
+      `}
     >
-      <div className="container-custom">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/" className="flex items-center group flex-shrink-0">
             <motion.img
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
+              whileHover={{ scale: 1.03 }}
+              transition={{ duration: 0.2 }}
               src="/images/brand/logocompensatuviaje.png"
               alt="CompensaTuViaje"
-              className="h-12 md:h-14 w-auto"
+              className="h-14 w-auto drop-shadow-lg"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link, index) => (
+          <nav className="hidden lg:flex items-center justify-center flex-1 gap-6">
+            {navLinks.map((link) => (
               <motion.a
                 key={link.href}
                 href={link.href}
                 onClick={closeMenu}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 transition-all font-medium"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className={`px-4 py-2 rounded-lg transition-all font-semibold text-base tracking-wide ${
+                  scrolled 
+                    ? 'text-neutral-700 hover:text-primary-600 hover:bg-neutral-100' 
+                    : 'text-white hover:text-white hover:bg-white/10'
+                }`}
+                style={!scrolled ? { textShadow: '0 2px 12px rgba(0,0,0,0.4)' } : {}}
               >
                 {link.label}
               </motion.a>
             ))}
-            {isAuthenticated && (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/dashboard"
-                  className="px-4 py-2 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 transition-all font-medium flex items-center gap-2"
-                >
-                  <FaChartBar />
-                  Dashboard
-                </Link>
-              </motion.div>
-            )}
           </nav>
 
           {/* Auth Buttons Desktop */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-neutral-100">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    <FaUser className="text-white text-sm" />
+                <Link
+                  to="/dashboard"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    scrolled
+                      ? 'text-neutral-700 hover:bg-neutral-100'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  <FaChartBar className="text-lg" />
+                  <span className="text-sm">Dashboard</span>
+                </Link>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                  scrolled ? 'bg-neutral-100' : 'bg-white/10 backdrop-blur-md'
+                }`}>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                    <FaUser className="text-white text-xs" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-neutral-900">
-                      {user?.firstName || user?.name}
-                    </p>
-                    <p className="text-xs text-neutral-600">
-                      {user?.roles?.[0] || 'Usuario'}
-                    </p>
-                  </div>
+                  <span className={`text-sm font-semibold ${
+                    scrolled ? 'text-neutral-900' : 'text-white'
+                  }`}>
+                    {user?.firstName || user?.name}
+                  </span>
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleLogout}
-                  className="btn-ghost"
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    scrolled
+                      ? 'text-neutral-700 hover:bg-neutral-100'
+                      : 'text-white hover:bg-white/10'
+                  }`}
                 >
-                  Cerrar Sesión
+                  Salir
                 </motion.button>
               </>
             ) : (
               <>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link to="/login" className="btn-ghost">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link 
+                    to="/login" 
+                    className={`inline-flex items-center justify-center !px-8 !py-3 !rounded-lg text-base font-semibold transition-all ${
+                      scrolled
+                        ? 'text-neutral-700 hover:bg-neutral-100 border-2 border-neutral-300'
+                        : 'text-white hover:bg-white/15 border-2 border-white/50'
+                    }`}
+                    style={!scrolled ? { textShadow: '0 2px 8px rgba(0,0,0,0.3)' } : {}}
+                  >
                     Iniciar Sesión
                   </Link>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link to="/register" className="btn-primary">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link 
+                    to="/register" 
+                    className="inline-flex items-center justify-center !px-8 !py-3 !rounded-lg text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 shadow-lg shadow-amber-500/25 transition-all"
+                  >
                     Registrarse Gratis
                   </Link>
                 </motion.div>
