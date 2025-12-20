@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './Register.css';
+import { 
+  User, Mail, Lock, Building, Phone, MapPin, 
+  Briefcase, FileText, ArrowRight, ArrowLeft, 
+  Check, Loader2, AlertCircle, Eye, EyeOff 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Register = () => {
+const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register, error, clearError } = useAuth();
+  const { register, error: authError, clearError } = useAuth();
   
   const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     // Paso 1: Datos personales
     firstName: '',
@@ -38,83 +48,20 @@ const Register = () => {
     employeeCount: '',
     annualRevenue: '',
     description: '',
-    interests: [],
+    interests: [] as string[],
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const totalSteps = 4;
 
-  // Opciones para los select
-  const businessTypes = [
-    'Sociedad Anónima (S.A.)',
-    'Sociedad de Responsabilidad Limitada (Ltda.)',
-    'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)',
-    'Sociedad por Acciones (SpA)',
-    'Otro'
-  ];
+  // Opciones
+  const businessTypes = ['Sociedad Anónima (S.A.)', 'Sociedad de Responsabilidad Limitada (Ltda.)', 'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)', 'Sociedad por Acciones (SpA)', 'Otro'];
+  const industries = ['Agricultura y ganadería', 'Minería', 'Manufactura', 'Construcción', 'Comercio', 'Transporte y logística', 'Servicios financieros', 'Tecnología y telecomunicaciones', 'Turismo y hotelería', 'Salud', 'Educación', 'Energía', 'Otro'];
+  const employeeRanges = ['1-10 empleados (Microempresa)', '11-50 empleados (Pequeña)', '51-200 empleados (Mediana)', '201-1000 empleados (Grande)', 'Más de 1000 empleados (Corporación)'];
+  const revenueRanges = ['Menos de 2.400 UF', '2.400 - 25.000 UF', '25.000 - 100.000 UF', '100.000 - 600.000 UF', 'Más de 600.000 UF'];
+  const chileanRegions = ['Región de Arica y Parinacota', 'Región de Tarapacá', 'Región de Antofagasta', 'Región de Atacama', 'Región de Coquimbo', 'Región de Valparaíso', 'Región Metropolitana de Santiago', 'Región del Libertador General Bernardo O\'Higgins', 'Región del Maule', 'Región de Ñuble', 'Región del Biobío', 'Región de La Araucanía', 'Región de Los Ríos', 'Región de Los Lagos', 'Región de Aysén del General Carlos Ibáñez del Campo', 'Región de Magallanes y de la Antártica Chilena'];
+  const interestOptions = ['Viajes corporativos', 'Transporte de mercancías', 'Consumo energético de oficinas', 'Eventos empresariales', 'Producción/manufactura', 'Otros'];
 
-  const industries = [
-    'Agricultura y ganadería',
-    'Minería',
-    'Manufactura',
-    'Construcción',
-    'Comercio',
-    'Transporte y logística',
-    'Servicios financieros',
-    'Tecnología y telecomunicaciones',
-    'Turismo y hotelería',
-    'Salud',
-    'Educación',
-    'Energía',
-    'Otro'
-  ];
-
-  const employeeRanges = [
-    '1-10 empleados (Microempresa)',
-    '11-50 empleados (Pequeña)',
-    '51-200 empleados (Mediana)',
-    '201-1000 empleados (Grande)',
-    'Más de 1000 empleados (Corporación)'
-  ];
-
-  const revenueRanges = [
-    'Menos de 2.400 UF',
-    '2.400 - 25.000 UF',
-    '25.000 - 100.000 UF',
-    '100.000 - 600.000 UF',
-    'Más de 600.000 UF'
-  ];
-
-  const chileanRegions = [
-    'Región de Arica y Parinacota',
-    'Región de Tarapacá',
-    'Región de Antofagasta',
-    'Región de Atacama',
-    'Región de Coquimbo',
-    'Región de Valparaíso',
-    'Región Metropolitana de Santiago',
-    'Región del Libertador General Bernardo O\'Higgins',
-    'Región del Maule',
-    'Región de Ñuble',
-    'Región del Biobío',
-    'Región de La Araucanía',
-    'Región de Los Ríos',
-    'Región de Los Lagos',
-    'Región de Aysén del General Carlos Ibáñez del Campo',
-    'Región de Magallanes y de la Antártica Chilena'
-  ];
-
-  const interestOptions = [
-    'Viajes corporativos',
-    'Transporte de mercancías',
-    'Consumo energético de oficinas',
-    'Eventos empresariales',
-    'Producción/manufactura',
-    'Otros'
-  ];
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     
     if (type === 'checkbox' && name === 'interests') {
       setFormData(prev => ({
@@ -132,62 +79,38 @@ const Register = () => {
     
     clearError();
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+      setValidationErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
-  const formatRUT = (value) => {
+  const formatRUT = (value: string) => {
     const cleaned = value.replace(/[^0-9kK]/g, '');
     if (cleaned.length <= 1) return cleaned;
-    
     const rut = cleaned.slice(0, -1);
     const dv = cleaned.slice(-1);
-    
     const formatted = rut.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return `${formatted}-${dv}`;
   };
 
-  const handleRUTChange = (e) => {
+  const handleRUTChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const formatted = formatRUT(value);
-    setFormData(prev => ({
-      ...prev,
-      [name]: formatted
-    }));
-    
-    if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: formatted }));
+    if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const validateStep = (step) => {
-    const errors = {};
+  const validateStep = (step: number) => {
+    const errors: Record<string, string> = {};
 
     if (step === 1) {
       if (!formData.firstName.trim()) errors.firstName = 'El nombre es requerido';
       if (!formData.lastName.trim()) errors.lastName = 'El apellido es requerido';
-      if (!formData.email.trim()) {
-        errors.email = 'El email es requerido';
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        errors.email = 'Email inválido';
-      }
-      if (!formData.password) {
-        errors.password = 'La contraseña es requerida';
-      } else if (formData.password.length < 6) {
-        errors.password = 'Mínimo 6 caracteres';
-      }
-      if (formData.password !== formData.confirmPassword) {
-        errors.confirmPassword = 'Las contraseñas no coinciden';
-      }
-      if (!formData.acceptTerms) {
-        errors.acceptTerms = 'Debes aceptar los términos';
-      }
+      if (!formData.email.trim()) errors.email = 'El email es requerido';
+      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email inválido';
+      if (!formData.password) errors.password = 'La contraseña es requerida';
+      else if (formData.password.length < 6) errors.password = 'Mínimo 6 caracteres';
+      if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
+      if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los términos';
     }
 
     if (step === 2) {
@@ -199,11 +122,8 @@ const Register = () => {
     if (step === 3) {
       if (!formData.legalRepName.trim()) errors.legalRepName = 'Nombre del representante requerido';
       if (!formData.legalRepRut.trim()) errors.legalRepRut = 'RUT del representante requerido';
-      if (!formData.contactEmail.trim()) {
-        errors.contactEmail = 'Email de contacto requerido';
-      } else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) {
-        errors.contactEmail = 'Email inválido';
-      }
+      if (!formData.contactEmail.trim()) errors.contactEmail = 'Email de contacto requerido';
+      else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) errors.contactEmail = 'Email inválido';
       if (!formData.phone.trim()) errors.phone = 'Teléfono requerido';
       if (!formData.region) errors.region = 'Región requerida';
       if (!formData.city.trim()) errors.city = 'Ciudad requerida';
@@ -225,26 +145,19 @@ const Register = () => {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-      window.scrollTo(0, 0);
     }
   };
 
   const handlePrevious = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
-    window.scrollTo(0, 0);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    if (!validateStep(currentStep)) {
-      return;
-    }
+    if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
-
     try {
-      // Primero registrar el usuario
       const userData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -254,7 +167,6 @@ const Register = () => {
       
       await register(userData);
       
-      // Luego guardar la información de onboarding
       const onboardingData = {
         companyInfo: {
           companyName: formData.companyName,
@@ -281,9 +193,7 @@ const Register = () => {
         }
       };
       
-      // Guardar en localStorage temporalmente (luego se enviará al backend)
       localStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
-      
       navigate('/dashboard');
     } catch (err) {
       console.error('Error en registro:', err);
@@ -291,199 +201,336 @@ const Register = () => {
       setIsLoading(false);
     }
   };
-  
-  const totalSteps = 4;
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    clearError();
-    // Limpiar error de validación específico
-    if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
   };
 
-  const handleChange = (e) => {
-    <div className="register-container">
-      <div className="register-card">
-        <div className="register-header">
-          <Link to="/" className="back-to-home">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Volver al inicio
-          </Link>
-          <h1>Crear Cuenta</h1>
-          <p>Únete a Compensa tu Viaje</p>
+  const formVariants = {
+    hidden: { x: 50, opacity: 0 },
+    visible: { x: 0, opacity: 1, transition: { duration: 0.6, delay: 0.2, ease: "easeOut" } }
+  };
+
+  const treeVariants = {
+    hidden: { y: 100, opacity: 0 },
+    visible: (custom: number) => ({
+      y: 0, opacity: 1, transition: { duration: 0.8, delay: custom * 0.2, type: "spring", bounce: 0.4 }
+    })
+  };
+
+  const renderInput = (label: string, name: string, type: string = 'text', placeholder: string = '', icon?: React.ReactNode, fullWidth: boolean = false) => (
+    <div className={`!space-y-2 ${fullWidth ? '!col-span-2' : ''}`}>
+      <label htmlFor={name} className="!text-sm !font-medium !text-emerald-100 !ml-1">{label}</label>
+      <div className="!relative !group">
+        <input
+          type={type}
+          id={name}
+          name={name}
+          value={(formData as any)[name]}
+          onChange={name.includes('rut') || name.includes('Rut') ? handleRUTChange : handleChange}
+          placeholder={placeholder}
+          className={`!w-full !px-6 !py-4 ${icon ? '!pl-12' : ''} !rounded-full !bg-emerald-800/50 !border ${validationErrors[name] ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+        />
+        {icon && <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400">{icon}</div>}
+      </div>
+      {validationErrors[name] && <span className="!text-xs !text-red-300 !ml-2">{validationErrors[name]}</span>}
+    </div>
+  );
+
+  const renderSelect = (label: string, name: string, options: string[]) => (
+    <div className="!space-y-2 !col-span-2">
+      <label htmlFor={name} className="!text-sm !font-medium !text-emerald-100 !ml-1">{label}</label>
+      <div className="!relative !group">
+        <select
+          id={name}
+          name={name}
+          value={(formData as any)[name]}
+          onChange={handleChange}
+          className={`!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border ${validationErrors[name] ? '!border-red-400' : '!border-emerald-700'} !text-white focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70 appearance-none`}
+        >
+          <option value="">Seleccionar...</option>
+          {options.map(opt => <option key={opt} value={opt} className="!bg-emerald-900">{opt}</option>)}
+        </select>
+        <div className="!absolute !right-6 !top-1/2 !-translate-y-1/2 !pointer-events-none !text-emerald-400">
+          <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
+      </div>
+      {validationErrors[name] && <span className="!text-xs !text-red-300 !ml-2">{validationErrors[name]}</span>}
+    </div>
+  );
 
-        {error && (
-          <div className="error-message">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="register-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="firstName">Nombre</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="Juan"
-                disabled={isLoading}
-                className={validationErrors.firstName ? 'error' : ''}
-              />
-              {validationErrors.firstName && (
-                <span className="field-error">{validationErrors.firstName}</span>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="lastName">Apellido</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Pérez"
-                disabled={isLoading}
-                className={validationErrors.lastName ? 'error' : ''}
-              />
-              {validationErrors.lastName && (
-                <span className="field-error">{validationErrors.lastName}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Correo Electrónico</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="tu@email.com"
-              disabled={isLoading}
-              className={validationErrors.email ? 'error' : ''}
-            />
-            {validationErrors.email && (
-              <span className="field-error">{validationErrors.email}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <div className="password-input">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                disabled={isLoading}
-                className={validationErrors.password ? 'error' : ''}
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={isLoading}
-              >
-                {showPassword ? (
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
-                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </button>
-            </div>
-            {validationErrors.password && (
-              <span className="field-error">{validationErrors.password}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="••••••••"
-              disabled={isLoading}
-              className={validationErrors.confirmPassword ? 'error' : ''}
-            />
-            {validationErrors.confirmPassword && (
-              <span className="field-error">{validationErrors.confirmPassword}</span>
-            )}
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="acceptTerms"
-                checked={formData.acceptTerms}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              <span>
-                Acepto los{' '}
-                <Link to="/terms" target="_blank">términos y condiciones</Link>
-                {' '}y la{' '}
-                <Link to="/privacy" target="_blank">política de privacidad</Link>
-              </span>
-            </label>
-            {validationErrors.acceptTerms && (
-              <span className="field-error">{validationErrors.acceptTerms}</span>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="btn-register"
-            disabled={isLoading}
+  return (
+    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
+      
+      {/* LEFT PANEL - Illustration */}
+      <motion.div 
+        className="!hidden lg:!flex !w-[45%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div 
+          className="!absolute !top-20 !right-20 !w-40 !h-40 !rounded-full !bg-yellow-100/50 !blur-3xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        
+        <div className="!relative !z-10 !max-w-lg !w-full !text-center">
+          <motion.h2 
+            className="!text-5xl !font-extrabold !text-emerald-900 !mb-6 !tracking-tight"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
           >
-            {isLoading ? (
-              <>
-                <span className="spinner"></span>
-                Creando cuenta...
-              </>
-            ) : (
-              'Crear Cuenta'
-            )}
-          </button>
-        </form>
-
-        <div className="register-footer">
-          <p>
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login">Inicia sesión aquí</Link>
-          </p>
+            Únete a Nosotros
+          </motion.h2>
+          <motion.p 
+            className="!text-xl !text-emerald-800/80 !mb-8"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            Comienza tu viaje hacia un futuro más sostenible hoy mismo.
+          </motion.p>
         </div>
+
+        {/* Trees Illustration */}
+        <div className="!absolute !bottom-0 !left-0 !right-0 !h-1/3 !z-0 !pointer-events-none">
+          <div className="!absolute !bottom-0 !left-0 !w-full !h-full !bg-emerald-400/20 !rounded-tr-[100%] !transform !translate-y-10"></div>
+          <motion.div custom={1} variants={treeVariants} className="!absolute !bottom-0 !left-[15%] !text-emerald-800/20">
+            <svg width="120" height="200" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg>
+          </motion.div>
+          <motion.div custom={2} variants={treeVariants} className="!absolute !bottom-0 !right-[20%] !text-emerald-700/30 !transform !scale-110">
+            <svg width="140" height="220" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* RIGHT PANEL - Form */}
+      <div className="!w-full lg:!w-[55%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-4 lg:!p-12 !overflow-y-auto">
+        
+        {/* Wave Separator */}
+        <div className="!hidden lg:!block !absolute !top-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden !z-20">
+           <svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b">
+             <path d="M100 0 C 20 20 20 80 100 100 V 0 Z" />
+           </svg>
+        </div>
+
+        <motion.div 
+          className="!w-full !max-w-2xl !relative !z-30 !py-8"
+          initial="hidden"
+          animate="visible"
+          variants={formVariants}
+        >
+          <div className="!mb-8">
+            <Link to="/" className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
+              <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
+            </Link>
+            <div className="!flex !items-end !justify-between !mb-2">
+              <h1 className="!text-3xl !font-bold !text-white">Crear Cuenta</h1>
+              <span className="!text-emerald-400 !font-medium">Paso {currentStep} de {totalSteps}</span>
+            </div>
+            <div className="!h-2 !w-full !bg-emerald-800 !rounded-full !overflow-hidden">
+              <motion.div 
+                className="!h-full !bg-emerald-400"
+                initial={{ width: 0 }}
+                animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+
+          {authError && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              className="!mb-6 !p-4 !bg-red-500/10 !border !border-red-500/20 !rounded-xl !flex !items-start !gap-3 !text-red-200"
+            >
+              <AlertCircle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
+              <span className="!text-sm">{authError}</span>
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="!space-y-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6"
+              >
+                {currentStep === 1 && (
+                  <>
+                    {renderInput('Nombre', 'firstName', 'text', 'Juan', <User className="!w-5 !h-5" />)}
+                    {renderInput('Apellido', 'lastName', 'text', 'Pérez', <User className="!w-5 !h-5" />)}
+                    {renderInput('Correo Electrónico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
+                    
+                    <div className="!space-y-2 !col-span-2">
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
+                      <div className="!relative !group">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          placeholder="••••••••"
+                          className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+                        />
+                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-emerald-400 hover:!text-white">
+                          {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
+                        </button>
+                      </div>
+                      {validationErrors.password && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.password}</span>}
+                    </div>
+
+                    <div className="!space-y-2 !col-span-2">
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar Contraseña</label>
+                      <div className="!relative !group">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          placeholder="••••••••"
+                          className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+                        />
+                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
+                      </div>
+                      {validationErrors.confirmPassword && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.confirmPassword}</span>}
+                    </div>
+
+                    <div className="!col-span-2 !mt-2">
+                      <label className="!flex !items-center !gap-3 !cursor-pointer !group">
+                        <div className="!relative !flex !items-center">
+                          <input
+                            type="checkbox"
+                            name="acceptTerms"
+                            checked={formData.acceptTerms}
+                            onChange={handleChange}
+                            className="!peer !appearance-none !w-5 !h-5 !border-2 !border-emerald-600 !rounded !bg-transparent checked:!bg-emerald-500 checked:!border-emerald-500 !transition-all"
+                          />
+                          <Check className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
+                        </div>
+                        <span className="!text-emerald-200 group-hover:!text-white !transition-colors !text-sm">
+                          Acepto los <Link to="/terms" className="!text-emerald-400 hover:!underline">términos y condiciones</Link>
+                        </span>
+                      </label>
+                      {validationErrors.acceptTerms && <span className="!text-xs !text-red-300 !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}
+                    </div>
+                  </>
+                )}
+
+                {currentStep === 2 && (
+                  <>
+                    {renderInput('Razón Social', 'companyName', 'text', 'Mi Empresa SpA', <Building className="!w-5 !h-5" />, true)}
+                    {renderInput('RUT Empresa', 'rut', 'text', '76.123.456-7', <FileText className="!w-5 !h-5" />)}
+                    {renderSelect('Tipo de Empresa', 'businessType', businessTypes)}
+                    {renderInput('Nombre de Fantasía', 'tradeName', 'text', 'Mi Marca', <Building className="!w-5 !h-5" />)}
+                    {renderInput('Sitio Web', 'website', 'url', 'https://...', <Building className="!w-5 !h-5" />)}
+                  </>
+                )}
+
+                {currentStep === 3 && (
+                  <>
+                    {renderInput('Nombre Representante', 'legalRepName', 'text', 'Juan Pérez', <User className="!w-5 !h-5" />, true)}
+                    {renderInput('RUT Representante', 'legalRepRut', 'text', '12.345.678-9', <FileText className="!w-5 !h-5" />)}
+                    {renderInput('Email Contacto', 'contactEmail', 'email', 'contacto@empresa.com', <Mail className="!w-5 !h-5" />)}
+                    {renderInput('Teléfono', 'phone', 'tel', '+56 9 1234 5678', <Phone className="!w-5 !h-5" />)}
+                    {renderSelect('Región', 'region', chileanRegions)}
+                    {renderInput('Ciudad', 'city', 'text', 'Santiago', <MapPin className="!w-5 !h-5" />)}
+                    {renderInput('Dirección', 'address', 'text', 'Av. Siempre Viva 123', <MapPin className="!w-5 !h-5" />, true)}
+                  </>
+                )}
+
+                {currentStep === 4 && (
+                  <>
+                    {renderSelect('Sector Económico', 'industry', industries)}
+                    {renderSelect('Número de Empleados', 'employeeCount', employeeRanges)}
+                    {renderSelect('Facturación Anual', 'annualRevenue', revenueRanges)}
+                    
+                    <div className="!space-y-2 !col-span-2">
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Descripción de la Empresa</label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows={3}
+                        className={`!w-full !px-6 !py-4 !rounded-2xl !bg-emerald-800/50 !border ${validationErrors.description ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none`}
+                        placeholder="Breve descripción de lo que hace tu empresa..."
+                      />
+                      {validationErrors.description && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.description}</span>}
+                    </div>
+
+                    <div className="!col-span-2 !space-y-3">
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Intereses (Selecciona al menos uno)</label>
+                      <div className="!grid !grid-cols-1 sm:!grid-cols-2 !gap-3">
+                        {interestOptions.map(interest => (
+                          <label key={interest} className="!flex !items-center !gap-3 !p-3 !rounded-xl !bg-emerald-800/30 !border !border-emerald-700/50 !cursor-pointer hover:!bg-emerald-800/50 !transition-all">
+                            <div className="!relative !flex !items-center">
+                              <input
+                                type="checkbox"
+                                name="interests"
+                                value={interest}
+                                checked={formData.interests.includes(interest)}
+                                onChange={handleChange}
+                                className="!peer !appearance-none !w-4 !h-4 !border-2 !border-emerald-500 !rounded !bg-transparent checked:!bg-emerald-500"
+                              />
+                              <Check className="!absolute !w-3 !h-3 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
+                            </div>
+                            <span className="!text-sm !text-emerald-100">{interest}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {validationErrors.interests && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.interests}</span>}
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="!flex !gap-4 !pt-6">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="!flex-1 !py-4 !px-6 !bg-emerald-800 !text-emerald-200 !font-bold !rounded-full hover:!bg-emerald-700 !transition-all"
+                >
+                  Atrás
+                </button>
+              )}
+              
+              {currentStep < totalSteps ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all !flex !items-center !justify-center !gap-2"
+                >
+                  Siguiente <ArrowRight className="!w-5 !h-5" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+                >
+                  {isLoading ? <Loader2 className="!w-5 !h-5 !animate-spin" /> : 'Crear Cuenta'}
+                </button>
+              )}
+            </div>
+          </form>
+
+          <div className="!mt-8 !text-center">
+            <span className="!text-emerald-200/80">¿Ya tienes cuenta? </span>
+            <Link to="/login" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
+              Inicia sesión aquí
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

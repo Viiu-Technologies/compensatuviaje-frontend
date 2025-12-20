@@ -1,145 +1,322 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getErrorMessage } from '../../../shared/utils/errorHandler';
-import './Login.css';
+import { getRedirectPath } from '../services/authService';
+import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2, Facebook, Twitter } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BsGoogle } from 'react-icons/bs';
 
-const Login = () => {
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
+
+interface FormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, error, clearError } = useAuth();
+  const location = useLocation();
+  const { login, error, clearError, isLoading: authLoading } = useAuth();
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
+    rememberMe: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value,
     }));
     clearError();
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      // Si el login es exitoso, redirigir al dashboard
-      navigate('/dashboard');
+      const response = await login(formData.email, formData.password);
+      
+      if (response.success && response.user_info) {
+        const userType = response.user_info.user_type;
+        const state = location.state as LocationState;
+        const from = state?.from?.pathname;
+        const redirectPath = from || getRedirectPath(userType);
+        navigate(redirectPath, { replace: true });
+      }
     } catch (err) {
-      // El error ya está manejado en AuthContext
-      console.error('Error en login:', getErrorMessage(err));
+      console.error('Error en login:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const loading = isLoading || authLoading;
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  };
+
+  const formVariants = {
+    hidden: { x: 50, opacity: 0 },
+    visible: { 
+      x: 0, 
+      opacity: 1,
+      transition: { duration: 0.6, delay: 0.2, ease: "easeOut" }
+    }
+  };
+
+  const treeVariants = {
+    hidden: { y: 100, opacity: 0 },
+    visible: (custom: number) => ({
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.8, delay: custom * 0.2, type: "spring", bounce: 0.4 }
+    })
+  };
+
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <Link to="/" className="back-to-home">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Volver al inicio
-          </Link>
-          <h1>Iniciar Sesión</h1>
-          <p>Accede a tu cuenta de Compensa tu Viaje</p>
-        </div>
+    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
+      
+      {/* LEFT PANEL - Illustration */}
+      <motion.div 
+        className="!hidden lg:!flex !w-[55%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        {/* Background Elements (Sun/Clouds) */}
+        <motion.div 
+          className="!absolute !top-20 !left-20 !w-32 !h-32 !rounded-full !bg-yellow-100/50 !blur-2xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        
+        {/* Content */}
+        <div className="!relative !z-10 !max-w-lg !w-full !text-center">
+          <motion.h2 
+            className="!text-5xl !font-extrabold !text-emerald-900 !mb-4 !tracking-tight"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            BIENVENIDO A COMPENSA TU VIAJE
+          </motion.h2>
+          <motion.p 
+            className="!text-xl !text-emerald-800/80 !mb-12"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            Estamos encantados de verte :)
+          </motion.p>
 
-        {error && (
-          <div className="error-message">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label htmlFor="email">Correo Electrónico</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="tu@email.com"
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <div className="password-input">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="••••••••"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={isLoading}
-              >
-                {showPassword ? (
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
-                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                  </svg>
-                )}
+          {/* Social Buttons */}
+          <motion.div 
+            className="!flex !flex-col !gap-4 !items-center"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <button className="!w-full !max-w-xs !flex !items-center !justify-center !gap-3 !py-3 !px-6 !rounded-full !bg-white/90 !text-emerald-800 !font-semibold !shadow-lg hover:!bg-white hover:!scale-105 !transition-all">
+              <span className="!font-bold !text-lg"></span>
+                <BsGoogle className="!w-6 !h-6" />
+              Iniciar sesión con Google
+            </button>
+            
+            <div className="!flex !gap-4 !w-full !max-w-xs">
+              <button className="!flex-1 !flex !items-center !justify-center !py-3 !rounded-full !bg-white/80 !text-emerald-800 !shadow-md hover:!bg-white hover:!scale-105 !transition-all">
+                <Facebook className="!w-5 !h-5" />
+              </button>
+              <button className="!flex-1 !flex !items-center !justify-center !py-3 !rounded-full !bg-white/80 !text-emerald-800 !shadow-md hover:!bg-white hover:!scale-105 !transition-all">
+                <Twitter className="!w-5 !h-5" />
               </button>
             </div>
-          </div>
-
-          <div className="form-footer">
-            <Link to="/forgot-password" className="forgot-password">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            className="btn-login"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <span className="spinner"></span>
-                Iniciando sesión...
-              </>
-            ) : (
-              'Iniciar Sesión'
-            )}
-          </button>
-        </form>
-
-        <div className="login-footer">
-          <p>
-            ¿No tienes cuenta?{' '}
-            <Link to="/register">Regístrate aquí</Link>
-          </p>
+          </motion.div>
         </div>
+
+        {/* Landscape / Trees Illustration */}
+        <div className="!absolute !bottom-0 !left-0 !right-0 !h-1/3 !z-0 !pointer-events-none">
+          {/* Hills */}
+          <div className="!absolute !bottom-0 !left-0 !w-full !h-full !bg-emerald-400/20 !rounded-tr-[100%] !transform !translate-y-10"></div>
+          <div className="!absolute !bottom-0 !right-0 !w-3/4 !h-3/4 !bg-emerald-500/20 !rounded-tl-[100%] !transform !translate-y-5"></div>
+          
+          {/* Trees */}
+          <motion.div custom={1} variants={treeVariants} className="!absolute !bottom-0 !left-[10%] !text-emerald-800/20">
+            <svg width="100" height="180" viewBox="0 0 100 180" fill="currentColor">
+              <path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" />
+            </svg>
+          </motion.div>
+          <motion.div custom={2} variants={treeVariants} className="!absolute !bottom-0 !left-[25%] !text-emerald-700/30 !transform !scale-75">
+            <svg width="100" height="180" viewBox="0 0 100 180" fill="currentColor">
+              <path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" />
+            </svg>
+          </motion.div>
+          <motion.div custom={3} variants={treeVariants} className="!absolute !bottom-0 !right-[30%] !text-emerald-800/20 !transform !scale-125">
+            <svg width="100" height="180" viewBox="0 0 100 180" fill="currentColor">
+              <path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" />
+            </svg>
+          </motion.div>
+        </div>
+
+      </motion.div>
+
+      {/* RIGHT PANEL - Form */}
+      <div className="!w-full lg:!w-[45%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-8 lg:!p-16">
+        
+        {/* Wave Separator (Desktop only) */}
+        <div className="!hidden lg:!block !absolute !top-0 !-left-1 !h-full !w-24 !z-20 !text-emerald-900">
+           {/* Better approach: Absolute SVG on the left edge of the right panel */}
+           <div className="!absolute !inset-y-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden">
+             <svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b">
+               <path d="M100 0 C 20 20 20 80 100 100 V 0 Z" />
+             </svg>
+           </div>
+        </div>
+
+        <motion.div 
+          className="!w-full !max-w-md !relative !z-30"
+          initial="hidden"
+          animate="visible"
+          variants={formVariants}
+        >
+          <div className="!mb-10 !text-center lg:!text-left">
+            <Link to="/" className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
+              <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
+            </Link>
+            <h1 className="!text-4xl !font-bold !text-white !mb-3">Iniciar Sesión</h1>
+            <div className="!h-1 !w-20 !bg-emerald-500 !rounded-full !mb-4 lg:!mx-0 !mx-auto"></div>
+            <p className="!text-emerald-200/80">Accede a tu cuenta de Compensa tu Viaje</p>
+          </div>
+
+          {error && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              className="!mb-6 !p-4 !bg-red-500/10 !border !border-red-500/20 !rounded-xl !flex !items-start !gap-3 !text-red-200"
+            >
+              <AlertCircle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
+              <span className="!text-sm">{error}</span>
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="!space-y-6">
+            <div className="!space-y-2">
+              <label htmlFor="email" className="!text-sm !font-medium !text-emerald-100 !ml-1">Correo Electrónico</label>
+              <div className="!relative !group">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="email"
+                  placeholder="tu@email.com"
+                  disabled={loading}
+                  className="!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
+                />
+              </div>
+            </div>
+
+            <div className="!space-y-2">
+              <label htmlFor="password" className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
+              <div className="!relative !group">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  disabled={loading}
+                  className="!w-full !px-6 !py-4 !pr-14 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={loading}
+                  className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-emerald-400 hover:!text-white !transition-colors !p-2"
+                >
+                  {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="!flex !items-center !justify-between !text-sm !px-1">
+              <label className="!flex !items-center !gap-2 !cursor-pointer !group">
+                <div className="!relative !flex !items-center">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    disabled={loading}
+                    className="!peer !appearance-none !w-5 !h-5 !border-2 !border-emerald-600 !rounded !bg-transparent checked:!bg-emerald-500 checked:!border-emerald-500 !transition-all"
+                  />
+                  <svg className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2 !transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <span className="!text-emerald-200 group-hover:!text-white !transition-colors">Recordarme</span>
+              </label>
+
+              <Link to="/forgot-password" className="!text-emerald-400 hover:!text-emerald-300 !font-medium !transition-colors">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="!w-full !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !text-lg !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="!w-6 !h-6 !animate-spin" />
+                  <span>Iniciando...</span>
+                </>
+              ) : (
+                'Iniciar Sesión'
+              )}
+            </motion.button>
+          </form>
+
+          <div className="!mt-10 !text-center">
+            <p className="!text-emerald-200/60 !text-sm !mb-4">O continúa con</p>
+            <div className="!flex !justify-center !gap-4 lg:!hidden">
+               {/* Mobile Social Buttons */}
+               <button className="!p-3 !rounded-full !bg-emerald-800 !text-white !border !border-emerald-700"><span className="!font-bold">G</span></button>
+               <button className="!p-3 !rounded-full !bg-emerald-800 !text-white !border !border-emerald-700"><Facebook className="!w-5 !h-5"/></button>
+               <button className="!p-3 !rounded-full !bg-emerald-800 !text-white !border !border-emerald-700"><Twitter className="!w-5 !h-5"/></button>
+            </div>
+            <div className="!mt-6">
+              <span className="!text-emerald-200/80">¿No tienes cuenta? </span>
+              <Link to="/register" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
+                Regístrate aquí
+              </Link>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
