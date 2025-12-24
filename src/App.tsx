@@ -7,6 +7,7 @@ import './App.css';
 
 // Context
 import { AuthProvider } from './apps/auth/context/AuthContext';
+import { ThemeProvider } from './shared/context/ThemeContext';
 
 // Auth Components
 import ProtectedRoute, { 
@@ -48,8 +49,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="App">
-          <Routes>
+        <ThemeProvider>
+          <div className="App min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+            <Routes>
             {/* ===================== */}
             {/* Rutas Públicas */}
             {/* ===================== */}
@@ -215,6 +217,7 @@ function App() {
             <Route path="*" element={<SmartRedirect />} />
           </Routes>
         </div>
+      </ThemeProvider>
       </AuthProvider>
     </Router>
   );
