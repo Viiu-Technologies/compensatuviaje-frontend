@@ -6,6 +6,8 @@ export interface FormData {
   origin: string;
   destination: string;
   aircraftType: "economy" | "business" | "first";
+  passengers: number;
+  roundTrip: boolean;
   projectType: "social" | "environmental" | "";
   email: string;
 }

@@ -23,6 +23,8 @@ const CalculatorView: React.FC = () => {
       origin: '',
       destination: '',
       aircraftType: 'economy',
+      passengers: 1,
+      roundTrip: false,
       projectType: '',
       email: ''
     }
@@ -49,8 +51,8 @@ const CalculatorView: React.FC = () => {
           origin: formData.origin,
           destination: formData.destination,
           cabinCode: formData.aircraftType as CabinClass,
-          passengers: 1,
-          roundTrip: false
+          passengers: formData.passengers || 1,
+          roundTrip: formData.roundTrip || false
         });
 
         if (result.status === 'success') {
@@ -101,6 +103,8 @@ const CalculatorView: React.FC = () => {
     setValue('origin', '');
     setValue('destination', '');
     setValue('aircraftType', 'economy');
+    setValue('passengers', 1);
+    setValue('roundTrip', false);
     setValue('projectType', '');
     setValue('email', '');
   };

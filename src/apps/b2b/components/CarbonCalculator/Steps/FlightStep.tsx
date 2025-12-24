@@ -343,6 +343,66 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
         </div>
       </div>
 
+      {/* Passengers and Trip Type */}
+      <div className="!grid md:!grid-cols-2 !gap-6">
+        <div>
+          <label className="!block !text-sm !font-medium !text-gray-700 !mb-2 !flex !items-center !gap-2">
+            <Users size={16} className="!text-blue-500" /> Pasajeros
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="9"
+            {...register("passengers", { 
+              required: "Número de pasajeros requerido",
+              valueAsNumber: true,
+              min: { value: 1, message: "Mínimo 1 pasajero" },
+              max: { value: 9, message: "Máximo 9 pasajeros" }
+            })}
+            className="!w-full !px-4 !py-3 !rounded-xl !border-2 !border-gray-200 !bg-white/50 !backdrop-blur-sm focus:!border-blue-500 focus:!ring-4 focus:!ring-blue-500/10 !outline-none !transition-all"
+          />
+          {errors.passengers && (
+            <p className="!text-red-500 !text-xs !mt-1 !flex !items-center !gap-1">
+              <AlertCircle size={12} /> {errors.passengers.message as string}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="!block !text-sm !font-medium !text-gray-700 !mb-2">Tipo de Viaje</label>
+          <div className="!flex !gap-3">
+            <label className={`!flex !items-center !gap-2 !cursor-pointer !flex-1 !p-3 !rounded-xl !border-2 !transition-all ${
+              watch("roundTrip") === false 
+                ? "!border-green-500 !bg-green-50" 
+                : "!border-gray-200 !bg-white/50 hover:!border-purple-300"
+            }`}>
+              <input
+                type="radio"
+                value="false"
+                checked={watch("roundTrip") === false}
+                onChange={() => setValue("roundTrip", false)}
+                className="!cursor-pointer"
+              />
+              <span className="!text-sm !font-medium !text-gray-700">Solo Ida</span>
+            </label>
+            <label className={`!flex !items-center !gap-2 !cursor-pointer !flex-1 !p-3 !rounded-xl !border-2 !transition-all ${
+              watch("roundTrip") === true 
+                ? "!border-green-500 !bg-green-50" 
+                : "!border-gray-200 !bg-white/50 hover:!border-purple-300"
+            }`}>
+              <input
+                type="radio"
+                value="true"
+                checked={watch("roundTrip") === true}
+                onChange={() => setValue("roundTrip", true)}
+                className="!cursor-pointer"
+              />
+              <span className="!text-sm !font-medium !text-gray-700">Ida y Vuelta</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Continue Button */}
       <motion.button
         type="button"
