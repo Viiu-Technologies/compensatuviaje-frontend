@@ -4,6 +4,9 @@ import { FaCalculator, FaLeaf, FaChartLine, FaShieldAlt, FaBolt, FaGlobe } from 
 import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
 import { useInView } from 'react-intersection-observer';
 import './Features.css';
+import LogoLoopComponent from './LogoLoop';
+// import local image from src assets so bundler serves it correctly
+import scapelandImg from '../../../assets/images/scapeland-chileflag.jpg';
 import CarbonCalculatorModal from '../../b2c/components/CarbonCalculatorModal';
 
 const Features = () => {
@@ -17,7 +20,7 @@ const Features = () => {
   useEffect(() => {
     const img = new Image();
     img.onload = () => setImageLoaded(true);
-    img.src = '/images/mountain-landscape.jpg';
+    img.src = scapelandImg as string;
   }, []);
 
   const paymentMethods = [
@@ -52,23 +55,13 @@ const Features = () => {
 
         {/* Métodos de pago */}
         <div className="payment-methods fade-in-up">
-          <div className="payment-grid">
-            {paymentMethods.map((method, index) => (
-              <div key={index} className="payment-method">
-                <div className="payment-logo">
-                  <img 
-                    src={method.logo} 
-                    alt={method.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain'
-                    }}
-                  />
-                </div>
-                <span className="payment-name">{method.name}</span>
-              </div>
-            ))}
+          <div className="payment-loop-wrapper">
+            <LogoLoopComponent
+              logos={paymentMethods.map(m => ({ src: m.logo, alt: m.name }))}
+              logoHeight={76}
+              gap={80}
+              speed={120}
+            />
           </div>
         </div>
 
@@ -189,7 +182,7 @@ const Features = () => {
                 className="image-placeholder"
                 data-loaded={imageLoaded}
                 style={{
-                  backgroundImage: imageLoaded ? 'url(/images/mountain-landscape.jpg)' : 'none',
+                  backgroundImage: imageLoaded ? `url(${scapelandImg})` : 'none',
                   opacity: imageLoaded ? 1 : 0.8
                 }}
                 whileHover={{ scale: 1.03 }}

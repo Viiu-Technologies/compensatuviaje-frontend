@@ -1,0 +1,88 @@
+.logo-loop-container{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px 0;
+}
+
+.custom-logo-loop{
+  width:100%;
+  max-width:920px;
+}
+
+.logo-loop-fallback{
+  display:flex;
+  gap:24px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.fallback-item img{
+  opacity:0.95;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.06));
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.fallback-item img:hover{
+  transform: translateY(-4px) scale(1.03);
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.12));
+}
+
+/* Native loop styles */
+.native-loop-outer{
+  width:100%;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+  padding: 8px 40px; /* give breathing room on edges */
+}
+
+.native-loop-track{
+  display:inline-flex; /* ensure horizontal inline layout */
+  gap:var(--loop-gap, 48px);
+  align-items:center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  animation: nativeLoop var(--loop-duration, 22s) linear infinite;
+  will-change: transform;
+  padding: 12px 0;
+}
+
+.native-loop-item{
+  flex: 0 0 auto;
+  padding-right: calc(var(--loop-gap, 48px) / 2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.native-loop-item img{
+  height: var(--logo-height, 60px);
+  max-width: 220px;
+  display:block;
+  opacity: 0.98;
+  transition: transform 0.25s ease, filter 0.18s ease;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.08));
+}
+
+.native-loop-item img:hover{
+  transform: translateY(-6px) scale(1.06);
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.14));
+}
+
+@keyframes nativeLoop{
+  0% { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(var(--translate-x, -50%),0,0); }
+}
+
+/* Pause animation while measurements happen (JS will switch to running) */
+.native-loop-track {
+  animation-play-state: paused;
+}
+
+/* When JS finishes measurement, add this class to start the animation */
+.native-loop-track.native-loop-running {
+  animation-play-state: running;
+}

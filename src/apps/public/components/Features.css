@@ -27,6 +27,14 @@
   margin-bottom: 80px;
 }
 
+/* Logo loop wrapper (new animated layout) */
+.payment-loop-wrapper{
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 8px 0;
+}
+
 .payment-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -83,7 +91,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
-  align-items: start;
+  align-items: center; /* center left and right columns vertically so cards match height */
   margin-top: 60px;
 }
 
@@ -158,8 +166,12 @@
 /* Modern Calculator Card */
 .calculator-card-modern {
   position: relative;
-  margin: 40px 0;
+  margin: 0; /* remove extra top margin so it lines up with image card */
   padding: 40px;
+  min-height: 550px; /* match image placeholder min-height to align both cards */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

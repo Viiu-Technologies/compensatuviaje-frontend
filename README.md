@@ -124,7 +124,13 @@ compensatuviajefront/You may also see any lint errors in the console.
 
 # Instalar dependencias
 
-npm install### Deployment
+npm install
+
+# Animación de logos (LogoLoop)
+# Opcional: si quieres usar la implementación oficial de React Bits y existe en el registry
+# puedes instalarla, pero el proyecto incluye una implementación nativa local como fallback.
+# Para usar la versión del proveedor (si está publicada):
+# npm install @react-bits/logo-loop --save  (nota: nombre en minúsculas si está publicado)### Deployment
 
 
 
