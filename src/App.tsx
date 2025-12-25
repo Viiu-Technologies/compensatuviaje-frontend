@@ -7,6 +7,7 @@ import './App.css';
 
 // Context
 import { AuthProvider } from './apps/auth/context/AuthContext';
+import { AuthProvider as B2CAuthProvider } from './apps/b2c/context/AuthContext';
 import { ThemeProvider } from './shared/context/ThemeContext';
 
 // Auth Components
@@ -16,6 +17,7 @@ import ProtectedRoute, {
   CompanyAdminRoute 
 } from './apps/auth/components/ProtectedRoute';
 import PublicRoute from './apps/auth/components/PublicRoute';
+import B2CProtectedRoute from './apps/auth/components/B2CProtectedRoute';
 
 // Pages - Public
 import LandingPage from './apps/public/pages/LandingPage';
@@ -25,6 +27,7 @@ import LoginPage from './apps/auth/pages/LoginPage';
 import RegisterPage from './apps/auth/pages/RegisterPage';
 import ForgotPasswordPage from './apps/auth/pages/ForgotPasswordPage';
 import DashboardPage from './apps/auth/pages/DashboardPage';
+import AuthCallbackPage from './apps/b2c/pages/AuthCallback';
 
 // Pages - B2B (Onboarding)
 import OnboardingWizardPage from './apps/b2b/pages/OnboardingWizardPage';
@@ -34,6 +37,10 @@ import B2BDashboardPage from './apps/b2b/pages/DashboardPage';
 
 // Pages - B2C
 import B2CDashboardPage from './apps/b2c/pages/B2CDashboardPage';
+import B2CFlightsPage from './apps/b2c/pages/B2CFlightsPage';
+import B2CProjectsPage from './apps/b2c/pages/B2CProjectsPage';
+import B2CCertificatesPage from './apps/b2c/pages/B2CCertificatesPage';
+import B2CCalculatorPage from './apps/b2c/pages/B2CCalculatorPage';
 
 // Pages - Admin
 import AdminDashboardPage from './apps/admin/pages/AdminDashboardPage';
@@ -49,6 +56,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <B2CAuthProvider>
         <ThemeProvider>
           <div className="App min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
             <Routes>
@@ -58,6 +66,9 @@ function App() {
             
             {/* Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            
+            {/* Auth Callback for OAuth */}
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
             
             {/* Auth - redirige a dashboard si ya está autenticado */}
             <Route 
@@ -169,27 +180,47 @@ function App() {
             />
             
             {/* ===================== */}
-            {/* Rutas B2C - Usuarios individuales (TODO) */}
+            {/* Rutas B2C - Usuarios individuales */}
             {/* ===================== */}
             
             <Route 
               path="/b2c/dashboard" 
               element={
-                <ProtectedRoute requiredUserTypes={['b2c', 'superadmin']}>
+                <B2CProtectedRoute>
                   <B2CDashboardPage />
-                </ProtectedRoute>
+                </B2CProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/b2c/flights" 
+              element={
+                <B2CProtectedRoute>
+                  <B2CFlightsPage />
+                </B2CProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/b2c/projects" 
+              element={
+                <B2CProtectedRoute>
+                  <B2CProjectsPage />
+                </B2CProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/b2c/certificates" 
+              element={
+                <B2CProtectedRoute>
+                  <B2CCertificatesPage />
+                </B2CProtectedRoute>
               } 
             />
             <Route 
               path="/calculator" 
               element={
-                <ProtectedRoute requiredUserTypes={['b2c', 'superadmin']}>
-                  {/* CalculatorPage - TODO */}
-                  <div className="p-8">
-                    <h1 className="text-2xl font-bold">Calculadora de Huella de Carbono</h1>
-                    <p className="text-gray-600 mt-2">Próximamente...</p>
-                  </div>
-                </ProtectedRoute>
+                <B2CProtectedRoute>
+                  <B2CCalculatorPage />
+                </B2CProtectedRoute>
               } 
             />
             
@@ -218,6 +249,7 @@ function App() {
           </Routes>
         </div>
       </ThemeProvider>
+      </B2CAuthProvider>
       </AuthProvider>
     </Router>
   );
