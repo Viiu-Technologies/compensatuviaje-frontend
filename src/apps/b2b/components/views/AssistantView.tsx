@@ -21,6 +21,7 @@ import {
   Building,
   Plane
 } from 'lucide-react';
+import { useTheme } from '../../../../shared/context/ThemeContext';
 
 interface Message {
   id: string;
@@ -31,6 +32,8 @@ interface Message {
 }
 
 const AssistantView: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -200,13 +203,13 @@ const AssistantView: React.FC = () => {
             <Bot className="!w-6 !h-6 !text-white" />
           </div>
           <div>
-            <h1 className="!text-xl !font-bold !text-gray-900">Asistente IA de Sostenibilidad</h1>
-            <p className="!text-sm !text-gray-500">Tu consultor experto en huella de carbono</p>
+            <h1 className={`!text-xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Asistente IA de Sostenibilidad</h1>
+            <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Tu consultor experto en huella de carbono</p>
           </div>
         </div>
         <button
           onClick={handleNewChat}
-          className="!flex !items-center !gap-2 !px-4 !py-2 !bg-gray-100 hover:!bg-gray-200 !rounded-xl !text-gray-600 !font-medium !transition-colors !border-0"
+          className={`!flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !font-medium !transition-colors !border-0 ${isDark ? '!bg-gray-700 hover:!bg-gray-600 !text-gray-300' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-600'}`}
         >
           <RotateCcw className="!w-4 !h-4" />
           <span className="!hidden sm:!inline">Nueva conversación</span>
@@ -228,7 +231,7 @@ const AssistantView: React.FC = () => {
       </div>
 
       {/* Chat Container */}
-      <div className="!flex-1 !bg-white !rounded-2xl !border !border-gray-200 !shadow-xl !flex !flex-col !overflow-hidden">
+      <div className={`!flex-1 !rounded-2xl !border !shadow-xl !flex !flex-col !overflow-hidden ${isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'}`}>
         {/* Messages */}
         <div className="!flex-1 !overflow-y-auto !p-4 !space-y-4">
           <AnimatePresence>
@@ -256,7 +259,9 @@ const AssistantView: React.FC = () => {
                 <div className={`!flex-1 !max-w-[80%] ${message.type === 'user' ? '!text-right' : ''}`}>
                   <div className={`!inline-block !px-4 !py-3 !rounded-2xl ${
                     message.type === 'assistant'
-                      ? '!bg-gray-100 !text-gray-800 !rounded-tl-none'
+                      ? isDark 
+                        ? '!bg-gray-700 !text-gray-100 !rounded-tl-none'
+                        : '!bg-gray-100 !text-gray-800 !rounded-tl-none'
                       : '!bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !rounded-tr-none'
                   }`}>
                     <div 
@@ -276,7 +281,7 @@ const AssistantView: React.FC = () => {
                         <button
                           key={idx}
                           onClick={() => handleSuggestionClick(suggestion)}
-                          className="!px-3 !py-1.5 !bg-white !border !border-gray-200 !rounded-lg !text-xs !text-gray-600 hover:!bg-green-50 hover:!border-green-300 hover:!text-green-700 !transition-colors"
+                          className={`!px-3 !py-1.5 !border !rounded-lg !text-xs !transition-colors ${isDark ? '!bg-gray-700 !border-gray-600 !text-gray-300 hover:!bg-green-900/30 hover:!border-green-600 hover:!text-green-400' : '!bg-white !border-gray-200 !text-gray-600 hover:!bg-green-50 hover:!border-green-300 hover:!text-green-700'}`}
                         >
                           {suggestion}
                         </button>
@@ -313,11 +318,11 @@ const AssistantView: React.FC = () => {
               <div className="!w-9 !h-9 !rounded-xl !bg-gradient-to-br !from-green-500 !to-emerald-600 !flex !items-center !justify-center">
                 <Sparkles className="!w-5 !h-5 !text-white" />
               </div>
-              <div className="!bg-gray-100 !rounded-2xl !rounded-tl-none !px-4 !py-3">
+              <div className={`!rounded-2xl !rounded-tl-none !px-4 !py-3 ${isDark ? '!bg-gray-700' : '!bg-gray-100'}`}>
                 <div className="!flex !gap-1">
-                  <span className="!w-2 !h-2 !bg-gray-400 !rounded-full !animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="!w-2 !h-2 !bg-gray-400 !rounded-full !animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="!w-2 !h-2 !bg-gray-400 !rounded-full !animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className={`!w-2 !h-2 !rounded-full !animate-bounce ${isDark ? '!bg-gray-500' : '!bg-gray-400'}`} style={{ animationDelay: '0ms' }} />
+                  <span className={`!w-2 !h-2 !rounded-full !animate-bounce ${isDark ? '!bg-gray-500' : '!bg-gray-400'}`} style={{ animationDelay: '150ms' }} />
+                  <span className={`!w-2 !h-2 !rounded-full !animate-bounce ${isDark ? '!bg-gray-500' : '!bg-gray-400'}`} style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </motion.div>
@@ -327,7 +332,7 @@ const AssistantView: React.FC = () => {
         </div>
 
         {/* Input Area */}
-        <div className="!p-4 !border-t !border-gray-200 !bg-gray-50">
+        <div className={`!p-4 !border-t ${isDark ? '!border-gray-700 !bg-gray-800/50' : '!border-gray-200 !bg-gray-50'}`}>
           <div className="!flex !items-center !gap-3">
             <input
               ref={inputRef}
@@ -336,7 +341,7 @@ const AssistantView: React.FC = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Escribe tu consulta sobre sostenibilidad..."
-              className="!flex-1 !px-4 !py-3 !border !border-gray-200 !rounded-xl focus:!ring-2 focus:!ring-green-500 focus:!border-transparent !outline-none !bg-white"
+              className={`!flex-1 !px-4 !py-3 !border !rounded-xl focus:!ring-2 focus:!ring-green-500 focus:!border-transparent !outline-none ${isDark ? '!bg-gray-700 !border-gray-600 !text-gray-100 placeholder:!text-gray-500' : '!bg-white !border-gray-200 !text-gray-900'}`}
             />
             <button
               onClick={handleSend}
