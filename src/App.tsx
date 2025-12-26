@@ -43,7 +43,7 @@ import B2CCertificatesPage from './apps/b2c/pages/B2CCertificatesPage';
 import B2CCalculatorPage from './apps/b2c/pages/B2CCalculatorPage';
 
 // Pages - Admin
-import AdminDashboardPage from './apps/admin/pages/AdminDashboardPage';
+import AdminRoutes from './apps/admin/routes';
 import VerificationPage from './apps/admin/pages/VerificationPage';
 import BatchUploadPage from './apps/admin/pages/BatchUploadPage';
 
@@ -61,7 +61,7 @@ function App() {
           <div className="App min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
             <Routes>
             {/* ===================== */}
-            {/* Rutas Públicas */}
+            {/* Rutas P├║blicas */}
             {/* ===================== */}
             
             {/* Landing Page */}
@@ -70,7 +70,7 @@ function App() {
             {/* Auth Callback for OAuth */}
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             
-            {/* Auth - redirige a dashboard si ya está autenticado */}
+            {/* Auth - Login y Register con diseño original */}
             <Route 
               path="/login" 
               element={
@@ -96,11 +96,30 @@ function App() {
               } 
             />
             
+            {/* Auth Routes con prefijo /auth para compatibilidad */}
+            <Route 
+              path="/auth/login" 
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/auth/register" 
+              element={
+                <PublicRoute>
+                  <RegisterPage />
+                </PublicRoute>
+              } 
+            />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            
             {/* ===================== */}
             {/* Rutas Privadas - Cualquier usuario autenticado */}
             {/* ===================== */}
             
-            {/* Dashboard general - redirige según tipo de usuario */}
+            {/* Dashboard general - redirige seg├║n tipo de usuario */}
             <Route 
               path="/dashboard" 
               element={
@@ -153,7 +172,7 @@ function App() {
               element={
                 <CompanyAdminRoute>
                   {/* UsersListPage - TODO */}
-                  <div>Gestión de usuarios</div>
+                  <div>Gesti├│n de usuarios</div>
                 </CompanyAdminRoute>
               } 
             />
@@ -163,18 +182,10 @@ function App() {
             {/* ===================== */}
             
             <Route 
-              path="/admin/verification" 
+              path="/admin/*" 
               element={
                 <SuperAdminRoute>
-                  <VerificationPage />
-                </SuperAdminRoute>
-              } 
-            />
-            <Route 
-              path="/admin/batch-upload" 
-              element={
-                <SuperAdminRoute>
-                  <BatchUploadPage />
+                  <AdminRoutes />
                 </SuperAdminRoute>
               } 
             />
@@ -182,6 +193,12 @@ function App() {
             {/* ===================== */}
             {/* Rutas B2C - Usuarios individuales */}
             {/* ===================== */}
+            
+            {/* Redirigir /b2c/login al selector de login principal */}
+            <Route 
+              path="/b2c/login" 
+              element={<Navigate to="/login" replace />} 
+            />
             
             <Route 
               path="/b2c/dashboard" 
@@ -235,14 +252,14 @@ function App() {
                   {/* PartnerDashboard - TODO */}
                   <div className="p-8">
                     <h1 className="text-2xl font-bold">Dashboard Partner</h1>
-                    <p className="text-gray-600 mt-2">Próximamente...</p>
+                    <p className="text-gray-600 mt-2">Pr├│ximamente...</p>
                   </div>
                 </ProtectedRoute>
               } 
             />
             
             {/* ===================== */}
-            {/* Catch-all - Redirige según autenticación */}
+            {/* Catch-all - Redirige seg├║n autenticaci├│n */}
             {/* ===================== */}
             
             <Route path="*" element={<SmartRedirect />} />
