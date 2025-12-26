@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, Leaf, CreditCard, ChevronRight, Download, Share2, Plane, TreePine } from "lucide-react";
 import type { PaymentStepProps } from "../types";
+import { useTheme } from "../../../../../shared/context/ThemeContext";
 
 export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, calculationResult }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [certificateId, setCertificateId] = useState("0000");
@@ -47,7 +51,7 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-            className="!w-full !h-full !bg-green-100 !rounded-full !flex !items-center !justify-center !text-green-600"
+            className={`!w-full !h-full !rounded-full !flex !items-center !justify-center !text-green-600 ${isDark ? '!bg-green-900/50' : '!bg-green-100'}`}
           >
             <Check size={48} strokeWidth={3} />
           </motion.div>
@@ -71,8 +75,8 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
         </div>
         
         <div className="!space-y-2">
-          <h2 className="!text-3xl !font-bold !text-gray-800">¡Compensación Exitosa!</h2>
-          <p className="!text-gray-500 !max-w-md !mx-auto">
+          <h2 className={`!text-3xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>¡Compensación Exitosa!</h2>
+          <p className={`!max-w-md !mx-auto ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
             Gracias por contribuir a un futuro más verde. Has compensado <span className="!font-bold !text-green-600">{kgCO2.toFixed(1)} kg de CO₂</span>.
           </p>
         </div>
@@ -82,42 +86,48 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="!bg-white !p-6 !rounded-xl !shadow-lg !max-w-sm !mx-auto !border !border-green-200 !relative !overflow-hidden"
+          className={`!p-6 !rounded-xl !shadow-lg !max-w-sm !mx-auto !border !relative !overflow-hidden ${
+            isDark ? '!bg-gray-800 !border-green-700/50' : '!bg-white !border-green-200'
+          }`}
         >
           <div className="!absolute !top-0 !left-0 !w-full !h-2 !bg-gradient-to-r !from-green-500 !to-emerald-500" />
-          <h3 className="!font-serif !text-xl !text-gray-800 !mb-4">Certificado de Impacto</h3>
+          <h3 className={`!font-serif !text-xl !mb-4 ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>Certificado de Impacto</h3>
           <div className="!space-y-3 !text-sm !text-left">
             {calculationResult && (
               <div className="!flex !justify-between">
-                <span className="!text-gray-500">Ruta</span>
-                <span className="!font-medium">{calculationResult.meta.route.origin.code} → {calculationResult.meta.route.destination.code}</span>
+                <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Ruta</span>
+                <span className={`!font-medium ${isDark ? '!text-gray-200' : ''}`}>{calculationResult.meta.route.origin.code} → {calculationResult.meta.route.destination.code}</span>
               </div>
             )}
             <div className="!flex !justify-between">
-              <span className="!text-gray-500">Proyecto</span>
-              <span className="!font-medium !capitalize">{formData.projectType === 'social' ? 'Impacto Social' : 'Reforestación'}</span>
+              <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Proyecto</span>
+              <span className={`!font-medium !capitalize ${isDark ? '!text-gray-200' : ''}`}>{formData.projectType === 'social' ? 'Impacto Social' : 'Reforestación'}</span>
             </div>
             <div className="!flex !justify-between">
-              <span className="!text-gray-500">Compensación</span>
+              <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Compensación</span>
               <span className="!font-medium !text-green-600">{tonCO2.toFixed(3)} tCO₂e</span>
             </div>
             <div className="!flex !justify-between">
-              <span className="!text-gray-500">Monto</span>
-              <span className="!font-medium">{formatPriceCLP(priceCLP)}</span>
+              <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Monto</span>
+              <span className={`!font-medium ${isDark ? '!text-gray-200' : ''}`}>{formatPriceCLP(priceCLP)}</span>
             </div>
           </div>
-          <div className="!mt-6 !pt-4 !border-t !border-gray-100 !flex !justify-between !items-center">
-            <span className="!text-xs !text-gray-400">ID: #ECO-{certificateId}</span>
+          <div className={`!mt-6 !pt-4 !border-t !flex !justify-between !items-center ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
+            <span className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>ID: #ECO-{certificateId}</span>
             <Leaf size={16} className="!text-green-600" />
           </div>
         </motion.div>
 
         {/* Actions */}
         <div className="!flex !justify-center !gap-4 !pt-4">
-          <button className="!flex !items-center !gap-2 !px-4 !py-2 !bg-gray-100 hover:!bg-gray-200 !rounded-xl !text-gray-600 !font-medium !transition-colors !border-0">
+          <button className={`!flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !font-medium !transition-colors !border-0 ${
+            isDark ? '!bg-gray-700 hover:!bg-gray-600 !text-gray-200' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-600'
+          }`}>
             <Download size={18} /> Descargar
           </button>
-          <button className="!flex !items-center !gap-2 !px-4 !py-2 !bg-green-100 hover:!bg-green-200 !rounded-xl !text-green-700 !font-medium !transition-colors !border-0">
+          <button className={`!flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !font-medium !transition-colors !border-0 ${
+            isDark ? '!bg-green-900/50 hover:!bg-green-900 !text-green-400' : '!bg-green-100 hover:!bg-green-200 !text-green-700'
+          }`}>
             <Share2 size={18} /> Compartir
           </button>
         </div>
@@ -133,24 +143,26 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
       className="!space-y-8"
     >
       {/* Trip Summary */}
-      <div className="!bg-white !rounded-2xl !p-6 !shadow-sm !border !border-gray-100">
-        <h3 className="!text-lg !font-bold !text-gray-800 !mb-4 !flex !items-center !gap-2">
+      <div className={`!rounded-2xl !p-6 !shadow-sm !border ${
+        isDark ? '!bg-gray-800 !border-gray-700' : '!bg-white !border-gray-100'
+      }`}>
+        <h3 className={`!text-lg !font-bold !mb-4 !flex !items-center !gap-2 ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>
           <Plane className="!w-5 !h-5 !text-green-600" />
           Resumen del Viaje
         </h3>
-        <div className="!relative !pl-6 !border-l-2 !border-gray-100 !space-y-6">
+        <div className={`!relative !pl-6 !border-l-2 !space-y-6 ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
           <div className="!relative">
             <div className="!absolute !-left-[29px] !top-1 !w-4 !h-4 !rounded-full !bg-emerald-500 !border-2 !border-white !shadow-sm" />
-            <p className="!text-sm !text-gray-400">Origen</p>
-            <p className="!font-medium !text-gray-800">
+            <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-400'}`}>Origen</p>
+            <p className={`!font-medium ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>
               {calculationResult?.meta?.route?.origin?.city || formData.origin} 
               {calculationResult?.meta?.route?.origin?.code && ` (${calculationResult.meta.route.origin.code})`}
             </p>
           </div>
           <div className="!relative">
             <div className="!absolute !-left-[29px] !top-1 !w-4 !h-4 !rounded-full !bg-orange-500 !border-2 !border-white !shadow-sm" />
-            <p className="!text-sm !text-gray-400">Destino</p>
-            <p className="!font-medium !text-gray-800">
+            <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-400'}`}>Destino</p>
+            <p className={`!font-medium ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>
               {calculationResult?.meta?.route?.destination?.city || formData.destination}
               {calculationResult?.meta?.route?.destination?.code && ` (${calculationResult.meta.route.destination.code})`}
             </p>
@@ -158,32 +170,36 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
         </div>
         
         {/* Emission Details */}
-        <div className="!mt-6 !pt-4 !border-t !border-gray-100 !grid !grid-cols-3 !gap-4 !text-center">
+        <div className={`!mt-6 !pt-4 !border-t !grid !grid-cols-3 !gap-4 !text-center ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
           <div>
             <p className="!text-xl !font-bold !text-green-600">{kgCO2.toFixed(1)}</p>
-            <p className="!text-xs !text-gray-500">kg CO₂e</p>
+            <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>kg CO₂e</p>
           </div>
           <div>
             <p className="!text-xl !font-bold !text-blue-600">{calculationResult?.meta?.distanceKmTotal?.toLocaleString() || '0'}</p>
-            <p className="!text-xs !text-gray-500">km</p>
+            <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>km</p>
           </div>
           <div>
             <p className="!text-xl !font-bold !text-purple-600">{calculationResult?.equivalencies?.trees || 0}</p>
-            <p className="!text-xs !text-gray-500">árboles equiv.</p>
+            <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>árboles equiv.</p>
           </div>
         </div>
       </div>
 
       {/* Project Selected */}
-      <div className="!bg-gradient-to-r !from-green-50 !to-emerald-50 !rounded-xl !p-4 !border !border-green-200 !flex !items-center !gap-4">
+      <div className={`!rounded-xl !p-4 !border !flex !items-center !gap-4 ${
+        isDark 
+          ? '!bg-gradient-to-r !from-green-900/30 !to-emerald-900/30 !border-green-700/50' 
+          : '!bg-gradient-to-r !from-green-50 !to-emerald-50 !border-green-200'
+      }`}>
         <div className={`!w-12 !h-12 !rounded-full !flex !items-center !justify-center !text-white ${
           formData.projectType === 'social' ? '!bg-orange-500' : '!bg-green-600'
         }`}>
           {formData.projectType === 'social' ? <Leaf className="!w-6 !h-6" /> : <TreePine className="!w-6 !h-6" />}
         </div>
         <div>
-          <p className="!text-sm !text-gray-500">Proyecto seleccionado</p>
-          <p className="!font-bold !text-gray-800">
+          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Proyecto seleccionado</p>
+          <p className={`!font-bold ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>
             {formData.projectType === 'social' ? 'Impacto Social' : 'Reforestación'}
           </p>
         </div>
