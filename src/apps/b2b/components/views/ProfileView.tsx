@@ -17,6 +17,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useAuth } from '../../../auth/context/AuthContext';
+import { useTheme } from '../../../../shared/context/ThemeContext';
 import { getUserProfile, updateUserProfile, getMockUserProfile, type UserProfile as ApiUserProfile } from '../../services/profileService';
 
 interface LocalUserProfile {
@@ -39,6 +40,8 @@ interface ProfileViewProps {
 
 const ProfileView: React.FC<ProfileViewProps> = () => {
   const { user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -149,8 +152,8 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
       {/* Header */}
       <div className="!flex !items-center !justify-between">
         <div>
-          <h1 className="!text-2xl !font-bold !text-gray-900">Tu Perfil</h1>
-          <p className="!text-gray-500 !text-sm !mt-1">Gestiona tu información personal y de empresa</p>
+          <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Tu Perfil</h1>
+          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Gestiona tu información personal y de empresa</p>
         </div>
         {!isEditing ? (
           <motion.button
@@ -168,7 +171,9 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleCancel}
-              className="!flex !items-center !gap-2 !px-4 !py-2.5 !bg-gray-100 !text-gray-700 !rounded-xl !font-medium !text-sm !border-0 hover:!bg-gray-200 !transition-all"
+              className={`!flex !items-center !gap-2 !px-4 !py-2.5 !rounded-xl !font-medium !text-sm !border-0 hover:!opacity-80 !transition-all ${
+                isDark ? '!bg-gray-700 !text-gray-300' : '!bg-gray-100 !text-gray-700 hover:!bg-gray-200'
+              }`}
             >
               <X className="!w-4 !h-4" />
               Cancelar
@@ -228,7 +233,9 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
           animate={{ opacity: 1, y: 0 }}
           className="lg:!col-span-1"
         >
-          <div className="!bg-white !rounded-2xl !p-6 !border !border-gray-200 !shadow-lg">
+          <div className={`!rounded-2xl !p-6 !border !shadow-lg ${
+            isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'
+          }`}>
             <div className="!text-center">
               {/* Avatar */}
               <div className="!relative !inline-block !mb-4">
@@ -236,25 +243,27 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                   {profile.name.charAt(0).toUpperCase()}
                 </div>
                 {isEditing && (
-                  <button className="!absolute !bottom-0 !right-0 !w-10 !h-10 !bg-white !rounded-full !shadow-lg !flex !items-center !justify-center !border !border-gray-200 hover:!bg-gray-50 !transition-colors">
-                    <Camera className="!w-5 !h-5 !text-gray-600" />
+                  <button className={`!absolute !bottom-0 !right-0 !w-10 !h-10 !rounded-full !shadow-lg !flex !items-center !justify-center !border hover:!opacity-80 !transition-colors ${
+                    isDark ? '!bg-gray-700 !border-gray-600' : '!bg-white !border-gray-200 hover:!bg-gray-50'
+                  }`}>
+                    <Camera className={`!w-5 !h-5 ${isDark ? '!text-gray-300' : '!text-gray-600'}`} />
                   </button>
                 )}
               </div>
 
-              <h2 className="!text-xl !font-bold !text-gray-900">{profile.name}</h2>
-              <p className="!text-gray-500 !text-sm">{profile.position}</p>
+              <h2 className={`!text-xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{profile.name}</h2>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{profile.position}</p>
               <p className="!text-green-600 !text-sm !font-medium !mt-1">{profile.company}</p>
 
               {/* Quick Stats */}
-              <div className="!grid !grid-cols-3 !gap-3 !mt-6 !pt-6 !border-t !border-gray-100">
+              <div className={`!grid !grid-cols-3 !gap-3 !mt-6 !pt-6 !border-t ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
                 {stats.map((stat, index) => (
                   <div key={index} className="!text-center">
                     <div className={`!inline-flex !items-center !justify-center !w-10 !h-10 !rounded-xl !bg-${stat.color}-100 !mb-2`}>
                       <stat.icon className={`!w-5 !h-5 !text-${stat.color}-600`} />
                     </div>
-                    <p className="!text-lg !font-bold !text-gray-900">{stat.value}</p>
-                    <p className="!text-xs !text-gray-500">{stat.label}</p>
+                    <p className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{stat.value}</p>
+                    <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{stat.label}</p>
                   </div>
                 ))}
               </div>
@@ -269,13 +278,15 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
           transition={{ delay: 0.1 }}
           className="lg:!col-span-2"
         >
-          <div className="!bg-white !rounded-2xl !p-6 !border !border-gray-200 !shadow-lg">
-            <h3 className="!text-lg !font-bold !text-gray-900 !mb-6">Información Personal</h3>
+          <div className={`!rounded-2xl !p-6 !border !shadow-lg ${
+            isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'
+          }`}>
+            <h3 className={`!text-lg !font-bold !mb-6 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Información Personal</h3>
             
             <div className="!grid md:!grid-cols-2 !gap-6">
               {/* Name */}
               <div>
-                <label className="!flex !items-center !gap-2 !text-sm !font-medium !text-gray-700 !mb-2">
+                <label className={`!flex !items-center !gap-2 !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
                   <User className="!w-4 !h-4" />
                   Nombre Completo
                 </label>
@@ -284,16 +295,18 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                     type="text"
                     value={editedProfile.name}
                     onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
-                    className="!w-full !px-4 !py-2.5 !rounded-xl !border !border-gray-300 !bg-white !text-gray-900 focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+                    className={`!w-full !px-4 !py-2.5 !rounded-xl !border focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all ${
+                      isDark ? '!border-gray-600 !bg-gray-700 !text-gray-100' : '!border-gray-300 !bg-white !text-gray-900'
+                    }`}
                   />
                 ) : (
-                  <p className="!text-gray-900 !bg-gray-50 !px-4 !py-2.5 !rounded-xl">{profile.name}</p>
+                  <p className={`!px-4 !py-2.5 !rounded-xl ${isDark ? '!text-gray-100 !bg-gray-700/50' : '!text-gray-900 !bg-gray-50'}`}>{profile.name}</p>
                 )}
               </div>
 
               {/* Email */}
               <div>
-                <label className="!flex !items-center !gap-2 !text-sm !font-medium !text-gray-700 !mb-2">
+                <label className={`!flex !items-center !gap-2 !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
                   <Mail className="!w-4 !h-4" />
                   Correo Electrónico
                 </label>
@@ -302,16 +315,18 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                     type="email"
                     value={editedProfile.email}
                     onChange={(e) => setEditedProfile({ ...editedProfile, email: e.target.value })}
-                    className="!w-full !px-4 !py-2.5 !rounded-xl !border !border-gray-300 !bg-white !text-gray-900 focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+                    className={`!w-full !px-4 !py-2.5 !rounded-xl !border focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all ${
+                      isDark ? '!border-gray-600 !bg-gray-700 !text-gray-100' : '!border-gray-300 !bg-white !text-gray-900'
+                    }`}
                   />
                 ) : (
-                  <p className="!text-gray-900 !bg-gray-50 !px-4 !py-2.5 !rounded-xl">{profile.email}</p>
+                  <p className={`!px-4 !py-2.5 !rounded-xl ${isDark ? '!text-gray-100 !bg-gray-700/50' : '!text-gray-900 !bg-gray-50'}`}>{profile.email}</p>
                 )}
               </div>
 
               {/* Phone */}
               <div>
-                <label className="!flex !items-center !gap-2 !text-sm !font-medium !text-gray-700 !mb-2">
+                <label className={`!flex !items-center !gap-2 !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
                   <Phone className="!w-4 !h-4" />
                   Teléfono
                 </label>
@@ -320,16 +335,18 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                     type="tel"
                     value={editedProfile.phone}
                     onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })}
-                    className="!w-full !px-4 !py-2.5 !rounded-xl !border !border-gray-300 !bg-white !text-gray-900 focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+                    className={`!w-full !px-4 !py-2.5 !rounded-xl !border focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all ${
+                      isDark ? '!border-gray-600 !bg-gray-700 !text-gray-100' : '!border-gray-300 !bg-white !text-gray-900'
+                    }`}
                   />
                 ) : (
-                  <p className="!text-gray-900 !bg-gray-50 !px-4 !py-2.5 !rounded-xl">{profile.phone}</p>
+                  <p className={`!px-4 !py-2.5 !rounded-xl ${isDark ? '!text-gray-100 !bg-gray-700/50' : '!text-gray-900 !bg-gray-50'}`}>{profile.phone}</p>
                 )}
               </div>
 
               {/* Company */}
               <div>
-                <label className="!flex !items-center !gap-2 !text-sm !font-medium !text-gray-700 !mb-2">
+                <label className={`!flex !items-center !gap-2 !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
                   <Building2 className="!w-4 !h-4" />
                   Empresa
                 </label>
@@ -338,16 +355,18 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                     type="text"
                     value={editedProfile.company}
                     onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
-                    className="!w-full !px-4 !py-2.5 !rounded-xl !border !border-gray-300 !bg-white !text-gray-900 focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+                    className={`!w-full !px-4 !py-2.5 !rounded-xl !border focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all ${
+                      isDark ? '!border-gray-600 !bg-gray-700 !text-gray-100' : '!border-gray-300 !bg-white !text-gray-900'
+                    }`}
                   />
                 ) : (
-                  <p className="!text-gray-900 !bg-gray-50 !px-4 !py-2.5 !rounded-xl">{profile.company}</p>
+                  <p className={`!px-4 !py-2.5 !rounded-xl ${isDark ? '!text-gray-100 !bg-gray-700/50' : '!text-gray-900 !bg-gray-50'}`}>{profile.company}</p>
                 )}
               </div>
 
               {/* Position */}
               <div>
-                <label className="!flex !items-center !gap-2 !text-sm !font-medium !text-gray-700 !mb-2">
+                <label className={`!flex !items-center !gap-2 !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
                   <Award className="!w-4 !h-4" />
                   Cargo
                 </label>
@@ -356,16 +375,18 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                     type="text"
                     value={editedProfile.position}
                     onChange={(e) => setEditedProfile({ ...editedProfile, position: e.target.value })}
-                    className="!w-full !px-4 !py-2.5 !rounded-xl !border !border-gray-300 !bg-white !text-gray-900 focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+                    className={`!w-full !px-4 !py-2.5 !rounded-xl !border focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all ${
+                      isDark ? '!border-gray-600 !bg-gray-700 !text-gray-100' : '!border-gray-300 !bg-white !text-gray-900'
+                    }`}
                   />
                 ) : (
-                  <p className="!text-gray-900 !bg-gray-50 !px-4 !py-2.5 !rounded-xl">{profile.position}</p>
+                  <p className={`!px-4 !py-2.5 !rounded-xl ${isDark ? '!text-gray-100 !bg-gray-700/50' : '!text-gray-900 !bg-gray-50'}`}>{profile.position}</p>
                 )}
               </div>
 
               {/* Location */}
               <div>
-                <label className="!flex !items-center !gap-2 !text-sm !font-medium !text-gray-700 !mb-2">
+                <label className={`!flex !items-center !gap-2 !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
                   <MapPin className="!w-4 !h-4" />
                   Ubicación
                 </label>
@@ -374,17 +395,19 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                     type="text"
                     value={editedProfile.location}
                     onChange={(e) => setEditedProfile({ ...editedProfile, location: e.target.value })}
-                    className="!w-full !px-4 !py-2.5 !rounded-xl !border !border-gray-300 !bg-white !text-gray-900 focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+                    className={`!w-full !px-4 !py-2.5 !rounded-xl !border focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all ${
+                      isDark ? '!border-gray-600 !bg-gray-700 !text-gray-100' : '!border-gray-300 !bg-white !text-gray-900'
+                    }`}
                   />
                 ) : (
-                  <p className="!text-gray-900 !bg-gray-50 !px-4 !py-2.5 !rounded-xl">{profile.location}</p>
+                  <p className={`!px-4 !py-2.5 !rounded-xl ${isDark ? '!text-gray-100 !bg-gray-700/50' : '!text-gray-900 !bg-gray-50'}`}>{profile.location}</p>
                 )}
               </div>
             </div>
 
             {/* Member Since */}
-            <div className="!mt-6 !pt-6 !border-t !border-gray-100">
-              <div className="!flex !items-center !gap-2 !text-gray-500 !text-sm">
+            <div className={`!mt-6 !pt-6 !border-t ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
+              <div className={`!flex !items-center !gap-2 !text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
                 <Calendar className="!w-4 !h-4" />
                 <span>Miembro desde {profile.joinDate}</span>
               </div>

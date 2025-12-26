@@ -20,6 +20,7 @@ import {
   Mountain,
   Loader2
 } from 'lucide-react';
+import { useTheme } from '../../../../shared/context/ThemeContext';
 import { 
   getMockProjects, 
   filterMockProjects,
@@ -27,6 +28,8 @@ import {
 } from '../../services/projectsService';
 
 const ProjectsView: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
@@ -102,7 +105,7 @@ const ProjectsView: React.FC = () => {
       <div className="!flex !items-center !justify-center !py-20">
         <div className="!text-center">
           <Loader2 className="!w-12 !h-12 !text-green-500 !animate-spin !mx-auto !mb-4" />
-          <p className="!text-gray-500">Cargando proyectos...</p>
+          <p className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cargando proyectos...</p>
         </div>
       </div>
     );
@@ -113,8 +116,8 @@ const ProjectsView: React.FC = () => {
       {/* Header */}
       <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
         <div>
-          <h1 className="!text-2xl !font-bold !text-gray-900">Proyectos</h1>
-          <p className="!text-gray-500 !text-sm !mt-1">Explora y gestiona tus proyectos de compensación</p>
+          <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Proyectos</h1>
+          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Explora y gestiona tus proyectos de compensación</p>
         </div>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -131,15 +134,19 @@ const ProjectsView: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="!bg-gradient-to-br !from-green-50 !to-emerald-50 !rounded-2xl !p-5 !border !border-green-200"
+          className={`!rounded-2xl !p-5 !border ${
+            isDark 
+              ? '!bg-gradient-to-br !from-green-900/30 !to-emerald-900/30 !border-green-700/50' 
+              : '!bg-gradient-to-br !from-green-50 !to-emerald-50 !border-green-200'
+          }`}
         >
           <div className="!flex !items-center !gap-3">
             <div className="!w-12 !h-12 !rounded-xl !bg-gradient-to-br !from-green-500 !to-emerald-600 !flex !items-center !justify-center">
               <Cloud className="!w-6 !h-6 !text-white" />
             </div>
             <div>
-              <p className="!text-2xl !font-bold !text-gray-900">{totalStats.totalCO2.toFixed(1)} tCO₂</p>
-              <p className="!text-sm !text-gray-600">Total compensado</p>
+              <p className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{totalStats.totalCO2.toFixed(1)} tCO₂</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Total compensado</p>
             </div>
           </div>
         </motion.div>
@@ -148,15 +155,19 @@ const ProjectsView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="!bg-gradient-to-br !from-teal-50 !to-cyan-50 !rounded-2xl !p-5 !border !border-teal-200"
+          className={`!rounded-2xl !p-5 !border ${
+            isDark 
+              ? '!bg-gradient-to-br !from-teal-900/30 !to-cyan-900/30 !border-teal-700/50' 
+              : '!bg-gradient-to-br !from-teal-50 !to-cyan-50 !border-teal-200'
+          }`}
         >
           <div className="!flex !items-center !gap-3">
             <div className="!w-12 !h-12 !rounded-xl !bg-gradient-to-br !from-teal-500 !to-cyan-600 !flex !items-center !justify-center">
               <TreePine className="!w-6 !h-6 !text-white" />
             </div>
             <div>
-              <p className="!text-2xl !font-bold !text-gray-900">{totalStats.totalTrees.toLocaleString()}</p>
-              <p className="!text-sm !text-gray-600">Árboles plantados</p>
+              <p className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{totalStats.totalTrees.toLocaleString()}</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Árboles plantados</p>
             </div>
           </div>
         </motion.div>
@@ -165,32 +176,42 @@ const ProjectsView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="!bg-gradient-to-br !from-blue-50 !to-indigo-50 !rounded-2xl !p-5 !border !border-blue-200"
+          className={`!rounded-2xl !p-5 !border ${
+            isDark 
+              ? '!bg-gradient-to-br !from-blue-900/30 !to-indigo-900/30 !border-blue-700/50' 
+              : '!bg-gradient-to-br !from-blue-50 !to-indigo-50 !border-blue-200'
+          }`}
         >
           <div className="!flex !items-center !gap-3">
             <div className="!w-12 !h-12 !rounded-xl !bg-gradient-to-br !from-blue-500 !to-indigo-600 !flex !items-center !justify-center">
               <Users className="!w-6 !h-6 !text-white" />
             </div>
             <div>
-              <p className="!text-2xl !font-bold !text-gray-900">{projects.length}</p>
-              <p className="!text-sm !text-gray-600">Proyectos activos</p>
+              <p className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{projects.length}</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Proyectos activos</p>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Filters */}
-      <div className="!bg-white !rounded-2xl !p-4 !border !border-gray-200 !shadow-sm">
+      <div className={`!rounded-2xl !p-4 !border !shadow-sm ${
+        isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'
+      }`}>
         <div className="!flex !flex-col lg:!flex-row !gap-4">
           {/* Search */}
           <div className="!relative !flex-1">
-            <Search className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-gray-400" />
+            <Search className={`!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 ${isDark ? '!text-gray-500' : '!text-gray-400'}`} />
             <input
               type="text"
               placeholder="Buscar proyectos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="!w-full !pl-10 !pr-4 !py-2.5 !rounded-xl !border !border-gray-200 !bg-gray-50 focus:!bg-white focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+              className={`!w-full !pl-10 !pr-4 !py-2.5 !rounded-xl !border !outline-none !transition-all focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 ${
+                isDark 
+                  ? '!border-gray-600 !bg-gray-700 !text-gray-100 placeholder:!text-gray-500' 
+                  : '!border-gray-200 !bg-gray-50 !text-gray-900 focus:!bg-white'
+              }`}
             />
           </div>
 
@@ -203,7 +224,9 @@ const ProjectsView: React.FC = () => {
                 className={`!flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !text-sm !font-medium !whitespace-nowrap !transition-all !border-0 ${
                   filterType === type.value
                     ? '!bg-green-500 !text-white !shadow-lg !shadow-green-500/30'
-                    : '!bg-gray-100 !text-gray-600 hover:!bg-gray-200'
+                    : isDark 
+                      ? '!bg-gray-700 !text-gray-300 hover:!bg-gray-600'
+                      : '!bg-gray-100 !text-gray-600 hover:!bg-gray-200'
                 }`}
               >
                 <type.icon className="!w-4 !h-4" />
@@ -213,18 +236,26 @@ const ProjectsView: React.FC = () => {
           </div>
 
           {/* View Toggle */}
-          <div className="!flex !bg-gray-100 !rounded-xl !p-1">
+          <div className={`!flex !rounded-xl !p-1 ${isDark ? '!bg-gray-700' : '!bg-gray-100'}`}>
             <button
               onClick={() => setViewMode('grid')}
-              className={`!p-2 !rounded-lg !transition-all !border-0 ${viewMode === 'grid' ? '!bg-white !shadow-sm' : '!bg-transparent'}`}
+              className={`!p-2 !rounded-lg !transition-all !border-0 ${
+                viewMode === 'grid' 
+                  ? isDark ? '!bg-gray-600 !shadow-sm' : '!bg-white !shadow-sm'
+                  : '!bg-transparent'
+              }`}
             >
-              <Grid className="!w-5 !h-5 !text-gray-600" />
+              <Grid className={`!w-5 !h-5 ${isDark ? '!text-gray-300' : '!text-gray-600'}`} />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`!p-2 !rounded-lg !transition-all !border-0 ${viewMode === 'list' ? '!bg-white !shadow-sm' : '!bg-transparent'}`}
+              className={`!p-2 !rounded-lg !transition-all !border-0 ${
+                viewMode === 'list' 
+                  ? isDark ? '!bg-gray-600 !shadow-sm' : '!bg-white !shadow-sm'
+                  : '!bg-transparent'
+              }`}
             >
-              <List className="!w-5 !h-5 !text-gray-600" />
+              <List className={`!w-5 !h-5 ${isDark ? '!text-gray-300' : '!text-gray-600'}`} />
             </button>
           </div>
         </div>
@@ -245,8 +276,10 @@ const ProjectsView: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`!bg-white !rounded-2xl !border !border-gray-200 !shadow-lg hover:!shadow-xl !transition-all !overflow-hidden group ${
+              className={`!rounded-2xl !border !shadow-lg hover:!shadow-xl !transition-all !overflow-hidden group ${
                 viewMode === 'list' ? '!flex' : ''
+              } ${
+                isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'
               }`}
             >
               {/* Image */}
@@ -261,9 +294,11 @@ const ProjectsView: React.FC = () => {
                 </div>
                 <button
                   onClick={() => toggleFavorite(project.id)}
-                  className="!absolute !top-3 !right-3 !w-9 !h-9 !rounded-full !bg-white/90 !backdrop-blur-sm !flex !items-center !justify-center !border-0 hover:!bg-white !transition-colors"
+                  className={`!absolute !top-3 !right-3 !w-9 !h-9 !rounded-full !backdrop-blur-sm !flex !items-center !justify-center !border-0 !transition-colors ${
+                    isDark ? '!bg-gray-800/90 hover:!bg-gray-700' : '!bg-white/90 hover:!bg-white'
+                  }`}
                 >
-                  <Heart className={`!w-5 !h-5 ${project.isFavorite ? '!fill-red-500 !text-red-500' : '!text-gray-400'}`} />
+                  <Heart className={`!w-5 !h-5 ${project.isFavorite ? '!fill-red-500 !text-red-500' : isDark ? '!text-gray-300' : '!text-gray-400'}`} />
                 </button>
               </div>
 
@@ -271,34 +306,34 @@ const ProjectsView: React.FC = () => {
               <div className="!p-5 !flex-1">
                 <div className="!flex !items-start !justify-between !gap-3 !mb-3">
                   <div>
-                    <h3 className="!text-lg !font-bold !text-gray-900 group-hover:!text-green-600 !transition-colors">{project.name}</h3>
-                    <div className="!flex !items-center !gap-2 !text-sm !text-gray-500 !mt-1">
+                    <h3 className={`!text-lg !font-bold group-hover:!text-green-600 !transition-colors ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{project.name}</h3>
+                    <div className={`!flex !items-center !gap-2 !text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
                       <MapPin className="!w-4 !h-4" />
                       <span>{project.location}, {project.country}</span>
                     </div>
                   </div>
-                  <div className="!w-10 !h-10 !rounded-xl !bg-green-100 !flex !items-center !justify-center !text-green-600">
+                  <div className={`!w-10 !h-10 !rounded-xl !flex !items-center !justify-center ${isDark ? '!bg-green-900/30 !text-green-400' : '!bg-green-100 !text-green-600'}`}>
                     {getTypeIcon(project.type)}
                   </div>
                 </div>
 
-                <p className="!text-sm !text-gray-600 !mb-4 !line-clamp-2">{project.description}</p>
+                <p className={`!text-sm !mb-4 !line-clamp-2 ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>{project.description}</p>
 
                 {/* Stats */}
                 <div className="!flex !items-center !gap-4 !mb-4">
                   <div>
                     <p className="!text-lg !font-bold !text-green-600">{project.co2Offset} tCO₂</p>
-                    <p className="!text-xs !text-gray-500">Compensado</p>
+                    <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Compensado</p>
                   </div>
                   {project.treesPlanted && (
                     <div>
                       <p className="!text-lg !font-bold !text-teal-600">{project.treesPlanted}</p>
-                      <p className="!text-xs !text-gray-500">Árboles</p>
+                      <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Árboles</p>
                     </div>
                   )}
                   <div>
                     <p className="!text-lg !font-bold !text-blue-600">${(project.contribution / 1000).toFixed(0)}K</p>
-                    <p className="!text-xs !text-gray-500">Aporte</p>
+                    <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Aporte</p>
                   </div>
                 </div>
 
@@ -323,9 +358,9 @@ const ProjectsView: React.FC = () => {
 
       {filteredProjects.length === 0 && (
         <div className="!text-center !py-12">
-          <TreePine className="!w-16 !h-16 !text-gray-300 !mx-auto !mb-4" />
-          <h3 className="!text-lg !font-semibold !text-gray-700">No se encontraron proyectos</h3>
-          <p className="!text-gray-500 !text-sm">Intenta ajustar los filtros de búsqueda</p>
+          <TreePine className={`!w-16 !h-16 !mx-auto !mb-4 ${isDark ? '!text-gray-600' : '!text-gray-300'}`} />
+          <h3 className={`!text-lg !font-semibold ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>No se encontraron proyectos</h3>
+          <p className={`!text-sm ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Intenta ajustar los filtros de búsqueda</p>
         </div>
       )}
     </div>
