@@ -2,8 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Users, TreeDeciduous, Info, Plane, MapPin, ChevronRight, Droplets, Home, Shirt } from "lucide-react";
 import type { ProjectStepProps, FormData } from "../types";
+import { useTheme } from "../../../../../shared/context/ThemeContext";
 
 export const ProjectStep: React.FC<ProjectStepProps> = ({ formData, setValue, onNext, calculationResult }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
   const projectType = formData.projectType;
   
   const projects = [
@@ -45,49 +49,53 @@ export const ProjectStep: React.FC<ProjectStepProps> = ({ formData, setValue, on
     >
       {/* Calculation Summary */}
       {calculationResult && (
-        <div className="!bg-gradient-to-r !from-green-50 !to-emerald-50 !rounded-2xl !p-6 !border !border-green-200">
+        <div className={`!rounded-2xl !p-6 !border ${
+          isDark 
+            ? '!bg-gradient-to-r !from-green-900/30 !to-emerald-900/30 !border-green-700/50' 
+            : '!bg-gradient-to-r !from-green-50 !to-emerald-50 !border-green-200'
+        }`}>
           <div className="!flex !items-center !justify-between !mb-4">
             <div className="!flex !items-center !gap-3">
               <div className="!w-10 !h-10 !bg-green-500 !rounded-full !flex !items-center !justify-center">
                 <Plane className="!w-5 !h-5 !text-white" />
               </div>
               <div>
-                <p className="!text-sm !text-gray-500">Tu ruta</p>
-                <p className="!font-bold !text-gray-800">
+                <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Tu ruta</p>
+                <p className={`!font-bold ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>
                   {calculationResult.meta.route.origin.code} → {calculationResult.meta.route.destination.code}
                 </p>
               </div>
             </div>
             <div className="!text-right">
-              <p className="!text-sm !text-gray-500">Distancia</p>
-              <p className="!font-bold !text-gray-800">{calculationResult.meta.distanceKmTotal.toLocaleString()} km</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Distancia</p>
+              <p className={`!font-bold ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>{calculationResult.meta.distanceKmTotal.toLocaleString()} km</p>
             </div>
           </div>
           
-          <div className="!grid !grid-cols-2 md:!grid-cols-4 !gap-4 !pt-4 !border-t !border-green-200">
+          <div className={`!grid !grid-cols-2 md:!grid-cols-4 !gap-4 !pt-4 !border-t ${isDark ? '!border-green-700/50' : '!border-green-200'}`}>
             <div className="!text-center">
               <p className="!text-2xl !font-bold !text-green-600">{calculationResult.emissions.kgCO2e.toFixed(1)}</p>
-              <p className="!text-xs !text-gray-500">kg CO₂e</p>
+              <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>kg CO₂e</p>
             </div>
             <div className="!text-center">
               <p className="!text-2xl !font-bold !text-blue-600">{calculationResult.equivalencies?.trees || 0}</p>
-              <p className="!text-xs !text-gray-500">Árboles equiv.</p>
+              <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Árboles equiv.</p>
             </div>
             <div className="!text-center">
               <p className="!text-2xl !font-bold !text-orange-600">{formatPrice(calculationResult.pricing.totalPriceCLP)}</p>
-              <p className="!text-xs !text-gray-500">Compensación</p>
+              <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Compensación</p>
             </div>
             <div className="!text-center">
               <p className="!text-2xl !font-bold !text-purple-600">${calculationResult.pricing.totalPriceUSD}</p>
-              <p className="!text-xs !text-gray-500">USD</p>
+              <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>USD</p>
             </div>
           </div>
         </div>
       )}
 
       <div className="!text-center !space-y-2">
-        <h2 className="!text-2xl !font-bold !text-gray-800">Elige tu impacto</h2>
-        <p className="!text-gray-500">
+        <h2 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>Elige tu impacto</h2>
+        <p className={isDark ? '!text-gray-400' : '!text-gray-500'}>
           Tu vuelo generó aproximadamente{" "}
           <span className="!font-bold !text-green-600">
             {calculationResult ? `${calculationResult.emissions.tonCO2e.toFixed(3)} toneladas` : "0.4 toneladas"}
@@ -111,24 +119,26 @@ export const ProjectStep: React.FC<ProjectStepProps> = ({ formData, setValue, on
               whileTap={{ scale: 0.98 }}
             >
               {/* Card Content */}
-              <div className={`!relative !rounded-2xl !p-6 !flex !flex-col !justify-between !border !shadow-sm !transition-colors !bg-white !min-h-[16rem] ${
-                projectType === project.id ? "!border-emerald-500" : "!border-gray-100"
+              <div className={`!relative !rounded-2xl !p-6 !flex !flex-col !justify-between !border !shadow-sm !transition-colors !min-h-[16rem] ${
+                projectType === project.id 
+                  ? isDark ? "!border-emerald-500 !bg-gray-800" : "!border-emerald-500 !bg-white"
+                  : isDark ? "!border-gray-600 !bg-gray-800/50" : "!border-gray-100 !bg-white"
               }`}>
                 <div>
                   <div className={`!w-12 !h-12 !rounded-full !flex !items-center !justify-center !mb-4 !text-white ${project.color}`}>
                     <project.icon size={24} />
                   </div>
-                  <h3 className="!text-xl !font-bold !text-gray-800 !mb-2">{project.title}</h3>
-                  <p className="!text-sm !text-gray-500 !leading-relaxed">{project.description}</p>
+                  <h3 className={`!text-xl !font-bold !mb-2 ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>{project.title}</h3>
+                  <p className={`!text-sm !leading-relaxed ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{project.description}</p>
                 </div>
                 
-                <div className="!flex !items-center !justify-between !pt-4 !border-t !border-gray-100 !mt-4">
+                <div className={`!flex !items-center !justify-between !pt-4 !border-t !mt-4 ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
                   <div className="!flex !flex-col">
-                    <span className="!text-xs !text-gray-400 !uppercase !tracking-wider">Impacto</span>
-                    <span className="!font-bold !text-gray-800">{project.stats}</span>
+                    <span className={`!text-xs !uppercase !tracking-wider ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Impacto</span>
+                    <span className={`!font-bold ${isDark ? '!text-gray-100' : '!text-gray-800'}`}>{project.stats}</span>
                   </div>
                   <div className="!group/tooltip !relative">
-                    <Info size={18} className="!text-gray-300 hover:!text-emerald-500 !transition-colors !cursor-help" />
+                    <Info size={18} className={`hover:!text-emerald-500 !transition-colors !cursor-help ${isDark ? '!text-gray-500' : '!text-gray-300'}`} />
                     <div className="!absolute !bottom-full !right-0 !mb-2 !px-3 !py-1.5 !bg-gray-800 !text-white !text-xs !rounded-lg !shadow-lg !whitespace-nowrap !opacity-0 group-hover/tooltip:!opacity-100 !transition-opacity !z-50">
                       {project.detail}
                     </div>

@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Plane, TreePine, CreditCard, Check } from "lucide-react";
 import type { StepId } from "./types";
+import { useTheme } from "../../../../shared/context/ThemeContext";
 
 interface ProgressBarProps {
   currentStep: StepId;
@@ -15,6 +16,9 @@ const steps: { id: StepId; label: string; icon: React.ReactNode }[] = [
 ];
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, completedSteps }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
   const getCurrentIndex = () => steps.findIndex(s => s.id === currentStep);
   const isCompleted = (stepId: StepId) => completedSteps.includes(stepId);
   const isCurrent = (stepId: StepId) => stepId === currentStep;
@@ -24,7 +28,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, completed
     <div className="!w-full !mb-8">
       <div className="!relative !flex !items-center !justify-between">
         {/* Progress Line Background */}
-        <div className="!absolute !top-5 !left-0 !right-0 !h-[2px] !bg-gray-200 !mx-10" />
+        <div className={`!absolute !top-5 !left-0 !right-0 !h-[2px] !mx-10 ${isDark ? '!bg-gray-700' : '!bg-gray-200'}`} />
         
         {/* Progress Line Active */}
         <motion.div
@@ -45,7 +49,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, completed
                   ? '!bg-emerald-500 !text-white !shadow-lg !shadow-emerald-500/30' 
                   : isCurrent(step.id)
                     ? '!bg-emerald-500 !text-white !shadow-lg !shadow-emerald-500/30'
-                    : '!bg-gray-100 !text-gray-400'
+                    : isDark ? '!bg-gray-700 !text-gray-400' : '!bg-gray-100 !text-gray-400'
                 }
               `}
               initial={false}
@@ -60,7 +64,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, completed
             </motion.div>
             <span className={`
               !mt-2 !text-xs !font-medium !transition-colors !duration-300
-              ${isActive(step.id) ? '!text-emerald-600' : '!text-gray-400'}
+              ${isActive(step.id) ? '!text-emerald-600' : isDark ? '!text-gray-400' : '!text-gray-400'}
             `}>
               {step.label}
             </span>

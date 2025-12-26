@@ -21,6 +21,7 @@ import {
   Sparkles,
   Share2
 } from 'lucide-react';
+import { useTheme } from '../../../../shared/context/ThemeContext';
 
 interface Badge {
   id: string;
@@ -37,6 +38,8 @@ interface Badge {
 }
 
 const BadgesView: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
@@ -229,8 +232,8 @@ const BadgesView: React.FC = () => {
       {/* Header */}
       <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
         <div>
-          <h1 className="!text-2xl !font-bold !text-gray-900">Insignias</h1>
-          <p className="!text-gray-500 !text-sm !mt-1">Colecciona logros y demuestra tu compromiso ambiental</p>
+          <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Insignias</h1>
+          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Colecciona logros y demuestra tu compromiso ambiental</p>
         </div>
       </div>
 
@@ -239,15 +242,15 @@ const BadgesView: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="!bg-gradient-to-br !from-yellow-50 !to-orange-50 !rounded-2xl !p-5 !border !border-yellow-200"
+          className={`!rounded-2xl !p-5 !border ${isDark ? '!bg-gradient-to-br !from-yellow-900/30 !to-orange-900/30 !border-yellow-700/50' : '!bg-gradient-to-br !from-yellow-50 !to-orange-50 !border-yellow-200'}`}
         >
           <div className="!flex !items-center !gap-3">
             <div className="!w-14 !h-14 !rounded-xl !bg-gradient-to-br !from-yellow-400 !to-orange-500 !flex !items-center !justify-center !shadow-lg !shadow-yellow-500/30">
               <Trophy className="!w-7 !h-7 !text-white" />
             </div>
             <div>
-              <p className="!text-3xl !font-bold !text-gray-900">{totalPoints.toLocaleString()}</p>
-              <p className="!text-sm !text-gray-600">Puntos totales</p>
+              <p className={`!text-3xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{totalPoints.toLocaleString()}</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Puntos totales</p>
             </div>
           </div>
         </motion.div>
@@ -256,15 +259,15 @@ const BadgesView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="!bg-gradient-to-br !from-green-50 !to-emerald-50 !rounded-2xl !p-5 !border !border-green-200"
+          className={`!rounded-2xl !p-5 !border ${isDark ? '!bg-gradient-to-br !from-green-900/30 !to-emerald-900/30 !border-green-700/50' : '!bg-gradient-to-br !from-green-50 !to-emerald-50 !border-green-200'}`}
         >
           <div className="!flex !items-center !gap-3">
             <div className="!w-14 !h-14 !rounded-xl !bg-gradient-to-br !from-green-400 !to-emerald-500 !flex !items-center !justify-center !shadow-lg !shadow-green-500/30">
               <Award className="!w-7 !h-7 !text-white" />
             </div>
             <div>
-              <p className="!text-3xl !font-bold !text-gray-900">{unlockedCount}/{badges.length}</p>
-              <p className="!text-sm !text-gray-600">Insignias desbloqueadas</p>
+              <p className={`!text-3xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{unlockedCount}/{badges.length}</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Insignias desbloqueadas</p>
             </div>
           </div>
         </motion.div>
@@ -273,15 +276,15 @@ const BadgesView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="!bg-gradient-to-br !from-purple-50 !to-violet-50 !rounded-2xl !p-5 !border !border-purple-200"
+          className={`!rounded-2xl !p-5 !border ${isDark ? '!bg-gradient-to-br !from-purple-900/30 !to-violet-900/30 !border-purple-700/50' : '!bg-gradient-to-br !from-purple-50 !to-violet-50 !border-purple-200'}`}
         >
           <div className="!flex !items-center !gap-3">
             <div className="!w-14 !h-14 !rounded-xl !bg-gradient-to-br !from-purple-400 !to-violet-500 !flex !items-center !justify-center !shadow-lg !shadow-purple-500/30">
               <Zap className="!w-7 !h-7 !text-white" />
             </div>
             <div>
-              <p className="!text-3xl !font-bold !text-gray-900">Nivel 5</p>
-              <p className="!text-sm !text-gray-600">Rango actual</p>
+              <p className={`!text-3xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Nivel 5</p>
+              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Rango actual</p>
             </div>
           </div>
         </motion.div>
@@ -296,7 +299,9 @@ const BadgesView: React.FC = () => {
             className={`!px-5 !py-2.5 !rounded-xl !text-sm !font-medium !whitespace-nowrap !transition-all !border-0 ${
               selectedCategory === cat.id
                 ? '!bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !shadow-lg !shadow-green-500/30'
-                : '!bg-gray-100 !text-gray-600 hover:!bg-gray-200'
+                : isDark
+                  ? '!bg-gray-700 !text-gray-300 hover:!bg-gray-600'
+                  : '!bg-gray-100 !text-gray-600 hover:!bg-gray-200'
             }`}
           >
             {cat.label}
@@ -317,9 +322,9 @@ const BadgesView: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => setSelectedBadge(badge)}
-              className={`!relative !bg-white !rounded-2xl !p-5 !border ${rarityColors.border} !shadow-lg hover:!shadow-xl !transition-all !cursor-pointer group ${
+              className={`!relative !rounded-2xl !p-5 !border ${rarityColors.border} !shadow-lg hover:!shadow-xl !transition-all !cursor-pointer group ${
                 !badge.isUnlocked ? '!opacity-75' : ''
-              }`}
+              } ${isDark ? '!bg-gray-800/50' : '!bg-white'}`}
             >
               {/* Rarity Badge */}
               <span className={`!absolute !top-3 !right-3 !px-2 !py-0.5 !rounded-full !text-xs !font-semibold ${rarityColors.text} !bg-white !border ${rarityColors.border}`}>
@@ -342,17 +347,17 @@ const BadgesView: React.FC = () => {
               </div>
 
               {/* Name */}
-              <h3 className="!text-center !font-bold !text-gray-900 !mb-1">{badge.name}</h3>
-              <p className="!text-center !text-xs !text-gray-500 !mb-3 !line-clamp-2">{badge.description}</p>
+              <h3 className={`!text-center !font-bold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{badge.name}</h3>
+              <p className={`!text-center !text-xs !mb-3 !line-clamp-2 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{badge.description}</p>
 
               {/* Progress */}
               {!badge.isUnlocked && (
                 <div className="!mb-2">
-                  <div className="!flex !justify-between !text-xs !text-gray-500 !mb-1">
+                  <div className={`!flex !justify-between !text-xs !mb-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
                     <span>Progreso</span>
                     <span>{badge.progress}/{badge.maxProgress}</span>
                   </div>
-                  <div className="!h-2 !bg-gray-100 !rounded-full !overflow-hidden">
+                  <div className={`!h-2 !rounded-full !overflow-hidden ${isDark ? '!bg-gray-700' : '!bg-gray-100'}`}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progressPercent}%` }}

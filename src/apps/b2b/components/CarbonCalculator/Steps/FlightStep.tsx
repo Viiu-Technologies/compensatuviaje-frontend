@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Plane, Wind, Users, CreditCard, Loader2, AlertCircle } from "lucide-react";
 import type { FlightStepProps } from "../types";
 import airportService, { Airport } from "../../../services/airportService";
+import { useTheme } from "../../../../../shared/context/ThemeContext";
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -15,6 +16,9 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors, setValue, onNext }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
   const origin = watch("origin");
   const destination = watch("destination");
   const aircraftType = watch("aircraftType");
@@ -141,7 +145,7 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
         <div className="!space-y-6">
           {/* Origin Input */}
           <div className="!relative !group">
-            <label className="!block !text-sm !font-medium !text-gray-700 !mb-2 !flex !items-center !gap-2">
+            <label className={`!block !text-sm !font-medium !mb-2 !flex !items-center !gap-2 ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>
               <MapPin size={16} className="!text-green-600" /> Origen
             </label>
             <div className="!relative">
@@ -151,12 +155,14 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                 onChange={handleOriginInputChange}
                 onFocus={() => originSuggestions.length > 0 && setShowOriginSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowOriginSuggestions(false), 200)}
-                className={`!w-full !px-4 !py-3 !rounded-xl !border-2 !bg-white/50 !backdrop-blur-sm !transition-all !duration-300 !outline-none ${
+                className={`!w-full !px-4 !py-3 !rounded-xl !border-2 !backdrop-blur-sm !transition-all !duration-300 !outline-none ${
                   errors.origin 
                     ? "!border-red-400 !bg-red-50" 
                     : selectedOrigin
-                      ? "!border-green-500 !bg-green-50/50"
-                      : "!border-gray-200 focus:!border-emerald-500 focus:!ring-4 focus:!ring-emerald-500/10"
+                      ? isDark ? "!border-green-500 !bg-green-900/30 !text-white" : "!border-green-500 !bg-green-50/50"
+                      : isDark 
+                        ? "!border-gray-600 !bg-gray-700/50 !text-white !placeholder-gray-400 focus:!border-emerald-500 focus:!ring-4 focus:!ring-emerald-500/20"
+                        : "!border-gray-200 !bg-white/50 focus:!border-emerald-500 focus:!ring-4 focus:!ring-emerald-500/10"
                 }`}
                 placeholder="Buscar ciudad o código IATA..."
                 autoComplete="off"
@@ -175,20 +181,28 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                   initial={{ opacity: 0, y: 10, height: 0 }}
                   animate={{ opacity: 1, y: 0, height: "auto" }}
                   exit={{ opacity: 0, y: 10, height: 0 }}
-                  className="!absolute !top-full !left-0 !right-0 !mt-2 !bg-white !rounded-xl !shadow-xl !border !border-gray-100 !overflow-hidden !z-20 !max-h-64 !overflow-y-auto"
+                  className={`!absolute !top-full !left-0 !right-0 !mt-2 !rounded-xl !shadow-xl !border !overflow-hidden !z-20 !max-h-64 !overflow-y-auto ${
+                    isDark ? '!bg-gray-800 !border-gray-700' : '!bg-white !border-gray-100'
+                  }`}
                 >
                   {originSuggestions.map((airport) => (
                     <div
                       key={airport.id || airport.code}
                       onClick={() => handleSelectOrigin(airport)}
-                      className="!p-3 !text-sm !text-gray-600 hover:!bg-green-50 !cursor-pointer !transition-colors !flex !items-center !gap-3 !border-b !border-gray-50 last:!border-0"
+                      className={`!p-3 !text-sm !cursor-pointer !transition-colors !flex !items-center !gap-3 !border-b last:!border-0 ${
+                        isDark 
+                          ? '!text-gray-300 hover:!bg-green-900/30 !border-gray-700' 
+                          : '!text-gray-600 hover:!bg-green-50 !border-gray-50'
+                      }`}
                     >
-                      <div className="!w-10 !h-10 !rounded-lg !bg-green-100 !flex !items-center !justify-center !text-green-600 !font-bold !text-xs">
+                      <div className={`!w-10 !h-10 !rounded-lg !flex !items-center !justify-center !font-bold !text-xs ${
+                        isDark ? '!bg-green-900/50 !text-green-400' : '!bg-green-100 !text-green-600'
+                      }`}>
                         {airport.code}
                       </div>
                       <div>
-                        <p className="!font-medium !text-gray-800">{airport.city}</p>
-                        <p className="!text-xs !text-gray-500">{airport.country} • {airport.name}</p>
+                        <p className={`!font-medium ${isDark ? '!text-gray-200' : '!text-gray-800'}`}>{airport.city}</p>
+                        <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{airport.country} • {airport.name}</p>
                       </div>
                     </div>
                   ))}
@@ -204,7 +218,7 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
 
           {/* Destination Input */}
           <div className="!relative">
-            <label className="!block !text-sm !font-medium !text-gray-700 !mb-2 !flex !items-center !gap-2">
+            <label className={`!block !text-sm !font-medium !mb-2 !flex !items-center !gap-2 ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>
               <MapPin size={16} className="!text-orange-500" /> Destino
             </label>
             <div className="!relative">
@@ -214,12 +228,14 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                 onChange={handleDestinationInputChange}
                 onFocus={() => destinationSuggestions.length > 0 && setShowDestinationSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowDestinationSuggestions(false), 200)}
-                className={`!w-full !px-4 !py-3 !rounded-xl !border-2 !bg-white/50 !backdrop-blur-sm !transition-all !duration-300 !outline-none ${
+                className={`!w-full !px-4 !py-3 !rounded-xl !border-2 !backdrop-blur-sm !transition-all !duration-300 !outline-none ${
                   errors.destination 
                     ? "!border-red-400 !bg-red-50" 
                     : selectedDestination
-                      ? "!border-green-500 !bg-green-50/50"
-                      : "!border-gray-200 focus:!border-emerald-500 focus:!ring-4 focus:!ring-emerald-500/10"
+                      ? isDark ? "!border-green-500 !bg-green-900/30 !text-white" : "!border-green-500 !bg-green-50/50"
+                      : isDark 
+                        ? "!border-gray-600 !bg-gray-700/50 !text-white !placeholder-gray-400 focus:!border-emerald-500 focus:!ring-4 focus:!ring-emerald-500/20"
+                        : "!border-gray-200 !bg-white/50 focus:!border-emerald-500 focus:!ring-4 focus:!ring-emerald-500/10"
                 }`}
                 placeholder="Buscar ciudad o código IATA..."
                 autoComplete="off"
@@ -238,20 +254,28 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                   initial={{ opacity: 0, y: 10, height: 0 }}
                   animate={{ opacity: 1, y: 0, height: "auto" }}
                   exit={{ opacity: 0, y: 10, height: 0 }}
-                  className="!absolute !top-full !left-0 !right-0 !mt-2 !bg-white !rounded-xl !shadow-xl !border !border-gray-100 !overflow-hidden !z-20 !max-h-64 !overflow-y-auto"
+                  className={`!absolute !top-full !left-0 !right-0 !mt-2 !rounded-xl !shadow-xl !border !overflow-hidden !z-20 !max-h-64 !overflow-y-auto ${
+                    isDark ? '!bg-gray-800 !border-gray-700' : '!bg-white !border-gray-100'
+                  }`}
                 >
                   {destinationSuggestions.map((airport) => (
                     <div
                       key={airport.id || airport.code}
                       onClick={() => handleSelectDestination(airport)}
-                      className="!p-3 !text-sm !text-gray-600 hover:!bg-orange-50 !cursor-pointer !transition-colors !flex !items-center !gap-3 !border-b !border-gray-50 last:!border-0"
+                      className={`!p-3 !text-sm !cursor-pointer !transition-colors !flex !items-center !gap-3 !border-b last:!border-0 ${
+                        isDark 
+                          ? '!text-gray-300 hover:!bg-orange-900/30 !border-gray-700' 
+                          : '!text-gray-600 hover:!bg-orange-50 !border-gray-50'
+                      }`}
                     >
-                      <div className="!w-10 !h-10 !rounded-lg !bg-orange-100 !flex !items-center !justify-center !text-orange-600 !font-bold !text-xs">
+                      <div className={`!w-10 !h-10 !rounded-lg !flex !items-center !justify-center !font-bold !text-xs ${
+                        isDark ? '!bg-orange-900/50 !text-orange-400' : '!bg-orange-100 !text-orange-600'
+                      }`}>
                         {airport.code}
                       </div>
                       <div>
-                        <p className="!font-medium !text-gray-800">{airport.city}</p>
-                        <p className="!text-xs !text-gray-500">{airport.country} • {airport.name}</p>
+                        <p className={`!font-medium ${isDark ? '!text-gray-200' : '!text-gray-800'}`}>{airport.city}</p>
+                        <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{airport.country} • {airport.name}</p>
                       </div>
                     </div>
                   ))}
@@ -267,7 +291,9 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
         </div>
 
         {/* Visual Map Representation */}
-        <div className="!relative !h-48 md:!h-auto !bg-emerald-50/50 !rounded-2xl !border !border-emerald-200/50 !flex !items-center !justify-center !overflow-hidden">
+        <div className={`!relative !h-48 md:!h-auto !rounded-2xl !border !flex !items-center !justify-center !overflow-hidden ${
+          isDark ? '!bg-emerald-900/20 !border-emerald-700/50' : '!bg-emerald-50/50 !border-emerald-200/50'
+        }`}>
           {selectedOrigin && selectedDestination ? (
             <div className="!text-center !p-4">
               <motion.div 
@@ -277,18 +303,18 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
               >
                 <Plane className="!w-12 !h-12 !text-green-600 !mx-auto" />
               </motion.div>
-              <div className="!text-3xl !font-bold !text-gray-900">
-                {distance.toLocaleString()} <span className="!text-sm !font-normal !text-gray-500">km</span>
+              <div className={`!text-3xl !font-bold ${isDark ? '!text-white' : '!text-gray-900'}`}>
+                {distance.toLocaleString()} <span className={`!text-sm !font-normal ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>km</span>
               </div>
               <p className="!text-xs !text-green-600 !mt-1">Distancia calculada</p>
-              <div className="!mt-3 !flex !items-center !justify-center !gap-2 !text-xs !text-gray-500">
+              <div className={`!mt-3 !flex !items-center !justify-center !gap-2 !text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
                 <span className="!font-bold !text-green-600">{selectedOrigin.code}</span>
                 <span>→</span>
                 <span className="!font-bold !text-orange-600">{selectedDestination.code}</span>
               </div>
             </div>
           ) : (
-            <div className="!text-gray-400 !text-sm !flex !flex-col !items-center">
+            <div className={`!text-sm !flex !flex-col !items-center ${isDark ? '!text-gray-400' : '!text-gray-400'}`}>
               <Wind className="!mb-2 !opacity-50" />
               Selecciona origen y destino
             </div>
@@ -303,7 +329,7 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
 
       {/* Flight Class Selection */}
       <div className="!space-y-4">
-        <label className="!block !text-sm !font-medium !text-gray-700">Clase de Vuelo</label>
+        <label className={`!block !text-sm !font-medium ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>Clase de Vuelo</label>
         <div className="!grid !grid-cols-1 md:!grid-cols-3 !gap-4">
           {[
             { id: "economy", label: "Económica", icon: Users, factor: "1x", desc: "Menor huella" },
@@ -314,8 +340,12 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
               key={type.id}
               className={`!relative !flex !flex-col !items-center !p-4 !rounded-xl !border-2 !cursor-pointer !transition-all !duration-300 hover:!shadow-lg hover:!-translate-y-1 ${
                 aircraftType === type.id 
-                  ? "!border-green-500 !bg-green-50" 
-                  : "!border-gray-100 !bg-white hover:!border-green-300"
+                  ? isDark 
+                    ? "!border-green-500 !bg-green-900/30" 
+                    : "!border-green-500 !bg-green-50"
+                  : isDark 
+                    ? "!border-gray-600 !bg-gray-700/50 hover:!border-green-400" 
+                    : "!border-gray-100 !bg-white hover:!border-green-300"
               }`}
             >
               <input
@@ -325,10 +355,10 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                 className="!sr-only"
               />
               <type.icon className={`!w-8 !h-8 !mb-3 !transition-colors ${
-                aircraftType === type.id ? "!text-green-600" : "!text-gray-400"
+                aircraftType === type.id ? "!text-green-600" : isDark ? "!text-gray-400" : "!text-gray-400"
               }`} />
-              <span className="!font-medium !text-gray-800">{type.label}</span>
-              <span className="!text-xs !text-gray-500 !mt-1">Emisiones {type.factor}</span>
+              <span className={`!font-medium ${isDark ? '!text-gray-200' : '!text-gray-800'}`}>{type.label}</span>
+              <span className={`!text-xs !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Emisiones {type.factor}</span>
               
               {aircraftType === type.id && (
                 <motion.div
@@ -346,7 +376,7 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
       {/* Passengers and Trip Type */}
       <div className="!grid md:!grid-cols-2 !gap-6">
         <div>
-          <label className="!block !text-sm !font-medium !text-gray-700 !mb-2 !flex !items-center !gap-2">
+          <label className={`!block !text-sm !font-medium !mb-2 !flex !items-center !gap-2 ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>
             <Users size={16} className="!text-blue-500" /> Pasajeros
           </label>
           <input
@@ -359,7 +389,11 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
               min: { value: 1, message: "Mínimo 1 pasajero" },
               max: { value: 9, message: "Máximo 9 pasajeros" }
             })}
-            className="!w-full !px-4 !py-3 !rounded-xl !border-2 !border-gray-200 !bg-white/50 !backdrop-blur-sm focus:!border-blue-500 focus:!ring-4 focus:!ring-blue-500/10 !outline-none !transition-all"
+            className={`!w-full !px-4 !py-3 !rounded-xl !border-2 !backdrop-blur-sm !outline-none !transition-all ${
+              isDark 
+                ? '!border-gray-600 !bg-gray-700/50 !text-white focus:!border-blue-500 focus:!ring-4 focus:!ring-blue-500/20' 
+                : '!border-gray-200 !bg-white/50 focus:!border-blue-500 focus:!ring-4 focus:!ring-blue-500/10'
+            }`}
           />
           {errors.passengers && (
             <p className="!text-red-500 !text-xs !mt-1 !flex !items-center !gap-1">
@@ -369,12 +403,12 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
         </div>
 
         <div>
-          <label className="!block !text-sm !font-medium !text-gray-700 !mb-2">Tipo de Viaje</label>
+          <label className={`!block !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>Tipo de Viaje</label>
           <div className="!flex !gap-3">
             <label className={`!flex !items-center !gap-2 !cursor-pointer !flex-1 !p-3 !rounded-xl !border-2 !transition-all ${
               watch("roundTrip") === false 
-                ? "!border-green-500 !bg-green-50" 
-                : "!border-gray-200 !bg-white/50 hover:!border-purple-300"
+                ? isDark ? "!border-green-500 !bg-green-900/30" : "!border-green-500 !bg-green-50"
+                : isDark ? "!border-gray-600 !bg-gray-700/50 hover:!border-purple-400" : "!border-gray-200 !bg-white/50 hover:!border-purple-300"
             }`}>
               <input
                 type="radio"
@@ -383,12 +417,12 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                 onChange={() => setValue("roundTrip", false)}
                 className="!cursor-pointer"
               />
-              <span className="!text-sm !font-medium !text-gray-700">Solo Ida</span>
+              <span className={`!text-sm !font-medium ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>Solo Ida</span>
             </label>
             <label className={`!flex !items-center !gap-2 !cursor-pointer !flex-1 !p-3 !rounded-xl !border-2 !transition-all ${
               watch("roundTrip") === true 
-                ? "!border-green-500 !bg-green-50" 
-                : "!border-gray-200 !bg-white/50 hover:!border-purple-300"
+                ? isDark ? "!border-green-500 !bg-green-900/30" : "!border-green-500 !bg-green-50"
+                : isDark ? "!border-gray-600 !bg-gray-700/50 hover:!border-purple-400" : "!border-gray-200 !bg-white/50 hover:!border-purple-300"
             }`}>
               <input
                 type="radio"
@@ -397,7 +431,7 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
                 onChange={() => setValue("roundTrip", true)}
                 className="!cursor-pointer"
               />
-              <span className="!text-sm !font-medium !text-gray-700">Ida y Vuelta</span>
+              <span className={`!text-sm !font-medium ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>Ida y Vuelta</span>
             </label>
           </div>
         </div>

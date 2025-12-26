@@ -1,373 +1,315 @@
-import React, { useState } from 'react';
-import './BatchUpload.css';
+import React, { useState, useCallback } from 'react';
+import { 
+  Upload, 
+  FileText, 
+  CheckCircle2, 
+  AlertCircle, 
+  X, 
+  Download, 
+  History,
+  FileSpreadsheet,
+  ArrowRight,
+  Loader2,
+  RefreshCcw
+} from 'lucide-react';
 
-const BatchUpload = () => {
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, processing, completed, error
-  const [uploadResults, setUploadResults] = useState(null);
-  const [uploadHistory, setUploadHistory] = useState([
+interface UploadHistory {
+  id: string;
+  fileName: string;
+  uploadDate: string;
+  status: 'completed' | 'failed' | 'partial';
+  totalRows: number;
+  successRows: number;
+  errorRows: number;
+}
+
+const BatchUpload: React.FC = () => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [uploadHistory] = useState<UploadHistory[]>([
     {
-      id: 1,
-      fileName: 'viajes_octubre_2025.csv',
-      uploadDate: '2025-10-23',
-      totalRows: 150,
-      successRows: 145,
-      errorRows: 5,
+      id: '1',
+      fileName: 'viajes_octubre_2023.csv',
+      uploadDate: '2023-10-25T14:30:00Z',
       status: 'completed',
-      errors: [
-        { row: 12, error: 'Fecha inválida' },
-        { row: 34, error: 'RUT incorrecto' },
-        { row: 78, error: 'Distancia fuera de rango' },
-        { row: 99, error: 'Tipo de transporte no válido' },
-        { row: 121, error: 'Emisiones CO2 negativas' }
-      ]
+      totalRows: 150,
+      successRows: 150,
+      errorRows: 0
     },
     {
-      id: 2,
-      fileName: 'compensaciones_septiembre.xlsx',
-      uploadDate: '2025-09-28',
+      id: '2',
+      fileName: 'viajes_noviembre_v1.xlsx',
+      uploadDate: '2023-11-02T09:15:00Z',
+      status: 'partial',
       totalRows: 200,
-      successRows: 200,
-      errorRows: 0,
-      status: 'completed'
+      successRows: 185,
+      errorRows: 15
     }
   ]);
 
-  const handleDrag = (e) => {
+  const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
+    setIsDragging(true);
+  }, []);
 
-  const handleDrop = (e) => {
+  const onDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+    setIsDragging(false);
+  }, []);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && (droppedFile.name.endsWith('.csv') || droppedFile.name.endsWith('.xlsx'))) {
+      setFile(droppedFile);
+    }
+  }, []);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
     }
   };
 
-  const handleFileInput = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
-
-  const handleFile = (file) => {
-    // Validar tipo de archivo
-    const validTypes = ['.csv', '.xlsx', '.xls'];
-    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+  const simulateUpload = () => {
+    if (!file) return;
+    setUploading(true);
+    setProgress(0);
     
-    if (!validTypes.includes(fileExtension)) {
-      alert('❌ Tipo de archivo no válido. Solo se aceptan archivos CSV, XLS o XLSX');
-      return;
-    }
-
-    // Validar tamaño (máx 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('❌ El archivo es demasiado grande. Tamaño máximo: 10MB');
-      return;
-    }
-
-    setUploadedFile(file);
-    simulateUpload(file);
-  };
-
-  const simulateUpload = (file) => {
-    setUploadStatus('uploading');
-    setUploadProgress(0);
-
-    // Simular progreso de carga
-    const uploadInterval = setInterval(() => {
-      setUploadProgress(prev => {
+    const interval = setInterval(() => {
+      setProgress(prev => {
         if (prev >= 100) {
-          clearInterval(uploadInterval);
-          processFile(file);
+          clearInterval(interval);
+          setUploading(false);
+          setUploadStatus('success');
           return 100;
         }
-        return prev + 10;
+        return prev + 5;
       });
-    }, 200);
-  };
-
-  const processFile = (file) => {
-    setUploadStatus('processing');
-
-    // Simular procesamiento
-    setTimeout(() => {
-      const mockResults = {
-        fileName: file.name,
-        uploadDate: new Date().toISOString().split('T')[0],
-        totalRows: 180,
-        successRows: 175,
-        errorRows: 5,
-        status: 'completed',
-        errors: [
-          { row: 15, error: 'Fecha inválida: "32/10/2025"' },
-          { row: 42, error: 'RUT incorrecto: formato inválido' },
-          { row: 89, error: 'Distancia fuera de rango: -50 km' },
-          { row: 103, error: 'Tipo de transporte no válido: "barco"' },
-          { row: 156, error: 'Campo requerido: origen vacío' }
-        ],
-        summary: {
-          totalEmissions: 15420.5,
-          totalDistance: 45678,
-          avgEmissionsPerTrip: 88.4,
-          tripsByType: {
-            aereo: 45,
-            terrestre: 85,
-            maritimo: 45
-          }
-        }
-      };
-
-      setUploadResults(mockResults);
-      setUploadStatus('completed');
-      
-      // Agregar al historial
-      setUploadHistory(prev => [{
-        id: prev.length + 1,
-        ...mockResults
-      }, ...prev]);
-    }, 2000);
-  };
-
-  const downloadTemplate = () => {
-    // En producción, esto descargará una plantilla CSV/Excel
-    alert('📥 Descargando plantilla de ejemplo...\n\nColumnas requeridas:\n- fecha\n- origen\n- destino\n- tipo_transporte\n- distancia_km\n- pasajeros\n- rut_empresa');
-  };
-
-  const downloadErrors = (uploadId) => {
-    const upload = uploadHistory.find(u => u.id === uploadId) || uploadResults;
-    if (upload && upload.errors) {
-      alert(`📥 Descargando reporte de errores:\n\n${upload.errors.map(e => `Fila ${e.row}: ${e.error}`).join('\n')}`);
-    }
+    }, 100);
   };
 
   const resetUpload = () => {
-    setUploadedFile(null);
-    setUploadProgress(0);
+    setFile(null);
     setUploadStatus('idle');
-    setUploadResults(null);
+    setProgress(0);
   };
 
-  const getStatusIcon = (status) => {
-    if (status === 'completed') {
-      return (
-        <svg viewBox="0 0 20 20" fill="currentColor" className="status-icon success">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-        </svg>
-      );
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return (
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> Completado
+          </span>
+        );
+      case 'partial':
+        return (
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" /> Parcial
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
+            <X className="w-3 h-3" /> Fallido
+          </span>
+        );
     }
-    return null;
   };
 
   return (
-    <div className="batch-upload">
-      <div className="batch-header">
-        <h1>Carga Masiva de Viajes</h1>
-        <p>Importa múltiples viajes desde archivos CSV o Excel</p>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Carga Masiva</h1>
+          <p className="text-slate-400 mt-1">Sube archivos CSV o Excel para procesar múltiples registros de viajes.</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all border border-slate-700">
+          <Download className="w-4 h-4" />
+          <span>Descargar Plantilla</span>
+        </button>
       </div>
 
-      <div className="batch-content">
-        {/* Upload Section */}
-        <div className="upload-section">
-          <div className="upload-card">
-            {uploadStatus === 'idle' && (
-              <>
-                <div
-                  className={`dropzone ${dragActive ? 'drag-active' : ''}`}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                >
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <h3>Arrastra tu archivo aquí</h3>
-                  <p>o haz clic para seleccionar</p>
-                  <input
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={handleFileInput}
-                    style={{ display: 'none' }}
-                    id="file-upload"
-                  />
-                  <label htmlFor="file-upload" className="btn-select-file">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Upload Area */}
+        <div className="lg:col-span-2 space-y-6">
+          <div 
+            className={`relative group overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-300 ${
+              isDragging 
+                ? 'border-emerald-500 bg-emerald-500/5' 
+                : file 
+                  ? 'border-indigo-500/50 bg-indigo-500/5' 
+                  : 'border-slate-800 hover:border-slate-700 bg-slate-900/50'
+            }`}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+          >
+            <div className="p-12 flex flex-col items-center text-center">
+              {!file ? (
+                <>
+                  <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Upload className="w-10 h-10 text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Arrastra tu archivo aquí</h3>
+                  <p className="text-slate-400 mb-8 max-w-xs">
+                    Soporta formatos .csv y .xlsx hasta 20MB.
+                  </p>
+                  <label className="cursor-pointer px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20">
                     Seleccionar Archivo
+                    <input type="file" className="hidden" onChange={handleFileSelect} accept=".csv,.xlsx" />
                   </label>
-                  <p className="file-info">Archivos CSV, XLS o XLSX (máx. 10MB)</p>
-                </div>
-
-                <div className="upload-options">
-                  <button className="btn-download-template" onClick={downloadTemplate}>
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
-                    </svg>
-                    Descargar Plantilla de Ejemplo
-                  </button>
-
-                  <div className="format-info">
-                    <h4>Formato esperado:</h4>
-                    <ul>
-                      <li><strong>fecha:</strong> DD/MM/YYYY</li>
-                      <li><strong>origen:</strong> Ciudad o dirección</li>
-                      <li><strong>destino:</strong> Ciudad o dirección</li>
-                      <li><strong>tipo_transporte:</strong> aereo, terrestre, maritimo</li>
-                      <li><strong>distancia_km:</strong> Número positivo</li>
-                      <li><strong>pasajeros:</strong> Número entero positivo</li>
-                      <li><strong>rut_empresa:</strong> XX.XXX.XXX-X</li>
-                    </ul>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {(uploadStatus === 'uploading' || uploadStatus === 'processing') && (
-              <div className="upload-progress">
-                <svg viewBox="0 0 20 20" fill="currentColor" className="file-icon">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                </svg>
-                <h3>{uploadedFile?.name}</h3>
-                <p className="file-size">{(uploadedFile?.size / 1024).toFixed(2)} KB</p>
-                
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-                <p className="progress-text">
-                  {uploadStatus === 'uploading' && `Cargando archivo... ${uploadProgress}%`}
-                  {uploadStatus === 'processing' && 'Procesando datos...'}
-                </p>
-              </div>
-            )}
-
-            {uploadStatus === 'completed' && uploadResults && (
-              <div className="upload-complete">
-                <svg viewBox="0 0 20 20" fill="currentColor" className="success-icon">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <h3>¡Carga Completada!</h3>
-                <p className="upload-filename">{uploadResults.fileName}</p>
-
-                <div className="results-summary">
-                  <div className="summary-card success">
-                    <div className="summary-value">{uploadResults.successRows}</div>
-                    <div className="summary-label">Viajes Procesados</div>
-                  </div>
-                  {uploadResults.errorRows > 0 && (
-                    <div className="summary-card error">
-                      <div className="summary-value">{uploadResults.errorRows}</div>
-                      <div className="summary-label">Errores</div>
+                </>
+              ) : (
+                <div className="w-full max-w-md animate-in zoom-in-95 duration-300">
+                  <div className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-2xl border border-slate-700 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                      <FileSpreadsheet className="w-6 h-6 text-indigo-400" />
                     </div>
-                  )}
-                  <div className="summary-card info">
-                    <div className="summary-value">{uploadResults.summary.totalEmissions.toLocaleString('es-CL')} kg</div>
-                    <div className="summary-label">CO₂ Total</div>
+                    <div className="flex-1 text-left overflow-hidden">
+                      <p className="text-white font-medium truncate">{file.name}</p>
+                      <p className="text-slate-500 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    {uploadStatus === 'idle' && !uploading && (
+                      <button onClick={resetUpload} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 transition-colors">
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
-                  <div className="summary-card info">
-                    <div className="summary-value">{uploadResults.summary.totalDistance.toLocaleString('es-CL')} km</div>
-                    <div className="summary-label">Distancia Total</div>
-                  </div>
-                </div>
 
-                {uploadResults.errorRows > 0 && (
-                  <div className="errors-section">
-                    <h4>Errores Encontrados ({uploadResults.errorRows})</h4>
-                    <div className="errors-list">
-                      {uploadResults.errors.slice(0, 5).map((error, index) => (
-                        <div key={index} className="error-item">
-                          <span className="error-row">Fila {error.row}</span>
-                          <span className="error-message">{error.error}</span>
+                  {uploading ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Subiendo...
+                        </span>
+                        <span className="text-indigo-400 font-medium">{progress}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : uploadStatus === 'success' ? (
+                    <div className="space-y-6">
+                      <div className="flex flex-col items-center gap-3 py-4">
+                        <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                          <CheckCircle2 className="w-8 h-8 text-emerald-400" />
                         </div>
-                      ))}
+                        <h4 className="text-xl font-semibold text-white">¡Carga Exitosa!</h4>
+                        <p className="text-slate-400">El archivo ha sido procesado correctamente.</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={resetUpload}
+                          className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-all border border-slate-700 flex items-center justify-center gap-2"
+                        >
+                          <RefreshCcw className="w-4 h-4" /> Nueva Carga
+                        </button>
+                        <button className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+                          Ver Resultados <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <button className="btn-download-errors" onClick={() => downloadErrors()}>
-                      <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      Descargar Reporte de Errores
+                  ) : (
+                    <button 
+                      onClick={simulateUpload}
+                      className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+                    >
+                      Comenzar Carga <ArrowRight className="w-5 h-5" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
-                <button className="btn-new-upload" onClick={resetUpload}>
-                  Cargar Otro Archivo
-                </button>
-              </div>
-            )}
+          {/* Instructions */}
+          <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-indigo-400" />
+              Instrucciones de Carga
+            </h3>
+            <ul className="space-y-3 text-slate-400 text-sm">
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-indigo-400 mt-0.5 shrink-0">1</div>
+                <span>Asegúrate de que el archivo use la plantilla oficial para evitar errores de formato.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-indigo-400 mt-0.5 shrink-0">2</div>
+                <span>Las columnas obligatorias son: Fecha, Origen, Destino, Distancia y Tipo de Vehículo.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-indigo-400 mt-0.5 shrink-0">3</div>
+                <span>El sistema validará automáticamente cada fila antes de guardarla en la base de datos.</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* History Section */}
-        <div className="history-section">
-          <h2>Historial de Cargas</h2>
-          
-          {uploadHistory.length === 0 ? (
-            <div className="empty-history">
-              <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4zm7 5a1 1 0 10-2 0v1H8a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
-              </svg>
-              <p>No hay cargas anteriores</p>
-            </div>
-          ) : (
-            <div className="history-list">
-              {uploadHistory.map(upload => (
-                <div key={upload.id} className="history-item">
-                  <div className="history-header">
-                    <div className="history-info">
-                      {getStatusIcon(upload.status)}
-                      <div>
-                        <h4>{upload.fileName}</h4>
-                        <p className="history-date">
-                          {new Date(upload.uploadDate).toLocaleDateString('es-CL', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
+        {/* History Sidebar */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <History className="w-5 h-5 text-indigo-400" />
+              Historial
+            </h3>
+            <button className="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors">
+              Ver todo
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {uploadHistory.map((upload) => (
+              <div 
+                key={upload.id}
+                className="bg-slate-900/50 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 transition-all group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-indigo-500/10 transition-colors">
+                      <FileText className="w-5 h-5 text-slate-400 group-hover:text-indigo-400" />
                     </div>
-                    <div className="history-stats">
-                      <div className="stat success">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        {upload.successRows} exitosos
-                      </div>
-                      {upload.errorRows > 0 && (
-                        <div className="stat error">
-                          <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                          </svg>
-                          {upload.errorRows} errores
-                        </div>
-                      )}
+                    <div>
+                      <h4 className="text-white font-medium text-sm truncate max-w-[120px]">
+                        {upload.fileName}
+                      </h4>
+                      <p className="text-slate-500 text-xs">
+                        {new Date(upload.uploadDate).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
-                  {upload.errorRows > 0 && (
-                    <button 
-                      className="btn-view-errors"
-                      onClick={() => downloadErrors(upload.id)}
-                    >
-                      Ver Errores
-                    </button>
-                  )}
+                  {getStatusBadge(upload.status)}
                 </div>
-              ))}
-            </div>
-          )}
+                
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/50">
+                  <div className="text-center p-2 rounded-lg bg-slate-800/30">
+                    <p className="text-slate-500 text-[10px] uppercase tracking-wider">Éxito</p>
+                    <p className="text-emerald-400 font-bold">{upload.successRows}</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-slate-800/30">
+                    <p className="text-slate-500 text-[10px] uppercase tracking-wider">Error</p>
+                    <p className="text-rose-400 font-bold">{upload.errorRows}</p>
+                  </div>
+                </div>
+
+                {upload.errorRows > 0 && (
+                  <button className="w-full mt-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 flex items-center justify-center gap-1 transition-colors">
+                    <Download className="w-3 h-3" /> Descargar Errores
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

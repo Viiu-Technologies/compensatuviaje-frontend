@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { ChevronLeft, Leaf, Info, TreePine, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { useTheme } from '../../../../shared/context/ThemeContext';
 
 import { ProgressBar } from '../CarbonCalculator/ProgressBar';
 import { FlightStep } from '../CarbonCalculator/Steps/FlightStep';
@@ -11,6 +12,8 @@ import type { FormData, StepId } from '../CarbonCalculator/types';
 import calculatorService, { CalculationResponse, CabinClass } from '../../services/calculatorService';
 
 const CalculatorView: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [currentStep, setCurrentStep] = useState<StepId>('flight');
   const [completedSteps, setCompletedSteps] = useState<StepId[]>([]);
   const [isProcessComplete, setIsProcessComplete] = useState(false);
@@ -114,16 +117,16 @@ const CalculatorView: React.FC = () => {
       {/* Header */}
       <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
         <div>
-          <h1 className="!text-2xl !font-bold !text-gray-900 !flex !items-center !gap-2">
+          <h1 className={`!text-2xl !font-bold !flex !items-center !gap-2 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
             <Leaf className="!w-7 !h-7 !text-green-500" />
             Calculadora de Carbono
           </h1>
-          <p className="!text-gray-500 !text-sm !mt-1">Compensa las emisiones de tu vuelo en 3 simples pasos</p>
+          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Compensa las emisiones de tu vuelo en 3 simples pasos</p>
         </div>
         {currentStep !== 'flight' && !isProcessComplete && (
           <button
             onClick={prevStep}
-            className="!flex !items-center !gap-2 !px-4 !py-2 !text-gray-600 hover:!text-gray-800 !transition-colors !border-0 !bg-gray-100 hover:!bg-gray-200 !rounded-xl"
+            className={`!flex !items-center !gap-2 !px-4 !py-2 !transition-colors !border-0 !rounded-xl ${isDark ? '!text-gray-300 hover:!text-white !bg-gray-700 hover:!bg-gray-600' : '!text-gray-600 hover:!text-gray-800 !bg-gray-100 hover:!bg-gray-200'}`}
           >
             <ChevronLeft className="!w-4 !h-4" />
             Paso anterior
@@ -135,10 +138,10 @@ const CalculatorView: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="!bg-white !rounded-2xl !border !border-gray-200 !shadow-xl !overflow-hidden"
+        className={`!rounded-2xl !border !shadow-xl !overflow-hidden ${isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'}`}
       >
         {/* Background Gradient */}
-        <div className="!relative !bg-gradient-to-br !from-emerald-50 !via-white !to-sky-50">
+        <div className={`!relative ${isDark ? '!bg-gradient-to-br !from-gray-800 !via-gray-800 !to-gray-900' : '!bg-gradient-to-br !from-emerald-50 !via-white !to-sky-50'}`}>
           <div className="!absolute !inset-0 !opacity-30">
             <div className="!absolute !top-10 !left-10 !w-64 !h-64 !bg-green-200 !rounded-full !blur-3xl" />
             <div className="!absolute !bottom-10 !right-10 !w-48 !h-48 !bg-sky-200 !rounded-full !blur-3xl" />
@@ -214,7 +217,7 @@ const CalculatorView: React.FC = () => {
               >
                 <button
                   onClick={handleStartOver}
-                  className="!px-6 !py-3 !bg-gray-100 hover:!bg-gray-200 !text-gray-700 !rounded-xl !font-medium !transition-colors !border-0"
+                  className={`!px-6 !py-3 !rounded-xl !font-medium !transition-colors !border-0 ${isDark ? '!bg-gray-700 hover:!bg-gray-600 !text-gray-300' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-700'}`}
                 >
                   Calcular otra compensación
                 </button>
@@ -226,20 +229,20 @@ const CalculatorView: React.FC = () => {
 
       {/* Info Section */}
       <div className="!grid sm:!grid-cols-2 lg:!grid-cols-3 !gap-4">
-        <div className="!bg-blue-50 !rounded-xl !p-4 !border !border-blue-200">
+        <div className={`!rounded-xl !p-4 !border ${isDark ? '!bg-blue-900/20 !border-blue-700/50' : '!bg-blue-50 !border-blue-200'}`}>
           <Info className="!w-6 !h-6 !text-blue-600 !mb-2" />
-          <h4 className="!font-semibold !text-gray-900 !mb-1">Metodología certificada</h4>
-          <p className="!text-sm !text-gray-600">Usamos factores de emisión de DEFRA y GHG Protocol</p>
+          <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Metodología certificada</h4>
+          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Usamos factores de emisión de DEFRA y GHG Protocol</p>
         </div>
-        <div className="!bg-green-50 !rounded-xl !p-4 !border !border-green-200">
+        <div className={`!rounded-xl !p-4 !border ${isDark ? '!bg-green-900/20 !border-green-700/50' : '!bg-green-50 !border-green-200'}`}>
           <TreePine className="!w-6 !h-6 !text-green-600 !mb-2" />
-          <h4 className="!font-semibold !text-gray-900 !mb-1">Proyectos verificados</h4>
-          <p className="!text-sm !text-gray-600">Compensaciones con certificación Gold Standard y VCS</p>
+          <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Proyectos verificados</h4>
+          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Compensaciones con certificación Gold Standard y VCS</p>
         </div>
-        <div className="!bg-purple-50 !rounded-xl !p-4 !border !border-purple-200 sm:!col-span-2 lg:!col-span-1">
+        <div className={`!rounded-xl !p-4 !border sm:!col-span-2 lg:!col-span-1 ${isDark ? '!bg-purple-900/20 !border-purple-700/50' : '!bg-purple-50 !border-purple-200'}`}>
           <ShieldCheck className="!w-6 !h-6 !text-purple-600 !mb-2" />
-          <h4 className="!font-semibold !text-gray-900 !mb-1">Pago 100% seguro</h4>
-          <p className="!text-sm !text-gray-600">Transacciones protegidas con encriptación SSL</p>
+          <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Pago 100% seguro</h4>
+          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Transacciones protegidas con encriptación SSL</p>
         </div>
       </div>
     </div>
