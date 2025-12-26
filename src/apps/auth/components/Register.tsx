@@ -21,7 +21,7 @@ const Register: React.FC = () => {
   const totalSteps = 4;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>();
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     // Paso 1: Datos personales
@@ -175,6 +175,9 @@ const Register: React.FC = () => {
     if (type === 'b2c') {
       // Para B2C mostramos directamente la opción de Google
       setCurrentStep(0);
+    } else if (type === 'b2b') {
+      // Para B2B avanzamos directamente al paso 1 del formulario
+      setCurrentStep(1);
     }
   };
 
@@ -417,13 +420,7 @@ const Register: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="!space-y-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${currentStep}-${accountType}`}
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -20, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+              <div
                 className={currentStep === 0 ? '' : '!grid !grid-cols-1 md:!grid-cols-2 !gap-6'}
               >
                 {/* Paso 0: Selección de tipo de cuenta */}
@@ -652,8 +649,7 @@ const Register: React.FC = () => {
                     </div>
                   </>
                 )}
-              </motion.div>
-            </AnimatePresence>
+              </div>
 
             {/* Botones de navegación solo para pasos B2B */}
             {currentStep >= 1 && (
