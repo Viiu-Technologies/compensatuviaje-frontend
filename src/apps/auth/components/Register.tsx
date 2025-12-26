@@ -1,22 +1,27 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
 import { 
   User, Mail, Lock, Building, Phone, MapPin, 
   Briefcase, FileText, ArrowRight, ArrowLeft, 
   Check, Loader2, AlertCircle, Eye, EyeOff 
 } from 'lucide-react';
+import { BsGoogle } from 'react-icons/bs';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register, error: authError, clearError } = useAuth();
+  const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
   
-  const [currentStep, setCurrentStep] = useState(1);
+  // Paso 0: selección de tipo de cuenta, Pasos 1-4: formulario B2B
+  const [accountType, setAccountType] = useState<'none' | 'b2b' | 'b2c'>('none');
+  const [currentStep, setCurrentStep] = useState(0); // 0 = selección de cuenta
   const totalSteps = 4;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>();
 
   const [formData, setFormData] = useState({
     // Paso 1: Datos personales
@@ -143,13 +148,42 @@ const Register: React.FC = () => {
   };
 
   const handleNext = () => {
+    if (currentStep === 0) {
+      // Si eligió B2B, avanza al paso 1 del formulario
+      if (accountType === 'b2b') {
+        setCurrentStep(1);
+      }
+      return;
+    }
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    if (currentStep === 1) {
+      // Volver al selector de tipo de cuenta
+      setCurrentStep(0);
+      setAccountType('none');
+    } else {
+      setCurrentStep(prev => Math.max(prev - 1, 1));
+    }
+  };
+
+  const handleSelectAccountType = (type: 'b2b' | 'b2c') => {
+    setAccountType(type);
+    if (type === 'b2c') {
+      // Para B2C mostramos directamente la opción de Google
+      setCurrentStep(0);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error('Error al registrarse con Google:', error);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -328,18 +362,47 @@ const Register: React.FC = () => {
             <Link to="/" className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
               <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
             </Link>
-            <div className="!flex !items-end !justify-between !mb-2">
-              <h1 className="!text-3xl !font-bold !text-white">Crear Cuenta</h1>
-              <span className="!text-emerald-400 !font-medium">Paso {currentStep} de {totalSteps}</span>
-            </div>
-            <div className="!h-2 !w-full !bg-emerald-800 !rounded-full !overflow-hidden">
-              <motion.div 
-                className="!h-full !bg-emerald-400"
-                initial={{ width: 0 }}
-                animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
+            
+            {/* Header dinámico según el paso */}
+            {currentStep === 0 && accountType === 'none' && (
+              <>
+                <h1 className="!text-3xl !font-bold !text-white !mb-2">¿Qué tipo de cuenta necesitas?</h1>
+                <p className="!text-emerald-200/80">Elige la opción que mejor se adapte a ti</p>
+              </>
+            )}
+            {currentStep === 0 && accountType === 'b2c' && (
+              <>
+                <button
+                  onClick={() => setAccountType('none')}
+                  className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-4"
+                >
+                  <ArrowLeft className="!w-4 !h-4" /> <span>Cambiar tipo de cuenta</span>
+                </button>
+                <div className="!flex !justify-center !mb-4">
+                  <div className="!w-16 !h-16 !bg-emerald-700 !rounded-2xl !flex !items-center !justify-center">
+                    <User className="!w-8 !h-8 !text-emerald-300" />
+                  </div>
+                </div>
+                <h1 className="!text-3xl !font-bold !text-white !text-center !mb-2">Crear Cuenta Personal</h1>
+                <p className="!text-emerald-200/80 !text-center">Regístrate con tu cuenta de Google</p>
+              </>
+            )}
+            {currentStep >= 1 && (
+              <>
+                <div className="!flex !items-end !justify-between !mb-2">
+                  <h1 className="!text-3xl !font-bold !text-white">Crear Cuenta</h1>
+                  <span className="!text-emerald-400 !font-medium">Paso {currentStep} de {totalSteps}</span>
+                </div>
+                <div className="!h-2 !w-full !bg-emerald-800 !rounded-full !overflow-hidden">
+                  <motion.div 
+                    className="!h-full !bg-emerald-400"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {authError && (
@@ -356,13 +419,112 @@ const Register: React.FC = () => {
           <form onSubmit={handleSubmit} className="!space-y-6">
             <AnimatePresence mode="wait">
               <motion.div
-                key={currentStep}
+                key={`${currentStep}-${accountType}`}
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -20, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6"
+                className={currentStep === 0 ? '' : '!grid !grid-cols-1 md:!grid-cols-2 !gap-6'}
               >
+                {/* Paso 0: Selección de tipo de cuenta */}
+                {currentStep === 0 && accountType === 'none' && (
+                  <div className="!space-y-4">
+                    {/* Opción Empresarial */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAccountType('b2b')}
+                      className="!w-full !p-6 !bg-emerald-800/50 !border !border-emerald-700 !rounded-2xl !text-left hover:!bg-emerald-800/70 !transition-all !group"
+                    >
+                      <div className="!flex !items-start !gap-4">
+                        <div className="!w-12 !h-12 !bg-blue-500/20 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
+                          <Building className="!w-6 !h-6 !text-blue-400" />
+                        </div>
+                        <div className="!flex-1">
+                          <h3 className="!text-lg !font-bold !text-white !mb-1">Cuenta Empresarial</h3>
+                          <p className="!text-emerald-200/70 !text-sm !mb-3">Para empresas y organizaciones que desean gestionar sus emisiones corporativas.</p>
+                          <div className="!space-y-1">
+                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                              <Check className="!w-4 !h-4" /> Dashboard empresarial
+                            </div>
+                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                              <Check className="!w-4 !h-4" /> Reportes avanzados
+                            </div>
+                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                              <Check className="!w-4 !h-4" /> Múltiples usuarios
+                            </div>
+                          </div>
+                        </div>
+                        <ArrowRight className="!w-5 !h-5 !text-emerald-400 group-hover:!translate-x-1 !transition-transform" />
+                      </div>
+                    </button>
+
+                    {/* Opción Personal */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAccountType('b2c')}
+                      className="!w-full !p-6 !bg-emerald-800/50 !border !border-emerald-700 !rounded-2xl !text-left hover:!bg-emerald-800/70 !transition-all !group"
+                    >
+                      <div className="!flex !items-start !gap-4">
+                        <div className="!w-12 !h-12 !bg-emerald-500/20 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
+                          <User className="!w-6 !h-6 !text-emerald-400" />
+                        </div>
+                        <div className="!flex-1">
+                          <h3 className="!text-lg !font-bold !text-white !mb-1">Cuenta Personal</h3>
+                          <p className="!text-emerald-200/70 !text-sm !mb-3">Para viajeros individuales que quieren compensar sus emisiones personales.</p>
+                          <div className="!space-y-1">
+                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                              <Check className="!w-4 !h-4" /> Registro rápido con Google
+                            </div>
+                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                              <Check className="!w-4 !h-4" /> Calculadora personal
+                            </div>
+                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                              <Check className="!w-4 !h-4" /> Badges y certificados
+                            </div>
+                          </div>
+                        </div>
+                        <ArrowRight className="!w-5 !h-5 !text-emerald-400 group-hover:!translate-x-1 !transition-transform" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+
+                {/* Paso 0 con B2C seleccionado: Mostrar botón de Google */}
+                {currentStep === 0 && accountType === 'b2c' && (
+                  <div className="!space-y-6">
+                    <button
+                      type="button"
+                      onClick={handleGoogleRegister}
+                      disabled={googleLoading}
+                      className="!w-full !py-4 !px-6 !bg-white !text-gray-800 !font-semibold !rounded-full !shadow-lg hover:!shadow-xl !transition-all !flex !items-center !justify-center !gap-3 disabled:!opacity-50 disabled:!cursor-not-allowed"
+                    >
+                      {googleLoading ? (
+                        <Loader2 className="!w-6 !h-6 !animate-spin !text-emerald-600" />
+                      ) : (
+                        <BsGoogle className="!w-5 !h-5 !text-red-500" />
+                      )}
+                      {googleLoading ? 'Conectando...' : 'Continuar con Google'}
+                    </button>
+
+                    <div className="!space-y-4">
+                      <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !rounded-xl">
+                        <Check className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
+                        <div>
+                          <p className="!font-medium !text-white">Calcula tu huella de carbono</p>
+                          <p className="!text-sm !text-emerald-200/70">Mide el impacto de tus viajes</p>
+                        </div>
+                      </div>
+                      <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !rounded-xl">
+                        <Check className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
+                        <div>
+                          <p className="!font-medium !text-white">Compensa tus emisiones</p>
+                          <p className="!text-sm !text-emerald-200/70">Proyectos certificados</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {currentStep === 1 && (
                   <>
                     {renderInput('Nombre', 'firstName', 'text', 'Juan', <User className="!w-5 !h-5" />)}
@@ -493,41 +655,44 @@ const Register: React.FC = () => {
               </motion.div>
             </AnimatePresence>
 
-            <div className="!flex !gap-4 !pt-6">
-              {currentStep > 1 && (
-                <button
-                  type="button"
-                  onClick={handlePrevious}
-                  className="!flex-1 !py-4 !px-6 !bg-emerald-800 !text-emerald-200 !font-bold !rounded-full hover:!bg-emerald-700 !transition-all"
-                >
-                  Atrás
-                </button>
-              )}
-              
-              {currentStep < totalSteps ? (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all !flex !items-center !justify-center !gap-2"
-                >
-                  Siguiente <ArrowRight className="!w-5 !h-5" />
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
-                >
-                  {isLoading ? <Loader2 className="!w-5 !h-5 !animate-spin" /> : 'Crear Cuenta'}
-                </button>
-              )}
-            </div>
+            {/* Botones de navegación solo para pasos B2B */}
+            {currentStep >= 1 && (
+              <div className="!flex !gap-4 !pt-6">
+                {currentStep >= 1 && (
+                  <button
+                    type="button"
+                    onClick={handlePrevious}
+                    className="!flex-1 !py-4 !px-6 !bg-emerald-800 !text-emerald-200 !font-bold !rounded-full hover:!bg-emerald-700 !transition-all"
+                  >
+                    Atrás
+                  </button>
+                )}
+                
+                {currentStep < totalSteps ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all !flex !items-center !justify-center !gap-2"
+                  >
+                    Siguiente <ArrowRight className="!w-5 !h-5" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+                  >
+                    {isLoading ? <Loader2 className="!w-5 !h-5 !animate-spin" /> : 'Crear Cuenta'}
+                  </button>
+                )}
+              </div>
+            )}
           </form>
 
           <div className="!mt-8 !text-center">
             <span className="!text-emerald-200/80">¿Ya tienes cuenta? </span>
             <Link to="/login" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
-              Inicia sesión aquí
+              Iniciar sesión
             </Link>
           </div>
         </motion.div>

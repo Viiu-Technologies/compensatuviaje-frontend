@@ -1,6 +1,7 @@
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
 import { getRedirectPath } from '../services/authService';
 import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2, Facebook, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -22,6 +23,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, error, clearError, isLoading: authLoading } = useAuth();
+  const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
   
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -133,10 +135,23 @@ const Login: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <button className="!w-full !max-w-xs !flex !items-center !justify-center !gap-3 !py-3 !px-6 !rounded-full !bg-white/90 !text-emerald-800 !font-semibold !shadow-lg hover:!bg-white hover:!scale-105 !transition-all">
-              <span className="!font-bold !text-lg"></span>
+            <button 
+              onClick={async () => {
+                try {
+                  await loginWithGoogle();
+                } catch (error) {
+                  console.error('Error al iniciar sesión con Google:', error);
+                }
+              }}
+              disabled={googleLoading}
+              className="!w-full !max-w-xs !flex !items-center !justify-center !gap-3 !py-3 !px-6 !rounded-full !bg-white/90 !text-emerald-800 !font-semibold !shadow-lg hover:!bg-white hover:!scale-105 !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed"
+            >
+              {googleLoading ? (
+                <Loader2 className="!w-6 !h-6 animate-spin" />
+              ) : (
                 <BsGoogle className="!w-6 !h-6" />
-              Iniciar sesión con Google
+              )}
+              {googleLoading ? 'Conectando...' : 'Iniciar sesión con Google'}
             </button>
             
             <div className="!flex !gap-4 !w-full !max-w-xs">
