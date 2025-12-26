@@ -16,7 +16,7 @@ interface FormData {
   adminPassword: string;
   confirmPassword: string;
 }
-
+const API_URL = import.meta.env.VITE_API_URL;
 const B2BRegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
@@ -62,7 +62,7 @@ const B2BRegisterPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/public/companies/register', {
+      const response = await fetch(`${API_URL}/public/companies/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

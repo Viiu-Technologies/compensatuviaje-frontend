@@ -33,19 +33,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let mounted = true;
     
     const initAuth = async () => {
+      console.log('🔄 [AuthContext] Iniciando verificación de autenticación...');
       try {
         setLoading(true);
         const currentUser = await authService.getCurrentUser();
+        console.log('✅ [AuthContext] Usuario actual:', currentUser);
         if (mounted) {
           setUser(currentUser);
         }
       } catch (error) {
-        console.error('Error loading user:', error);
+        console.error('❌ [AuthContext] Error cargando usuario:', error);
         if (mounted) {
           setUser(null);
         }
       } finally {
         if (mounted) {
+          console.log('🏁 [AuthContext] Finalizando verificación (loading -> false)');
           setLoading(false);
         }
       }
@@ -58,11 +61,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_IN' && session) {
-        await loadUser();
+        await loadUser(session);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
-      } else if (event === 'TOKEN_REFRESHED') {
-        await loadUser();
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        await loadUser(session);
       }
     });
 
@@ -73,10 +76,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const loadUser = async () => {
+  const loadUser = async (session?: any) => {
     try {
       setLoading(true);
-      const currentUser = await authService.getCurrentUser();
+      // Si ya tenemos la sesión del evento, la pasamos para evitar llamar a getSession de nuevo
+      const currentUser = await authService.getCurrentUser(session);
       setUser(currentUser);
     } catch (error) {
       console.error('Error loading user:', error);

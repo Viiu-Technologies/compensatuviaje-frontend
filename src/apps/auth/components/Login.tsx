@@ -31,6 +31,7 @@ const Login: React.FC = () => {
     rememberMe: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -138,20 +139,22 @@ const Login: React.FC = () => {
             <button 
               onClick={async () => {
                 try {
+                  setIsGoogleSigningIn(true);
                   await loginWithGoogle();
                 } catch (error) {
                   console.error('Error al iniciar sesión con Google:', error);
+                  setIsGoogleSigningIn(false);
                 }
               }}
-              disabled={googleLoading}
+              disabled={googleLoading || isGoogleSigningIn}
               className="!w-full !max-w-xs !flex !items-center !justify-center !gap-3 !py-3 !px-6 !rounded-full !bg-white/90 !text-emerald-800 !font-semibold !shadow-lg hover:!bg-white hover:!scale-105 !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed"
             >
-              {googleLoading ? (
+              {isGoogleSigningIn ? (
                 <Loader2 className="!w-6 !h-6 animate-spin" />
               ) : (
                 <BsGoogle className="!w-6 !h-6" />
               )}
-              {googleLoading ? 'Conectando...' : 'Iniciar sesión con Google'}
+              {isGoogleSigningIn ? 'Conectando...' : 'Iniciar sesión con Google'}
             </button>
             
             <div className="!flex !gap-4 !w-full !max-w-xs">

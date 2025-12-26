@@ -131,14 +131,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(async (): Promise<void> => {
     try {
-      await authService.logout();
+      await authService.logout(user?.userType);
     } catch (err) {
       console.error('Error al cerrar sesión en el backend:', err);
     } finally {
       setUser(null);
       setError(null);
     }
-  }, []);
+  }, [user]);
 
   const refreshToken = useCallback(async (): Promise<void> => {
     try {

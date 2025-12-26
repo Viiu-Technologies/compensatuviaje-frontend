@@ -38,6 +38,8 @@ interface Message {
   timestamp: Date;
 }
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface CalculationResult {
   status: string;
   meta: {
@@ -218,7 +220,7 @@ const CalculatorAI: React.FC = () => {
     addBotMessage('Calculando tu huella de carbono... 🌍');
     
     try {
-      const response = await fetch('http://localhost:3001/api/public/calculator/estimate', {
+      const response = await fetch(`${API_URL}/public/calculator/estimate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

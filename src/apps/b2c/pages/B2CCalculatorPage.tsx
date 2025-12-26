@@ -84,6 +84,8 @@ const CABIN_OPTIONS = [
   { value: 'first', label: 'Primera Clase', icon: '👑', description: 'Máximo confort' }
 ];
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 // Airport Search Component (simplificado para B2C)
 const AirportSearch: React.FC<{
   onSelect: (airport: Airport) => void;
@@ -103,7 +105,7 @@ const AirportSearch: React.FC<{
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3001/api/public/airports/search?q=${encodeURIComponent(searchQuery)}`
+        `${API_URL}/public/airports/search?q=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
       setResults(data.airports || []);
@@ -327,7 +329,7 @@ const B2CCalculatorPage: React.FC = () => {
     addBotMessage('Calculando tu huella de carbono... 🌍');
     
     try {
-      const response = await fetch('http://localhost:3001/api/public/calculator/estimate', {
+      const response = await fetch(`${API_URL}/public/calculator/estimate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -369,7 +371,7 @@ const B2CCalculatorPage: React.FC = () => {
       const accessToken = sessionData?.session?.access_token;
       
       // Crear sesión de pago en Stripe
-      const response = await fetch('http://localhost:3001/api/b2c/payments/create-checkout', {
+      const response = await fetch(`${API_URL}/b2c/payments/create-checkout`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

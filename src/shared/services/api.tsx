@@ -19,6 +19,10 @@ api.interceptors.request.use(
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Debug log para verificar que el token se está enviando
+      console.log(`🔑 [API] Enviando token en request a: ${config.url}`);
+    } else {
+      console.warn(`⚠️ [API] No hay token para request a: ${config.url}`);
     }
     return config;
   },

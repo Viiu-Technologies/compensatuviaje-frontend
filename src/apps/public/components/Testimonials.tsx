@@ -15,6 +15,8 @@ const Testimonials = () => {
     fetchTestimonials();
   }, []);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // Auto-rotate testimonials
   useEffect(() => {
     if (testimonials.length === 0) return;
@@ -28,7 +30,7 @@ const Testimonials = () => {
 
   const fetchTestimonials = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/testimonials');
+      const response = await fetch(`${API_URL}/testimonials`);
       const data = await response.json();
       
       if (data.success) {

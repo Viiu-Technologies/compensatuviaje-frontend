@@ -111,60 +111,8 @@ const NativeLogoLoop: React.FC<Props> = ({ logos, logoHeight = 88, gap = 120, sp
   );
 };
 
-const tryImports = [
-  '@react-bits/logo-loop',
-  '@react-bits/logo-loop-js-css',
-  '@react-bits/LogoLoop-JS-CSS',
-  '@react-bits/logoloop'
-];
-
 const LogoLoopComponent: React.FC<Props> = ({ logos, logoHeight = 60, gap = 48, speed = 100 }) => {
-  const [RemoteComp, setRemoteComp] = useState<any | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    (async () => {
-      for (const name of tryImports) {
-        try {
-          // try to dynamically import candidate module names
-          // eslint-disable-next-line no-await-in-loop
-          const mod = await import(/* webpackIgnore: true */ name).catch(() => null);
-          if (mod && mounted) {
-            const comp = (mod as any).default ?? (mod as any).LogoLoop ?? mod;
-            setRemoteComp(() => comp);
-            return;
-          }
-        } catch (e) {
-          // continue to next candidate
-        }
-      }
-      // If none available, leave RemoteComp null => use native fallback
-    })();
-
-    return () => { mounted = false; };
-  }, []);
-
-  if (RemoteComp) {
-    const C = RemoteComp;
-    return (
-      <div className="logo-loop-container">
-        {/* @ts-ignore */}
-        <C
-          logos={logos.map(l => l.src)}
-          logoHeight={logoHeight}
-          gap={gap}
-          speed={speed}
-          hoverSpeed={0}
-          fadeOut
-          scaleOnHover
-          ariaLabel="Métodos de pago"
-          className="custom-logo-loop"
-        />
-      </div>
-    );
-  }
-
+  // Use native implementation directly to avoid Vite dynamic import warnings
   return <NativeLogoLoop logos={logos} logoHeight={logoHeight} gap={gap} speed={speed} />;
 };
 

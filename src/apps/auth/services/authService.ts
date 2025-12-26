@@ -75,6 +75,24 @@ class AuthService {
     );
 
     if (response.success && response.user_info) {
+      console.log('Login successful, user_info:', response.user_info);
+
+      // DEBUG: Decodificar token para verificar el rol que viene DENTRO del token
+      try {
+        const tokenParts = response.access_token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log('🎟️ [Auth] CONTENIDO DEL TOKEN (Payload):', payload);
+          console.log('👮 [Auth] Rol en el token:', payload.role);
+          
+          if (payload.role !== 'superadmin' && payload.role === 'SUPERADMIN') {
+            console.warn('⚠️ [Auth] ALERTA: El rol en el token es SUPERADMIN (mayúsculas) pero el backend podría esperar superadmin (minúsculas).');
+          }
+        }
+      } catch (e) {
+        console.error('Error decodificando token para debug:', e);
+      }
+
       // Agregar user_type basado en el rol
       response.user_info.user_type = determineUserType(response.user_info);
       
@@ -96,13 +114,16 @@ class AuthService {
   }
 
   // Logout
-  async logout(): Promise<void> {
+  async logout(userType?: UserType): Promise<void> {
     try {
       const token = this.getToken();
       
       if (token) {
-        // Llamar al endpoint de logout del backend
-        await apiClient.post('/b2b/profile/logout', null);
+        // Solo llamar al endpoint de logout del backend si es B2B (requiere contexto de empresa)
+        if (userType === 'b2b') {
+          await apiClient.post('/b2b/profile/logout', null);
+        }
+        // Si hay otros endpoints para otros tipos de usuario, agregarlos aquí
       }
     } catch (error) {
       console.error('Error al hacer logout en el backend:', error);

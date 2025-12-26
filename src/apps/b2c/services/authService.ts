@@ -12,7 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export interface B2CUser {
   id: string;
@@ -68,6 +68,10 @@ class AuthService {
       if (error) throw error;
       if (!data.session) return null;
 
+      // LOG: Mostrar JWT de Supabase en consola
+      console.log('🔑 [B2C] Supabase JWT Token:', data.session.access_token);
+      console.log('👤 [B2C] Supabase User:', data.session.user);
+
       // Verificar token con nuestro backend
       const user = await this.verifyTokenWithBackend(data.session.access_token);
       
@@ -103,24 +107,43 @@ class AuthService {
    * Obtener sesión actual de Supabase
    */
   async getSession(): Promise<AuthSession | null> {
-    const { data, error } = await supabase.auth.getSession();
+    console.log('🔍 [AuthService] Obteniendo sesión de Supabase...');
     
-    if (error) {
-      console.error('Error obteniendo sesión:', error);
+    try {
+      // Timeout para evitar que se quede pegado indefinidamente
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 5000)
+      );
+
+      const { data, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+      
+      if (error) {
+        console.error('❌ [AuthService] Error obteniendo sesión:', error);
+        return null;
+      }
+      
+      console.log('✅ [AuthService] Sesión obtenida:', data.session ? 'Activa' : 'Ninguna');
+      return data.session;
+    } catch (error) {
+      console.error('❌ [AuthService] Excepción en getSession:', error);
       return null;
     }
-    
-    return data.session;
   }
 
   /**
    * Obtener datos del usuario actual del backend
    */
-  async getCurrentUser(): Promise<B2CUser | null> {
+  async getCurrentUser(providedSession?: AuthSession | null): Promise<B2CUser | null> {
+    console.log('👤 [AuthService] getCurrentUser: Iniciando...');
     try {
-      const session = await this.getSession();
-      if (!session) return null;
+      const session = providedSession || await this.getSession();
+      if (!session) {
+        console.log('👤 [AuthService] getCurrentUser: No hay sesión activa.');
+        return null;
+      }
 
+      console.log('👤 [AuthService] getCurrentUser: Sesión encontrada, consultando backend...');
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
 
@@ -134,23 +157,24 @@ class AuthService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        console.error('Error response from /b2c/auth/me:', response.status);
+        console.error('❌ [AuthService] Error response from /b2c/auth/me:', response.status);
         return null;
       }
 
       const data = await response.json();
       
       if (!data.success) {
-        console.error('Backend error:', data.message);
+        console.error('❌ [AuthService] Backend error:', data.message);
         return null;
       }
       
+      console.log('✅ [AuthService] getCurrentUser: Usuario obtenido del backend:', data.data.user);
       return data.data.user;
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        console.error('Request timeout getting current user');
+        console.error('❌ [AuthService] Request timeout getting current user');
       } else {
-        console.error('Error obteniendo usuario:', error);
+        console.error('❌ [AuthService] Error obteniendo usuario:', error);
       }
       return null;
     }

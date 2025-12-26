@@ -15,6 +15,8 @@ interface AirportSearchProps {
   placeholder?: string;
 }
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const AirportSearch: React.FC<AirportSearchProps> = ({ 
   onSelect, 
   placeholder = "Buscar aeropuerto..." 
@@ -27,6 +29,7 @@ const AirportSearch: React.FC<AirportSearchProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+
   // Debounced search
   useEffect(() => {
     const debounceTimer = setTimeout(async () => {
@@ -35,7 +38,7 @@ const AirportSearch: React.FC<AirportSearchProps> = ({
         setError(null);
         try {
           const response = await fetch(
-            `http://localhost:3001/api/public/airports/search?q=${encodeURIComponent(query)}`
+            `${API_URL}/public/airports/search?q=${encodeURIComponent(query)}`
           );
           
           if (!response.ok) {
