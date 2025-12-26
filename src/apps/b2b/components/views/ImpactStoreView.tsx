@@ -20,6 +20,7 @@ import {
   Zap,
   Heart
 } from 'lucide-react';
+import { useTheme } from '../../../../shared/context/ThemeContext';
 
 interface ImpactProduct {
   id: string;
@@ -36,6 +37,8 @@ interface ImpactProduct {
 }
 
 const ImpactStoreView: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [cart, setCart] = useState<{ productId: string; quantity: number }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -194,8 +197,8 @@ const ImpactStoreView: React.FC = () => {
       {/* Header */}
       <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
         <div>
-          <h1 className="!text-2xl !font-bold !text-gray-900">Tienda de Impacto</h1>
-          <p className="!text-gray-500 !text-sm !mt-1">Genera impacto positivo con cada compra</p>
+          <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Tienda de Impacto</h1>
+          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Genera impacto positivo con cada compra</p>
         </div>
         
         {/* Cart Button */}
@@ -241,17 +244,21 @@ const ImpactStoreView: React.FC = () => {
       </motion.div>
 
       {/* Search and Filters */}
-      <div className="!bg-white !rounded-2xl !p-4 !border !border-gray-200 !shadow-sm">
+      <div className={`!rounded-2xl !p-4 !border !shadow-sm ${isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'}`}>
         <div className="!flex !flex-col lg:!flex-row !gap-4">
           {/* Search */}
           <div className="!relative !flex-1">
-            <Search className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-gray-400" />
+            <Search className={`!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 ${isDark ? '!text-gray-500' : '!text-gray-400'}`} />
             <input
               type="text"
               placeholder="Buscar productos de impacto..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="!w-full !pl-10 !pr-4 !py-2.5 !rounded-xl !border !border-gray-200 !bg-gray-50 focus:!bg-white focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !outline-none !transition-all"
+              className={`!w-full !pl-10 !pr-4 !py-2.5 !rounded-xl !border !outline-none !transition-all focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 ${
+                isDark 
+                  ? '!border-gray-600 !bg-gray-700 !text-gray-100 placeholder:!text-gray-500' 
+                  : '!border-gray-200 !bg-gray-50 !text-gray-900 focus:!bg-white'
+              }`}
             />
           </div>
 
@@ -264,7 +271,9 @@ const ImpactStoreView: React.FC = () => {
                 className={`!flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !text-sm !font-medium !whitespace-nowrap !transition-all !border-0 ${
                   selectedCategory === cat.id
                     ? '!bg-green-500 !text-white !shadow-lg !shadow-green-500/30'
-                    : '!bg-gray-100 !text-gray-600 hover:!bg-gray-200'
+                    : isDark 
+                      ? '!bg-gray-700 !text-gray-300 hover:!bg-gray-600'
+                      : '!bg-gray-100 !text-gray-600 hover:!bg-gray-200'
                 }`}
               >
                 <cat.icon className="!w-4 !h-4" />
@@ -285,7 +294,7 @@ const ImpactStoreView: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: index * 0.05 }}
-              className="!bg-white !rounded-2xl !border !border-gray-200 !shadow-lg hover:!shadow-xl !transition-all !overflow-hidden group"
+              className={`!rounded-2xl !border !shadow-lg hover:!shadow-xl !transition-all !overflow-hidden group ${isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'}`}
             >
               {/* Image */}
               <div className="!relative !h-44 !overflow-hidden">
@@ -308,10 +317,10 @@ const ImpactStoreView: React.FC = () => {
 
               {/* Content */}
               <div className="!p-4">
-                <h3 className="!text-base !font-bold !text-gray-900 !mb-1 group-hover:!text-green-600 !transition-colors">
+                <h3 className={`!text-base !font-bold !mb-1 group-hover:!text-green-600 !transition-colors ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
                   {product.name}
                 </h3>
-                <p className="!text-sm !text-gray-500 !mb-3 !line-clamp-2">{product.description}</p>
+                <p className={`!text-sm !mb-3 !line-clamp-2 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{product.description}</p>
 
                 {/* Impact */}
                 <div className="!flex !items-center !gap-2 !mb-3">
@@ -324,23 +333,23 @@ const ImpactStoreView: React.FC = () => {
                 </div>
 
                 {/* Price and Actions */}
-                <div className="!flex !items-center !justify-between !pt-3 !border-t !border-gray-100">
+                <div className={`!flex !items-center !justify-between !pt-3 !border-t ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
                   <div>
-                    <span className="!text-xl !font-bold !text-gray-900">
+                    <span className={`!text-xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
                       ${product.price.toLocaleString()}
                     </span>
-                    <span className="!text-xs !text-gray-500 !ml-1">CLP</span>
+                    <span className={`!text-xs !ml-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>CLP</span>
                   </div>
 
                   {getCartQuantity(product.id) > 0 ? (
                     <div className="!flex !items-center !gap-2">
                       <button
                         onClick={() => removeFromCart(product.id)}
-                        className="!w-8 !h-8 !rounded-lg !bg-gray-100 !flex !items-center !justify-center hover:!bg-gray-200 !transition-colors !border-0"
+                        className={`!w-8 !h-8 !rounded-lg !flex !items-center !justify-center !transition-colors !border-0 ${isDark ? '!bg-gray-700 hover:!bg-gray-600' : '!bg-gray-100 hover:!bg-gray-200'}`}
                       >
-                        <Minus className="!w-4 !h-4 !text-gray-600" />
+                        <Minus className={`!w-4 !h-4 ${isDark ? '!text-gray-300' : '!text-gray-600'}`} />
                       </button>
-                      <span className="!w-8 !text-center !font-semibold">{getCartQuantity(product.id)}</span>
+                      <span className={`!w-8 !text-center !font-semibold ${isDark ? '!text-gray-100' : ''}`}>{getCartQuantity(product.id)}</span>
                       <button
                         onClick={() => addToCart(product.id)}
                         className="!w-8 !h-8 !rounded-lg !bg-green-500 !flex !items-center !justify-center hover:!bg-green-600 !transition-colors !border-0"
@@ -399,9 +408,9 @@ const ImpactStoreView: React.FC = () => {
 
       {filteredProducts.length === 0 && (
         <div className="!text-center !py-12">
-          <ShoppingBag className="!w-16 !h-16 !text-gray-300 !mx-auto !mb-4" />
-          <h3 className="!text-lg !font-semibold !text-gray-700">No se encontraron productos</h3>
-          <p className="!text-gray-500 !text-sm">Intenta con otra categoría o búsqueda</p>
+          <ShoppingBag className={`!w-16 !h-16 !mx-auto !mb-4 ${isDark ? '!text-gray-600' : '!text-gray-300'}`} />
+          <h3 className={`!text-lg !font-semibold ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>No se encontraron productos</h3>
+          <p className={`!text-sm ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Intenta con otra categoría o búsqueda</p>
         </div>
       )}
     </div>
