@@ -377,3 +377,138 @@ export const downloadCSV = (data: Blob, filename: string) => {
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
 };
+
+// ============================================
+// PARTNERS (ESG)
+// ============================================
+
+export interface Partner {
+  id: string;
+  name: string;
+  contact_email: string;
+  website_url?: string;
+  logo_url?: string;
+  status: 'onboarding' | 'active' | 'suspended' | 'inactive';
+  verified_at?: string;
+  created_at: string;
+  updated_at?: string;
+  created_by?: string;
+  projects_count?: number;
+  total_projects?: number;
+  total_active_projects?: number;
+}
+
+export interface PartnerDetail extends Partner {
+  users: Array<{
+    id: string;
+    name: string;
+    email: string;
+    is_active: boolean;
+    last_login?: string;
+    created_at: string;
+    roles: Array<{
+      code: string;
+      name: string;
+    }>;
+  }>;
+  projects: Array<{
+    id: string;
+    code: string;
+    name: string;
+    status: string;
+    type: string;
+    created_at: string;
+  }>;
+  bank_details_configured: boolean;
+}
+
+export interface PartnersListResponse {
+  partners: Partner[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export const getPartners = async (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: string;
+}): Promise<PartnersListResponse> => {
+  const response = await api.get('/admin/partners', { params });
+  return response.data.data;
+};
+
+export const getPartnerDetail = async (id: string): Promise<PartnerDetail> => {
+  const response = await api.get(`/admin/partners/${id}`);
+  return response.data.data;
+};
+
+export const createPartner = async (data: {
+  partnerName: string;
+  contactEmail: string;
+  websiteUrl?: string;
+  adminName: string;
+  adminEmail: string;
+}) => {
+  const response = await api.post('/admin/partners', data);
+  return response.data;
+};
+
+export const updatePartnerStatus = async (
+  id: string, 
+  status: 'active' | 'suspended' | 'inactive',
+  reason?: string
+) => {
+  const response = await api.put(`/admin/partners/${id}/status`, { status, reason });
+  return response.data;
+};
+
+export const verifyPartner = async (id: string) => {
+  const response = await api.post(`/admin/partners/${id}/verify`);
+  return response.data;
+};
+
+// Partner Projects (Admin view)
+export const getPartnerProjects = async (partnerId: string, params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+}) => {
+  const response = await api.get(`/admin/partners/${partnerId}/projects`, { params });
+  return response.data.data;
+};
+
+export const approvePartnerProject = async (partnerId: string, projectId: string) => {
+  const response = await api.post(`/admin/partners/${partnerId}/projects/${projectId}/approve`);
+  return response.data;
+};
+
+export const rejectPartnerProject = async (
+  partnerId: string, 
+  projectId: string, 
+  reason: string
+) => {
+  const response = await api.post(`/admin/partners/${partnerId}/projects/${projectId}/reject`, { reason });
+  return response.data;
+};
+
+// Partner Stats
+export const getPartnersStats = async () => {
+  const response = await api.get('/admin/partners/stats');
+  return response.data.data;
+};
+
+// Projects pending review (all partners)
+export const getProjectsPendingReview = async (params?: {
+  page?: number;
+  limit?: number;
+}) => {
+  const response = await api.get('/admin/partners/projects/pending', { params });
+  return response.data.data;
+};

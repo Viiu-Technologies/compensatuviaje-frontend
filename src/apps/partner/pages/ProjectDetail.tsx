@@ -1,0 +1,498 @@
+// ============================================
+// PROJECT DETAIL PAGE
+// Detalle de un proyecto ESG específico
+// ============================================
+
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import {
+  EsgProject,
+  PROJECT_TYPE_LABELS,
+  PROJECT_STATUS_LABELS,
+  PROJECT_STATUS_COLORS
+} from '../../../types/partner.types';
+import {
+  getProjectById,
+  getProjectStats,
+  submitProjectForReview,
+  deleteProject
+} from '../services/partnerApi';
+
+// ============================================
+// PROJECT INFO CARD COMPONENT
+// ============================================
+
+interface InfoCardProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const InfoCard: React.FC<InfoCardProps> = ({ title, children }) => (
+  <div className="bg-white rounded-xl border shadow-sm p-6">
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+    {children}
+  </div>
+);
+
+// ============================================
+// STAT ITEM COMPONENT
+// ============================================
+
+interface StatItemProps {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: 'green' | 'blue' | 'purple' | 'yellow';
+}
+
+const StatItem: React.FC<StatItemProps> = ({ label, value, icon, color }) => {
+  const colorClasses = {
+    green: 'bg-green-50 text-green-600',
+    blue: 'bg-blue-50 text-blue-600',
+    purple: 'bg-purple-50 text-purple-600',
+    yellow: 'bg-yellow-50 text-yellow-600'
+  };
+
+  return (
+    <div className={`rounded-lg p-4 ${colorClasses[color]}`}>
+      <div className="flex items-center gap-3">
+        <div className="opacity-60">{icon}</div>
+        <div>
+          <p className="text-sm opacity-80">{label}</p>
+          <p className="text-xl font-bold">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// MAIN PROJECT DETAIL COMPONENT
+// ============================================
+
+const ProjectDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<EsgProject | null>(null);
+  const [stats, setStats] = useState<{
+    total_certificates: number;
+    total_kg_co2: number;
+    total_revenue_clp: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      loadProjectData();
+    }
+  }, [id]);
+
+  const loadProjectData = async () => {
+    try {
+      setLoading(true);
+      const [projectData, statsData] = await Promise.all([
+        getProjectById(id!),
+        getProjectStats(id!)
+      ]);
+      setProject(projectData);
+      setStats(statsData);
+    } catch (error) {
+      console.error('Error loading project:', error);
+      setError('Error al cargar el proyecto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitForReview = async () => {
+    if (!id) return;
+    
+    setError(null);
+    setSuccess(null);
+    setSubmitting(true);
+
+    try {
+      const updatedProject = await submitProjectForReview(id);
+      if (updatedProject) {
+        setProject(updatedProject);
+        setSuccess('Proyecto enviado a revisión correctamente');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al enviar el proyecto a revisión');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+
+    setDeleting(true);
+    try {
+      const success = await deleteProject(id);
+      if (success) {
+        navigate('/partner/projects', { replace: true });
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al eliminar el proyecto');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  const formatNumber = (num: number): string => {
+    return new Intl.NumberFormat('es-CL').format(num);
+  };
+
+  const formatCurrency = (num: number): string => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0
+    }).format(num);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4" />
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded-lg" />
+              ))}
+            </div>
+            <div className="h-64 bg-gray-200 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Proyecto no encontrado</h2>
+          <p className="text-gray-500 mb-4">El proyecto que buscas no existe o fue eliminado</p>
+          <Link
+            to="/partner/projects"
+            className="text-green-600 hover:text-green-700 font-medium"
+          >
+            ← Volver a mis proyectos
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const canEdit = ['draft', 'rejected'].includes(project.status);
+  const canDelete = project.status === 'draft';
+  const canSubmit = project.status === 'draft' || project.status === 'rejected';
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b">
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                to="/partner/projects"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="text-sm font-mono text-gray-500">{project.code}</span>
+                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>
+                    {PROJECT_STATUS_LABELS[project.status]}
+                  </span>
+                </div>
+                <h1 className="text-2xl font-bold text-gray-800">{project.name}</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {canDelete && (
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Eliminar"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+              {canEdit && (
+                <Link
+                  to={`/partner/projects/${project.id}/edit`}
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Editar
+                </Link>
+              )}
+              {canSubmit && (
+                <button
+                  onClick={handleSubmitForReview}
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                >
+                  {submitting ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Enviar a revisión
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
+        {/* Messages */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            {success}
+          </div>
+        )}
+
+        {/* Rejection Notice */}
+        {project.status === 'rejected' && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <p className="font-medium text-red-800">Proyecto Rechazado</p>
+                <p className="text-sm text-red-700 mt-1">
+                  Tu proyecto fue rechazado. Por favor revisa la información y vuelve a enviarlo para revisión.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Cards */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatItem
+              label="Certificados Emitidos"
+              value={formatNumber(stats.total_certificates)}
+              color="green"
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              }
+            />
+            <StatItem
+              label="CO₂ Compensado"
+              value={`${formatNumber(stats.total_kg_co2)} kg`}
+              color="blue"
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            />
+            <StatItem
+              label="Ingresos Generados"
+              value={formatCurrency(stats.total_revenue_clp)}
+              color="purple"
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            />
+          </div>
+        )}
+
+        {/* Project Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <InfoCard title="Información General">
+            <dl className="space-y-4">
+              <div>
+                <dt className="text-sm text-gray-500">Tipo de Proyecto</dt>
+                <dd className="font-medium text-gray-800">{PROJECT_TYPE_LABELS[project.type]}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-gray-500">Ubicación</dt>
+                <dd className="font-medium text-gray-800">
+                  {project.location_country}
+                  {project.location_region && `, ${project.location_region}`}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-gray-500">Descripción</dt>
+                <dd className="text-gray-700">
+                  {project.description || 'Sin descripción'}
+                </dd>
+              </div>
+              {project.transparency_url && (
+                <div>
+                  <dt className="text-sm text-gray-500">URL de Transparencia</dt>
+                  <dd>
+                    <a
+                      href={project.transparency_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:text-green-700 font-medium inline-flex items-center gap-1"
+                    >
+                      {project.transparency_url}
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </InfoCard>
+
+          <InfoCard title="Datos Técnicos">
+            <dl className="space-y-4">
+              {project.provider_cost_unit_clp !== undefined && (
+                <div>
+                  <dt className="text-sm text-gray-500">Costo por Unidad (CLP)</dt>
+                  <dd className="font-medium text-gray-800">
+                    {formatCurrency(project.provider_cost_unit_clp)}
+                  </dd>
+                </div>
+              )}
+              {project.carbon_capture_per_unit !== undefined && (
+                <div>
+                  <dt className="text-sm text-gray-500">Captura CO₂ por Unidad</dt>
+                  <dd className="font-medium text-gray-800">
+                    {formatNumber(project.carbon_capture_per_unit)} kg
+                  </dd>
+                </div>
+              )}
+              {project.capacity_total !== undefined && (
+                <div>
+                  <dt className="text-sm text-gray-500">Capacidad Total</dt>
+                  <dd className="font-medium text-gray-800">
+                    {formatNumber(project.capacity_total)} unidades
+                  </dd>
+                </div>
+              )}
+              {project.capacity_sold !== undefined && (
+                <div>
+                  <dt className="text-sm text-gray-500">Capacidad Vendida</dt>
+                  <dd className="font-medium text-gray-800">
+                    {formatNumber(project.capacity_sold)} unidades
+                    {project.capacity_total && (
+                      <span className="text-gray-500 ml-2">
+                        ({((project.capacity_sold / project.capacity_total) * 100).toFixed(1)}%)
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-sm text-gray-500">Fecha de Creación</dt>
+                <dd className="font-medium text-gray-800">
+                  {new Date(project.created_at).toLocaleDateString('es-CL', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-gray-500">Última Actualización</dt>
+                <dd className="font-medium text-gray-800">
+                  {new Date(project.updated_at).toLocaleDateString('es-CL', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </dd>
+              </div>
+            </dl>
+          </InfoCard>
+        </div>
+      </div>
+
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Eliminar proyecto</h3>
+                <p className="text-sm text-gray-500">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+            <p className="text-gray-600 mb-6">
+              ¿Estás seguro de que deseas eliminar el proyecto <strong>{project.name}</strong>?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectDetail;

@@ -14,7 +14,8 @@ import { ThemeProvider } from './shared/context/ThemeContext';
 import ProtectedRoute, { 
   SuperAdminRoute, 
   B2BRoute, 
-  CompanyAdminRoute 
+  CompanyAdminRoute,
+  PartnerRoute 
 } from './apps/auth/components/ProtectedRoute';
 import PublicRoute from './apps/auth/components/PublicRoute';
 import B2CProtectedRoute from './apps/auth/components/B2CProtectedRoute';
@@ -46,6 +47,9 @@ import B2CCalculatorPage from './apps/b2c/pages/B2CCalculatorPage';
 import AdminRoutes from './apps/admin/routes';
 import VerificationPage from './apps/admin/pages/VerificationPage';
 import BatchUploadPage from './apps/admin/pages/BatchUploadPage';
+
+// Pages - Partner
+import { PartnerRoutes } from './apps/partner';
 
 // Smart redirect based on user type
 const SmartRedirect = () => {
@@ -233,27 +237,28 @@ function App() {
               } 
             />
             <Route 
-              path="/calculator" 
+              path="/b2c/calculator" 
               element={
                 <B2CProtectedRoute>
                   <B2CCalculatorPage />
                 </B2CProtectedRoute>
               } 
             />
+            {/* Redirect legacy calculator route */}
+            <Route 
+              path="/calculator" 
+              element={<Navigate to="/b2c/calculator" replace />} 
+            />
             
             {/* ===================== */}
-            {/* Rutas Partner - Proyectos ESG (TODO) */}
+            {/* Rutas Partner - Proyectos ESG */}
             {/* ===================== */}
             
             <Route 
               path="/partner/*" 
               element={
                 <ProtectedRoute requiredUserTypes={['partner', 'superadmin']}>
-                  {/* PartnerDashboard - TODO */}
-                  <div className="p-8">
-                    <h1 className="text-2xl font-bold">Dashboard Partner</h1>
-                    <p className="text-gray-600 mt-2">Pr├│ximamente...</p>
-                  </div>
+                  <PartnerRoutes />
                 </ProtectedRoute>
               } 
             />

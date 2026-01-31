@@ -15,7 +15,9 @@ import {
   Shield,
   Bell,
   CheckSquare,
-  UploadCloud
+  UploadCloud,
+  Handshake,
+  ClipboardCheck
 } from 'lucide-react';
 
 interface NavItem {
@@ -29,6 +31,8 @@ const navItems: NavItem[] = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/admin/empresas', icon: Building2, label: 'Empresas B2B' },
   { path: '/admin/usuarios-b2c', icon: Users, label: 'Usuarios B2C' },
+  { path: '/admin/partners', icon: Handshake, label: 'Impact Partners' },
+  { path: '/admin/proyectos-revision', icon: ClipboardCheck, label: 'Revisión Proyectos' },
   { path: '/admin/proyectos', icon: TreePine, label: 'Proyectos ESG' },
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { path: '/admin/verificacion', icon: CheckSquare, label: 'Verificación' },

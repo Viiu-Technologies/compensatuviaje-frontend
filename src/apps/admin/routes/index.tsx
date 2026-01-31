@@ -8,6 +8,9 @@ import ProyectosPage from '../pages/ProyectosPage';
 import ReportesPage from '../pages/ReportesPage';
 import VerificationPage from '../pages/VerificationPage';
 import BatchUploadPage from '../pages/BatchUploadPage';
+import PartnersPage from '../pages/PartnersPage';
+import PartnerDetailPage from '../pages/PartnerDetailPage';
+import ProjectsReviewPage from '../pages/ProjectsReviewPage';
 
 const AdminRoutes = () => {
   return (
@@ -22,6 +25,13 @@ const AdminRoutes = () => {
 
         {/* Gestión de Usuarios B2C */}
         <Route path="usuarios-b2c" element={<UsuariosB2CPage />} />
+
+        {/* Gestión de Impact Partners */}
+        <Route path="partners" element={<PartnersPage />} />
+        <Route path="partners/:id" element={<PartnerDetailPage />} />
+
+        {/* Revisión de Proyectos ESG (pendientes) */}
+        <Route path="proyectos-revision" element={<ProjectsReviewPage />} />
 
         {/* Gestión de Proyectos ESG */}
         <Route path="proyectos" element={<ProyectosPage />} />
