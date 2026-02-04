@@ -71,21 +71,21 @@ const TabNavigation: React.FC<TabProps> = ({ active, onChange, onboardingStatus 
   ];
 
   return (
-    <div className="flex border-b border-gray-200 mb-6">
+    <div className="!flex !border-b !border-gray-200 !mb-6">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors relative ${
+          className={`!flex !items-center !gap-2 !px-4 !py-3 !border-b-2 !font-medium !text-sm !transition-colors !relative ${
             active === tab.id
-              ? 'border-green-500 text-green-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? '!border-green-500 !text-green-600'
+              : '!border-transparent !text-gray-500 hover:!text-gray-700 hover:!border-gray-300'
           }`}
         >
           {tab.icon}
           {tab.label}
           {tab.needsAttention && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full" />
+            <span className="!absolute !-top-1 !-right-1 !w-3 !h-3 !bg-yellow-400 !rounded-full" />
           )}
         </button>
       ))}
@@ -795,31 +795,31 @@ const PartnerProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="!min-h-screen !bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-6 py-6">
-          <div className="flex items-center gap-4">
+      <div className="!bg-white !border-b">
+        <div className="!max-w-4xl !mx-auto !px-6 !py-6">
+          <div className="!flex !items-center !gap-4">
             <Link
               to="/partner"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="!text-gray-400 hover:!text-gray-600 !transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Mi Perfil</h1>
-              <p className="text-gray-500 mt-1">Configura tu cuenta y datos de la organización</p>
+              <h1 className="!text-2xl !font-bold !text-gray-800">Mi Perfil</h1>
+              <p className="!text-gray-500 !mt-1">Configura tu cuenta y datos de la organización</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-6">
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          <div className="p-6">
+      <div className="!max-w-4xl !mx-auto !px-6 !py-6">
+        <div className="!bg-white !rounded-xl !shadow-sm !border !overflow-hidden">
+          <div className="!p-6">
             <TabNavigation
               active={activeTab}
               onChange={setActiveTab}

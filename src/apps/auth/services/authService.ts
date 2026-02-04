@@ -41,7 +41,7 @@ export const getRedirectPath = (userType: UserType, companyStatus?: string): str
       return '/admin';
     
     case 'partner':
-      return '/partner/dashboard';
+      return '/partner';
     
     case 'b2c':
       return '/calculator';
@@ -139,6 +139,46 @@ class AuthService {
       const token = this.getToken();
       if (!token) return null;
 
+      // Decodificar el token para obtener info básica del usuario
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const role = payload.role;
+          
+          // Para SuperAdmin y Partner, usamos la info del token
+          // ya que no tienen endpoint /b2b/profile/me
+          if (role === 'SUPERADMIN' || role === 'superadmin' || 
+              role === 'PARTNER_ADMIN' || role === 'PARTNER_VIEWER') {
+            console.log('[Auth] Usuario Admin/Partner detectado, usando info del token');
+            
+            const userInfo: UserInfo = {
+              user_id: payload.userId || payload.sub || payload.id,
+              email: payload.email || '',
+              name: payload.name || payload.email?.split('@')[0] || '',
+              role: role,
+              is_super_admin: role === 'SUPERADMIN' || role === 'superadmin',
+              is_admin: role === 'SUPERADMIN' || role === 'superadmin',
+              permissions: payload.permissions || [],
+              user_type: determineUserType({
+                user_id: payload.userId,
+                email: payload.email,
+                name: payload.name,
+                role: role,
+                is_super_admin: role === 'SUPERADMIN' || role === 'superadmin',
+                is_admin: false,
+                permissions: [],
+              }),
+            };
+            
+            return { success: true, user_info: userInfo };
+          }
+        }
+      } catch (decodeError) {
+        console.error('Error decodificando token:', decodeError);
+      }
+
+      // Para usuarios B2B, llamar al endpoint
       const response = await apiClient.get<{ success: boolean; user_info: UserInfo }>(
         '/b2b/profile/me'
       );

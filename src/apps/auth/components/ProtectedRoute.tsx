@@ -80,7 +80,7 @@ const getRedirectByUserType = (userType: UserType): string => {
     case 'superadmin':
       return '/admin';
     case 'partner':
-      return '/partner/dashboard';
+      return '/partner';
     case 'b2c':
       return '/calculator';
     case 'b2b':
