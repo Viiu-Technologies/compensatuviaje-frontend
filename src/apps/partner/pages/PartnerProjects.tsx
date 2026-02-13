@@ -47,7 +47,7 @@ const ProjectFilters: React.FC<FilterProps> = ({ currentStatus, onStatusChange }
         <select
           value={currentStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="!px-3 !py-2 !border !border-gray-300 !rounded-lg !text-sm focus:!ring-2 focus:!ring-green-500 focus:!border-green-500"
+          className="!px-3 !py-2 !border !border-gray-300 !rounded-lg !text-sm focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500"
         >
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -94,7 +94,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
           <div className="!flex !items-start !justify-between">
             <div className="!flex-1 !min-w-0">
               <div className="!flex !items-center !gap-3 !mb-2">
-                <div className="!w-10 !h-10 !bg-green-100 !rounded-lg !flex !items-center !justify-center !text-green-600">
+                <div className="!w-10 !h-10 !bg-emerald-100 !rounded-lg !flex !items-center !justify-center !text-emerald-600">
                   <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -162,7 +162,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
             )}
             <Link
               to={`/partner/projects/${project.id}`}
-              className="!inline-flex !items-center !gap-1 !px-3 !py-2 !text-sm !font-medium !text-green-600 hover:!text-green-700 hover:!bg-green-50 !rounded-lg !transition-colors"
+              className="!inline-flex !items-center !gap-1 !px-3 !py-2 !text-sm !font-medium !text-emerald-600 hover:!text-emerald-700 hover:!bg-emerald-50 !rounded-lg !transition-colors !no-underline"
             >
               Ver detalle
               <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,7 +249,7 @@ const EmptyState: React.FC<{ hasFilter: boolean }> = ({ hasFilter }) => (
         </p>
         <Link
           to="/partner/projects/create"
-          className="!inline-flex !items-center !gap-2 !px-6 !py-3 !bg-green-600 !text-white !rounded-lg hover:!bg-green-700 !transition-colors !font-medium"
+          className="!inline-flex !items-center !gap-2 !px-6 !py-3 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-teal-700 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/20 !no-underline"
         >
           <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -297,7 +297,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           onClick={() => onPageChange(page)}
           className={`!w-10 !h-10 !rounded-lg !font-medium ${
             page === currentPage
-              ? '!bg-green-600 !text-white'
+              ? '!bg-emerald-600 !text-white'
               : '!border !border-gray-300 hover:!bg-gray-50'
           }`}
         >
@@ -389,43 +389,27 @@ const PartnerProjects: React.FC = () => {
   };
 
   return (
-    <div className="!min-h-screen !bg-gray-50">
+    <div className="!space-y-6">
       {/* Header */}
-      <div className="!bg-white !border-b">
-        <div className="!max-w-7xl !mx-auto !px-6 !py-6">
-          <div className="!flex !items-center !justify-between">
-            <div className="!flex !items-center !gap-4">
-              <Link
-                to="/partner"
-                className="!text-gray-400 hover:!text-gray-600 !transition-colors"
-              >
-                <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
-              <div>
-                <h1 className="!text-2xl !font-bold !text-gray-800">Mis Proyectos ESG</h1>
-                <p className="!text-gray-500 !mt-1">
-                  {pagination.total} proyecto{pagination.total !== 1 ? 's' : ''} en total
-                </p>
-              </div>
-            </div>
-            <Link
-              to="/partner/projects/create"
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-green-600 !text-white !rounded-lg hover:!bg-green-700 !transition-colors !font-medium"
-            >
-              <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Nuevo Proyecto
-            </Link>
-          </div>
+      <div className="!flex !items-center !justify-between">
+        <div>
+          <h1 className="!text-2xl !font-bold !text-slate-800">Mis Proyectos ESG</h1>
+          <p className="!text-slate-500 !mt-1">
+            {pagination.total} proyecto{pagination.total !== 1 ? 's' : ''} en total
+          </p>
         </div>
+        <Link
+          to="/partner/projects/create"
+          className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-teal-700 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/20 !no-underline"
+        >
+          <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nuevo Proyecto
+        </Link>
       </div>
 
-      {/* Content */}
-      <div className="!max-w-7xl !mx-auto !px-6 !py-6">
-        {/* Filters */}
+      {/* Filters */}
         <ProjectFilters
           currentStatus={currentStatus}
           onStatusChange={handleStatusChange}
@@ -472,7 +456,6 @@ const PartnerProjects: React.FC = () => {
             />
           </>
         )}
-      </div>
     </div>
   );
 };
