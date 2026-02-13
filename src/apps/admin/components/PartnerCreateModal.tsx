@@ -121,7 +121,23 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
         onCreated();
       }, 3000);
     } catch (err: any) {
-      setApiError(err.response?.data?.message || 'Error al crear el partner');
+      // El interceptor de API devuelve { message, status, data, error_code }
+      let errorMessage = 'Error al crear el partner';
+      
+      if (err.status === 409) {
+        // Error de duplicado
+        if (err.data?.code === 'DUPLICATE_EMAIL') {
+          errorMessage = 'Ya existe un usuario con ese email de administrador';
+        } else if (err.data?.code === 'DUPLICATE_PARTNER') {
+          errorMessage = 'Ya existe un partner con ese nombre o email de contacto';
+        } else {
+          errorMessage = err.message || 'El email ya está registrado';
+        }
+      } else {
+        errorMessage = err.message || errorMessage;
+      }
+      
+      setApiError(errorMessage);
     } finally {
       setSubmitting(false);
     }
