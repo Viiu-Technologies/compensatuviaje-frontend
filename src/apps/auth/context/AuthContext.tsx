@@ -63,12 +63,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const userData = mapUserInfoToAuthUser(response.user_info);
             setUser(userData);
           } else {
-            authService.clearTokens();
+            // Intentar decodificar el token directamente para obtener info básica
+            try {
+              const tokenParts = token.split('.');
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                // Verificar que el token no haya expirado
+                if (payload.exp && payload.exp * 1000 > Date.now()) {
+                  console.log('[AuthContext] Usando info del token JWT directamente');
+                  const userData: AuthUser = {
+                    id: payload.userId || payload.sub || payload.id,
+                    email: payload.email || '',
+                    name: payload.name || payload.email?.split('@')[0] || '',
+                    role: payload.role,
+                    permissions: payload.permissions || [],
+                    isAdmin: payload.role === 'SUPERADMIN' || payload.role === 'superadmin',
+                    isSuperAdmin: payload.role === 'SUPERADMIN' || payload.role === 'superadmin',
+                    userType: payload.role === 'SUPERADMIN' || payload.role === 'superadmin' 
+                      ? 'superadmin' 
+                      : payload.role === 'PARTNER_ADMIN' || payload.role === 'PARTNER_VIEWER'
+                        ? 'partner'
+                        : 'b2b',
+                  };
+                  setUser(userData);
+                } else {
+                  console.warn('[AuthContext] Token expirado, limpiando...');
+                  authService.clearTokens();
+                }
+              }
+            } catch (decodeErr) {
+              console.warn('[AuthContext] No se pudo decodificar token:', decodeErr);
+            }
           }
         }
       } catch (err) {
         console.error('Error verificando autenticación:', err);
-        authService.clearTokens();
+        // Solo limpiar si es un error de autenticación (401)
+        const errorStatus = (err as any)?.status;
+        if (errorStatus === 401) {
+          authService.clearTokens();
+        }
       } finally {
         setIsLoading(false);
       }
