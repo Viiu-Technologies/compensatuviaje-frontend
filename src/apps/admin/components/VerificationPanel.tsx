@@ -1,502 +1,526 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  FileText, 
-  Eye, 
-  Building2, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  ShieldCheck,
-  AlertCircle,
+﻿import { useState, useEffect } from 'react';
+import {
+  Shield,
+  Building2,
+  Globe,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  FileText,
   ChevronRight,
-  Download,
-  ExternalLink,
-  User,
-  Briefcase,
-  TrendingUp
+  ArrowLeft,
+  Loader2,
+  Inbox,
+  RefreshCw,
+  Eye
 } from 'lucide-react';
+import {
+  getPendingVerifications,
+  getVerificationStats,
+  getCompanyDocuments,
+  getCompanyDetail,
+  updateCompanyStatus,
+  reviewCompanyDocument,
+  verifyDomain
+} from '../services/adminApi';
+
+interface PendingCompany {
+  id: string;
+  razonSocial: string;
+  rut: string;
+  status: string;
+  createdAt: string;
+  domainsCount: number;
+  verifiedDomains: number;
+  documentsCount: number;
+  usersCount: number;
+  waitingDays: number;
+}
+
+interface PendingDomain {
+  id: string;
+  domain: string;
+  createdAt: string;
+  waitingDays: number;
+  company: {
+    id: string;
+    razonSocial: string;
+    rut: string;
+    status: string;
+  };
+}
+
+interface CompanyDoc {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileUrl?: string;
+  status: string;
+  uploadedAt: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+}
+
+interface VerifStats {
+  companies: { total: number; pendingVerification: number; verified: number };
+  domains: { pending: number; verified: number; total: number };
+  metrics: { conversionRate: number; domainVerificationRate: number; pendingWorkload: number };
+}
 
 const VerificationPanel = () => {
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [companies, setCompanies] = useState<PendingCompany[]>([]);
+  const [domains, setDomains] = useState<PendingDomain[]>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [stats, setStats] = useState<VerifStats | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showDocumentModal, setShowDocumentModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [companyDocs, setCompanyDocs] = useState<CompanyDoc[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<'companies' | 'domains'>('companies');
 
-  // Cargar empresas (mock data por ahora)
-  useEffect(() => {
-    loadCompanies();
-  }, []);
-
-  const loadCompanies = () => {
+  const loadData = async () => {
     setLoading(true);
-    
-    // Mock data - esto vendrá del backend
-    const mockCompanies = [
-      {
-        id: 1,
-        companyName: 'Tech Solutions SpA',
-        rut: '76.123.456-7',
-        email: 'contacto@techsolutions.cl',
-        submittedDate: '2025-10-20',
-        status: 'pending',
-        documents: [
-          { name: 'estatutos.pdf', type: 'estatutos', uploaded: true, verified: false },
-          { name: 'poder_representante.pdf', type: 'poder', uploaded: true, verified: false },
-          { name: 'certificado_vigencia.pdf', type: 'vigencia', uploaded: true, verified: false }
-        ],
-        contactInfo: {
-          legalRep: 'Juan Pérez',
-          phone: '+56 9 1234 5678',
-          region: 'Región Metropolitana',
-          city: 'Santiago',
-          address: 'Av. Providencia 1234, Of 567'
-        },
-        operationalInfo: {
-          industry: 'Tecnología',
-          employees: '51-200',
-          revenue: '$200M - $1.000M'
-        }
-      },
-      {
-        id: 2,
-        companyName: 'Green Energy Chile SA',
-        rut: '78.987.654-3',
-        email: 'info@greenenergy.cl',
-        submittedDate: '2025-10-18',
-        status: 'pending',
-        documents: [
-          { name: 'estatutos_green.pdf', type: 'estatutos', uploaded: true, verified: false },
-          { name: 'poder_legal.pdf', type: 'poder', uploaded: true, verified: false },
-          { name: 'vigencia_sii.pdf', type: 'vigencia', uploaded: true, verified: false }
-        ],
-        contactInfo: {
-          legalRep: 'María González',
-          phone: '+56 9 8765 4321',
-          region: 'Región de Valparaíso',
-          city: 'Viña del Mar',
-          address: 'Av. Libertad 789'
-        },
-        operationalInfo: {
-          industry: 'Energía',
-          employees: '11-50',
-          revenue: '$50M - $200M'
-        }
-      },
-      {
-        id: 3,
-        companyName: 'Transportes del Sur Ltda',
-        rut: '77.555.333-1',
-        email: 'gerencia@transportesdelsur.cl',
-        submittedDate: '2025-10-15',
-        status: 'approved',
-        approvedDate: '2025-10-17',
-        documents: [
-          { name: 'estatutos_transportes.pdf', type: 'estatutos', uploaded: true, verified: true },
-          { name: 'poder_gerente.pdf', type: 'poder', uploaded: true, verified: true },
-          { name: 'certificado_sii.pdf', type: 'vigencia', uploaded: true, verified: true }
-        ],
-        contactInfo: {
-          legalRep: 'Carlos Rojas',
-          phone: '+56 9 5555 3333',
-          region: 'Región del Maule',
-          city: 'Talca',
-          address: 'Calle Principal 456'
-        },
-        operationalInfo: {
-          industry: 'Transporte y Logística',
-          employees: '201-500',
-          revenue: '$1.000M - $5.000M'
-        }
-      }
-    ];
+    setError(null);
+    try {
+      const [pendingRes, statsRes] = await Promise.allSettled([
+        getPendingVerifications(),
+        getVerificationStats()
+      ]);
 
-    setTimeout(() => {
-      setCompanies(mockCompanies);
+      if (pendingRes.status === 'fulfilled') {
+        const d = pendingRes.value;
+        setCompanies(d?.companies || []);
+        setDomains(d?.domains || []);
+        setSummary(d?.summary || pendingRes.value);
+      }
+      if (statsRes.status === 'fulfilled') {
+        setStats(statsRes.value);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Error al cargar datos de verificacion');
+    } finally {
       setLoading(false);
-    }, 500);
-  };
-
-  const filteredCompanies = companies.filter(company => {
-    const matchesFilter = filter === 'all' || company.status === filter;
-    const matchesSearch = company.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.rut.includes(searchTerm);
-    return matchesFilter && matchesSearch;
-  });
-
-  const handleSelectCompany = (company: any) => {
-    setSelectedCompany(company);
-  };
-
-  const handleVerifyDocument = (documentIndex: number, verified: boolean) => {
-    if (!selectedCompany) return;
-
-    const updatedCompanies = companies.map(company => {
-      if (company.id === selectedCompany.id) {
-        const updatedDocs = [...company.documents];
-        updatedDocs[documentIndex].verified = verified;
-        return { ...company, documents: updatedDocs };
-      }
-      return company;
-    });
-
-    setCompanies(updatedCompanies);
-    const updatedSelected = updatedCompanies.find(c => c.id === selectedCompany.id);
-    setSelectedCompany(updatedSelected);
-  };
-
-  const handleApproveCompany = () => {
-    if (!selectedCompany) return;
-
-    const allDocsVerified = selectedCompany.documents.every((doc: any) => doc.verified);
-    
-    if (!allDocsVerified) {
-      alert('⚠️ Debes verificar todos los documentos antes de aprobar la empresa');
-      return;
     }
-
-    const updatedCompanies = companies.map(company => {
-      if (company.id === selectedCompany.id) {
-        return {
-          ...company,
-          status: 'approved',
-          approvedDate: new Date().toISOString().split('T')[0]
-        };
-      }
-      return company;
-    });
-
-    setCompanies(updatedCompanies);
-    setSelectedCompany(null);
-    alert('✅ Empresa aprobada correctamente');
   };
 
-  const handleRejectCompany = () => {
-    if (!selectedCompany) return;
+  useEffect(() => { loadData(); }, []);
 
-    const reason = prompt('Motivo del rechazo:');
+  const handleSelectCompany = async (company: PendingCompany) => {
+    setLoadingDocs(true);
+    try {
+      const [detailRes, docsRes] = await Promise.allSettled([
+        getCompanyDetail(company.id),
+        getCompanyDocuments(company.id)
+      ]);
+      const detail = detailRes.status === 'fulfilled' ? detailRes.value : company;
+      const docs = docsRes.status === 'fulfilled' ? (Array.isArray(docsRes.value) ? docsRes.value : docsRes.value?.documents || []) : [];
+      setSelectedCompany({ ...company, ...detail });
+      setCompanyDocs(docs);
+    } catch {
+      setSelectedCompany(company);
+      setCompanyDocs([]);
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
+
+  const handleApproveCompany = async (id: string) => {
+    const note = prompt('Nota de aprobacion (opcional):');
+    setActionLoading(`approve-${id}`);
+    try {
+      await updateCompanyStatus(id, 'pending_contract', note || undefined);
+      setSelectedCompany(null);
+      await loadData();
+    } catch (e: any) {
+      alert(`Error: ${e.message || 'No se pudo aprobar'}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRejectCompany = async (id: string) => {
+    const reason = prompt('Razon del rechazo:');
     if (!reason) return;
-
-    const updatedCompanies = companies.map(company => {
-      if (company.id === selectedCompany.id) {
-        return {
-          ...company,
-          status: 'rejected',
-          rejectedDate: new Date().toISOString().split('T')[0],
-          rejectionReason: reason
-        };
-      }
-      return company;
-    });
-
-    setCompanies(updatedCompanies);
-    setSelectedCompany(null);
-    alert('❌ Empresa rechazada');
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return (
-          <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider !bg-emerald-100 !text-emerald-700">
-            <CheckCircle2 className="!w-3 !h-3" /> Aprobada
-          </span>
-        );
-      case 'rejected':
-        return (
-          <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider !bg-red-100 !text-red-700">
-            <XCircle className="!w-3 !h-3" /> Rechazada
-          </span>
-        );
-      default:
-        return (
-          <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider !bg-amber-100 !text-amber-700">
-            <Clock className="!w-3 !h-3" /> Pendiente
-          </span>
-        );
+    setActionLoading(`reject-${id}`);
+    try {
+      await updateCompanyStatus(id, 'suspended', reason);
+      setSelectedCompany(null);
+      await loadData();
+    } catch (e: any) {
+      alert(`Error: ${e.message || 'No se pudo rechazar'}`);
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const getDocumentTypeLabel = (type: string) => {
-    const labels: any = {
-      estatutos: 'Estatutos Sociales',
-      poder: 'Poder del Representante',
-      vigencia: 'Certificado de Vigencia',
-      rut: 'RUT Empresa',
-      otros: 'Otros Documentos'
-    };
-    return labels[type] || type;
+  const handleReviewDoc = async (docId: string, status: 'approved' | 'rejected') => {
+    const notes = status === 'rejected' ? prompt('Razon del rechazo del documento:') : undefined;
+    if (status === 'rejected' && !notes) return;
+    setActionLoading(`doc-${docId}`);
+    try {
+      await reviewCompanyDocument(selectedCompany.id, docId, status, notes || undefined);
+      const docs = await getCompanyDocuments(selectedCompany.id);
+      setCompanyDocs(Array.isArray(docs) ? docs : docs?.documents || []);
+    } catch (e: any) {
+      alert(`Error: ${e.message || 'No se pudo revisar el documento'}`);
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  return (
-    <div className="!space-y-8 !animate-in !fade-in !duration-700">
-      {/* Header Section */}
-      <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className="!text-4xl !font-black !text-slate-900 !tracking-tight !mb-2">
-            Panel de <span className="!text-emerald-600">Verificación</span>
-          </h1>
-          <p className="!text-slate-500 !font-medium">
-            Revisa y valida la documentación legal de las empresas registradas.
-          </p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          <div className="!bg-white !px-4 !py-2 !rounded-2xl !shadow-sm !border !border-slate-100 !flex !items-center !gap-3">
-            <div className="!w-10 !h-10 !bg-amber-100 !rounded-xl !flex !items-center !justify-center">
-              <Clock className="!w-5 !h-5 !text-amber-600" />
-            </div>
-            <div>
-              <p className="!text-[10px] !font-black !text-slate-400 !uppercase !tracking-widest">Pendientes</p>
-              <p className="!text-lg !font-black !text-slate-900">{companies.filter(c => c.status === 'pending').length}</p>
-            </div>
-          </div>
-        </div>
+  const handleVerifyDomain = async (domainId: string, approve: boolean) => {
+    const note = !approve ? prompt('Razon del rechazo:') : undefined;
+    if (!approve && !note) return;
+    setActionLoading(`domain-${domainId}`);
+    try {
+      await verifyDomain(domainId, approve, note || undefined);
+      await loadData();
+    } catch (e: any) {
+      alert(`Error: ${e.message || 'No se pudo verificar el dominio'}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const statusBadge = (status: string) => {
+    const map: Record<string, string> = {
+      registered: '!bg-blue-100 !text-blue-700',
+      pending_contract: '!bg-amber-100 !text-amber-700',
+      signed: '!bg-indigo-100 !text-indigo-700',
+      active: '!bg-emerald-100 !text-emerald-700',
+      suspended: '!bg-red-100 !text-red-700',
+      approved: '!bg-emerald-100 !text-emerald-700',
+      rejected: '!bg-red-100 !text-red-700',
+      pending: '!bg-amber-100 !text-amber-700',
+    };
+    return (
+      <span className={`!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider ${map[status] || '!bg-slate-100 !text-slate-700'}`}>
+        {status}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="!flex !items-center !justify-center !h-64">
+        <Loader2 className="!w-8 !h-8 !text-emerald-600 !animate-spin" />
+        <span className="!ml-3 !text-slate-500 !font-medium">Cargando verificaciones...</span>
       </div>
+    );
+  }
 
-      <div className="!grid !grid-cols-1 lg:!grid-cols-12 !gap-8 !items-start">
-        {/* Sidebar - Lista de empresas */}
-        <div className="lg:!col-span-4 !space-y-6">
-          <div className="!bg-white !p-6 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-            <div className="!space-y-4">
-              <div className="!relative">
-                <Search className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre o RUT..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="!w-full !bg-slate-50 !border-none !rounded-2xl !pl-12 !pr-4 !py-3 !font-bold !text-slate-700 !focus:ring-2 !focus:ring-emerald-500"
-                />
-              </div>
+  // Company Detail View
+  if (selectedCompany) {
+    return (
+      <div className="!space-y-6 !animate-in !fade-in !duration-500">
+        <button onClick={() => setSelectedCompany(null)} className="!flex !items-center !gap-2 !text-slate-600 hover:!text-emerald-600 !font-bold !transition-colors">
+          <ArrowLeft className="!w-5 !h-5" /> Volver a la lista
+        </button>
 
-              <div className="!flex !flex-wrap !gap-2">
-                {['all', 'pending', 'approved'].map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`!px-4 !py-2 !rounded-xl !text-xs !font-black !uppercase !tracking-wider !transition-all ${
-                      filter === f
-                        ? '!bg-slate-900 !text-white !shadow-lg'
-                        : '!bg-slate-50 !text-slate-500 !hover:bg-slate-100'
-                    }`}
-                  >
-                    {f === 'all' ? 'Todas' : f === 'pending' ? 'Pendientes' : 'Aprobadas'}
-                  </button>
-                ))}
+        {/* Company Header */}
+        <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !p-8">
+          <div className="!flex !items-start !justify-between !flex-wrap !gap-4">
+            <div>
+              <h2 className="!text-2xl !font-black !text-slate-900">{selectedCompany.razonSocial || selectedCompany.companyName}</h2>
+              <p className="!text-slate-500 !font-medium !mt-1">RUT: {selectedCompany.rut || '-'}</p>
+              <div className="!flex !items-center !gap-3 !mt-3">
+                {statusBadge(selectedCompany.status)}
+                <span className="!text-slate-400 !text-sm">
+                  <Clock className="!w-3.5 !h-3.5 !inline !mr-1" />
+                  {selectedCompany.waitingDays || 0} dias esperando
+                </span>
               </div>
             </div>
+            <div className="!flex !gap-3">
+              <button
+                onClick={() => handleRejectCompany(selectedCompany.id)}
+                disabled={actionLoading !== null}
+                className="!px-5 !py-2.5 !rounded-2xl !bg-red-50 !text-red-600 !font-bold !text-sm hover:!bg-red-100 !transition-colors disabled:!opacity-50"
+              >
+                {actionLoading === `reject-${selectedCompany.id}` ? <Loader2 className="!w-4 !h-4 !animate-spin" /> : <><XCircle className="!w-4 !h-4 !inline !mr-1" /> Rechazar</>}
+              </button>
+              <button
+                onClick={() => handleApproveCompany(selectedCompany.id)}
+                disabled={actionLoading !== null}
+                className="!px-5 !py-2.5 !rounded-2xl !bg-emerald-600 !text-white !font-bold !text-sm hover:!bg-emerald-700 !transition-colors disabled:!opacity-50"
+              >
+                {actionLoading === `approve-${selectedCompany.id}` ? <Loader2 className="!w-4 !h-4 !animate-spin" /> : <><CheckCircle2 className="!w-4 !h-4 !inline !mr-1" /> Aprobar</>}
+              </button>
+            </div>
+          </div>
 
-            <div className="!mt-6 !space-y-3 !max-h-[600px] !overflow-y-auto !pr-2 !custom-scrollbar">
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="!h-24 !bg-slate-50 !rounded-2xl !animate-pulse" />
-                ))
-              ) : filteredCompanies.length === 0 ? (
-                <div className="!text-center !py-12">
-                  <AlertCircle className="!w-12 !h-12 !text-slate-200 !mx-auto !mb-4" />
-                  <p className="!text-slate-400 !font-bold">No hay empresas</p>
-                </div>
-              ) : (
-                filteredCompanies.map(company => (
-                  <button
-                    key={company.id}
-                    onClick={() => handleSelectCompany(company)}
-                    className={`!w-full !text-left !p-4 !rounded-2xl !transition-all !group ${
-                      selectedCompany?.id === company.id
-                        ? '!bg-emerald-50 !border-2 !border-emerald-200 !shadow-md'
-                        : '!bg-white !border-2 !border-transparent !hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="!flex !justify-between !items-start !mb-2">
-                      <h3 className={`!font-black !text-sm !transition-colors ${
-                        selectedCompany?.id === company.id ? '!text-emerald-900' : '!text-slate-900'
-                      }`}>
-                        {company.companyName}
-                      </h3>
-                      {getStatusBadge(company.status)}
-                    </div>
-                    <div className="!flex !items-center !justify-between">
-                      <span className="!text-[10px] !font-bold !text-slate-400">RUT: {company.rut}</span>
-                      <ChevronRight className={`!w-4 !h-4 !transition-transform ${
-                        selectedCompany?.id === company.id ? '!text-emerald-500 !translate-x-1' : '!text-slate-300'
-                      }`} />
-                    </div>
-                  </button>
-                ))
-              )}
+          {/* Company Info Grid */}
+          <div className="!grid !grid-cols-2 md:!grid-cols-4 !gap-4 !mt-6">
+            <div className="!bg-slate-50 !rounded-2xl !p-4">
+              <p className="!text-slate-400 !text-xs !font-bold !uppercase">Dominios</p>
+              <p className="!text-xl !font-black !text-slate-900">{selectedCompany.domainsCount || 0}</p>
+              <p className="!text-emerald-600 !text-xs !font-bold">{selectedCompany.verifiedDomains || 0} verificados</p>
+            </div>
+            <div className="!bg-slate-50 !rounded-2xl !p-4">
+              <p className="!text-slate-400 !text-xs !font-bold !uppercase">Documentos</p>
+              <p className="!text-xl !font-black !text-slate-900">{selectedCompany.documentsCount || 0}</p>
+            </div>
+            <div className="!bg-slate-50 !rounded-2xl !p-4">
+              <p className="!text-slate-400 !text-xs !font-bold !uppercase">Usuarios</p>
+              <p className="!text-xl !font-black !text-slate-900">{selectedCompany.usersCount || 0}</p>
+            </div>
+            <div className="!bg-slate-50 !rounded-2xl !p-4">
+              <p className="!text-slate-400 !text-xs !font-bold !uppercase">Registro</p>
+              <p className="!text-sm !font-bold !text-slate-900">{selectedCompany.createdAt ? new Date(selectedCompany.createdAt).toLocaleDateString('es-CL') : '-'}</p>
             </div>
           </div>
         </div>
 
-        {/* Main content - Detalles de empresa seleccionada */}
-        <div className="lg:!col-span-8">
-          {!selectedCompany ? (
-            <div className="!bg-white !rounded-[2.5rem] !border-2 !border-dashed !border-slate-200 !p-20 !text-center">
-              <div className="!w-20 !h-20 !bg-slate-50 !rounded-3xl !flex !items-center !justify-center !mx-auto !mb-6">
-                <ShieldCheck className="!w-10 !h-10 !text-slate-300" />
-              </div>
-              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Selecciona una empresa</h3>
-              <p className="!text-slate-500 !max-w-xs !mx-auto">
-                Elige una empresa de la lista lateral para revisar su información legal y documentos adjuntos.
-              </p>
+        {/* Documents */}
+        <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !overflow-hidden">
+          <div className="!p-6 !border-b !border-slate-100 !bg-slate-50/50">
+            <h3 className="!text-lg !font-black !text-slate-900">Documentos de la Empresa</h3>
+            <p className="!text-slate-500 !text-sm !font-medium">Revisa y aprueba cada documento necesario.</p>
+          </div>
+          {loadingDocs ? (
+            <div className="!flex !items-center !justify-center !py-12">
+              <Loader2 className="!w-6 !h-6 !text-emerald-600 !animate-spin" />
+            </div>
+          ) : companyDocs.length === 0 ? (
+            <div className="!flex !flex-col !items-center !justify-center !py-12 !text-slate-400">
+              <Inbox className="!w-12 !h-12 !mb-3" />
+              <p className="!font-medium">Sin documentos cargados</p>
             </div>
           ) : (
-            <div className="!space-y-8 !animate-in !slide-in-from-right-8 !duration-500">
-              {/* Company Header Info */}
-              <div className="!bg-slate-900 !rounded-[2.5rem] !p-8 !text-white !relative !overflow-hidden">
-                <div className="!absolute !top-0 !right-0 !w-64 !h-64 !bg-emerald-500/10 !rounded-full !-mr-32 !-mt-32 !blur-3xl" />
-                <div className="!relative !flex !flex-col md:!flex-row !justify-between !items-start !gap-6">
-                  <div className="!flex !items-center !gap-6">
-                    <div className="!w-20 !h-20 !bg-white/10 !backdrop-blur-md !rounded-3xl !flex !items-center !justify-center !border !border-white/20">
-                      <Building2 className="!w-10 !h-10 !text-emerald-400" />
+            <div className="!divide-y !divide-slate-100">
+              {companyDocs.map((doc) => (
+                <div key={doc.id} className="!p-5 !flex !items-center !justify-between hover:!bg-slate-50/50 !transition-colors !flex-wrap !gap-3">
+                  <div className="!flex !items-center !gap-4">
+                    <div className="!w-10 !h-10 !bg-blue-100 !rounded-xl !flex !items-center !justify-center">
+                      <FileText className="!w-5 !h-5 !text-blue-600" />
                     </div>
                     <div>
-                      <div className="!flex !items-center !gap-3 !mb-2">
-                        <h2 className="!text-3xl !font-black">{selectedCompany.companyName}</h2>
-                        {getStatusBadge(selectedCompany.status)}
-                      </div>
-                      <div className="!flex !flex-wrap !gap-4 !text-slate-400 !text-sm !font-medium">
-                        <span className="!flex !items-center !gap-1.5"><ShieldCheck className="!w-4 !h-4" /> RUT: {selectedCompany.rut}</span>
-                        <span className="!flex !items-center !gap-1.5"><Mail className="!w-4 !h-4" /> {selectedCompany.email}</span>
-                      </div>
+                      <p className="!font-bold !text-slate-900">{doc.fileName || doc.fileType || 'Documento'}</p>
+                      <p className="!text-xs !text-slate-400">
+                        {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString('es-CL') : '-'}
+                        {doc.fileType && ` - ${doc.fileType}`}
+                      </p>
                     </div>
                   </div>
-                  
-                  {selectedCompany.status === 'pending' && (
-                    <div className="!flex !gap-3">
-                      <button
-                        onClick={handleRejectCompany}
-                        className="!bg-white/10 !hover:bg-red-500/20 !text-white !px-6 !py-3 !rounded-2xl !font-bold !transition-all !border !border-white/10 !flex !items-center !gap-2"
-                      >
-                        <XCircle className="!w-5 !h-5" /> Rechazar
-                      </button>
-                      <button
-                        onClick={handleApproveCompany}
-                        className="!bg-emerald-600 !hover:bg-emerald-500 !text-white !px-8 !py-3 !rounded-2xl !font-bold !transition-all !shadow-xl !shadow-emerald-900/20 !flex !items-center !gap-2"
-                      >
-                        <CheckCircle2 className="!w-5 !h-5" /> Aprobar Empresa
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Info Grid */}
-              <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-8">
-                {/* Contact Info */}
-                <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-                  <h3 className="!text-lg !font-black !text-slate-900 !mb-6 !flex !items-center !gap-2">
-                    <User className="!w-5 !h-5 !text-emerald-600" /> Información de Contacto
-                  </h3>
-                  <div className="!space-y-4">
-                    <div className="!flex !justify-between !p-4 !bg-slate-50 !rounded-2xl">
-                      <span className="!text-slate-500 !font-bold !text-sm">Representante Legal</span>
-                      <span className="!text-slate-900 !font-black !text-sm">{selectedCompany.contactInfo.legalRep}</span>
-                    </div>
-                    <div className="!flex !justify-between !p-4 !bg-slate-50 !rounded-2xl">
-                      <span className="!text-slate-500 !font-bold !text-sm">Teléfono</span>
-                      <span className="!text-slate-900 !font-black !text-sm">{selectedCompany.contactInfo.phone}</span>
-                    </div>
-                    <div className="!flex !justify-between !p-4 !bg-slate-50 !rounded-2xl">
-                      <span className="!text-slate-500 !font-bold !text-sm">Ubicación</span>
-                      <span className="!text-slate-900 !font-black !text-sm">{selectedCompany.contactInfo.city}, {selectedCompany.contactInfo.region}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Operational Info */}
-                <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-                  <h3 className="!text-lg !font-black !text-slate-900 !mb-6 !flex !items-center !gap-2">
-                    <Briefcase className="!w-5 !h-5 !text-blue-600" /> Información Operativa
-                  </h3>
-                  <div className="!space-y-4">
-                    <div className="!flex !justify-between !p-4 !bg-slate-50 !rounded-2xl">
-                      <span className="!text-slate-500 !font-bold !text-sm">Industria</span>
-                      <span className="!text-slate-900 !font-black !text-sm">{selectedCompany.operationalInfo.industry}</span>
-                    </div>
-                    <div className="!flex !justify-between !p-4 !bg-slate-50 !rounded-2xl">
-                      <span className="!text-slate-500 !font-bold !text-sm">Empleados</span>
-                      <span className="!text-slate-900 !font-black !text-sm">{selectedCompany.operationalInfo.employees}</span>
-                    </div>
-                    <div className="!flex !justify-between !p-4 !bg-slate-50 !rounded-2xl">
-                      <span className="!text-slate-500 !font-bold !text-sm">Facturación Anual</span>
-                      <span className="!text-slate-900 !font-black !text-sm">{selectedCompany.operationalInfo.revenue}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documents Section */}
-              <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-                <div className="!flex !items-center !justify-between !mb-8">
-                  <h3 className="!text-xl !font-black !text-slate-900 !flex !items-center !gap-2">
-                    <FileText className="!w-6 !h-6 !text-emerald-600" /> Documentación Legal
-                  </h3>
-                  <span className="!text-xs !font-black !text-slate-400 !uppercase !tracking-widest">
-                    {selectedCompany.documents.filter((d: any) => d.verified).length} de {selectedCompany.documents.length} Verificados
-                  </span>
-                </div>
-
-                <div className="!grid !grid-cols-1 !gap-4">
-                  {selectedCompany.documents.map((doc: any, index: number) => (
-                    <div
-                      key={index}
-                      className={`!flex !flex-col md:!flex-row md:!items-center !justify-between !p-6 !rounded-3xl !border-2 !transition-all ${
-                        doc.verified 
-                          ? '!bg-emerald-50/30 !border-emerald-100' 
-                          : '!bg-slate-50 !border-transparent'
-                      }`}
-                    >
-                      <div className="!flex !items-center !gap-4 !mb-4 md:!mb-0">
-                        <div className={`!w-12 !h-12 !rounded-2xl !flex !items-center !justify-center ${
-                          doc.verified ? '!bg-emerald-100 !text-emerald-600' : '!bg-white !text-slate-400'
-                        }`}>
-                          <FileText className="!w-6 !h-6" />
-                        </div>
-                        <div>
-                          <p className="!text-sm !font-black !text-slate-900">{getDocumentTypeLabel(doc.type)}</p>
-                          <p className="!text-xs !font-medium !text-slate-500">{doc.name}</p>
-                        </div>
-                      </div>
-
-                      <div className="!flex !items-center !gap-3">
-                        <button className="!p-3 !bg-white !rounded-xl !text-slate-600 !hover:text-emerald-600 !shadow-sm !transition-all">
-                          <Eye className="!w-5 !h-5" />
+                  <div className="!flex !items-center !gap-3">
+                    {statusBadge(doc.status)}
+                    {doc.fileUrl && (
+                      <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="!p-2 !text-slate-400 hover:!text-blue-600 !transition-colors">
+                        <Eye className="!w-4 !h-4" />
+                      </a>
+                    )}
+                    {doc.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => handleReviewDoc(doc.id, 'rejected')}
+                          disabled={actionLoading === `doc-${doc.id}`}
+                          className="!px-3 !py-1.5 !rounded-xl !bg-red-50 !text-red-600 !text-xs !font-bold hover:!bg-red-100 !transition-colors disabled:!opacity-50"
+                        >
+                          Rechazar
                         </button>
-                        <button className="!p-3 !bg-white !rounded-xl !text-slate-600 !hover:text-emerald-600 !shadow-sm !transition-all">
-                          <Download className="!w-5 !h-5" />
+                        <button
+                          onClick={() => handleReviewDoc(doc.id, 'approved')}
+                          disabled={actionLoading === `doc-${doc.id}`}
+                          className="!px-3 !py-1.5 !rounded-xl !bg-emerald-50 !text-emerald-600 !text-xs !font-bold hover:!bg-emerald-100 !transition-colors disabled:!opacity-50"
+                        >
+                          {actionLoading === `doc-${doc.id}` ? <Loader2 className="!w-3 !h-3 !animate-spin" /> : 'Aprobar'}
                         </button>
-                        <div className="!h-8 !w-px !bg-slate-200 !mx-2" />
-                        {doc.verified ? (
-                          <button
-                            onClick={() => handleVerifyDocument(index, false)}
-                            className="!flex !items-center !gap-2 !bg-emerald-600 !text-white !px-4 !py-2 !rounded-xl !text-xs !font-black !uppercase !tracking-wider"
-                          >
-                            <CheckCircle2 className="!w-4 !h-4" /> Verificado
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleVerifyDocument(index, true)}
-                            className="!flex !items-center !gap-2 !bg-white !text-slate-900 !border !border-slate-200 !px-4 !py-2 !rounded-xl !text-xs !font-black !uppercase !tracking-wider !hover:bg-emerald-50 !hover:border-emerald-200 !hover:text-emerald-600 !transition-all"
-                          >
-                            Marcar como Válido
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </div>
       </div>
+    );
+  }
+
+  // Main List View
+  return (
+    <div className="!space-y-8 !animate-in !fade-in !duration-700">
+      {/* Header */}
+      <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
+        <div>
+          <h1 className="!text-4xl !font-black !text-slate-900 !tracking-tight !mb-2">
+            Panel de <span className="!text-emerald-600">Verificacion</span>
+          </h1>
+          <p className="!text-slate-500 !font-medium">Revisa y valida empresas y dominios pendientes.</p>
+        </div>
+        <button onClick={loadData} className="!flex !items-center !gap-2 !px-4 !py-2 !bg-white !rounded-2xl !shadow-sm !border !border-slate-100 !text-slate-600 hover:!text-emerald-600 !font-bold !text-sm !transition-colors">
+          <RefreshCw className="!w-4 !h-4" /> Actualizar
+        </button>
+      </div>
+
+      {error && (
+        <div className="!bg-red-50 !border !border-red-200 !rounded-2xl !p-4 !text-red-700 !font-medium !text-sm">
+          <AlertTriangle className="!w-4 !h-4 !inline !mr-2" />{error}
+        </div>
+      )}
+
+      {/* Stats Cards */}
+      <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-4 !gap-6">
+        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden">
+          <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-amber-50 !rounded-bl-full !-mr-8 !-mt-8" />
+          <div className="!relative">
+            <div className="!w-12 !h-12 !bg-amber-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+              <Clock className="!w-6 !h-6 !text-amber-600" />
+            </div>
+            <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Pendientes</p>
+            <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{stats?.metrics?.pendingWorkload ?? companies.length}</h3>
+          </div>
+        </div>
+        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden">
+          <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-emerald-50 !rounded-bl-full !-mr-8 !-mt-8" />
+          <div className="!relative">
+            <div className="!w-12 !h-12 !bg-emerald-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+              <CheckCircle2 className="!w-6 !h-6 !text-emerald-600" />
+            </div>
+            <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Verificadas</p>
+            <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{stats?.companies?.verified ?? 0}</h3>
+          </div>
+        </div>
+        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden">
+          <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-blue-50 !rounded-bl-full !-mr-8 !-mt-8" />
+          <div className="!relative">
+            <div className="!w-12 !h-12 !bg-blue-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+              <Globe className="!w-6 !h-6 !text-blue-600" />
+            </div>
+            <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Dominios Pendientes</p>
+            <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{stats?.domains?.pending ?? domains.length}</h3>
+          </div>
+        </div>
+        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden">
+          <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-indigo-50 !rounded-bl-full !-mr-8 !-mt-8" />
+          <div className="!relative">
+            <div className="!w-12 !h-12 !bg-indigo-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+              <Shield className="!w-6 !h-6 !text-indigo-600" />
+            </div>
+            <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Tasa Conversion</p>
+            <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{stats?.metrics?.conversionRate ?? 0}%</h3>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Selector */}
+      <div className="!flex !items-center !gap-2 !bg-white !p-1.5 !rounded-2xl !shadow-sm !border !border-slate-100 !w-fit">
+        <button
+          onClick={() => setTab('companies')}
+          className={`!px-5 !py-2 !rounded-xl !text-sm !font-bold !transition-all ${tab === 'companies' ? '!bg-emerald-600 !text-white !shadow-sm' : '!text-slate-500 hover:!text-slate-700'}`}
+        >
+          <Building2 className="!w-4 !h-4 !inline !mr-1.5" />
+          Empresas ({companies.length})
+        </button>
+        <button
+          onClick={() => setTab('domains')}
+          className={`!px-5 !py-2 !rounded-xl !text-sm !font-bold !transition-all ${tab === 'domains' ? '!bg-emerald-600 !text-white !shadow-sm' : '!text-slate-500 hover:!text-slate-700'}`}
+        >
+          <Globe className="!w-4 !h-4 !inline !mr-1.5" />
+          Dominios ({domains.length})
+        </button>
+      </div>
+
+      {/* Companies Tab */}
+      {tab === 'companies' && (
+        <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !overflow-hidden">
+          {companies.length === 0 ? (
+            <div className="!flex !flex-col !items-center !justify-center !py-16 !text-slate-400">
+              <Inbox className="!w-16 !h-16 !mb-4" />
+              <p className="!text-lg !font-bold">Sin empresas pendientes</p>
+              <p className="!text-sm">Todas las empresas han sido revisadas.</p>
+            </div>
+          ) : (
+            <div className="!divide-y !divide-slate-100">
+              {companies.map((company) => (
+                <div
+                  key={company.id}
+                  onClick={() => handleSelectCompany(company)}
+                  className="!p-6 !flex !items-center !justify-between !cursor-pointer hover:!bg-slate-50/50 !transition-colors !group"
+                >
+                  <div className="!flex !items-center !gap-4">
+                    <div className="!w-12 !h-12 !bg-gradient-to-br !from-emerald-100 !to-blue-100 !rounded-2xl !flex !items-center !justify-center">
+                      <Building2 className="!w-6 !h-6 !text-emerald-600" />
+                    </div>
+                    <div>
+                      <h4 className="!font-bold !text-slate-900 group-hover:!text-emerald-600 !transition-colors">{company.razonSocial}</h4>
+                      <p className="!text-sm !text-slate-500">RUT: {company.rut} - {company.documentsCount} docs - {company.usersCount} usuarios</p>
+                    </div>
+                  </div>
+                  <div className="!flex !items-center !gap-4">
+                    {company.waitingDays > 7 && (
+                      <span className="!flex !items-center !gap-1 !text-xs !font-bold !text-red-500">
+                        <AlertTriangle className="!w-3.5 !h-3.5" /> Urgente
+                      </span>
+                    )}
+                    <span className="!text-xs !text-slate-400 !font-medium">
+                      <Clock className="!w-3.5 !h-3.5 !inline !mr-1" />
+                      {company.waitingDays}d
+                    </span>
+                    {statusBadge(company.status)}
+                    <ChevronRight className="!w-5 !h-5 !text-slate-300 group-hover:!text-emerald-500 !transition-colors" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Domains Tab */}
+      {tab === 'domains' && (
+        <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !overflow-hidden">
+          {domains.length === 0 ? (
+            <div className="!flex !flex-col !items-center !justify-center !py-16 !text-slate-400">
+              <Inbox className="!w-16 !h-16 !mb-4" />
+              <p className="!text-lg !font-bold">Sin dominios pendientes</p>
+              <p className="!text-sm">Todos los dominios han sido verificados.</p>
+            </div>
+          ) : (
+            <div className="!divide-y !divide-slate-100">
+              {domains.map((d) => (
+                <div key={d.id} className="!p-6 !flex !items-center !justify-between">
+                  <div className="!flex !items-center !gap-4">
+                    <div className="!w-10 !h-10 !bg-blue-100 !rounded-xl !flex !items-center !justify-center">
+                      <Globe className="!w-5 !h-5 !text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="!font-bold !text-slate-900">{d.domain}</p>
+                      <p className="!text-sm !text-slate-500">
+                        {d.company.razonSocial} - {d.waitingDays}d esperando
+                      </p>
+                    </div>
+                  </div>
+                  <div className="!flex !items-center !gap-3">
+                    {d.waitingDays > 3 && (
+                      <span className="!flex !items-center !gap-1 !text-xs !font-bold !text-red-500">
+                        <AlertTriangle className="!w-3.5 !h-3.5" />
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleVerifyDomain(d.id, false)}
+                      disabled={actionLoading === `domain-${d.id}`}
+                      className="!px-3 !py-1.5 !rounded-xl !bg-red-50 !text-red-600 !text-xs !font-bold hover:!bg-red-100 !transition-colors disabled:!opacity-50"
+                    >
+                      Rechazar
+                    </button>
+                    <button
+                      onClick={() => handleVerifyDomain(d.id, true)}
+                      disabled={actionLoading === `domain-${d.id}`}
+                      className="!px-3 !py-1.5 !rounded-xl !bg-emerald-50 !text-emerald-600 !text-xs !font-bold hover:!bg-emerald-100 !transition-colors disabled:!opacity-50"
+                    >
+                      {actionLoading === `domain-${d.id}` ? <Loader2 className="!w-3 !h-3 !animate-spin" /> : 'Verificar'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
