@@ -1,49 +1,71 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Building2,
   Eye,
   CheckCircle,
-  XCircle,
   Clock,
   MoreVertical,
   Download,
-  ArrowUpDown,
-  Plus,
-  ExternalLink
+  FileText,
+  Pause,
+  Play,
+  AlertTriangle,
+  X
 } from 'lucide-react';
-import { getCompanies, Company, CompaniesListResponse, updateCompanyStatus } from '../services/adminApi';
+import { getCompanies, Company, updateCompanyStatus } from '../services/adminApi';
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; dot: string }> = {
-  registered: { label: 'Registrada', color: 'text-slate-700', bgColor: 'bg-slate-100', dot: 'bg-slate-400' },
-  pending_contract: { label: 'Pendiente Contrato', color: 'text-amber-700', bgColor: 'bg-amber-100', dot: 'bg-amber-500' },
-  signed: { label: 'Contrato Firmado', color: 'text-blue-700', bgColor: 'bg-blue-100', dot: 'bg-blue-500' },
-  active: { label: 'Activa', color: 'text-emerald-700', bgColor: 'bg-emerald-100', dot: 'bg-emerald-500' },
-  suspended: { label: 'Suspendida', color: 'text-rose-700', bgColor: 'bg-rose-100', dot: 'bg-rose-500' },
+  registered:        { label: 'Registrada',          color: 'text-slate-700',   bgColor: 'bg-slate-100',   dot: 'bg-slate-400' },
+  pending_contract:  { label: 'Pendiente Contrato',  color: 'text-amber-700',   bgColor: 'bg-amber-100',   dot: 'bg-amber-500' },
+  signed:            { label: 'Contrato Firmado',     color: 'text-blue-700',    bgColor: 'bg-blue-100',    dot: 'bg-blue-500' },
+  active:            { label: 'Activa',               color: 'text-emerald-700', bgColor: 'bg-emerald-100', dot: 'bg-emerald-500' },
+  suspended:         { label: 'Suspendida',           color: 'text-rose-700',    bgColor: 'bg-rose-100',    dot: 'bg-rose-500' },
+};
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  registered:       ['pending_contract', 'suspended'],
+  pending_contract: ['signed', 'registered', 'suspended'],
+  signed:           ['active', 'suspended'],
+  active:           ['suspended'],
+  suspended:        ['active'],
 };
 
 export default function EmpresasPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 0
-  });
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy] = useState('createdAt');
+  const [sortOrder] = useState<'asc' | 'desc'>('desc');
 
+  // Dropdown & modal
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [newStatus, setNewStatus] = useState('');
+  const [statusNote, setStatusNote] = useState('');
+  const [changingStatus, setChangingStatus] = useState(false);
+
+  useEffect(() => { loadCompanies(); }, [searchParams, sortBy, sortOrder]);
+
+  // Close dropdown on outside click
   useEffect(() => {
-    loadCompanies();
-  }, [searchParams, sortBy, sortOrder]);
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const loadCompanies = async () => {
     setLoading(true);
@@ -56,10 +78,9 @@ export default function EmpresasPage() {
         sortBy,
         sortOrder
       };
-
       const data = await getCompanies(params);
-      setCompanies(data.companies);
-      setPagination(data.pagination);
+      setCompanies(data.companies || []);
+      setPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
     } catch (error) {
       console.error('Error loading companies:', error);
     } finally {
@@ -70,25 +91,54 @@ export default function EmpresasPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
-    if (search) {
-      params.set('search', search);
-    } else {
-      params.delete('search');
-    }
+    if (search) { params.set('search', search); } else { params.delete('search'); }
     params.set('page', '1');
     setSearchParams(params);
   };
 
   const handleStatusFilter = (status: string) => {
     const params = new URLSearchParams(searchParams);
-    if (status) {
-      params.set('status', status);
-    } else {
-      params.delete('status');
-    }
+    if (status) { params.set('status', status); } else { params.delete('status'); }
     params.set('page', '1');
     setSearchParams(params);
     setStatusFilter(status);
+  };
+
+  const openStatusChangeModal = (company: Company, toStatus: string) => {
+    setSelectedCompany(company);
+    setNewStatus(toStatus);
+    setStatusNote('');
+    setShowStatusModal(true);
+    setOpenDropdown(null);
+  };
+
+  const handleChangeStatus = async () => {
+    if (!selectedCompany || !newStatus) return;
+    setChangingStatus(true);
+    try {
+      await updateCompanyStatus(selectedCompany.id, newStatus, statusNote || undefined);
+      setShowStatusModal(false);
+      setSelectedCompany(null);
+      setNewStatus('');
+      setStatusNote('');
+      await loadCompanies();
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Error al cambiar el estado');
+    } finally {
+      setChangingStatus(false);
+    }
+  };
+
+  const getTransitionIcon = (status: string) => {
+    switch (status) {
+      case 'pending_contract': return FileText;
+      case 'signed': return CheckCircle;
+      case 'active': return Play;
+      case 'suspended': return Pause;
+      case 'registered': return Clock;
+      default: return Clock;
+    }
   };
 
   return (
@@ -104,11 +154,23 @@ export default function EmpresasPage() {
             <Download className="!w-4 !h-4" />
             Exportar
           </button>
-          <button className="!flex !items-center !gap-2 !bg-indigo-600 !text-white !px-4 !py-2.5 !rounded-xl !font-bold !text-sm hover:!bg-indigo-700 !transition-all !shadow-lg !shadow-indigo-200">
-            <Plus className="!w-4 !h-4" />
-            Nueva Empresa
-          </button>
         </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="!grid !grid-cols-2 md:!grid-cols-5 !gap-3">
+        {[
+          { label: 'Total', value: pagination.total, color: '!bg-slate-100 !text-slate-700' },
+          { label: 'Registradas', value: companies.filter(c => c.status === 'registered').length, color: '!bg-slate-100 !text-slate-600' },
+          { label: 'Pendientes', value: companies.filter(c => c.status === 'pending_contract').length, color: '!bg-amber-100 !text-amber-700' },
+          { label: 'Activas', value: companies.filter(c => c.status === 'active').length, color: '!bg-emerald-100 !text-emerald-700' },
+          { label: 'Suspendidas', value: companies.filter(c => c.status === 'suspended').length, color: '!bg-rose-100 !text-rose-700' },
+        ].map((stat, i) => (
+          <div key={i} className={`!rounded-2xl !p-4 !text-center ${stat.color}`}>
+            <p className="!text-2xl !font-black">{stat.value}</p>
+            <p className="!text-xs !font-bold !opacity-75">{stat.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Filters & Search */}
@@ -167,47 +229,100 @@ export default function EmpresasPage() {
                   </tr>
                 ))
               ) : companies.length > 0 ? (
-                companies.map((company) => (
-                  <tr key={company.id} className="hover:!bg-slate-50/50 !transition-colors !group">
-                    <td className="!px-6 !py-5">
-                      <div className="!flex !items-center !gap-4">
-                        <div className="!w-12 !h-12 !rounded-2xl !bg-indigo-50 !text-indigo-600 !flex !items-center !justify-center !font-black !text-lg !shadow-sm">
-                          {(company.nombreComercial || company.razonSocial).charAt(0)}
-                        </div>
-                        <div>
-                          <p className="!font-bold !text-slate-900">{company.nombreComercial || company.razonSocial}</p>
-                          <p className="!text-xs !text-slate-500">{company.razonSocial}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-5">
-                      <span className="!text-sm !font-medium !text-slate-600">{company.rut || 'N/A'}</span>
-                    </td>
-                    <td className="!px-6 !py-5">
-                      <div className={`!inline-flex !items-center !gap-2 !px-3 !py-1.5 !rounded-full !text-xs !font-bold ${statusConfig[company.status]?.bgColor} ${statusConfig[company.status]?.color}`}>
-                        <div className={`!w-1.5 !h-1.5 !rounded-full ${statusConfig[company.status]?.dot}`}></div>
-                        {statusConfig[company.status]?.label}
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-5">
-                      <p className="!text-sm !text-slate-600">{new Date(company.createdAt).toLocaleDateString()}</p>
-                    </td>
-                    <td className="!px-6 !py-5 !text-right">
-                      <div className="!flex !items-center !justify-end !gap-2">
-                        <Link
-                          to={`/admin/empresas/${company.id}`}
-                          className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-indigo-600 hover:!text-white !transition-all"
-                          title="Ver detalles"
-                        >
-                          <Eye className="!w-4 !h-4" />
+                companies.map((company) => {
+                  const transitions = VALID_TRANSITIONS[company.status] || [];
+                  return (
+                    <tr key={company.id} className="hover:!bg-slate-50/50 !transition-colors !group">
+                      <td className="!px-6 !py-5">
+                        <Link to={`/admin/empresas/${company.id}`} className="!flex !items-center !gap-4 hover:!opacity-80 !transition-opacity">
+                          <div className="!w-12 !h-12 !rounded-2xl !bg-indigo-50 !text-indigo-600 !flex !items-center !justify-center !font-black !text-lg !shadow-sm">
+                            {(company.nombreComercial || company.razonSocial).charAt(0)}
+                          </div>
+                          <div>
+                            <p className="!font-bold !text-slate-900">{company.nombreComercial || company.razonSocial}</p>
+                            <p className="!text-xs !text-slate-500">{company.razonSocial}</p>
+                          </div>
                         </Link>
-                        <button className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-900 hover:!text-white !transition-all">
-                          <MoreVertical className="!w-4 !h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="!px-6 !py-5">
+                        <span className="!text-sm !font-medium !text-slate-600">{company.rut || 'N/A'}</span>
+                      </td>
+                      <td className="!px-6 !py-5">
+                        <div className={`!inline-flex !items-center !gap-2 !px-3 !py-1.5 !rounded-full !text-xs !font-bold ${statusConfig[company.status]?.bgColor} ${statusConfig[company.status]?.color}`}>
+                          <div className={`!w-1.5 !h-1.5 !rounded-full ${statusConfig[company.status]?.dot}`}></div>
+                          {statusConfig[company.status]?.label || company.status}
+                        </div>
+                      </td>
+                      <td className="!px-6 !py-5">
+                        <p className="!text-sm !text-slate-600">{new Date(company.createdAt).toLocaleDateString('es-CL')}</p>
+                      </td>
+                      <td className="!px-6 !py-5 !text-right">
+                        <div className="!flex !items-center !justify-end !gap-2 !relative" ref={openDropdown === company.id ? dropdownRef : undefined}>
+                          {/* View detail */}
+                          <Link
+                            to={`/admin/empresas/${company.id}`}
+                            className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-indigo-600 hover:!text-white !transition-all"
+                            title="Ver detalles"
+                          >
+                            <Eye className="!w-4 !h-4" />
+                          </Link>
+                          {/* 3-dot menu */}
+                          <button
+                            onClick={() => setOpenDropdown(openDropdown === company.id ? null : company.id)}
+                            className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-900 hover:!text-white !transition-all"
+                          >
+                            <MoreVertical className="!w-4 !h-4" />
+                          </button>
+
+                          {/* Dropdown */}
+                          {openDropdown === company.id && (
+                            <div className="!absolute !right-0 !top-full !mt-2 !bg-white !rounded-2xl !shadow-xl !border !border-slate-200 !py-2 !min-w-[220px] !z-50 !animate-in !fade-in !slide-in-from-top-2 !duration-200">
+                              {/* View detail */}
+                              <button
+                                onClick={() => { setOpenDropdown(null); navigate(`/admin/empresas/${company.id}`); }}
+                                className="!w-full !flex !items-center !gap-3 !px-4 !py-2.5 !text-sm !text-slate-700 hover:!bg-slate-50 !transition-colors !text-left"
+                              >
+                                <Eye className="!w-4 !h-4 !text-slate-400" />
+                                <span className="!font-medium">Ver Detalle Completo</span>
+                              </button>
+
+                              {/* Divider */}
+                              {transitions.length > 0 && (
+                                <div className="!border-t !border-slate-100 !my-1" />
+                              )}
+
+                              {/* Status transitions */}
+                              {transitions.map((toStatus) => {
+                                const tsc = statusConfig[toStatus] || statusConfig.registered;
+                                const TIcon = getTransitionIcon(toStatus);
+                                const isSuspend = toStatus === 'suspended';
+                                return (
+                                  <button
+                                    key={toStatus}
+                                    onClick={() => openStatusChangeModal(company, toStatus)}
+                                    className={`!w-full !flex !items-center !gap-3 !px-4 !py-2.5 !text-sm !transition-colors !text-left ${
+                                      isSuspend ? '!text-rose-600 hover:!bg-rose-50' : `${tsc.color} hover:!bg-slate-50`
+                                    }`}
+                                  >
+                                    <TIcon className="!w-4 !h-4" />
+                                    <span className="!font-medium">
+                                      {toStatus === 'suspended' ? 'Suspender' :
+                                       toStatus === 'active' ? 'Activar' :
+                                       toStatus === 'pending_contract' ? 'Enviar a Contrato' :
+                                       toStatus === 'signed' ? 'Marcar como Firmado' :
+                                       toStatus === 'registered' ? 'Volver a Registrada' :
+                                       tsc.label}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={5} className="!px-6 !py-20 !text-center">
@@ -238,7 +353,7 @@ export default function EmpresasPage() {
               >
                 <ChevronLeft className="!w-5 !h-5" />
               </button>
-              {[...Array(pagination.totalPages)].map((_, i) => (
+              {[...Array(Math.min(pagination.totalPages, 7))].map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setSearchParams({ page: (i + 1).toString() })}
@@ -262,6 +377,66 @@ export default function EmpresasPage() {
           </div>
         )}
       </div>
+
+      {/* ═══ Status Change Modal ═══ */}
+      {showStatusModal && selectedCompany && (
+        <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !bg-black/40 !backdrop-blur-sm" onClick={() => setShowStatusModal(false)}>
+          <div className="!bg-white !rounded-3xl !shadow-2xl !p-8 !w-full !max-w-md !mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="!flex !items-center !justify-between !mb-2">
+              <h3 className="!text-xl !font-black !text-slate-900">Cambiar Estado</h3>
+              <button onClick={() => setShowStatusModal(false)} className="!p-1 !rounded-lg hover:!bg-slate-100 !transition-colors">
+                <X className="!w-5 !h-5 !text-slate-400" />
+              </button>
+            </div>
+
+            <p className="!text-sm !text-slate-500 !mb-6">
+              ¿Cambiar <strong>{selectedCompany.nombreComercial || selectedCompany.razonSocial}</strong> de{' '}
+              <span className={`!font-bold ${statusConfig[selectedCompany.status]?.color || ''}`}>{statusConfig[selectedCompany.status]?.label || selectedCompany.status}</span> a{' '}
+              <span className={`!font-bold ${statusConfig[newStatus]?.color || ''}`}>{statusConfig[newStatus]?.label || newStatus}</span>?
+            </p>
+
+            <div className="!space-y-4">
+              <div>
+                <label className="!text-sm !font-bold !text-slate-700 !block !mb-1">Nota (opcional)</label>
+                <textarea
+                  value={statusNote}
+                  onChange={(e) => setStatusNote(e.target.value)}
+                  placeholder="Motivo del cambio de estado..."
+                  rows={3}
+                  className="!w-full !bg-slate-50 !border !border-slate-200 !rounded-xl !px-4 !py-3 !text-sm !text-slate-900 !outline-none focus:!ring-2 focus:!ring-indigo-500 !resize-none"
+                />
+              </div>
+
+              {newStatus === 'suspended' && (
+                <div className="!bg-rose-50 !border !border-rose-200 !rounded-xl !p-3 !flex !items-start !gap-2">
+                  <AlertTriangle className="!w-4 !h-4 !text-rose-500 !mt-0.5 !flex-shrink-0" />
+                  <p className="!text-xs !text-rose-700">Suspender la empresa deshabilitará el acceso de todos sus usuarios.</p>
+                </div>
+              )}
+
+              <div className="!flex !gap-3 !pt-2">
+                <button
+                  onClick={() => { setShowStatusModal(false); setSelectedCompany(null); }}
+                  className="!flex-1 !bg-slate-100 !text-slate-700 !px-4 !py-3 !rounded-xl !font-bold !text-sm hover:!bg-slate-200 !transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleChangeStatus}
+                  disabled={changingStatus}
+                  className={`!flex-1 !px-4 !py-3 !rounded-xl !font-bold !text-sm !transition-all disabled:!opacity-50 !shadow-lg ${
+                    newStatus === 'suspended'
+                      ? '!bg-rose-600 !text-white hover:!bg-rose-700 !shadow-rose-200'
+                      : '!bg-indigo-600 !text-white hover:!bg-indigo-700 !shadow-indigo-200'
+                  }`}
+                >
+                  {changingStatus ? 'Cambiando...' : 'Confirmar Cambio'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
