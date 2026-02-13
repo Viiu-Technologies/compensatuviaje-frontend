@@ -28,9 +28,10 @@ import {
  */
 export const getPartnerProfile = async (): Promise<PartnerProfile | null> => {
   try {
-    const response = await api.get<PartnerApiResponse<PartnerProfile>>('/partner/profile');
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    // Note: Axios interceptor already extracts response.data, so 'response' IS the body
+    const response = await api.get('/partner/profile') as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -46,9 +47,9 @@ export const updatePartnerProfile = async (
   data: UpdatePartnerProfileRequest
 ): Promise<PartnerProfile | null> => {
   try {
-    const response = await api.put<PartnerApiResponse<PartnerProfile>>('/partner/profile', data);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.put('/partner/profile', data) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -64,9 +65,9 @@ export const updatePartnerLogo = async (
   data: UpdateLogoRequest
 ): Promise<PartnerProfile | null> => {
   try {
-    const response = await api.put<PartnerApiResponse<PartnerProfile>>('/partner/profile/logo', data);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.put('/partner/profile/logo', data) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -84,12 +85,16 @@ export const updatePartnerLogo = async (
  */
 export const getOnboardingStatus = async (): Promise<OnboardingStatus | null> => {
   try {
-    const response = await api.get<PartnerApiResponse<OnboardingStatus>>('/partner/onboarding/status');
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.get('/partner/onboarding/status') as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
+    // 404 es un estado válido - significa que el endpoint no existe o no hay datos de onboarding
+    if (error.response?.status === 404 || error.status === 404) {
+      return null;
+    }
     console.error('Error fetching onboarding status:', error);
     throw error;
   }
@@ -104,9 +109,9 @@ export const getOnboardingStatus = async (): Promise<OnboardingStatus | null> =>
  */
 export const getBankDetails = async (): Promise<BankDetailsResponse | null> => {
   try {
-    const response = await api.get<PartnerApiResponse<BankDetailsResponse>>('/partner/bank-details');
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.get('/partner/bank-details') as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error: any) {
@@ -126,9 +131,9 @@ export const updateBankDetails = async (
   data: UpdateBankDetailsRequest
 ): Promise<BankDetailsResponse | null> => {
   try {
-    const response = await api.put<PartnerApiResponse<BankDetailsResponse>>('/partner/bank-details', data);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.put('/partner/bank-details', data) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -148,8 +153,8 @@ export const changePassword = async (
   data: ChangePasswordRequest
 ): Promise<boolean> => {
   try {
-    const response = await api.put<PartnerApiResponse<null>>('/partner/profile/password', data);
-    return response.data.success;
+    const response = await api.put('/partner/profile/password', data) as any;
+    return response.success || false;
   } catch (error) {
     console.error('Error changing password:', error);
     throw error;
@@ -165,9 +170,9 @@ export const changePassword = async (
  */
 export const getPartnerStats = async (): Promise<PartnerStats | null> => {
   try {
-    const response = await api.get<PartnerApiResponse<PartnerStats>>('/partner/stats');
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.get('/partner/stats') as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -195,12 +200,12 @@ export const getPartnerProjects = async (params?: {
     if (params?.status) queryParams.append('status', params.status);
 
     const url = `/partner/projects${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    const response = await api.get<PartnerListResponse<EsgProject>>(url);
+    const response = await api.get(url) as any;
     
-    if (response.data.success) {
+    if (response.success) {
       return {
-        projects: response.data.data,
-        pagination: response.data.pagination
+        projects: response.data || [],
+        pagination: response.pagination
       };
     }
     return null;
@@ -215,9 +220,9 @@ export const getPartnerProjects = async (params?: {
  */
 export const getProjectById = async (projectId: string): Promise<EsgProject | null> => {
   try {
-    const response = await api.get<PartnerApiResponse<EsgProject>>(`/partner/projects/${projectId}`);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.get(`/partner/projects/${projectId}`) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -233,9 +238,9 @@ export const createProject = async (
   data: CreateProjectRequest
 ): Promise<EsgProject | null> => {
   try {
-    const response = await api.post<PartnerApiResponse<EsgProject>>('/partner/projects', data);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.post('/partner/projects', data) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -252,9 +257,9 @@ export const updateProject = async (
   data: UpdateProjectRequest
 ): Promise<EsgProject | null> => {
   try {
-    const response = await api.put<PartnerApiResponse<EsgProject>>(`/partner/projects/${projectId}`, data);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.put(`/partner/projects/${projectId}`, data) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -268,8 +273,8 @@ export const updateProject = async (
  */
 export const deleteProject = async (projectId: string): Promise<boolean> => {
   try {
-    const response = await api.delete<PartnerApiResponse<null>>(`/partner/projects/${projectId}`);
-    return response.data.success;
+    const response = await api.delete(`/partner/projects/${projectId}`) as any;
+    return response.success || false;
   } catch (error) {
     console.error('Error deleting project:', error);
     throw error;
@@ -281,11 +286,11 @@ export const deleteProject = async (projectId: string): Promise<boolean> => {
  */
 export const submitProjectForReview = async (projectId: string): Promise<EsgProject | null> => {
   try {
-    const response = await api.post<PartnerApiResponse<EsgProject>>(
+    const response = await api.post(
       `/partner/projects/${projectId}/submit`
-    );
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    ) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -305,13 +310,9 @@ export const getProjectStats = async (
   total_revenue_clp: number;
 } | null> => {
   try {
-    const response = await api.get<PartnerApiResponse<{
-      total_certificates: number;
-      total_kg_co2: number;
-      total_revenue_clp: number;
-    }>>(`/partner/projects/${projectId}/stats`);
-    if (response.data.success && response.data.data) {
-      return response.data.data;
+    const response = await api.get(`/partner/projects/${projectId}/stats`) as any;
+    if (response.success && response.data) {
+      return response.data;
     }
     return null;
   } catch (error) {
