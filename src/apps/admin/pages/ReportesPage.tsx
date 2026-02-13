@@ -38,6 +38,8 @@ import {
 import {
   getEmissionsReport,
   getFinancialReport,
+  getCompaniesReport,
+  getB2CReport,
   exportReport,
   downloadCSV,
   ReportFilters
@@ -67,7 +69,7 @@ export default function ReportesPage() {
   const [reportData, setReportData] = useState<any>(null);
   
   // Filtros
-  const [period, setPeriod] = useState('30d');
+  const [period, setPeriod] = useState('all');
   const [groupBy, setGroupBy] = useState('time');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -95,9 +97,16 @@ export default function ReportesPage() {
         case 'financial':
           data = await getFinancialReport(filters);
           break;
+        case 'companies':
+          data = await getCompaniesReport(filters);
+          break;
+        case 'b2c':
+          data = await getB2CReport(filters);
+          break;
         default:
           data = await getEmissionsReport(filters);
       }
+      console.log(`[Reports] Tab ${activeTab} data:`, data);
       setReportData(data);
     } catch (error) {
       console.error('Error loading report:', error);
@@ -226,6 +235,7 @@ export default function ReportesPage() {
               }}
               className="!flex-1 lg:!w-48 !bg-slate-50 !border-none !rounded-2xl !px-4 !py-3 !font-bold !text-slate-700 !focus:ring-2 !focus:ring-emerald-500 !cursor-pointer"
             >
+              <option value="all">Todos</option>
               <option value="7d">Últimos 7 días</option>
               <option value="30d">Últimos 30 días</option>
               <option value="90d">Últimos 90 días</option>
@@ -293,7 +303,7 @@ export default function ReportesPage() {
       ) : (
         <div className="!space-y-8">
           {/* KPI Cards */}
-          {reportData?.totals && (
+          {(reportData?.totals || reportData?.stats) && (
             <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-4 !gap-6">
               {activeTab === 'emissions' && (
                 <>
@@ -386,24 +396,89 @@ export default function ReportesPage() {
                   </div>
                 </>
               )}
+              
+              {activeTab === 'companies' && (
+                <>
+                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-indigo-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                    <div className="!relative">
+                      <div className="!w-12 !h-12 !bg-indigo-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Building2 className="!w-6 !h-6 !text-indigo-600" />
+                      </div>
+                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Total Empresas</p>
+                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.total ?? 0}</h3>
+                    </div>
+                  </div>
+                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-emerald-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                    <div className="!relative">
+                      <div className="!w-12 !h-12 !bg-emerald-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <TrendingUp className="!w-6 !h-6 !text-emerald-600" />
+                      </div>
+                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Activas</p>
+                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.byStatus?.active ?? 0}</h3>
+                    </div>
+                  </div>
+                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-amber-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                    <div className="!relative">
+                      <div className="!w-12 !h-12 !bg-amber-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Activity className="!w-6 !h-6 !text-amber-600" />
+                      </div>
+                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Pendientes</p>
+                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{(reportData?.stats?.byStatus?.registered ?? 0) + (reportData?.stats?.byStatus?.pending_contract ?? 0)}</h3>
+                    </div>
+                  </div>
+                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-red-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                    <div className="!relative">
+                      <div className="!w-12 !h-12 !bg-red-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Globe className="!w-6 !h-6 !text-red-600" />
+                      </div>
+                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Suspendidas</p>
+                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.byStatus?.suspended ?? 0}</h3>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'b2c' && (
+                <>
+                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-purple-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                    <div className="!relative">
+                      <div className="!w-12 !h-12 !bg-purple-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Users className="!w-6 !h-6 !text-purple-600" />
+                      </div>
+                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Total Usuarios</p>
+                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.total ?? 0}</h3>
+                    </div>
+                  </div>
+                  {Object.entries(reportData?.stats?.byAuthProvider || {}).map(([provider, count]) => (
+                    <div key={provider} className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
+                      <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-blue-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                      <div className="!relative">
+                        <div className="!w-12 !h-12 !bg-blue-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                          <Globe className="!w-6 !h-6 !text-blue-600" />
+                        </div>
+                        <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">{provider}</p>
+                        <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{count as number}</h3>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
 
-          {/* Charts Section */}
-          <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-8">
-            {/* Main Chart */}
+          {/* Charts Section - Emissions/Financial */}
+          {(activeTab === 'emissions' || activeTab === 'financial') && reportData?.report?.length > 0 && (
+          <div className="!grid lg:!grid-cols-3 !gap-8">
             <div className="lg:!col-span-2 !bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-              <div className="!flex !items-center !justify-between !mb-8">
-                <div>
-                  <h3 className="!text-xl !font-black !text-slate-900">Tendencia Temporal</h3>
-                  <p className="!text-slate-500 !text-sm !font-medium">Visualización de datos por período seleccionado.</p>
-                </div>
-                <div className="!flex !items-center !gap-2 !bg-slate-50 !p-1 !rounded-xl">
-                  <button className="!p-2 !bg-white !shadow-sm !rounded-lg !text-emerald-600"><Activity className="!w-4 !h-4" /></button>
-                  <button className="!p-2 !text-slate-400 !hover:text-slate-600"><PieChartIcon className="!w-4 !h-4" /></button>
-                </div>
+              <div className="!mb-8">
+                <h3 className="!text-xl !font-black !text-slate-900">Tendencia Temporal</h3>
+                <p className="!text-slate-500 !text-sm !font-medium">Visualización de datos por período seleccionado.</p>
               </div>
-              
               <div className="!h-[350px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   {groupBy === 'time' ? (
@@ -415,126 +490,121 @@ export default function ReportesPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis 
-                        dataKey="date" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
-                        dy={10}
-                        tickFormatter={(value) => {
-                          const date = new Date(value);
-                          return `${date.getDate()}/${date.getMonth() + 1}`;
-                        }}
-                      />
-                      <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
-                        tickFormatter={(value) => formatNumber(value)}
-                      />
-                      <Tooltip
-                        contentStyle={{ 
-                          backgroundColor: '#fff', 
-                          borderRadius: '16px', 
-                          border: 'none', 
-                          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                          padding: '12px'
-                        }}
-                        formatter={(value: number, name: string) => [
-                          activeTab === 'financial' ? formatCurrency(value) : `${formatNumber(value)} kg`,
-                          name === 'emissionsKg' ? 'Emisiones' : 'Ingresos'
-                        ]}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey={activeTab === 'emissions' ? 'emissionsKg' : 'revenueCLP'}
-                        stroke={activeTab === 'emissions' ? '#10b981' : '#f59e0b'}
-                        strokeWidth={4}
-                        fillOpacity={1}
-                        fill="url(#colorValue)"
-                      />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} dy={10}
+                        tickFormatter={(value) => { const d = new Date(value); return `${d.getDate()}/${d.getMonth()+1}`; }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => formatNumber(v)} />
+                      <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', padding: '12px' }}
+                        formatter={(value: number, name: string) => [activeTab === 'financial' ? formatCurrency(value) : `${formatNumber(value)} kg`, name === 'emissionsKg' ? 'Emisiones' : 'Ingresos']} />
+                      <Area type="monotone" dataKey={activeTab === 'emissions' ? 'emissionsKg' : 'revenueCLP'} stroke={activeTab === 'emissions' ? '#10b981' : '#f59e0b'} strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                     </AreaChart>
                   ) : (
                     <BarChart data={reportData?.report || []}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis 
-                        dataKey={groupBy === 'company' ? 'companyName' : 
-                                 groupBy === 'project' ? 'projectName' : 
-                                 groupBy === 'type' ? 'type' :
-                                 groupBy === 'source' ? 'source' : 'name'}
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
-                        tickFormatter={(value) => formatNumber(value)}
-                      />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                      />
-                      <Bar 
-                        dataKey={activeTab === 'emissions' ? 'totalEmissionsKg' : 'revenueCLP'} 
-                        fill={activeTab === 'emissions' ? '#10b981' : '#f59e0b'} 
-                        radius={[8, 8, 0, 0]}
-                        barSize={40}
-                      />
+                      <XAxis dataKey={groupBy === 'company' ? 'companyName' : groupBy === 'project' ? 'projectName' : groupBy === 'type' ? 'type' : groupBy === 'source' ? 'source' : 'name'}
+                        axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} angle={-45} textAnchor="end" height={80} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => formatNumber(v)} />
+                      <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                      <Bar dataKey={activeTab === 'emissions' ? 'totalEmissionsKg' : 'revenueCLP'} fill={activeTab === 'emissions' ? '#10b981' : '#f59e0b'} radius={[8, 8, 0, 0]} barSize={40} />
                     </BarChart>
                   )}
                 </ResponsiveContainer>
               </div>
             </div>
-
-            {/* Distribution Chart */}
             <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
               <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Distribución</h3>
               <p className="!text-slate-500 !text-sm !font-medium !mb-8">Reparto porcentual por categoría.</p>
-              
               <div className="!h-[300px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie
-                      data={reportData?.report?.slice(0, 5) || []}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={8}
-                      dataKey={activeTab === 'emissions' ? (groupBy === 'time' ? 'emissionsKg' : 'totalEmissionsKg') : 'revenueCLP'}
-                    >
-                      {(reportData?.report || []).map((entry: any, index: number) => (
+                    <Pie data={reportData?.report?.slice(0, 5) || []} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8}
+                      dataKey={activeTab === 'emissions' ? (groupBy === 'time' ? 'emissionsKg' : 'totalEmissionsKg') : 'revenueCLP'}>
+                      {(reportData?.report || []).map((_entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend verticalAlign="bottom" height={36}/>
+                    <Tooltip /><Legend verticalAlign="bottom" height={36}/>
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              
-              <div className="!mt-6 !space-y-3">
-                <div className="!flex !items-center !justify-between !p-3 !bg-slate-50 !rounded-2xl">
-                  <div className="!flex !items-center !gap-2">
-                    <div className="!w-3 !h-3 !bg-emerald-500 !rounded-full" />
-                    <span className="!text-sm !font-bold !text-slate-700">Mayor Impacto</span>
-                  </div>
-                  <span className="!text-sm !font-black !text-slate-900">42%</span>
-                </div>
-                <div className="!flex !items-center !justify-between !p-3 !bg-slate-50 !rounded-2xl">
-                  <div className="!flex !items-center !gap-2">
-                    <div className="!w-3 !h-3 !bg-blue-500 !rounded-full" />
-                    <span className="!text-sm !font-bold !text-slate-700">Crecimiento</span>
-                  </div>
-                  <span className="!text-sm !font-black !text-emerald-600">+12.5%</span>
-                </div>
+            </div>
+          </div>
+          )}
+
+          {/* Charts Section - Companies */}
+          {activeTab === 'companies' && reportData?.stats && Object.keys(reportData.stats.byStatus || {}).length > 0 && (
+          <div className="!grid lg:!grid-cols-2 !gap-8">
+            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
+              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por Estado</h3>
+              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución de empresas por estado.</p>
+              <div className="!h-[300px] !w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={Object.entries(reportData?.stats?.byStatus || {}).map(([name, value]) => ({ name, value }))}
+                      cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8} dataKey="value">
+                      {Object.keys(reportData?.stats?.byStatus || {}).map((_k: string, i: number) => (
+                        <Cell key={`s-${i}`} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip /><Legend verticalAlign="bottom" height={36}/>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
+              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por Industria</h3>
+              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución de empresas por sector.</p>
+              <div className="!h-[300px] !w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={Object.entries(reportData?.stats?.byIndustry || {}).map(([name, value]) => ({ name, value }))}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} angle={-45} textAnchor="end" height={80} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                    <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
+          )}
+
+          {/* Charts Section - B2C */}
+          {activeTab === 'b2c' && reportData?.stats && Object.keys(reportData.stats.byAuthProvider || {}).length > 0 && (
+          <div className="!grid lg:!grid-cols-2 !gap-8">
+            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
+              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por Proveedor</h3>
+              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución por método de autenticación.</p>
+              <div className="!h-[300px] !w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={Object.entries(reportData?.stats?.byAuthProvider || {}).map(([name, value]) => ({ name, value }))}
+                      cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8} dataKey="value">
+                      {Object.keys(reportData?.stats?.byAuthProvider || {}).map((_k: string, i: number) => (
+                        <Cell key={`p-${i}`} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip /><Legend verticalAlign="bottom" height={36}/>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
+              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por País</h3>
+              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución de usuarios por país.</p>
+              <div className="!h-[300px] !w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={Object.entries(reportData?.stats?.byCountry || {}).map(([name, value]) => ({ name, value }))}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                    <Bar dataKey="value" fill="#8b5cf6" radius={[8, 8, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+          )}
 
           {/* Detailed Data Table */}
           <div className="!bg-white !rounded-[2.5rem] !shadow-sm !border !border-slate-100 !overflow-hidden">
@@ -543,57 +613,83 @@ export default function ReportesPage() {
                 <h3 className="!text-xl !font-black !text-slate-900">Desglose Detallado</h3>
                 <p className="!text-slate-500 !text-sm !font-medium">Listado completo de registros para el período.</p>
               </div>
-              <button className="!p-2 !text-slate-400 !hover:text-emerald-600 !transition-colors">
-                <ArrowUpRight className="!w-6 !h-6" />
-              </button>
             </div>
-            
             <div className="!overflow-x-auto">
               <table className="!w-full !text-left !border-collapse">
                 <thead>
                   <tr className="!bg-slate-50/30">
-                    <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">
-                      {groupBy === 'time' ? 'Fecha' : groupBy === 'company' ? 'Empresa' : 'Proyecto'}
-                    </th>
-                    <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">
-                      {activeTab === 'emissions' ? 'Emisiones (kg)' : 'Ingresos (CLP)'}
-                    </th>
-                    <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">
-                      {activeTab === 'emissions' ? 'Certificados' : 'Transacciones'}
-                    </th>
-                    <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">Estado</th>
+                    {(activeTab === 'emissions' || activeTab === 'financial') && (
+                      <>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">
+                          {groupBy === 'time' ? 'Fecha' : groupBy === 'company' ? 'Empresa' : 'Proyecto'}
+                        </th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">
+                          {activeTab === 'emissions' ? 'Emisiones (kg)' : 'Ingresos (CLP)'}
+                        </th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">
+                          {activeTab === 'emissions' ? 'Certificados' : 'Transacciones'}
+                        </th>
+                      </>
+                    )}
+                    {activeTab === 'companies' && (
+                      <>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Empresa</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">RUT</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Industria</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Tamaño</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">Estado</th>
+                      </>
+                    )}
+                    {activeTab === 'b2c' && (
+                      <>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Nombre</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Email</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Proveedor</th>
+                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">Registro</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="!divide-y !divide-slate-100">
-                  {(reportData?.report || []).slice(0, 10).map((item: any, index: number) => (
-                    <tr key={index} className="!hover:bg-slate-50/50 !transition-colors">
+                  {(activeTab === 'emissions' || activeTab === 'financial') && (reportData?.report || []).slice(0, 10).map((item: any, index: number) => (
+                    <tr key={index} className="hover:!bg-slate-50/50 !transition-colors">
                       <td className="!px-8 !py-5 !font-bold !text-slate-900">
-                        {groupBy === 'time' ? (item.date ? new Date(item.date).toLocaleDateString('es-CL') : '-') : 
-                         groupBy === 'company' ? item.companyName : item.projectName}
+                        {groupBy === 'time' ? (item.date ? new Date(item.date).toLocaleDateString('es-CL') : '-') : groupBy === 'company' ? item.companyName : item.projectName}
                       </td>
                       <td className="!px-8 !py-5 !text-right !font-black !text-slate-700">
-                        {activeTab === 'emissions' ? 
-                          formatNumber(item.emissionsKg || item.totalEmissionsKg || 0) : 
-                          formatCurrency(item.revenueCLP || 0)}
+                        {activeTab === 'emissions' ? formatNumber(item.emissionsKg || item.totalEmissionsKg || 0) : formatCurrency(item.revenueCLP || 0)}
                       </td>
                       <td className="!px-8 !py-5 !text-right !font-bold !text-slate-500">
                         {activeTab === 'emissions' ? (item.count || item.certificatesCount || 0) : (item.transactions || 0)}
                       </td>
-                      <td className="!px-8 !py-5 !text-right">
-                        <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider !bg-emerald-100 !text-emerald-700">
-                          Completado
-                        </span>
+                    </tr>
+                  ))}
+                  {activeTab === 'companies' && (reportData?.companies || []).slice(0, 15).map((c: any, index: number) => {
+                    const sc: Record<string, string> = { active: '!bg-emerald-100 !text-emerald-700', registered: '!bg-blue-100 !text-blue-700', pending_contract: '!bg-amber-100 !text-amber-700', signed: '!bg-indigo-100 !text-indigo-700', suspended: '!bg-red-100 !text-red-700' };
+                    return (
+                      <tr key={index} className="hover:!bg-slate-50/50 !transition-colors">
+                        <td className="!px-8 !py-5 !font-bold !text-slate-900">{c.companyName || c.name || '-'}</td>
+                        <td className="!px-8 !py-5 !text-slate-700 !font-medium">{c.rut || '-'}</td>
+                        <td className="!px-8 !py-5 !text-slate-700 !font-medium">{c.industry || '-'}</td>
+                        <td className="!px-8 !py-5 !text-slate-700 !font-medium">{c.companySize || c.size || '-'}</td>
+                        <td className="!px-8 !py-5 !text-right">
+                          <span className={`!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider ${sc[c.status] || '!bg-slate-100 !text-slate-700'}`}>{c.status || '-'}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {activeTab === 'b2c' && (reportData?.users || []).slice(0, 15).map((u: any, index: number) => (
+                    <tr key={index} className="hover:!bg-slate-50/50 !transition-colors">
+                      <td className="!px-8 !py-5 !font-bold !text-slate-900">{u.name || u.displayName || '-'}</td>
+                      <td className="!px-8 !py-5 !text-slate-700 !font-medium">{u.email || '-'}</td>
+                      <td className="!px-8 !py-5">
+                        <span className="!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider !bg-blue-100 !text-blue-700">{u.authProvider || u.provider || '-'}</span>
                       </td>
+                      <td className="!px-8 !py-5 !text-right !text-slate-500 !font-medium">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-CL') : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            
-            <div className="!p-6 !bg-slate-50/50 !border-t !border-slate-100 !text-center">
-              <button className="!text-sm !font-bold !text-emerald-600 !hover:text-emerald-700 !transition-colors">
-                Ver todos los registros
-              </button>
             </div>
           </div>
         </div>
