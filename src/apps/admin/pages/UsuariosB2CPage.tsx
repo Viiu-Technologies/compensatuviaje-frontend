@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -46,6 +46,7 @@ interface B2CStatsData {
 }
 
 export default function UsuariosB2CPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<B2CUser[]>([]);
   const [stats, setStats] = useState<B2CStatsData | null>(null);
@@ -254,7 +255,11 @@ export default function UsuariosB2CPage() {
                       </div>
                     </td>
                     <td className="!px-6 !py-5 !text-right">
-                      <button className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-indigo-600 hover:!text-white !transition-all">
+                      <button
+                        onClick={() => navigate(`/admin/usuarios-b2c/${user.id}`)}
+                        className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-indigo-600 hover:!text-white !transition-all"
+                        title="Ver detalle"
+                      >
                         <Eye className="!w-4 !h-4" />
                       </button>
                     </td>
