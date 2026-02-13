@@ -28,27 +28,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<B2CUser | null>(null);
   const [loading, setLoading] = useState(false); // Cambiar a false por defecto
 
-  // Cargar usuario al montar
+  // Cargar usuario al montar - SOLO en rutas B2C
   useEffect(() => {
+    // Solo ejecutar lógica de Supabase si estamos en una ruta B2C
+    const isB2CRoute = window.location.pathname.startsWith('/b2c') || 
+                       window.location.pathname === '/auth/callback' ||
+                       window.location.pathname === '/calculator';
+    
+    // Si no estamos en ruta B2C, no hacer nada con Supabase
+    if (!isB2CRoute) {
+      console.log('🚫 [B2C AuthContext] No estamos en ruta B2C, saltando inicialización de Supabase');
+      return;
+    }
+
     let mounted = true;
     
     const initAuth = async () => {
-      console.log('🔄 [AuthContext] Iniciando verificación de autenticación...');
+      console.log('🔄 [B2C AuthContext] Iniciando verificación de autenticación...');
       try {
         setLoading(true);
         const currentUser = await authService.getCurrentUser();
-        console.log('✅ [AuthContext] Usuario actual:', currentUser);
+        console.log('✅ [B2C AuthContext] Usuario actual:', currentUser);
         if (mounted) {
           setUser(currentUser);
         }
       } catch (error) {
-        console.error('❌ [AuthContext] Error cargando usuario:', error);
+        console.error('❌ [B2C AuthContext] Error cargando usuario:', error);
         if (mounted) {
           setUser(null);
         }
       } finally {
         if (mounted) {
-          console.log('🏁 [AuthContext] Finalizando verificación (loading -> false)');
+          console.log('🏁 [B2C AuthContext] Finalizando verificación (loading -> false)');
           setLoading(false);
         }
       }
@@ -58,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Escuchar cambios de autenticación
     const { data } = authService.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
+      console.log('[B2C] Auth state changed:', event);
       
       if (event === 'SIGNED_IN' && session) {
         await loadUser(session);
