@@ -15,7 +15,6 @@ import {
   Shield,
   Bell,
   CheckSquare,
-  UploadCloud,
   Handshake,
   ClipboardCheck
 } from 'lucide-react';
@@ -36,7 +35,6 @@ const navItems: NavItem[] = [
   { path: '/admin/proyectos', icon: TreePine, label: 'Proyectos ESG' },
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { path: '/admin/verificacion', icon: CheckSquare, label: 'Verificación' },
-  { path: '/admin/batch-upload', icon: UploadCloud, label: 'Carga Batch' },
 ];
 
 export default function AdminLayout() {
