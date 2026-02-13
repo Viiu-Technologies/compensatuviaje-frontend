@@ -68,8 +68,9 @@ export interface DashboardData {
 }
 
 export const getDashboard = async (): Promise<DashboardData> => {
-  const response = await api.get('/admin/dashboard');
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  const response = await api.get('/admin/dashboard') as any;
+  return response.data || response;
 };
 
 export interface MetricsData {
@@ -100,8 +101,9 @@ export interface MetricsData {
 }
 
 export const getMetrics = async (period: string = '30d'): Promise<MetricsData> => {
-  const response = await api.get('/admin/dashboard/metrics', { params: { period } });
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  const response = await api.get('/admin/dashboard/metrics', { params: { period } }) as any;
+  return response.data || response;
 };
 
 // ============================================
@@ -142,18 +144,69 @@ export const getCompanies = async (params: {
   sortBy?: string;
   sortOrder?: string;
 }): Promise<CompaniesListResponse> => {
-  const response = await api.get('/admin/companies', { params });
-  return response.data.data;
+  // El interceptor ya extrae response.data, response = { success, data, pagination }
+  const response = await api.get('/admin/companies', { params }) as any;
+  return {
+    companies: response.data || [],
+    pagination: {
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 20,
+      total: response.pagination?.totalRecords || response.pagination?.total || 0,
+      totalPages: response.pagination?.totalPages || response.pagination?.total_pages || 0
+    }
+  };
 };
 
 export const getCompanyDetail = async (id: string) => {
-  const response = await api.get(`/admin/companies/${id}`);
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  const response = await api.get(`/admin/companies/${id}`) as any;
+  return response.data || response;
 };
 
-export const updateCompanyStatus = async (id: string, status: string, reason?: string) => {
-  const response = await api.put(`/admin/companies/${id}/status`, { status, reason });
-  return response.data;
+export const updateCompanyStatus = async (id: string, toStatus: string, note?: string) => {
+  // Backend espera { toStatus, note } - NO { status, reason }
+  const response = await api.put(`/admin/companies/${id}/status`, { toStatus, note }) as any;
+  return response;
+};
+
+// Timeline de cambios de estado
+export const getCompanyTimeline = async (id: string) => {
+  const response = await api.get(`/admin/companies/${id}/timeline`) as any;
+  return response.data || response;
+};
+
+// Documentos de la empresa
+export const getCompanyDocuments = async (id: string) => {
+  const response = await api.get(`/admin/companies/${id}/documents`) as any;
+  return response.data || response;
+};
+
+// Revisar documento
+export const reviewCompanyDocument = async (companyId: string, documentId: string, status: string, notes?: string) => {
+  const response = await api.put(`/admin/companies/${companyId}/documents/${documentId}/review`, { status, notes }) as any;
+  return response;
+};
+
+// ============================================
+// VERIFICACIÓN
+// ============================================
+
+// Obtener empresas pendientes de verificación
+export const getPendingVerifications = async () => {
+  const response = await api.get('/admin/verification/pending') as any;
+  return response.data || response;
+};
+
+// Estadísticas de verificación
+export const getVerificationStats = async () => {
+  const response = await api.get('/admin/verification/stats') as any;
+  return response.data || response;
+};
+
+// Verificar dominio manualmente
+export const verifyDomain = async (domainId: string, isVerified: boolean, note?: string) => {
+  const response = await api.put(`/admin/verification/domains/${domainId}/verify`, { isVerified, note }) as any;
+  return response;
 };
 
 // ============================================
@@ -199,18 +252,37 @@ export const getB2CUsers = async (params: {
   sortBy?: string;
   sortOrder?: string;
 }): Promise<B2CUsersListResponse> => {
-  const response = await api.get('/admin/b2c/users', { params });
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  // Backend retorna: { success, data: { users: [...], pagination: {...} } }
+  // Después del interceptor: response = { success, data: { users, pagination } }
+  const response = await api.get('/admin/b2c/users', { params }) as any;
+  
+  // data está anidado: response.data = { users: [...], pagination: {...} }
+  const nested = response.data || {};
+  const users = nested.users || [];
+  const pag = nested.pagination || {};
+  
+  return {
+    users,
+    pagination: {
+      page: pag.page || 1,
+      limit: pag.limit || 20,
+      total: pag.total || pag.totalRecords || 0,
+      totalPages: pag.totalPages || pag.total_pages || 0
+    }
+  };
 };
 
 export const getB2CUserDetail = async (id: string) => {
-  const response = await api.get(`/admin/b2c/users/${id}`);
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  const response = await api.get(`/admin/b2c/users/${id}`) as any;
+  return response.data || response;
 };
 
 export const getB2CStats = async (period: string = '30d') => {
-  const response = await api.get('/admin/b2c/stats', { params: { period } });
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  const response = await api.get('/admin/b2c/stats', { params: { period } }) as any;
+  return response.data || response;
 };
 
 // ============================================
@@ -257,33 +329,43 @@ export const getProjects = async (params: {
   sortBy?: string;
   sortOrder?: string;
 }): Promise<ProjectsListResponse> => {
-  const response = await api.get('/admin/projects', { params });
-  return response.data.data;
+  // El interceptor ya extrae response.data, response = { success, data, pagination }
+  const response = await api.get('/admin/projects', { params }) as any;
+  return {
+    projects: response.data || [],
+    pagination: {
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 20,
+      total: response.pagination?.totalRecords || response.pagination?.total || 0,
+      totalPages: response.pagination?.totalPages || response.pagination?.total_pages || 0
+    }
+  };
 };
 
 export const getProjectDetail = async (id: string) => {
-  const response = await api.get(`/admin/projects/${id}`);
-  return response.data.data;
+  // El interceptor ya extrae response.data
+  const response = await api.get(`/admin/projects/${id}`) as any;
+  return response.data || response;
 };
 
 export const createProject = async (data: Partial<Project>) => {
-  const response = await api.post('/admin/projects', data);
-  return response.data;
+  const response = await api.post('/admin/projects', data) as any;
+  return response.data || response;
 };
 
 export const updateProject = async (id: string, data: Partial<Project>) => {
-  const response = await api.put(`/admin/projects/${id}`, data);
-  return response.data;
+  const response = await api.put(`/admin/projects/${id}`, data) as any;
+  return response.data || response;
 };
 
 export const deleteProject = async (id: string) => {
-  const response = await api.delete(`/admin/projects/${id}`);
-  return response.data;
+  const response = await api.delete(`/admin/projects/${id}`) as any;
+  return response;
 };
 
 export const getProjectsStats = async () => {
-  const response = await api.get('/admin/projects/stats');
-  return response.data.data;
+  const response = await api.get('/admin/projects/stats') as any;
+  return response.data || response;
 };
 
 export const addProjectEvidence = async (projectId: string, data: {
@@ -293,13 +375,13 @@ export const addProjectEvidence = async (projectId: string, data: {
   fileUrl: string;
   documentDate?: string;
 }) => {
-  const response = await api.post(`/admin/projects/${projectId}/evidences`, data);
-  return response.data;
+  const response = await api.post(`/admin/projects/${projectId}/evidences`, data) as any;
+  return response.data || response;
 };
 
 export const deleteProjectEvidence = async (projectId: string, evidenceId: string) => {
-  const response = await api.delete(`/admin/projects/${projectId}/evidences/${evidenceId}`);
-  return response.data;
+  const response = await api.delete(`/admin/projects/${projectId}/evidences/${evidenceId}`) as any;
+  return response;
 };
 
 export const addProjectPricing = async (projectId: string, data: {
@@ -308,13 +390,13 @@ export const addProjectPricing = async (projectId: string, data: {
   effectiveFrom?: string;
   reason?: string;
 }) => {
-  const response = await api.post(`/admin/projects/${projectId}/pricing`, data);
-  return response.data;
+  const response = await api.post(`/admin/projects/${projectId}/pricing`, data) as any;
+  return response.data || response;
 };
 
 export const getProjectPricingHistory = async (projectId: string) => {
-  const response = await api.get(`/admin/projects/${projectId}/pricing-history`);
-  return response.data.data;
+  const response = await api.get(`/admin/projects/${projectId}/pricing-history`) as any;
+  return response.data || response;
 };
 
 // ============================================
@@ -334,23 +416,23 @@ export interface ReportFilters {
 }
 
 export const getEmissionsReport = async (filters: ReportFilters) => {
-  const response = await api.get('/admin/reports/emissions', { params: filters });
-  return response.data.data;
+  const response = await api.get('/admin/reports/emissions', { params: filters }) as any;
+  return response.data || response;
 };
 
 export const getFinancialReport = async (filters: ReportFilters) => {
-  const response = await api.get('/admin/reports/financial', { params: filters });
-  return response.data.data;
+  const response = await api.get('/admin/reports/financial', { params: filters }) as any;
+  return response.data || response;
 };
 
 export const getCompaniesReport = async (filters: ReportFilters) => {
-  const response = await api.get('/admin/reports/companies', { params: filters });
-  return response.data.data;
+  const response = await api.get('/admin/reports/companies', { params: filters }) as any;
+  return response.data || response;
 };
 
 export const getB2CReport = async (filters: ReportFilters) => {
-  const response = await api.get('/admin/reports/b2c', { params: filters });
-  return response.data.data;
+  const response = await api.get('/admin/reports/b2c', { params: filters }) as any;
+  return response.data || response;
 };
 
 export const exportReport = async (params: {
@@ -440,13 +522,22 @@ export const getPartners = async (params: {
   sortBy?: string;
   sortOrder?: string;
 }): Promise<PartnersListResponse> => {
-  const response = await api.get('/admin/partners', { params });
-  return response.data.data;
+  // El interceptor ya extrae response.data, así que response = { success, data, pagination }
+  const response = await api.get('/admin/partners', { params }) as any;
+  return {
+    partners: response.data || [],
+    pagination: {
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 10,
+      total: response.pagination?.total || 0,
+      totalPages: response.pagination?.total_pages || 0
+    }
+  };
 };
 
 export const getPartnerDetail = async (id: string): Promise<PartnerDetail> => {
   const response = await api.get(`/admin/partners/${id}`);
-  return response.data.data;
+  return response.data;
 };
 
 export const createPartner = async (data: {
@@ -470,8 +561,8 @@ export const updatePartnerStatus = async (
 };
 
 export const verifyPartner = async (id: string) => {
-  const response = await api.post(`/admin/partners/${id}/verify`);
-  return response.data;
+  const response = await api.put(`/admin/partners/${id}/status`, { status: 'active' }) as any;
+  return response;
 };
 
 // Partner Projects (Admin view)
@@ -481,27 +572,43 @@ export const getPartnerProjects = async (partnerId: string, params?: {
   status?: string;
 }) => {
   const response = await api.get(`/admin/partners/${partnerId}/projects`, { params });
-  return response.data.data;
+  return response.data;
 };
 
-export const approvePartnerProject = async (partnerId: string, projectId: string) => {
-  const response = await api.post(`/admin/partners/${partnerId}/projects/${projectId}/approve`);
-  return response.data;
+export const approvePartnerProject = async (_partnerId: string, projectId: string) => {
+  const response = await api.post(`/admin/partners/projects/${projectId}/approve`) as any;
+  return response;
 };
 
 export const rejectPartnerProject = async (
-  partnerId: string, 
+  _partnerId: string, 
   projectId: string, 
   reason: string
 ) => {
-  const response = await api.post(`/admin/partners/${partnerId}/projects/${projectId}/reject`, { reason });
-  return response.data;
+  const response = await api.post(`/admin/partners/projects/${projectId}/reject`, { reason }) as any;
+  return response;
 };
 
 // Partner Stats
 export const getPartnersStats = async () => {
-  const response = await api.get('/admin/partners/stats');
-  return response.data.data;
+  // El interceptor ya extrae response.data, así que response = { success, data }
+  const response = await api.get('/admin/partners/stats') as any;
+  const data = response.data;
+  
+  // Transformar al formato esperado por el frontend
+  return {
+    total: data?.partners?.total || 0,
+    byStatus: {
+      active: data?.partners?.active || 0,
+      onboarding: data?.partners?.onboarding || 0,
+      suspended: data?.partners?.suspended || 0,
+      inactive: data?.partners?.inactive || 0,
+    },
+    verified: data?.partners?.active || 0, // Los activos son los verificados
+    withProjects: data?.projects?.total || 0,
+    projects: data?.projects || {},
+    recentPartnersCount: data?.recentPartnersCount || 0,
+  };
 };
 
 // Projects pending review (all partners)
@@ -509,6 +616,16 @@ export const getProjectsPendingReview = async (params?: {
   page?: number;
   limit?: number;
 }) => {
-  const response = await api.get('/admin/partners/projects/pending', { params });
-  return response.data.data;
+  // Note: Axios interceptor already extracts response.data, so 'response' IS the body
+  const response = await api.get('/admin/partners/projects/pending', { params }) as any;
+  // response = { success, data, pagination }
+  return {
+    projects: response.data || [],
+    pagination: {
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 10,
+      total: response.pagination?.total || 0,
+      totalPages: response.pagination?.total_pages || 0
+    }
+  };
 };
