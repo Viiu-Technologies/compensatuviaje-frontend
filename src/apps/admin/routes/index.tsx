@@ -3,11 +3,12 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 import EmpresasPage from '../pages/EmpresasPage';
+import EmpresaDetailPage from '../pages/EmpresaDetailPage';
 import UsuariosB2CPage from '../pages/UsuariosB2CPage';
+import UsuarioB2CDetailPage from '../pages/UsuarioB2CDetailPage';
 import ProyectosPage from '../pages/ProyectosPage';
 import ReportesPage from '../pages/ReportesPage';
 import VerificationPage from '../pages/VerificationPage';
-import BatchUploadPage from '../pages/BatchUploadPage';
 import PartnersPage from '../pages/PartnersPage';
 import PartnerDetailPage from '../pages/PartnerDetailPage';
 import ProjectsReviewPage from '../pages/ProjectsReviewPage';
@@ -22,9 +23,11 @@ const AdminRoutes = () => {
 
         {/* Gestión de Empresas B2B */}
         <Route path="empresas" element={<EmpresasPage />} />
+        <Route path="empresas/:id" element={<EmpresaDetailPage />} />
 
         {/* Gestión de Usuarios B2C */}
         <Route path="usuarios-b2c" element={<UsuariosB2CPage />} />
+        <Route path="usuarios-b2c/:id" element={<UsuarioB2CDetailPage />} />
 
         {/* Gestión de Impact Partners */}
         <Route path="partners" element={<PartnersPage />} />
@@ -41,9 +44,6 @@ const AdminRoutes = () => {
 
         {/* Verificación de Compensaciones */}
         <Route path="verificacion" element={<VerificationPage />} />
-
-        {/* Carga Batch */}
-        <Route path="batch-upload" element={<BatchUploadPage />} />
 
         {/* Redirección legacy */}
         <Route path="verification" element={<Navigate to="/admin/verificacion" replace />} />
