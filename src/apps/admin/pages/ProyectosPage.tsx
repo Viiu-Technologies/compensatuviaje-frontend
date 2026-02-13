@@ -34,7 +34,13 @@ import {
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
   active: { label: 'Activo', color: 'text-emerald-700', bgColor: 'bg-emerald-100' },
-  inactive: { label: 'Inactivo', color: 'text-slate-600', bgColor: 'bg-slate-100' },
+  draft: { label: 'Borrador', color: 'text-slate-600', bgColor: 'bg-slate-100' },
+  pending_review: { label: 'En Revisión', color: 'text-amber-700', bgColor: 'bg-amber-100' },
+  approved: { label: 'Aprobado', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  rejected: { label: 'Rechazado', color: 'text-red-700', bgColor: 'bg-red-100' },
+  paused: { label: 'Pausado', color: 'text-orange-700', bgColor: 'bg-orange-100' },
+  completed: { label: 'Completado', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
+  inactive: { label: 'Inactivo', color: 'text-slate-600', bgColor: 'bg-slate-200' },
   coming_soon: { label: 'Próximamente', color: 'text-blue-700', bgColor: 'bg-blue-100' },
   deleted: { label: 'Eliminado', color: 'text-red-700', bgColor: 'bg-red-100' },
 };
@@ -344,9 +350,12 @@ export default function ProyectosPage() {
               className="!bg-slate-50 !border-none !rounded-2xl !px-4 !py-3 !font-medium !text-slate-700 !focus:ring-2 !focus:ring-emerald-500 !cursor-pointer"
             >
               <option value="">Todos los estados</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-              <option value="coming_soon">Próximamente</option>
+              {Object.entries(statusConfig)
+                .filter(([key]) => key !== 'deleted')
+                .map(([key, config]) => (
+                  <option key={key} value={key}>{config.label}</option>
+                ))
+              }
             </select>
 
             <select
@@ -416,6 +425,11 @@ export default function ProyectosPage() {
                             {project.name}
                           </div>
                           <div className="!text-xs !font-mono !text-slate-400 !mt-0.5">{project.code}</div>
+                          {(project as any).partner && (
+                            <div className="!text-xs !text-emerald-600 !font-medium !mt-0.5">
+                              Partner: {(project as any).partner.name}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -540,7 +554,7 @@ export default function ProyectosPage() {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                     placeholder="Ej: Reforestación Amazonía"
                   />
                 </div>
@@ -551,7 +565,7 @@ export default function ProyectosPage() {
                     type="text"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                     placeholder="Ej: REF-001"
                   />
                 </div>
@@ -560,7 +574,7 @@ export default function ProyectosPage() {
                   <select
                     value={formData.projectType}
                     onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !outline-none !cursor-pointer"
                   >
                     {Object.entries(projectTypeConfig).map(([key, config]) => (
                       <option key={key} value={key}>{config.label}</option>
@@ -572,11 +586,14 @@ export default function ProyectosPage() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !outline-none !cursor-pointer"
                   >
-                    <option value="active">Activo</option>
-                    <option value="inactive">Inactivo</option>
-                    <option value="coming_soon">Próximamente</option>
+                    {Object.entries(statusConfig)
+                      .filter(([key]) => key !== 'deleted')
+                      .map(([key, config]) => (
+                        <option key={key} value={key}>{config.label}</option>
+                      ))
+                    }
                   </select>
                 </div>
                 <div className="!space-y-2">
@@ -586,17 +603,16 @@ export default function ProyectosPage() {
                     type="text"
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                   />
                 </div>
                 <div className="!space-y-2">
                   <label className="!text-sm !font-bold !text-slate-700 !ml-1">Región / Ciudad</label>
                   <input
-                    required
                     type="text"
                     value={formData.region}
                     onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                   />
                 </div>
                 <div className="!space-y-2">
@@ -604,12 +620,11 @@ export default function ProyectosPage() {
                   <div className="!relative">
                     <DollarSign className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-slate-400 !w-4 !h-4" />
                     <input
-                      required
                       type="number"
                       step="0.01"
                       value={formData.pricePerTonUSD}
                       onChange={(e) => setFormData({ ...formData, pricePerTonUSD: e.target.value === '' ? '' : Number(e.target.value) })}
-                      className="!w-full !pl-10 !pr-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                      className="!w-full !pl-10 !pr-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                     />
                   </div>
                 </div>
@@ -618,32 +633,29 @@ export default function ProyectosPage() {
                   <div className="!relative">
                     <DollarSign className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-slate-400 !w-4 !h-4" />
                     <input
-                      required
                       type="number"
                       value={formData.pricePerTonCLP}
                       onChange={(e) => setFormData({ ...formData, pricePerTonCLP: e.target.value === '' ? '' : Number(e.target.value) })}
-                      className="!w-full !pl-10 !pr-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                      className="!w-full !pl-10 !pr-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                     />
                   </div>
                 </div>
                 <div className="!space-y-2">
                   <label className="!text-sm !font-bold !text-slate-700 !ml-1">Créditos Totales</label>
                   <input
-                    required
                     type="number"
                     value={formData.totalCredits}
                     onChange={(e) => setFormData({ ...formData, totalCredits: e.target.value === '' ? '' : Number(e.target.value) })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                   />
                 </div>
                 <div className="!space-y-2">
                   <label className="!text-sm !font-bold !text-slate-700 !ml-1">Créditos Disponibles</label>
                   <input
-                    required
                     type="number"
                     value={formData.availableCredits}
                     onChange={(e) => setFormData({ ...formData, availableCredits: e.target.value === '' ? '' : Number(e.target.value) })}
-                    className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                   />
                 </div>
               </div>
@@ -656,7 +668,7 @@ export default function ProyectosPage() {
                     type="url"
                     value={formData.imageUrl}
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    className="!w-full !pl-10 !pr-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium"
+                    className="!w-full !pl-10 !pr-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>
@@ -668,7 +680,7 @@ export default function ProyectosPage() {
                   rows={4}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="!w-full !px-4 !py-3 !bg-slate-50 !border-none !rounded-2xl !focus:ring-2 !focus:ring-emerald-500 !font-medium !resize-none"
+                  className="!w-full !px-4 !py-3 !bg-slate-50 !border !border-slate-200 !rounded-2xl focus:!ring-2 focus:!ring-emerald-500 !font-medium !text-slate-900 !placeholder-slate-400 !outline-none !resize-none"
                   placeholder="Describe el impacto ambiental y social del proyecto..."
                 />
               </div>
