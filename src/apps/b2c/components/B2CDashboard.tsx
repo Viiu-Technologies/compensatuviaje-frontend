@@ -41,7 +41,7 @@ const B2CDashboard = () => {
     { id: 'flights', label: 'Mis Viajes', icon: FaPlane, path: '/b2c/flights' },
     { id: 'projects', label: 'Proyectos', icon: FaGlobeAmericas, path: '/b2c/projects' },
     { id: 'certificates', label: 'Certificados', icon: FaCertificate, path: '/b2c/certificates' },
-    { id: 'calculator', label: 'Calcular CO₂', icon: HiSparkles, path: '/calculator' },
+    { id: 'calculator', label: 'Calcular CO₂', icon: HiSparkles, path: '/b2c/calculator' },
   ];
 
   const impactStats = [
@@ -238,7 +238,7 @@ const B2CDashboard = () => {
                     transition={{ delay: 0.5 }}
                     className="!flex !flex-wrap !gap-3"
                   >
-                    <Link to="/calculator">
+                    <Link to="/b2c/calculator">
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -247,7 +247,7 @@ const B2CDashboard = () => {
                         <FaLeaf /> Calcular Ahora
                       </motion.button>
                     </Link>
-                    <Link to="/projects">
+                    <Link to="/b2c/projects">
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -549,7 +549,7 @@ const B2CDashboard = () => {
                 </motion.div>
               </Link>
 
-              <Link to="/calculator" className="!block !no-underline">
+              <Link to="/b2c/calculator" className="!block !no-underline">
                 <motion.div
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
