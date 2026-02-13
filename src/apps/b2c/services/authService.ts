@@ -1,16 +1,57 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Cliente de Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+// Cliente de Supabase - solo se crea si hay credenciales válidas Y estamos en ruta B2C
+let _supabaseClient: SupabaseClient | null = null;
+
+// Verificar si estamos en una ruta B2C
+const isB2CRoute = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname;
+  return path.startsWith('/b2c') || 
+         path === '/auth/callback' || 
+         path === '/calculator';
+};
+
+const getSupabaseClient = (): SupabaseClient | null => {
+  // NO crear cliente si no estamos en ruta B2C
+  if (!isB2CRoute()) {
+    return null;
   }
-});
+
+  // Solo crear cliente si hay URL válida
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('[B2C Auth] Supabase credentials not configured');
+    return null;
+  }
+  
+  // Verificar que la URL sea válida
+  try {
+    new URL(supabaseUrl);
+  } catch {
+    console.warn('[B2C Auth] Invalid Supabase URL');
+    return null;
+  }
+
+  if (!_supabaseClient) {
+    // Solo detectar sesión en URL en el callback de OAuth
+    const isCallback = window.location.pathname === '/auth/callback';
+    
+    _supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: isCallback // Solo en callback
+      }
+    });
+  }
+  return _supabaseClient;
+};
+
+// Export para compatibilidad - se evalúa lazy
+export const supabase = getSupabaseClient();
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -62,6 +103,11 @@ class AuthService {
    */
   async handleOAuthCallback(): Promise<B2CUser | null> {
     try {
+      if (!supabase) {
+        console.error('[B2C Auth] Supabase not configured');
+        return null;
+      }
+
       // Supabase procesa automáticamente el callback
       const { data, error } = await supabase.auth.getSession();
       
@@ -107,6 +153,11 @@ class AuthService {
    * Obtener sesión actual de Supabase
    */
   async getSession(): Promise<AuthSession | null> {
+    if (!supabase) {
+      console.warn('[B2C Auth] Supabase not configured, no session available');
+      return null;
+    }
+
     console.log('🔍 [AuthService] Obteniendo sesión de Supabase...');
     
     try {
@@ -200,7 +251,9 @@ class AuthService {
     }
 
     // Cerrar sesión en Supabase
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
   }
 
   /**
@@ -223,6 +276,10 @@ class AuthService {
    * Escuchar cambios en el estado de autenticación
    */
   onAuthStateChange(callback: (event: string, session: any) => void) {
+    if (!supabase) {
+      console.warn('[B2C Auth] Supabase not configured, cannot listen for auth changes');
+      return { data: { subscription: { unsubscribe: () => {} } } };
+    }
     return supabase.auth.onAuthStateChange(callback);
   }
 }
