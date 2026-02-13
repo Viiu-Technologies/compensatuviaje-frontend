@@ -71,21 +71,21 @@ const TabNavigation: React.FC<TabProps> = ({ active, onChange, onboardingStatus 
   ];
 
   return (
-    <div className="!flex !border-b !border-gray-200 !mb-6">
+    <div className="!flex !border-b !border-slate-200 !mb-6">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
           className={`!flex !items-center !gap-2 !px-4 !py-3 !border-b-2 !font-medium !text-sm !transition-colors !relative ${
             active === tab.id
-              ? '!border-green-500 !text-green-600'
-              : '!border-transparent !text-gray-500 hover:!text-gray-700 hover:!border-gray-300'
+              ? '!border-emerald-500 !text-emerald-600'
+              : '!border-transparent !text-slate-500 hover:!text-slate-700 hover:!border-slate-300'
           }`}
         >
           {tab.icon}
           {tab.label}
           {tab.needsAttention && (
-            <span className="!absolute !-top-1 !-right-1 !w-3 !h-3 !bg-yellow-400 !rounded-full" />
+            <span className="!absolute !-top-1 !-right-1 !w-3 !h-3 !bg-amber-400 !rounded-full" />
           )}
         </button>
       ))}
@@ -176,16 +176,16 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
   }
 
   return (
-    <div className="space-y-6">
+    <div className="!space-y-6">
       {/* Status Banner */}
       {profile && (
-        <div className={`px-4 py-3 rounded-lg ${PARTNER_STATUS_COLORS[profile.status]}`}>
-          <div className="flex items-center justify-between">
-            <span className="font-medium">
+        <div className={`!px-4 !py-3 !rounded-lg ${PARTNER_STATUS_COLORS[profile.status]}`}>
+          <div className="!flex !items-center !justify-between">
+            <span className="!font-medium">
               Estado: {PARTNER_STATUS_LABELS[profile.status]}
             </span>
             {profile.status === 'onboarding' && (
-              <span className="text-sm">
+              <span className="!text-sm">
                 Completa tu perfil para activar tu cuenta
               </span>
             )}
@@ -195,54 +195,54 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
 
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="!bg-red-50 !border !border-red-200 !text-red-700 !px-4 !py-3 !rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="!bg-emerald-50 !border !border-emerald-200 !text-emerald-700 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Logo Section */}
-      <div className="bg-white rounded-lg border p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Logo de la Organización</h3>
-        <div className="flex items-start gap-6">
-          <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+      <div className="!bg-white !rounded-lg !border !p-6">
+        <h3 className="!text-lg !font-semibold !text-slate-800 !mb-4">Logo de la Organización</h3>
+        <div className="!flex !items-start !gap-6">
+          <div className="!w-24 !h-24 !bg-slate-100 !rounded-lg !overflow-hidden !flex !items-center !justify-center">
             {profile?.logo_url ? (
               <img
                 src={profile.logo_url}
                 alt="Logo"
-                className="w-full h-full object-cover"
+                className="!w-full !h-full !object-cover"
               />
             ) : (
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="!w-12 !h-12 !text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             )}
           </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="!flex-1">
+            <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
               URL del Logo
             </label>
-            <div className="flex gap-2">
+            <div className="!flex !gap-2">
               <input
                 type="url"
                 value={logoUrl}
                 onChange={(e) => setLogoUrl(e.target.value)}
                 placeholder="https://ejemplo.com/logo.png"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="!flex-1 !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
               />
               <button
                 onClick={handleSaveLogo}
                 disabled={saving || !logoUrl.trim()}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 disabled:!cursor-not-allowed !font-medium"
               >
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="!text-sm !text-slate-500 !mt-1">
               Ingresa la URL de tu logo (preferiblemente PNG o SVG)
             </p>
           </div>
@@ -250,13 +250,13 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
       </div>
 
       {/* Profile Form */}
-      <div className="bg-white rounded-lg border p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Información de la Organización</h3>
+      <div className="!bg-white !rounded-lg !border !p-6">
+        <div className="!flex !items-center !justify-between !mb-4">
+          <h3 className="!text-lg !font-semibold !text-slate-800">Información de la Organización</h3>
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="text-sm text-green-600 hover:text-green-700 font-medium"
+              className="!text-sm !text-emerald-600 hover:!text-emerald-700 !font-medium"
             >
               Editar
             </button>
@@ -264,9 +264,9 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
         </div>
 
         <form onSubmit={handleSaveProfile}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                 Nombre de la Organización *
               </label>
               <input
@@ -275,12 +275,12 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={!editing}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 disabled:!bg-slate-50 disabled:!text-slate-500 !bg-white !text-slate-800"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                 Email de Contacto *
               </label>
               <input
@@ -289,12 +289,12 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                 disabled={!editing}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 disabled:!bg-slate-50 disabled:!text-slate-500 !bg-white !text-slate-800"
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="md:!col-span-2">
+              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                 Sitio Web
               </label>
               <input
@@ -303,13 +303,13 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                 disabled={!editing}
                 placeholder="https://www.ejemplo.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 disabled:!bg-slate-50 disabled:!text-slate-500 !bg-white !text-slate-800"
               />
             </div>
           </div>
 
           {editing && (
-            <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
+            <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 !border-t">
               <button
                 type="button"
                 onClick={() => {
@@ -322,14 +322,14 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                     });
                   }
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="!px-4 !py-2 !border !border-slate-300 !text-slate-700 !rounded-lg hover:!bg-slate-50"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !font-medium"
               >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
@@ -436,30 +436,30 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="!space-y-6">
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="!bg-red-50 !border !border-red-200 !text-red-700 !px-4 !py-3 !rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="!bg-emerald-50 !border !border-emerald-200 !text-emerald-700 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="!bg-sky-50 !border !border-sky-200 !rounded-lg !p-4">
+        <div className="!flex !items-start !gap-3">
+          <svg className="!w-5 !h-5 !text-sky-500 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <p className="text-sm text-blue-800 font-medium">
+            <p className="!text-sm !text-sky-800 !font-medium">
               Información importante
             </p>
-            <p className="text-sm text-blue-700 mt-1">
+            <p className="!text-sm !text-sky-700 !mt-1">
               Los datos bancarios son necesarios para recibir los pagos por compensaciones realizadas a través de tus proyectos ESG.
             </p>
           </div>
@@ -467,71 +467,71 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
       </div>
 
       {/* Current Bank Details or Form */}
-      <div className="bg-white rounded-lg border p-6">
+      <div className="!bg-white !rounded-lg !border !p-6">
         {!editing && bankDetails ? (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-800">Datos Bancarios Registrados</h3>
+            <div className="!flex !items-center !justify-between !mb-6">
+              <h3 className="!text-lg !font-semibold !text-slate-800">Datos Bancarios Registrados</h3>
               <button
                 onClick={() => setEditing(true)}
-                className="text-sm text-green-600 hover:text-green-700 font-medium"
+                className="!text-sm !text-emerald-600 hover:!text-emerald-700 !font-medium"
               >
                 Modificar
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
               <div>
-                <p className="text-sm text-gray-500">Banco</p>
-                <p className="font-medium text-gray-800">{bankDetails.bank_name}</p>
+                <p className="!text-sm !text-slate-500">Banco</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.bank_name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Tipo de Cuenta</p>
-                <p className="font-medium text-gray-800">
+                <p className="!text-sm !text-slate-500">Tipo de Cuenta</p>
+                <p className="!font-medium !text-slate-800">
                   {bankDetails.account_type === 'checking' ? 'Cuenta Corriente' : 'Cuenta de Ahorro'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Número de Cuenta</p>
-                <p className="font-medium text-gray-800">{bankDetails.account_number_masked}</p>
+                <p className="!text-sm !text-slate-500">Número de Cuenta</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.account_number_masked}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Titular</p>
-                <p className="font-medium text-gray-800">{bankDetails.account_holder_name}</p>
+                <p className="!text-sm !text-slate-500">Titular</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.account_holder_name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">RUT Titular</p>
-                <p className="font-medium text-gray-800">{bankDetails.account_holder_rut_masked}</p>
+                <p className="!text-sm !text-slate-500">RUT Titular</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.account_holder_rut_masked}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Moneda</p>
-                <p className="font-medium text-gray-800">{bankDetails.currency}</p>
+                <p className="!text-sm !text-slate-500">Moneda</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.currency}</p>
               </div>
             </div>
 
             {bankDetails.last_updated && (
-              <p className="text-sm text-gray-500 mt-6 pt-4 border-t">
+              <p className="!text-sm !text-slate-500 !mt-6 !pt-4 !border-t">
                 Última actualización: {new Date(bankDetails.last_updated).toLocaleDateString('es-CL')}
               </p>
             )}
           </>
         ) : (
           <>
-            <h3 className="text-lg font-semibold text-gray-800 mb-6">
+            <h3 className="!text-lg !font-semibold !text-slate-800 !mb-6">
               {bankDetails ? 'Modificar Datos Bancarios' : 'Configurar Datos Bancarios'}
             </h3>
 
             <form onSubmit={handleSave}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                     Banco *
                   </label>
                   <select
                     value={formData.bank_name}
                     onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   >
                     <option value="">Seleccionar banco...</option>
                     {banks.map((bank) => (
@@ -541,14 +541,14 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                     Tipo de Cuenta *
                   </label>
                   <select
                     value={formData.account_type}
                     onChange={(e) => setFormData({ ...formData, account_type: e.target.value as 'checking' | 'savings' })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   >
                     <option value="checking">Cuenta Corriente</option>
                     <option value="savings">Cuenta de Ahorro</option>
@@ -556,7 +556,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                     Número de Cuenta *
                   </label>
                   <input
@@ -565,12 +565,12 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     onChange={(e) => setFormData({ ...formData, account_number: e.target.value.replace(/[^0-9]/g, '') })}
                     required
                     placeholder="Ej: 12345678"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                     Nombre del Titular *
                   </label>
                   <input
@@ -579,12 +579,12 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
                     required
                     placeholder="Nombre completo"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                     RUT del Titular *
                   </label>
                   <input
@@ -594,19 +594,19 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     required
                     placeholder="12.345.678-9"
                     maxLength={12}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                     Moneda *
                   </label>
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'CLP' | 'USD' })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   >
                     <option value="CLP">Peso Chileno (CLP)</option>
                     <option value="USD">Dólar Estadounidense (USD)</option>
@@ -614,12 +614,12 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
+              <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 !border-t">
                 {bankDetails && (
                   <button
                     type="button"
                     onClick={() => setEditing(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    className="!px-4 !py-2 !border !border-slate-300 !text-slate-700 !rounded-lg hover:!bg-slate-50"
                   >
                     Cancelar
                   </button>
@@ -627,7 +627,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !font-medium"
                 >
                   {saving ? 'Guardando...' : 'Guardar Datos Bancarios'}
                 </button>
@@ -690,27 +690,27 @@ const SecurityTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="!space-y-6">
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="!bg-red-50 !border !border-red-200 !text-red-700 !px-4 !py-3 !rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="!bg-emerald-50 !border !border-emerald-200 !text-emerald-700 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Change Password Form */}
-      <div className="bg-white rounded-lg border p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">Cambiar Contraseña</h3>
+      <div className="!bg-white !rounded-lg !border !p-6">
+        <h3 className="!text-lg !font-semibold !text-slate-800 !mb-6">Cambiar Contraseña</h3>
 
-        <form onSubmit={handleChangePassword} className="max-w-md">
-          <div className="space-y-4">
+        <form onSubmit={handleChangePassword} className="!max-w-md">
+          <div className="!space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                 Contraseña Actual *
               </label>
               <input
@@ -718,12 +718,12 @@ const SecurityTab: React.FC = () => {
                 value={formData.current_password}
                 onChange={(e) => setFormData({ ...formData, current_password: e.target.value })}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                 Nueva Contraseña *
               </label>
               <input
@@ -732,13 +732,13 @@ const SecurityTab: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, new_password: e.target.value })}
                 required
                 minLength={8}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
               />
-              <p className="text-sm text-gray-500 mt-1">Mínimo 8 caracteres</p>
+              <p className="!text-sm !text-slate-500 !mt-1">Mínimo 8 caracteres</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
                 Confirmar Nueva Contraseña *
               </label>
               <input
@@ -746,7 +746,7 @@ const SecurityTab: React.FC = () => {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
               />
             </div>
           </div>
@@ -754,7 +754,7 @@ const SecurityTab: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="mt-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+            className="!mt-6 !px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !font-medium"
           >
             {saving ? 'Guardando...' : 'Cambiar Contraseña'}
           </button>
@@ -781,12 +781,13 @@ const PartnerProfilePage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [profileData, onboardingData] = await Promise.all([
+      const results = await Promise.allSettled([
         getPartnerProfile(),
         getOnboardingStatus()
       ]);
-      setProfile(profileData);
-      setOnboarding(onboardingData || undefined);
+      
+      if (results[0].status === 'fulfilled') setProfile(results[0].value);
+      if (results[1].status === 'fulfilled') setOnboarding(results[1].value || undefined);
     } catch (error) {
       console.error('Error loading profile data:', error);
     } finally {
@@ -795,51 +796,45 @@ const PartnerProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="!min-h-screen !bg-gray-50">
+    <div className="!space-y-6">
       {/* Header */}
-      <div className="!bg-white !border-b">
-        <div className="!max-w-4xl !mx-auto !px-6 !py-6">
-          <div className="!flex !items-center !gap-4">
-            <Link
-              to="/partner"
-              className="!text-gray-400 hover:!text-gray-600 !transition-colors"
-            >
-              <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <div>
-              <h1 className="!text-2xl !font-bold !text-gray-800">Mi Perfil</h1>
-              <p className="!text-gray-500 !mt-1">Configura tu cuenta y datos de la organización</p>
-            </div>
-          </div>
+      <div className="!flex !items-center !gap-4">
+        <Link
+          to="/partner"
+          className="!p-2 !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !rounded-lg !transition-colors !no-underline"
+        >
+          <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <div>
+          <h1 className="!text-2xl !font-bold !text-slate-800">Mi Perfil</h1>
+          <p className="!text-slate-500 !mt-1">Configura tu cuenta y datos de la organización</p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="!max-w-4xl !mx-auto !px-6 !py-6">
-        <div className="!bg-white !rounded-xl !shadow-sm !border !overflow-hidden">
-          <div className="!p-6">
-            <TabNavigation
-              active={activeTab}
-              onChange={setActiveTab}
-              onboardingStatus={onboarding}
-            />
+      <div className="!bg-white !rounded-xl !shadow-sm !border !overflow-hidden">
+        <div className="!p-6">
+          <TabNavigation
+            active={activeTab}
+            onChange={setActiveTab}
+            onboardingStatus={onboarding}
+          />
 
-            {activeTab === 'profile' && (
-              <ProfileTab
-                profile={profile}
-                loading={loading}
-                onUpdate={loadData}
-              />
-            )}
-            {activeTab === 'bank' && (
-              <BankTab onUpdate={loadData} />
-            )}
-            {activeTab === 'security' && (
-              <SecurityTab />
-            )}
-          </div>
+          {activeTab === 'profile' && (
+            <ProfileTab
+              profile={profile}
+              loading={loading}
+              onUpdate={loadData}
+            />
+          )}
+          {activeTab === 'bank' && (
+            <BankTab onUpdate={loadData} />
+          )}
+          {activeTab === 'security' && (
+            <SecurityTab />
+          )}
         </div>
       </div>
     </div>
