@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import {
   FaCertificate,
   FaDownload,
@@ -13,7 +14,7 @@ import {
   FaLeaf
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
-import { Link } from 'react-router-dom';
+import B2CLayout from '../components/B2CLayout';
 
 interface Certificate {
   id: string;
@@ -88,46 +89,33 @@ const B2CCertificatesPage: React.FC = () => {
   };
 
   return (
-    <div className="!min-h-screen !bg-gray-50 !p-6">
-      <div className="!max-w-6xl !mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="!mb-8"
-        >
-          <div className="!flex !items-center !gap-3 !mb-2">
-            <FaCertificate className="!text-3xl !text-green-600" />
-            <h1 className="!text-3xl !font-bold !text-gray-900">Mis Certificados</h1>
-          </div>
-          <p className="!text-gray-600">Certificados de compensación de huella de carbono</p>
-        </motion.div>
-
+    <B2CLayout title="Mis Certificados" subtitle="Certificados de compensación de huella de carbono">
+      <div className="!space-y-6">
         {/* Stats Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="!bg-gradient-to-r !from-green-500 !via-green-600 !to-emerald-600 !rounded-3xl !p-8 !mb-8 !text-white !shadow-xl !relative !overflow-hidden"
+          className="!bg-gradient-to-r !from-green-500 !via-green-600 !to-emerald-600 !rounded-2xl sm:!rounded-3xl !p-6 sm:!p-8 !text-white !shadow-xl !relative !overflow-hidden"
         >
           {/* Background decoration */}
           <div className="!absolute !top-0 !right-0 !w-64 !h-64 !bg-white/10 !rounded-full !blur-3xl"></div>
           
-          <div className="!relative !z-10 !grid !grid-cols-1 md:!grid-cols-3 !gap-6">
-            <div>
+          <div className="!relative !z-10 !grid !grid-cols-1 sm:!grid-cols-3 !gap-4 sm:!gap-6">
+            <div className="!text-center sm:!text-left">
               <div className="!text-green-100 !text-sm !font-medium !mb-1">Total Compensado</div>
-              <div className="!text-4xl !font-bold !mb-1">{totalCompensated.toFixed(2)} t</div>
+              <div className="!text-3xl sm:!text-4xl !font-bold !mb-1">{totalCompensated.toFixed(2)} t</div>
               <div className="!text-green-100 !text-sm">CO₂ compensado</div>
             </div>
-            <div>
+            <div className="!text-center sm:!text-left">
               <div className="!text-green-100 !text-sm !font-medium !mb-1">Árboles Equivalentes</div>
-              <div className="!text-4xl !font-bold !mb-1 !flex !items-center !gap-2">
+              <div className="!text-3xl sm:!text-4xl !font-bold !mb-1 !flex !items-center !justify-center sm:!justify-start !gap-2">
                 <FaTree /> {totalTrees}
               </div>
               <div className="!text-green-100 !text-sm">Árboles plantados</div>
             </div>
-            <div>
+            <div className="!text-center sm:!text-left">
               <div className="!text-green-100 !text-sm !font-medium !mb-1">Certificados</div>
-              <div className="!text-4xl !font-bold !mb-1">{certificates.length}</div>
+              <div className="!text-3xl sm:!text-4xl !font-bold !mb-1">{certificates.length}</div>
               <div className="!text-green-100 !text-sm">Compensaciones verificadas</div>
             </div>
           </div>
@@ -135,7 +123,7 @@ const B2CCertificatesPage: React.FC = () => {
 
         {/* Certificates Grid */}
         {certificates.length > 0 ? (
-          <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-3 !gap-6">
+          <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-3 !gap-4 sm:!gap-6">
             {certificates.map((cert, index) => (
               <motion.div
                 key={cert.id}
@@ -386,7 +374,7 @@ const B2CCertificatesPage: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </B2CLayout>
   );
 };
 
