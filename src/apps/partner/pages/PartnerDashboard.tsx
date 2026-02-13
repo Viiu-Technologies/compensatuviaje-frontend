@@ -34,11 +34,11 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, icon, color }) => {
   const colorClasses = {
-    green: '!bg-green-50 !text-green-600 !border-green-200',
-    blue: '!bg-blue-50 !text-blue-600 !border-blue-200',
-    yellow: '!bg-yellow-50 !text-yellow-600 !border-yellow-200',
-    purple: '!bg-purple-50 !text-purple-600 !border-purple-200',
-    orange: '!bg-orange-50 !text-orange-600 !border-orange-200'
+    green: '!bg-emerald-50 !text-emerald-700 !border-emerald-200',
+    blue: '!bg-sky-50 !text-sky-700 !border-sky-200',
+    yellow: '!bg-amber-50 !text-amber-700 !border-amber-200',
+    purple: '!bg-violet-50 !text-violet-700 !border-violet-200',
+    orange: '!bg-orange-50 !text-orange-700 !border-orange-200'
   };
 
   return (
@@ -146,7 +146,7 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
   if (loading) {
     return (
       <div className="!bg-white !rounded-xl !shadow-sm !border !p-6">
-        <h3 className="!text-lg !font-semibold !mb-4">Proyectos Recientes</h3>
+        <h3 className="!text-lg !font-semibold !text-slate-800 !mb-4">Proyectos Recientes</h3>
         <div className="!space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="!animate-pulse !flex !items-center !gap-4">
@@ -168,7 +168,7 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
         <h3 className="!text-lg !font-semibold !text-gray-800">Proyectos Recientes</h3>
         <Link
           to="/partner/projects"
-          className="!text-sm !text-blue-600 hover:!text-blue-700 !font-medium"
+          className="!text-sm !text-emerald-600 hover:!text-emerald-700 !font-medium !no-underline"
         >
           Ver todos →
         </Link>
@@ -189,7 +189,7 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
           <p className="!text-gray-500 !mb-4">No tienes proyectos aún</p>
           <Link
             to="/partner/projects/create"
-            className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-green-600 !text-white !rounded-lg hover:!bg-green-700 !transition-colors"
+            className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 !transition-all !no-underline"
           >
             <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -205,7 +205,7 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
               to={`/partner/projects/${project.id}`}
               className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:!bg-gray-50 !transition-colors !group"
             >
-              <div className="!w-12 !h-12 !bg-green-100 !rounded-lg !flex !items-center !justify-center !text-green-600">
+              <div className="!w-12 !h-12 !bg-emerald-100 !rounded-lg !flex !items-center !justify-center !text-emerald-600">
                 <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -216,7 +216,7 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
                 </svg>
               </div>
               <div className="!flex-1 !min-w-0">
-                <p className="!font-medium !text-gray-800 !truncate group-hover:!text-green-600">
+                <p className="!font-medium !text-slate-800 !truncate group-hover:!text-emerald-600">
                   {project.name}
                 </p>
                 <p className="!text-sm !text-gray-500">
@@ -253,7 +253,7 @@ const QuickActions: React.FC = () => {
         </svg>
       ),
       link: '/partner/projects/create',
-      color: 'bg-green-500 hover:bg-green-600'
+      color: 'bg-emerald-500 hover:bg-emerald-600'
     },
     {
       title: 'Ver Proyectos',
@@ -303,8 +303,8 @@ const QuickActions: React.FC = () => {
               {action.icon}
             </div>
             <div>
-              <p className="!font-medium !text-gray-800 group-hover:!text-green-600">{action.title}</p>
-              <p className="!text-sm !text-gray-500">{action.description}</p>
+              <p className="!font-medium !text-slate-800 group-hover:!text-emerald-600">{action.title}</p>
+              <p className="!text-sm !text-slate-500">{action.description}</p>
             </div>
           </Link>
         ))}
@@ -332,18 +332,33 @@ const PartnerDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Cargar datos en paralelo
-      const [profileData, statsData, onboardingData, projectsData] = await Promise.all([
+      // Cargar datos en paralelo con manejo de errores individual
+      // Usamos Promise.allSettled para que un error no bloquee los demás
+      const results = await Promise.allSettled([
         getPartnerProfile(),
         getPartnerStats(),
         getOnboardingStatus(),
         getPartnerProjects({ limit: 5 })
       ]);
 
+      // Extraer resultados solo si fueron exitosos
+      const profileData = results[0].status === 'fulfilled' ? results[0].value : null;
+      const statsData = results[1].status === 'fulfilled' ? results[1].value : null;
+      const onboardingData = results[2].status === 'fulfilled' ? results[2].value : null;
+      const projectsData = results[3].status === 'fulfilled' ? results[3].value : null;
+
       setProfile(profileData);
       setStats(statsData);
       setOnboarding(onboardingData);
       setRecentProjects(projectsData?.projects || []);
+      
+      // Log errores para debugging
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const endpoints = ['profile', 'stats', 'onboarding', 'projects'];
+          console.warn(`Error loading ${endpoints[index]}:`, result.reason);
+        }
+      });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -386,34 +401,32 @@ const PartnerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="!min-h-screen !bg-gray-50">
-      {/* Header */}
-      <div className="!bg-white !border-b">
-        <div className="!max-w-7xl !mx-auto !px-6 !py-6">
-          <div className="!flex !items-center !justify-between">
-            <div>
-              <h1 className="!text-2xl !font-bold !text-gray-800">
-                ¡Bienvenido, {profile?.name || 'Partner'}!
-              </h1>
-              <p className="!text-gray-500 !mt-1">
-                Panel de control de tu organización ESG
-              </p>
-            </div>
-            <Link
-              to="/partner/projects/create"
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-green-600 !text-white !rounded-lg hover:!bg-green-700 !transition-colors !font-medium"
-            >
-              <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Nuevo Proyecto
-            </Link>
+    <div className="!space-y-6">
+      {/* Welcome Header */}
+      <div className="!bg-gradient-to-r !from-emerald-600 !to-teal-600 !rounded-2xl !p-8 !text-white !shadow-lg !shadow-emerald-500/20">
+        <div className="!flex !items-center !justify-between">
+          <div>
+            <h1 className="!text-2xl !font-bold !text-white">
+              ¡Bienvenido, {profile?.name || 'Partner'}!
+            </h1>
+            <p className="!text-emerald-100 !mt-1">
+              Panel de control de tu organización ESG
+            </p>
           </div>
+          <Link
+            to="/partner/projects/create"
+            className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-white !text-emerald-700 !rounded-xl hover:!bg-emerald-50 !transition-colors !font-semibold !shadow-lg !no-underline"
+          >
+            <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Proyecto
+          </Link>
         </div>
       </div>
 
       {/* Content */}
-      <div className="!max-w-7xl !mx-auto !px-6 !py-6">
+      <div className="!space-y-6">
         {/* Onboarding Progress */}
         {onboarding && !onboarding.completed && (
           <OnboardingProgress status={onboarding} />
