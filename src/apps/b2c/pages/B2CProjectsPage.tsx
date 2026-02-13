@@ -13,6 +13,7 @@ import {
   FaCertificate
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import B2CLayout from '../components/B2CLayout';
 
 interface Project {
   id: string;
@@ -150,47 +151,34 @@ const B2CProjectsPage: React.FC = () => {
     : projects.filter(p => p.type === filter);
 
   return (
-    <div className="!min-h-screen !bg-gray-50 !p-6">
-      <div className="!max-w-7xl !mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="!mb-8"
-        >
-          <div className="!flex !items-center !gap-3 !mb-2">
-            <FaGlobeAmericas className="!text-3xl !text-green-600" />
-            <h1 className="!text-3xl !font-bold !text-gray-900">Proyectos Ambientales</h1>
-          </div>
-          <p className="!text-gray-600">Conoce los proyectos que estás apoyando con tus compensaciones</p>
-        </motion.div>
-
+    <B2CLayout title="Proyectos Ambientales" subtitle="Conoce los proyectos que estás apoyando con tus compensaciones">
+      <div className="!space-y-6">
         {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="!mb-8 !flex !flex-wrap !gap-3"
+          className="!flex !flex-wrap !gap-2 sm:!gap-3"
         >
           {projectTypes.map((type) => (
             <motion.button
               key={type.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setFilter(type.id)}
-              className={`!px-4 !py-2 !rounded-full !font-semibold !text-sm !flex !items-center !gap-2 !transition-all !border-2 ${
+              className={`!px-3 sm:!px-4 !py-2 !rounded-xl !font-semibold !text-sm !flex !items-center !gap-2 !transition-all !border-2 !cursor-pointer ${
                 filter === type.id
                   ? '!bg-green-600 !text-white !border-green-600'
                   : '!bg-white !text-gray-700 !border-gray-200 hover:!border-green-300'
               }`}
             >
               <type.icon />
-              {type.label}
+              <span className="!hidden sm:!inline">{type.label}</span>
             </motion.button>
           ))}
         </motion.div>
 
         {/* Projects Grid */}
-        <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-3 !gap-6">
+        <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-3 xl:!grid-cols-4 !gap-4 sm:!gap-6">
           {filteredProjects.map((project, index) => (
             <motion.div
               key={project.id}
@@ -354,7 +342,7 @@ const B2CProjectsPage: React.FC = () => {
                     onClick={() => {
                       setSelectedProject(null);
                       // Navigate to calculator
-                      window.location.href = '/calculator';
+                      window.location.href = '/b2c/calculator';
                     }}
                   >
                     <FaLeaf /> Apoyar Este Proyecto
@@ -365,7 +353,7 @@ const B2CProjectsPage: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </B2CLayout>
   );
 };
 
