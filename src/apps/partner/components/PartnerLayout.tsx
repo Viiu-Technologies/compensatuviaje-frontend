@@ -1,272 +1,38 @@
 // ============================================
 // PARTNER LAYOUT
 // Layout principal con navegación para el módulo Partner
+// Estilo consistente con AdminLayout
 // ============================================
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { getPartnerProfile, getOnboardingStatus } from '../services/partnerApi';
 import { PartnerProfile, OnboardingStatus } from '../../../types/partner.types';
-
-// ============================================
-// SIDEBAR COMPONENT
-// ============================================
-
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-  profile: PartnerProfile | null;
-  onboarding: OnboardingStatus | null;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, profile, onboarding }) => {
-  const location = useLocation();
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const menuItems = [
-    {
-      path: '/partner',
-      label: 'Dashboard',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      ),
-      exact: true
-    },
-    {
-      path: '/partner/projects',
-      label: 'Mis Proyectos',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      )
-    },
-    {
-      path: '/partner/profile',
-      label: 'Mi Perfil',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-      needsAttention: onboarding && !onboarding.completed
-    }
-  ];
-
-  const isActive = (path: string, exact?: boolean) => {
-    if (exact) {
-      return location.pathname === path;
-    }
-    return location.pathname.startsWith(path);
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  return (
-    <>
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`!fixed !top-0 !left-0 !h-full !w-64 !bg-white !border-r !shadow-lg !z-50 !transform !transition-transform !duration-300 lg:!translate-x-0 ${
-          isOpen ? '!translate-x-0' : '!-translate-x-full'
-        }`}
-      >
-        {/* Logo */}
-        <div className="!p-6 !border-b">
-          <Link to="/partner" className="!flex !items-center !gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-bold text-gray-800">CompensaTuViaje</h2>
-              <p className="text-xs text-gray-500">Portal Partner</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* Partner Info */}
-        {profile && (
-          <div className="!p-4 !border-b !bg-gray-50">
-            <div className="!flex !items-center !gap-3">
-              {profile.logo_url ? (
-                <img
-                  src={profile.logo_url}
-                  alt={profile.name}
-                  className="!w-10 !h-10 !rounded-lg !object-cover"
-                />
-              ) : (
-                <div className="!w-10 !h-10 !bg-gray-200 !rounded-lg !flex !items-center !justify-center !text-gray-400">
-                  <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-              )}
-              <div className="!flex-1 !min-w-0">
-                <p className="!font-medium !text-gray-800 !truncate">{profile.name}</p>
-                <p className="!text-xs !text-gray-500">{profile.contact_email}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <nav className="!p-4 !flex-1">
-          <ul className="!space-y-1">
-            {menuItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  onClick={onClose}
-                  className={`!flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !font-medium !transition-colors !relative ${
-                    isActive(item.path, item.exact)
-                      ? '!bg-green-50 !text-green-600'
-                      : '!text-gray-600 hover:!bg-gray-50 hover:!text-gray-900'
-                  }`}
-                >
-                  {item.icon}
-                  {item.label}
-                  {item.needsAttention && (
-                    <span className="!absolute !right-3 !w-2 !h-2 !bg-yellow-400 !rounded-full" />
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Quick Action */}
-          <div className="!mt-6 !pt-6 !border-t">
-            <Link
-              to="/partner/projects/create"
-              onClick={onClose}
-              className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-green-600 !text-white !rounded-lg hover:!bg-green-700 !transition-colors !font-medium"
-            >
-              <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Nuevo Proyecto
-            </Link>
-          </div>
-        </nav>
-
-        {/* Footer */}
-        <div className="!p-4 !border-t">
-          <button
-            onClick={handleLogout}
-            className="!flex !items-center !gap-3 !w-full !px-4 !py-3 !text-gray-600 hover:!bg-red-50 hover:!text-red-600 !rounded-lg !transition-colors"
-          >
-            <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-    </>
-  );
-};
-
-// ============================================
-// TOP BAR COMPONENT
-// ============================================
-
-interface TopBarProps {
-  onMenuToggle: () => void;
-  profile: PartnerProfile | null;
-}
-
-const TopBar: React.FC<TopBarProps> = ({ onMenuToggle, profile }) => {
-  const location = useLocation();
-
-  const getPageTitle = (): string => {
-    const path = location.pathname;
-    if (path === '/partner') return 'Dashboard';
-    if (path === '/partner/profile') return 'Mi Perfil';
-    if (path === '/partner/projects') return 'Mis Proyectos';
-    if (path === '/partner/projects/create') return 'Nuevo Proyecto';
-    if (path.includes('/partner/projects/') && path.includes('/edit')) return 'Editar Proyecto';
-    if (path.includes('/partner/projects/')) return 'Detalle del Proyecto';
-    return 'Portal Partner';
-  };
-
-  return (
-    <header className="!bg-white !border-b !sticky !top-0 !z-30">
-      <div className="!flex !items-center !justify-between !px-4 !py-3 lg:!px-6">
-        <div className="!flex !items-center !gap-4">
-          <button
-            onClick={onMenuToggle}
-            className="lg:!hidden !p-2 !text-gray-600 hover:!bg-gray-100 !rounded-lg"
-          >
-            <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <h1 className="!text-lg !font-semibold !text-gray-800 lg:!text-xl">
-            {getPageTitle()}
-          </h1>
-        </div>
-
-        <div className="!flex !items-center !gap-4">
-          {/* Notifications placeholder */}
-          <button className="!p-2 !text-gray-600 hover:!bg-gray-100 !rounded-lg !relative">
-            <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          </button>
-
-          {/* Profile quick access */}
-          <Link
-            to="/partner/profile"
-            className="!flex !items-center !gap-2 !p-2 hover:!bg-gray-100 !rounded-lg"
-          >
-            {profile?.logo_url ? (
-              <img
-                src={profile.logo_url}
-                alt={profile.name}
-                className="!w-8 !h-8 !rounded-lg !object-cover"
-              />
-            ) : (
-              <div className="!w-8 !h-8 !bg-green-100 !rounded-lg !flex !items-center !justify-center !text-green-600">
-                <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            )}
-            <span className="!hidden md:!block !text-sm !font-medium !text-gray-700">
-              {profile?.name || 'Mi Cuenta'}
-            </span>
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-};
+import {
+  LayoutDashboard,
+  FolderKanban,
+  UserCircle,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Menu,
+  Bell,
+  Plus,
+  Building2
+} from 'lucide-react';
 
 // ============================================
 // MAIN LAYOUT COMPONENT
 // ============================================
 
-import { Outlet } from 'react-router-dom';
-
 const PartnerLayout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<PartnerProfile | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadData();
@@ -274,36 +40,274 @@ const PartnerLayout: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [profileData, onboardingData] = await Promise.all([
+      const results = await Promise.allSettled([
         getPartnerProfile(),
         getOnboardingStatus()
       ]);
-      setProfile(profileData);
-      setOnboarding(onboardingData);
+      if (results[0].status === 'fulfilled') setProfile(results[0].value);
+      if (results[1].status === 'fulfilled') setOnboarding(results[1].value);
     } catch (error) {
       console.error('Error loading partner data:', error);
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const navItems = [
+    { path: '/partner', icon: LayoutDashboard, label: 'Dashboard', exact: true, needsAttention: false },
+    { path: '/partner/projects', icon: FolderKanban, label: 'Mis Proyectos', exact: false, needsAttention: false },
+    { path: '/partner/profile', icon: UserCircle, label: 'Mi Perfil', exact: false, needsAttention: onboarding ? !onboarding.completed : false },
+  ];
+
   return (
-    <div className="!min-h-screen !bg-gray-50">
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        profile={profile}
-        onboarding={onboarding}
-      />
-      
-      <div className="lg:!pl-64">
-        <TopBar
-          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-          profile={profile}
-        />
-        
-        <main className="!p-0">
+    <div className="!min-h-screen !bg-gradient-to-br !from-slate-50 !via-emerald-50/20 !to-teal-50/10 !flex !font-sans !w-full">
+      {/* ====== Sidebar Desktop ====== */}
+      <aside
+        className={`!hidden lg:!flex !flex-col !h-screen !bg-gradient-to-b !from-slate-900 !via-slate-800 !to-slate-950 !shadow-2xl !fixed !left-0 !top-0 !z-50 !overflow-y-auto !transition-all !duration-300 ${
+          sidebarCollapsed ? '!w-20' : '!w-72'
+        }`}
+      >
+        {/* Logo */}
+        <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10 !flex-shrink-0">
+          <img
+            src="/images/brand/logocompensatuviaje.png"
+            alt="CompensaTuViaje"
+            className={`!h-12 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!scale-75' : ''}`}
+          />
+        </div>
+
+        {/* Partner Info */}
+        <div className="!px-4 !py-4 !border-b !border-white/10">
+          <div className={`!flex !items-center !gap-3 !p-4 !rounded-xl !bg-gradient-to-r !from-emerald-500/20 !to-teal-500/20 !border !border-emerald-400/30 !backdrop-blur-sm ${sidebarCollapsed ? '!justify-center' : ''}`}>
+            {profile?.logo_url ? (
+              <img
+                src={profile.logo_url}
+                alt={profile.name}
+                className="!w-10 !h-10 !rounded-full !object-cover !flex-shrink-0 !shadow-lg"
+              />
+            ) : (
+              <div className="!w-10 !h-10 !rounded-full !bg-gradient-to-br !from-emerald-400 !to-teal-500 !flex !items-center !justify-center !text-white !font-bold !flex-shrink-0 !shadow-lg !shadow-emerald-500/50">
+                <Building2 className="!w-5 !h-5" />
+              </div>
+            )}
+            {!sidebarCollapsed && (
+              <div className="!flex-1 !min-w-0">
+                <p className="!text-sm !font-bold !text-white !truncate">{profile?.name || 'Partner'}</p>
+                <p className="!text-xs !text-emerald-300 !truncate">{profile?.contact_email || user?.email}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="!flex-1 !px-4 !py-6 !space-y-2">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.exact}
+              className={({ isActive }) =>
+                `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none !relative !no-underline ${
+                  isActive
+                    ? '!bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !shadow-lg !shadow-emerald-500/50'
+                    : '!bg-transparent !text-slate-300 hover:!bg-white/10 hover:!text-white'
+                } ${sidebarCollapsed ? '!justify-center' : ''}`
+              }
+              title={sidebarCollapsed ? item.label : undefined}
+            >
+              <item.icon className="!w-5 !h-5 !flex-shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="!truncate">{item.label}</span>
+              )}
+              {!sidebarCollapsed && item.needsAttention && (
+                <span className="!ml-auto !w-2.5 !h-2.5 !bg-amber-400 !rounded-full !shadow-lg !shadow-amber-400/50" />
+              )}
+            </NavLink>
+          ))}
+
+          {/* New Project Button */}
+          {!sidebarCollapsed && (
+            <div className="!pt-4 !mt-4 !border-t !border-white/10">
+              <NavLink
+                to="/partner/projects/create"
+                className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-green-700 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/30 !no-underline"
+              >
+                <Plus className="!w-5 !h-5" />
+                Nuevo Proyecto
+              </NavLink>
+            </div>
+          )}
+          {sidebarCollapsed && (
+            <div className="!pt-4 !mt-4 !border-t !border-white/10 !flex !justify-center">
+              <NavLink
+                to="/partner/projects/create"
+                className="!p-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-green-700 !transition-all !shadow-lg !no-underline"
+                title="Nuevo Proyecto"
+              >
+                <Plus className="!w-5 !h-5" />
+              </NavLink>
+            </div>
+          )}
+        </nav>
+
+        {/* Footer */}
+        <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0 !border-t !border-white/10 !pt-4">
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-slate-300 hover:!bg-white/10 hover:!text-white !bg-transparent !border-0 !transition-all !cursor-pointer"
+          >
+            {sidebarCollapsed ? <ChevronRight className="!w-5 !h-5" /> : <ChevronLeft className="!w-5 !h-5" />}
+            {!sidebarCollapsed && <span>Colapsar</span>}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-red-400 hover:!bg-red-500/20 hover:!text-red-300 !bg-transparent !border-0 !transition-all !cursor-pointer"
+          >
+            <LogOut className="!w-5 !h-5" />
+            {!sidebarCollapsed && <span>Cerrar Sesión</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* ====== Sidebar Mobile ====== */}
+      {mobileMenuOpen && (
+        <div
+          className="!fixed !inset-0 !z-[60] !bg-black/60 !backdrop-blur-sm lg:!hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <aside
+            className="!fixed !left-0 !top-0 !h-full !w-72 !bg-gradient-to-b !from-slate-900 !via-slate-800 !to-slate-950 !shadow-2xl !flex !flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10">
+              <img src="/images/brand/logocompensatuviaje.png" alt="CompensaTuViaje" className="!h-12 !w-auto" />
+            </div>
+
+            <div className="!px-4 !py-4 !border-b !border-white/10">
+              <div className="!flex !items-center !gap-3 !p-4 !rounded-xl !bg-gradient-to-r !from-emerald-500/20 !to-teal-500/20 !border !border-emerald-400/30">
+                {profile?.logo_url ? (
+                  <img src={profile.logo_url} alt={profile.name} className="!w-12 !h-12 !rounded-full !object-cover !shadow-lg" />
+                ) : (
+                  <div className="!w-12 !h-12 !rounded-full !bg-gradient-to-br !from-emerald-400 !to-teal-500 !flex !items-center !justify-center !text-white !font-bold !shadow-lg">
+                    <Building2 className="!w-6 !h-6" />
+                  </div>
+                )}
+                <div className="!flex-1 !min-w-0">
+                  <p className="!text-sm !font-bold !text-white">{profile?.name || 'Partner'}</p>
+                  <p className="!text-xs !text-emerald-300 !truncate">{profile?.contact_email || user?.email}</p>
+                </div>
+              </div>
+            </div>
+
+            <nav className="!flex-1 !px-4 !py-6 !space-y-2">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.exact}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !no-underline ${
+                      isActive
+                        ? '!bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !shadow-lg'
+                        : '!text-slate-300 hover:!bg-white/10'
+                    }`
+                  }
+                >
+                  <item.icon className="!w-5 !h-5" />
+                  {item.label}
+                  {item.needsAttention && (
+                    <span className="!ml-auto !w-2.5 !h-2.5 !bg-amber-400 !rounded-full" />
+                  )}
+                </NavLink>
+              ))}
+              <div className="!pt-4 !mt-4 !border-t !border-white/10">
+                <NavLink
+                  to="/partner/projects/create"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl !font-semibold !shadow-lg !no-underline"
+                >
+                  <Plus className="!w-5 !h-5" />
+                  Nuevo Proyecto
+                </NavLink>
+              </div>
+            </nav>
+
+            <div className="!px-4 !pb-6 !border-t !border-white/10 !pt-4">
+              <button
+                onClick={handleLogout}
+                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-red-400 hover:!bg-red-500/20 !bg-transparent !border-0 !cursor-pointer"
+              >
+                <LogOut className="!w-5 !h-5" />
+                Cerrar Sesión
+              </button>
+            </div>
+
+            <button
+              className="!absolute !top-4 !right-4 !text-white/60 !text-2xl !border-0 !bg-transparent !cursor-pointer"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              ×
+            </button>
+          </aside>
+        </div>
+      )}
+
+      {/* ====== Main Content ====== */}
+      <main className={`!flex-1 !min-h-screen !transition-all !duration-300 !w-full ${sidebarCollapsed ? 'lg:!ml-20' : 'lg:!ml-72'}`}>
+        {/* Header */}
+        <header className="!bg-white/90 !backdrop-blur-md !border-b !border-slate-200 !sticky !top-0 !z-40">
+          <div className="!max-w-7xl !mx-auto !px-6 !py-4">
+            <div className="!flex !items-center !justify-between">
+              <div className="!flex !items-center !gap-4">
+                <button
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="lg:!hidden !p-2 !rounded-lg !bg-slate-200 !text-slate-700 !border-0 !cursor-pointer"
+                >
+                  <Menu className="!w-6 !h-6" />
+                </button>
+                <div>
+                  <h1 className="!text-2xl !font-bold !text-slate-900 !flex !items-center !gap-2">
+                    <Building2 className="!text-emerald-600 !w-6 !h-6" />
+                    Portal Partner
+                  </h1>
+                  <p className="!text-sm !text-slate-500 !mt-1">Gestión de proyectos ESG</p>
+                </div>
+              </div>
+
+              <div className="!flex !items-center !gap-3">
+                <button className="!relative !p-2.5 !rounded-full !bg-slate-100 hover:!bg-slate-200 !transition-colors !border-0 !cursor-pointer">
+                  <Bell className="!w-5 !h-5 !text-slate-600" />
+                </button>
+                <NavLink
+                  to="/partner/profile"
+                  className="!hidden sm:!flex !items-center !gap-3 !pl-3 !border-l !border-slate-200 !no-underline"
+                >
+                  <div className="!text-right">
+                    <p className="!text-sm !font-bold !text-slate-900">{profile?.name || user?.name || 'Partner'}</p>
+                    <p className="!text-xs !text-slate-500">Impact Partner</p>
+                  </div>
+                  {profile?.logo_url ? (
+                    <img src={profile.logo_url} alt={profile.name} className="!w-10 !h-10 !rounded-full !object-cover" />
+                  ) : (
+                    <div className="!w-10 !h-10 !rounded-full !bg-emerald-100 !text-emerald-700 !flex !items-center !justify-center !font-bold">
+                      {profile?.name?.charAt(0) || 'P'}
+                    </div>
+                  )}
+                </NavLink>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="!max-w-7xl !mx-auto !px-6 !py-8">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };
