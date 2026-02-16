@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,10 +13,12 @@ import {
   FaTimes,
   FaBars,
   FaUser,
-  FaCalculator
+  FaCalculator,
+  FaCubes
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
+import b2cApi from '../services/b2cApi';
 
 interface B2CLayoutProps {
   children: React.ReactNode;
@@ -30,6 +32,33 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Real sidebar stats
+  const [sidebarStats, setSidebarStats] = useState({
+    totalCompensatedTons: 0,
+    totalEmissionsTons: 0,
+    compensationRate: 0,
+    certificatesCount: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await b2cApi.getDashboardStats();
+        if (data?.stats) {
+          setSidebarStats({
+            totalCompensatedTons: data.stats.totalCompensatedTons || 0,
+            totalEmissionsTons: data.stats.totalEmissionsTons || 0,
+            compensationRate: data.stats.compensationRate || 0,
+            certificatesCount: data.stats.certificatesCount || 0,
+          });
+        }
+      } catch (err) {
+        // Silently fail — sidebar shows zeros
+      }
+    };
+    fetchStats();
+  }, [location.pathname]); // Refetch when navigating to keep sidebar up to date
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -40,6 +69,7 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
     { id: 'flights', label: 'Mis Viajes', icon: FaPlane, path: '/b2c/flights' },
     { id: 'projects', label: 'Proyectos', icon: FaGlobeAmericas, path: '/b2c/projects' },
     { id: 'certificates', label: 'Certificados', icon: FaCertificate, path: '/b2c/certificates' },
+    { id: 'nft-certificates', label: 'Mis NFTs', icon: FaCubes, path: '/b2c/nft-certificates' },
     { id: 'calculator', label: 'Calcular CO₂', icon: HiSparkles, path: '/b2c/calculator' },
   ];
 
@@ -80,13 +110,15 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
 
         {/* Widget Meta Mensual */}
         <div className="!mx-4 !mb-4 !p-4 !rounded-xl !bg-gradient-to-br !from-green-500 !to-green-600 !text-white !shadow-lg !flex-shrink-0">
-          <div className="!text-xs !font-semibold !mb-1 !opacity-90">Meta Mensual</div>
-          <div className="!text-2xl !font-bold !leading-tight">1,247 t</div>
-          <div className="!text-xs !mb-2 !opacity-90">CO₂ compensado este mes</div>
+          <div className="!text-xs !font-semibold !mb-1 !opacity-90">Mi Impacto</div>
+          <div className="!text-2xl !font-bold !leading-tight">{sidebarStats.totalCompensatedTons.toFixed(2)} t</div>
+          <div className="!text-xs !mb-2 !opacity-90">CO₂ compensado total</div>
           <div className="!w-full !h-2 !bg-green-800/30 !rounded-full !overflow-hidden !mb-1">
-            <div className="!h-2 !bg-white !rounded-full" style={{ width: '68%' }}></div>
+            <div className="!h-2 !bg-white !rounded-full !transition-all !duration-500" style={{ width: `${Math.min(sidebarStats.compensationRate, 100)}%` }}></div>
           </div>
-          <div className="!text-xs !opacity-90">68% del objetivo</div>
+          <div className="!text-xs !opacity-90">
+            {sidebarStats.compensationRate}% compensado · {sidebarStats.certificatesCount} certificado{sidebarStats.certificatesCount !== 1 ? 's' : ''}
+          </div>
         </div>
 
         {/* Footer Sidebar */}
@@ -159,10 +191,13 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
 
               {/* Mobile Meta Widget */}
               <div className="!mx-4 !mb-4 !p-4 !rounded-xl !bg-gradient-to-br !from-green-500 !to-green-600 !text-white !shadow-lg">
-                <div className="!text-xs !font-semibold !mb-1 !opacity-90">Meta Mensual</div>
-                <div className="!text-xl !font-bold">1,247 t CO₂</div>
+                <div className="!text-xs !font-semibold !mb-1 !opacity-90">Mi Impacto</div>
+                <div className="!text-xl !font-bold">{sidebarStats.totalCompensatedTons.toFixed(2)} t CO₂</div>
                 <div className="!w-full !h-2 !bg-green-800/30 !rounded-full !overflow-hidden !mt-2">
-                  <div className="!h-2 !bg-white !rounded-full" style={{ width: '68%' }}></div>
+                  <div className="!h-2 !bg-white !rounded-full !transition-all !duration-500" style={{ width: `${Math.min(sidebarStats.compensationRate, 100)}%` }}></div>
+                </div>
+                <div className="!text-xs !opacity-90 !mt-1">
+                  {sidebarStats.compensationRate}% compensado · {sidebarStats.certificatesCount} certificado{sidebarStats.certificatesCount !== 1 ? 's' : ''}
                 </div>
               </div>
 

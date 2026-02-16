@@ -24,6 +24,7 @@ import {
 } from 'react-icons/fa';
 import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
 import CertificateGenerator from './CertificateGenerator';
 
 // Types
@@ -252,6 +253,7 @@ const B2CCalculator: React.FC = () => {
   });
   
   const [result, setResult] = useState<CalculationResult | null>(null);
+  const [calculationId, setCalculationId] = useState<string | null>(null);
   const [distance, setDistance] = useState(0);
   const [paymentSuccess, setPaymentSuccess] = useState<any>(null);
 
@@ -295,6 +297,9 @@ const B2CCalculator: React.FC = () => {
       // El backend retorna directamente el resultado con status: 'success'
       if (data.status === 'success') {
         setResult(data);
+        if (data.calculationId) {
+          setCalculationId(data.calculationId);
+        }
         setCurrentStep('result');
       } else {
         setError(data.message || 'Error al calcular emisiones');
@@ -312,14 +317,28 @@ const B2CCalculator: React.FC = () => {
 
     setIsProcessingPayment(true);
     try {
-      // Integración con backend para crear sesión de pago
+      // Obtener token de Supabase para autenticación
+      const session = await authService.getSession();
+      const token = session?.access_token;
+      
+      if (!token) {
+        setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        return;
+      }
+
+      const headers: Record<string, string> = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      // 1. Intentar crear sesión de checkout con Stripe
       const response = await fetch(`${API_URL}/b2c/payments/create-checkout`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('b2c_token')}`
-        },
+        headers,
         body: JSON.stringify({
+          amount: result.pricing.totalPriceCLP,
+          currency: 'clp',
+          calculationId: calculationId,
           flightData: {
             origin: result.meta.route.origin,
             destination: result.meta.route.destination,
@@ -333,29 +352,43 @@ const B2CCalculator: React.FC = () => {
       const data = await response.json();
       
       if (data.success && data.url) {
-        // Redirigir a Stripe Checkout
+        // Redirigir a Stripe Checkout (modo real)
         window.location.href = data.url;
-      } else {
-        // Simulación de pago exitoso para demo
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        setPaymentSuccess({
-          certificateId: `CERT-${Date.now().toString(36).toUpperCase()}`,
-          emissions: result.emissions,
-          amount: result.pricing.totalPriceCLP
+      } else if (data.mode === 'demo') {
+        // Modo demo: confirmar compensación directamente en backend
+        const confirmResponse = await fetch(`${API_URL}/b2c/payments/confirm-demo`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            calculationId: calculationId,
+            flightData: {
+              origin: result.meta.route.origin,
+              destination: result.meta.route.destination,
+              emissions: result.emissions,
+              pricing: result.pricing,
+              meta: result.meta
+            }
+          })
         });
-        setCurrentStep('success');
+        
+        const confirmData = await confirmResponse.json();
+        
+        if (confirmData.success) {
+          setPaymentSuccess({
+            certificateId: confirmData.certificateNumber || confirmData.certificateId,
+            emissions: result.emissions,
+            amount: result.pricing.totalPriceCLP
+          });
+          setCurrentStep('success');
+        } else {
+          setError(confirmData.message || 'Error al procesar la compensación');
+        }
+      } else {
+        setError(data.message || 'Error al crear sesión de pago');
       }
     } catch (err) {
       console.error('Error processing payment:', err);
-      // Simulación para demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setPaymentSuccess({
-        certificateId: `CERT-${Date.now().toString(36).toUpperCase()}`,
-        emissions: result.emissions,
-        amount: result.pricing.totalPriceCLP
-      });
-      setCurrentStep('success');
+      setError('Error de conexión al procesar el pago. Intenta nuevamente.');
     } finally {
       setIsProcessingPayment(false);
     }
@@ -370,6 +403,7 @@ const B2CCalculator: React.FC = () => {
       roundTrip: true
     });
     setResult(null);
+    setCalculationId(null);
     setPaymentSuccess(null);
     setCurrentStep('form');
     setError(null);

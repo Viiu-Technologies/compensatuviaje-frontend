@@ -13,9 +13,11 @@ import {
   FaShareAlt,
   FaLinkedin,
   FaTwitter,
-  FaFacebook
+  FaFacebook,
+  FaCubes
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import { MintNFTModal } from '../../../shared/components/blockchain';
 
 interface CertificateData {
   certificateId: string;
@@ -48,6 +50,8 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
   const [isGenerating, setIsGenerating] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
+  const [showMintModal, setShowMintModal] = useState(false);
+  const [nftMinted, setNftMinted] = useState(false);
 
   const generatePDF = async () => {
     if (!certificateRef.current) {
@@ -209,6 +213,28 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
                 </motion.div>
               )}
             </div>
+
+            {/* Botón Convertir a NFT */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowMintModal(true)}
+              className={`!px-5 !py-2.5 !rounded-xl !font-bold !flex !items-center !gap-2 !border-0 !cursor-pointer !shadow-lg hover:!shadow-xl !transition ${
+                nftMinted
+                  ? '!bg-purple-100 !text-purple-700'
+                  : '!bg-gradient-to-r !from-purple-600 !to-violet-600 !text-white'
+              }`}
+            >
+              {nftMinted ? (
+                <>
+                  <FaCheckCircle /> NFT Creado
+                </>
+              ) : (
+                <>
+                  <FaCubes /> Convertir a NFT
+                </>
+              )}
+            </motion.button>
 
             {/* Botón descargar PDF */}
             <motion.button
@@ -526,6 +552,19 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
           </div>
         </div>
       </motion.div>
+
+      {/* Mint NFT Modal */}
+      <MintNFTModal
+        isOpen={showMintModal}
+        onClose={() => setShowMintModal(false)}
+        compensationId={data.certificateId}
+        compensationData={{
+          co2Amount: data.emissionsKg,
+          projectName: data.projectName,
+          travelType: data.projectType
+        }}
+        onSuccess={() => setNftMinted(true)}
+      />
     </div>
   );
 };
