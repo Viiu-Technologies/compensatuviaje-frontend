@@ -42,6 +42,10 @@ import B2CFlightsPage from './apps/b2c/pages/B2CFlightsPage';
 import B2CProjectsPage from './apps/b2c/pages/B2CProjectsPage';
 import B2CCertificatesPage from './apps/b2c/pages/B2CCertificatesPage';
 import B2CCalculatorPage from './apps/b2c/pages/B2CCalculatorPage';
+import B2CNFTCertificatesPage from './apps/b2c/pages/B2CNFTCertificatesPage';
+
+// Pages - Blockchain Verification (Public)
+import { CertificateVerificationPage } from './shared/components/blockchain';
 
 // Pages - Admin
 import AdminRoutes from './apps/admin/routes';
@@ -70,6 +74,10 @@ function App() {
             
             {/* Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            
+            {/* Public Blockchain Verification */}
+            <Route path="/verify/:compensationId" element={<CertificateVerificationPage />} />
+            <Route path="/verify/token/:tokenId" element={<CertificateVerificationPage />} />
             
             {/* Auth Callback for OAuth */}
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -241,6 +249,14 @@ function App() {
               element={
                 <B2CProtectedRoute>
                   <B2CCalculatorPage />
+                </B2CProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/b2c/nft-certificates" 
+              element={
+                <B2CProtectedRoute>
+                  <B2CNFTCertificatesPage />
                 </B2CProtectedRoute>
               } 
             />

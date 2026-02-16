@@ -16,7 +16,8 @@ import {
   Bell,
   CheckSquare,
   Handshake,
-  ClipboardCheck
+  ClipboardCheck,
+  Blocks
 } from 'lucide-react';
 
 interface NavItem {
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { path: '/admin/proyectos', icon: TreePine, label: 'Proyectos ESG' },
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { path: '/admin/verificacion', icon: CheckSquare, label: 'Verificación' },
+  { path: '/admin/nft-blockchain', icon: Blocks, label: 'NFT Blockchain' },
 ];
 
 export default function AdminLayout() {

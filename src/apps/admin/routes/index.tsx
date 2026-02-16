@@ -12,6 +12,7 @@ import VerificationPage from '../pages/VerificationPage';
 import PartnersPage from '../pages/PartnersPage';
 import PartnerDetailPage from '../pages/PartnerDetailPage';
 import ProjectsReviewPage from '../pages/ProjectsReviewPage';
+import AdminNFTDashboard from '../pages/AdminNFTDashboard';
 
 const AdminRoutes = () => {
   return (
@@ -44,6 +45,9 @@ const AdminRoutes = () => {
 
         {/* Verificación de Compensaciones */}
         <Route path="verificacion" element={<VerificationPage />} />
+
+        {/* NFT Blockchain Management */}
+        <Route path="nft-blockchain" element={<AdminNFTDashboard />} />
 
         {/* Redirección legacy */}
         <Route path="verification" element={<Navigate to="/admin/verificacion" replace />} />
