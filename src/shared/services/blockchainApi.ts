@@ -1,119 +1,103 @@
-/**
- * CompensaTuViaje - Blockchain API Service
- * Servicio para interacción con API blockchain
- */
+// ============================================
+// Blockchain API Client - CompensaTuViaje
+// ============================================
+// NOTE: The axios interceptor in api.tsx already unwraps response.data,
+// so `res` = { success, message?, data: {...} }. We use `unwrap()` to
+// merge `success` from the outer envelope with the inner `data` fields.
 
+import api from './api';
 import type {
   BlockchainStatusResponse,
   CertificateResponse,
   MintRequest,
-  MintResponse,
-  VerifyTransactionResponse,
+  MintResult,
   WalletCertificatesResponse,
+  BlockchainStatsResponse,
+  PublicVerification,
   NFTCertificate,
-  BlockchainStats
 } from '../../types/blockchain.types';
 
-const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
+const BASE = '/blockchain';
 
-/**
- * Headers con autenticación
- */
-const getAuthHeaders = (): HeadersInit => {
-  const token = localStorage.getItem('access_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
-  };
-};
+/** Merge outer { success } with inner { data } from backend envelope */
+const unwrap = (res: any) => ({ success: res.success, ...(res.data || res) });
 
-/**
- * Manejo de errores
- */
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || error.message || `HTTP error ${response.status}`);
-  }
-  return response.json();
-};
-
-// ============================================
-// API Functions
-// ============================================
-
-/**
- * Obtener estado del servicio blockchain
- */
+// ---- Status ----
 export const getBlockchainStatus = async (): Promise<BlockchainStatusResponse> => {
-  const response = await fetch(`${API_URL}/blockchain/status`);
-  return handleResponse<BlockchainStatusResponse>(response);
+  const res: any = await api.get(`${BASE}/status`);
+  return unwrap(res);
 };
 
-/**
- * Obtener certificado por ID de compensación
- */
-export const getCertificateByCompensation = async (compensationId: string): Promise<CertificateResponse> => {
-  const response = await fetch(`${API_URL}/blockchain/certificate/${compensationId}`);
-  return handleResponse<CertificateResponse>(response);
+// ---- Certificate by compensationId (public) ----
+export const getCertificateByCompensation = async (
+  compensationId: string
+): Promise<CertificateResponse> => {
+  const res: any = await api.get(`${BASE}/certificate/${compensationId}`);
+  return unwrap(res);
 };
 
-/**
- * Mintear certificado NFT
- */
-export const mintCertificate = async (data: MintRequest): Promise<MintResponse> => {
-  const response = await fetch(`${API_URL}/blockchain/mint`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  });
-  return handleResponse<MintResponse>(response);
+// ---- Certificate by tokenId ----
+export const getCertificateByTokenId = async (
+  tokenId: string
+): Promise<{ success: boolean; certificate: NFTCertificate }> => {
+  const res: any = await api.get(`${BASE}/token/${tokenId}`);
+  return unwrap(res);
 };
 
-/**
- * Verificar transacción en blockchain
- */
-export const verifyTransaction = async (transactionHash: string): Promise<VerifyTransactionResponse> => {
-  const response = await fetch(`${API_URL}/blockchain/verify/${transactionHash}`);
-  return handleResponse<VerifyTransactionResponse>(response);
+// ---- Mint NFT ----
+export const mintNFTCertificate = async (data: MintRequest): Promise<MintResult> => {
+  const res: any = await api.post(`${BASE}/mint`, data);
+  return unwrap(res);
 };
 
-/**
- * Obtener certificados de una wallet
- */
-export const getWalletCertificates = async (address: string): Promise<WalletCertificatesResponse> => {
-  const response = await fetch(`${API_URL}/blockchain/wallet/${address}/certificates`);
-  return handleResponse<WalletCertificatesResponse>(response);
+// ---- Verify transaction ----
+export const verifyTransaction = async (
+  txHash: string
+): Promise<PublicVerification> => {
+  const res: any = await api.get(`${BASE}/verify/${txHash}`);
+  return unwrap(res);
 };
 
-/**
- * Obtener certificado por tokenId
- */
-export const getCertificateByTokenId = async (tokenId: string): Promise<{ success: boolean; certificate: NFTCertificate; openSeaUrl: string }> => {
-  const response = await fetch(`${API_URL}/blockchain/token/${tokenId}`);
-  return handleResponse(response);
+// ---- Wallet certificates ----
+export const getWalletCertificates = async (
+  address: string
+): Promise<WalletCertificatesResponse> => {
+  const res: any = await api.get(`${BASE}/wallet/${address}/certificates`);
+  return unwrap(res);
 };
 
-/**
- * Obtener estadísticas de NFTs
- */
-export const getBlockchainStats = async (): Promise<{ success: boolean; blockchain: BlockchainStats | null; database: { mintedCertificates: number; totalCO2Minted: number } }> => {
-  const response = await fetch(`${API_URL}/blockchain/stats`);
-  return handleResponse(response);
+// ---- Blockchain Stats (admin) ----
+export const getBlockchainStats = async (): Promise<BlockchainStatsResponse> => {
+  const res: any = await api.get(`${BASE}/stats`);
+  return unwrap(res);
 };
 
-// ============================================
-// Export default object
-// ============================================
+// ---- Public verification page (no auth) ----
+export const publicVerifyCertificate = async (
+  compensationId: string
+): Promise<PublicVerification> => {
+  const res: any = await api.get(`${BASE}/public/verify/${compensationId}`);
+  return unwrap(res);
+};
 
+// ---- Search certificate by number (landing) ----
+export const searchCertificateByNumber = async (
+  certificateNumber: string
+): Promise<PublicVerification> => {
+  const res: any = await api.get(`${BASE}/public/search/${certificateNumber}`);
+  return unwrap(res);
+};
+
+// ---- Default export object for components that import as default ----
 const blockchainApi = {
-  getStatus: getBlockchainStatus,
-  getCertificate: getCertificateByCompensation,
-  mint: mintCertificate,
+  getBlockchainStatus,
+  getCertificateByCompensation,
+  getCertificateByTokenId,
+  mintNFTCertificate,
   verifyTransaction,
   getWalletCertificates,
-  getCertificateByTokenId,
-  getStats: getBlockchainStats
+  getBlockchainStats,
+  publicVerifyCertificate,
+  searchCertificateByNumber,
 };
-
 export default blockchainApi;

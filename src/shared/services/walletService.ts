@@ -1,412 +1,205 @@
-/**
- * CompensaTuViaje - Web3 Wallet Service
- * Servicio para conectar wallets (MetaMask, WalletConnect, etc.)
- */
+// ============================================
+// Wallet Service - MetaMask / Polygon Integration
+// Singleton service para conexión Web3
+// ============================================
 
-import type { 
-  WalletState, 
-  WalletProvider, 
-  WalletType,
-  BlockchainConfig,
-  SupportedChain,
-  SUPPORTED_CHAINS
+import {
+  WalletState,
+  INITIAL_WALLET_STATE,
+  ACTIVE_CHAIN,
+  CHAIN_CONFIGS,
+  type SupportedChain,
 } from '../../types/blockchain.types';
 
-// Chains soportadas
-const CHAINS: Record<SupportedChain, BlockchainConfig> = {
-  'polygon': {
-    chainId: 137,
-    chainName: 'Polygon Mainnet',
-    rpcUrl: 'https://polygon-rpc.com',
-    explorerUrl: 'https://polygonscan.com',
-    contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS_POLYGON || '',
-    nativeCurrency: {
-      name: 'MATIC',
-      symbol: 'MATIC',
-      decimals: 18
-    }
-  },
-  'polygon-amoy': {
-    chainId: 80002,
-    chainName: 'Polygon Amoy Testnet',
-    rpcUrl: 'https://rpc-amoy.polygon.technology',
-    explorerUrl: 'https://amoy.polygonscan.com',
-    contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS_AMOY || '',
-    nativeCurrency: {
-      name: 'MATIC',
-      symbol: 'MATIC',
-      decimals: 18
-    }
-  },
-  'localhost': {
-    chainId: 31337,
-    chainName: 'Localhost',
-    rpcUrl: 'http://127.0.0.1:8545',
-    explorerUrl: 'http://localhost:8545',
-    contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS_LOCAL || '',
-    nativeCurrency: {
-      name: 'ETH',
-      symbol: 'ETH',
-      decimals: 18
-    }
-  }
-};
+type WalletListener = (state: WalletState) => void;
 
-// Target chain (configurable)
-const TARGET_CHAIN: SupportedChain = (import.meta.env.VITE_BLOCKCHAIN_NETWORK as SupportedChain) || 'polygon-amoy';
+declare global {
+  interface Window {
+    ethereum?: {
+      isMetaMask?: boolean;
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+      on: (event: string, handler: (...args: unknown[]) => void) => void;
+      removeListener: (event: string, handler: (...args: unknown[]) => void) => void;
+      selectedAddress: string | null;
+    };
+  }
+}
 
 class WalletService {
-  private ethereum: any = null;
-  private state: WalletState = {
-    isConnected: false,
-    isConnecting: false,
-    address: null,
-    chainId: null,
-    balance: null,
-    error: null
-  };
-  private listeners: Set<(state: WalletState) => void> = new Set();
+  private state: WalletState = { ...INITIAL_WALLET_STATE };
+  private listeners: Set<WalletListener> = new Set();
+  private chain = CHAIN_CONFIGS[ACTIVE_CHAIN];
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      this.ethereum = (window as any).ethereum;
-      this.setupEventListeners();
-      this.checkConnection();
-    }
+  // ---- State management ----
+
+  getState(): WalletState {
+    return { ...this.state };
   }
 
-  /**
-   * Suscribirse a cambios de estado
-   */
-  subscribe(listener: (state: WalletState) => void): () => void {
+  subscribe(listener: WalletListener): () => void {
     this.listeners.add(listener);
-    listener(this.state);
     return () => this.listeners.delete(listener);
   }
 
-  /**
-   * Notificar cambios
-   */
-  private notify(): void {
-    this.listeners.forEach(listener => listener(this.state));
+  private setState(partial: Partial<WalletState>) {
+    this.state = { ...this.state, ...partial };
+    this.listeners.forEach((l) => l(this.getState()));
   }
 
-  /**
-   * Actualizar estado
-   */
-  private setState(updates: Partial<WalletState>): void {
-    this.state = { ...this.state, ...updates };
-    this.notify();
-  }
+  // ---- Detection ----
 
-  /**
-   * Setup event listeners
-   */
-  private setupEventListeners(): void {
-    if (!this.ethereum) return;
-
-    this.ethereum.on('accountsChanged', (accounts: string[]) => {
-      if (accounts.length === 0) {
-        this.disconnect();
-      } else {
-        this.setState({ address: accounts[0] });
-        this.updateBalance();
-      }
-    });
-
-    this.ethereum.on('chainChanged', (chainId: string) => {
-      this.setState({ chainId: parseInt(chainId, 16) });
-      this.updateBalance();
-    });
-
-    this.ethereum.on('disconnect', () => {
-      this.disconnect();
-    });
-  }
-
-  /**
-   * Verificar conexión existente
-   */
-  private async checkConnection(): Promise<void> {
-    if (!this.ethereum) return;
-
-    try {
-      const accounts = await this.ethereum.request({ method: 'eth_accounts' });
-      const chainId = await this.ethereum.request({ method: 'eth_chainId' });
-
-      if (accounts.length > 0) {
-        this.setState({
-          isConnected: true,
-          address: accounts[0],
-          chainId: parseInt(chainId, 16)
-        });
-        await this.updateBalance();
-      }
-    } catch (error) {
-      console.error('Check connection error:', error);
-    }
-  }
-
-  /**
-   * Obtener providers disponibles
-   */
-  getAvailableProviders(): WalletProvider[] {
-    const providers: WalletProvider[] = [];
-
-    // MetaMask
-    if (typeof window !== 'undefined' && (window as any).ethereum?.isMetaMask) {
-      providers.push({
-        name: 'MetaMask',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
-        installed: true,
-        provider: (window as any).ethereum
-      });
-    } else {
-      providers.push({
-        name: 'MetaMask',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
-        installed: false,
-        provider: null
-      });
-    }
-
-    // Coinbase Wallet
-    if (typeof window !== 'undefined' && (window as any).ethereum?.isCoinbaseWallet) {
-      providers.push({
-        name: 'Coinbase Wallet',
-        icon: 'https://www.coinbase.com/favicon.ico',
-        installed: true,
-        provider: (window as any).ethereum
-      });
-    }
-
-    return providers;
-  }
-
-  /**
-   * Verificar si MetaMask está instalado
-   */
   isMetaMaskInstalled(): boolean {
-    return typeof window !== 'undefined' && Boolean((window as any).ethereum?.isMetaMask);
+    return typeof window !== 'undefined' && !!window.ethereum?.isMetaMask;
   }
 
-  /**
-   * Conectar wallet
-   */
-  async connect(providerType: WalletType = 'metamask'): Promise<WalletState> {
-    if (!this.ethereum) {
-      this.setState({ error: 'Por favor instala MetaMask u otra wallet compatible' });
-      throw new Error('No wallet provider found');
+  // ---- Connect ----
+
+  async connect(): Promise<string> {
+    if (!this.isMetaMaskInstalled()) {
+      this.setState({ error: 'MetaMask no está instalado. Instálalo desde metamask.io' });
+      throw new Error('MetaMask not installed');
     }
 
-    this.setState({ isConnecting: true, error: null });
+    this.setState({ connecting: true, error: null });
 
     try {
-      // Solicitar cuentas
-      const accounts = await this.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
+      const accounts = (await window.ethereum!.request({
+        method: 'eth_requestAccounts',
+      })) as string[];
 
-      if (accounts.length === 0) {
-        throw new Error('No accounts found');
+      if (!accounts.length) throw new Error('No accounts returned');
+
+      const address = accounts[0];
+      const chainId = parseInt(
+        (await window.ethereum!.request({ method: 'eth_chainId' })) as string,
+        16
+      );
+
+      const isCorrectChain = chainId === this.chain.chainId;
+
+      if (!isCorrectChain) {
+        await this.switchChain();
       }
 
-      // Obtener chainId
-      const chainId = await this.ethereum.request({ method: 'eth_chainId' });
-      const currentChainId = parseInt(chainId, 16);
-
-      // Verificar si está en la red correcta
-      const targetConfig = CHAINS[TARGET_CHAIN];
-      if (currentChainId !== targetConfig.chainId) {
-        await this.switchChain(TARGET_CHAIN);
-      }
+      const balance = await this.fetchBalance(address);
 
       this.setState({
-        isConnected: true,
-        isConnecting: false,
-        address: accounts[0],
-        chainId: targetConfig.chainId
+        connected: true,
+        address,
+        chainId: this.chain.chainId,
+        balance,
+        isCorrectChain: true,
+        connecting: false,
       });
 
-      await this.updateBalance();
-
-      return this.state;
-    } catch (error: any) {
-      const errorMessage = error.code === 4001 
-        ? 'Conexión rechazada por el usuario'
-        : error.message || 'Error al conectar wallet';
-      
-      this.setState({ 
-        isConnecting: false, 
-        error: errorMessage 
-      });
-      throw new Error(errorMessage);
+      this.registerListeners();
+      return address;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al conectar wallet';
+      this.setState({ connecting: false, error: msg });
+      throw err;
     }
   }
 
-  /**
-   * Desconectar wallet
-   */
-  disconnect(): void {
-    this.setState({
-      isConnected: false,
-      address: null,
-      chainId: null,
-      balance: null,
-      error: null
-    });
+  // ---- Disconnect ----
+
+  disconnect() {
+    this.removeListeners();
+    this.setState({ ...INITIAL_WALLET_STATE });
   }
 
-  /**
-   * Cambiar de red
-   */
-  async switchChain(chain: SupportedChain): Promise<void> {
-    if (!this.ethereum) throw new Error('No wallet provider');
+  // ---- Chain switching ----
 
-    const config = CHAINS[chain];
-    const chainIdHex = `0x${config.chainId.toString(16)}`;
-
+  async switchChain(target: SupportedChain = ACTIVE_CHAIN): Promise<void> {
+    const cfg = CHAIN_CONFIGS[target];
     try {
-      await this.ethereum.request({
+      await window.ethereum!.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: chainIdHex }]
+        params: [{ chainId: cfg.chainIdHex }],
       });
-    } catch (error: any) {
-      // Si la red no existe, agregarla
-      if (error.code === 4902) {
-        await this.addChain(chain);
+    } catch (switchError: unknown) {
+      const err = switchError as { code: number };
+      if (err.code === 4902) {
+        // Chain not added — add it
+        await window.ethereum!.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: cfg.chainIdHex,
+              chainName: cfg.name,
+              nativeCurrency: cfg.nativeCurrency,
+              rpcUrls: [cfg.rpcUrl],
+              blockExplorerUrls: cfg.blockExplorer ? [cfg.blockExplorer] : undefined,
+            },
+          ],
+        });
       } else {
-        throw error;
+        throw switchError;
       }
     }
   }
 
-  /**
-   * Agregar red
-   */
-  async addChain(chain: SupportedChain): Promise<void> {
-    if (!this.ethereum) throw new Error('No wallet provider');
+  // ---- Balance ----
 
-    const config = CHAINS[chain];
-    const chainIdHex = `0x${config.chainId.toString(16)}`;
-
-    await this.ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: chainIdHex,
-        chainName: config.chainName,
-        rpcUrls: [config.rpcUrl],
-        blockExplorerUrls: [config.explorerUrl],
-        nativeCurrency: config.nativeCurrency
-      }]
-    });
-  }
-
-  /**
-   * Actualizar balance
-   */
-  async updateBalance(): Promise<void> {
-    if (!this.ethereum || !this.state.address) return;
-
+  private async fetchBalance(address: string): Promise<string> {
     try {
-      const balance = await this.ethereum.request({
+      const raw = (await window.ethereum!.request({
         method: 'eth_getBalance',
-        params: [this.state.address, 'latest']
-      });
-
-      // Convertir de wei a ether
-      const balanceInEth = parseInt(balance, 16) / 1e18;
-      this.setState({ balance: balanceInEth.toFixed(4) });
-    } catch (error) {
-      console.error('Error getting balance:', error);
+        params: [address, 'latest'],
+      })) as string;
+      const wei = BigInt(raw);
+      const matic = Number(wei) / 1e18;
+      return matic.toFixed(4);
+    } catch {
+      return '0';
     }
   }
 
-  /**
-   * Obtener estado actual
-   */
-  getState(): WalletState {
-    return this.state;
-  }
+  // ---- Event listeners ----
 
-  /**
-   * Obtener dirección corta
-   */
-  getShortAddress(): string {
-    if (!this.state.address) return '';
-    return `${this.state.address.slice(0, 6)}...${this.state.address.slice(-4)}`;
-  }
-
-  /**
-   * Obtener configuración de red actual
-   */
-  getChainConfig(): BlockchainConfig | null {
-    if (!this.state.chainId) return null;
-    
-    for (const [, config] of Object.entries(CHAINS)) {
-      if (config.chainId === this.state.chainId) {
-        return config;
-      }
+  private handleAccountsChanged = (accounts: unknown) => {
+    const accts = accounts as string[];
+    if (accts.length === 0) {
+      this.disconnect();
+    } else {
+      this.setState({ address: accts[0] });
+      this.fetchBalance(accts[0]).then((b) => this.setState({ balance: b }));
     }
-    return null;
+  };
+
+  private handleChainChanged = (chainIdHex: unknown) => {
+    const chainId = parseInt(chainIdHex as string, 16);
+    const isCorrectChain = chainId === this.chain.chainId;
+    this.setState({ chainId, isCorrectChain });
+  };
+
+  private registerListeners() {
+    if (!window.ethereum) return;
+    window.ethereum.on('accountsChanged', this.handleAccountsChanged);
+    window.ethereum.on('chainChanged', this.handleChainChanged);
   }
 
-  /**
-   * Verificar si está en la red correcta
-   */
-  isCorrectNetwork(): boolean {
-    const targetConfig = CHAINS[TARGET_CHAIN];
-    return this.state.chainId === targetConfig.chainId;
+  private removeListeners() {
+    if (!window.ethereum) return;
+    window.ethereum.removeListener('accountsChanged', this.handleAccountsChanged);
+    window.ethereum.removeListener('chainChanged', this.handleChainChanged);
   }
 
-  /**
-   * Obtener red objetivo
-   */
-  getTargetChain(): BlockchainConfig {
-    return CHAINS[TARGET_CHAIN];
+  // ---- Helpers ----
+
+  getExplorerUrl(txHash: string): string {
+    return `${this.chain.blockExplorer}/tx/${txHash}`;
   }
 
-  /**
-   * Firmar mensaje (para verificación de propiedad)
-   */
-  async signMessage(message: string): Promise<string> {
-    if (!this.ethereum || !this.state.address) {
-      throw new Error('Wallet not connected');
-    }
-
-    try {
-      const signature = await this.ethereum.request({
-        method: 'personal_sign',
-        params: [message, this.state.address]
-      });
-      return signature;
-    } catch (error: any) {
-      if (error.code === 4001) {
-        throw new Error('Firma rechazada por el usuario');
-      }
-      throw error;
-    }
+  getTokenUrl(tokenId: string): string {
+    return `${this.chain.openSeaBase}/${this.chain.contractAddress}/${tokenId}`;
   }
 
-  /**
-   * Obtener URL del explorador para una dirección
-   */
-  getAddressExplorerUrl(address?: string): string {
-    const config = CHAINS[TARGET_CHAIN];
-    return `${config.explorerUrl}/address/${address || this.state.address}`;
-  }
-
-  /**
-   * Obtener URL del explorador para una transacción
-   */
-  getTransactionExplorerUrl(txHash: string): string {
-    const config = CHAINS[TARGET_CHAIN];
-    return `${config.explorerUrl}/tx/${txHash}`;
+  shortenAddress(addr: string): string {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   }
 }
 
 // Singleton
 const walletService = new WalletService();
-
 export default walletService;
-export { CHAINS, TARGET_CHAIN };

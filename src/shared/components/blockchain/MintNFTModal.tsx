@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import walletService from '../../services/walletService';
 import blockchainApi from '../../services/blockchainApi';
-import type { WalletState, MintingState, MintResult } from '../../../types/blockchain.types';
+import type { WalletState, MintResult } from '../../../types/blockchain.types';
 
 interface MintNFTModalProps {
   isOpen: boolean;
@@ -30,6 +30,16 @@ interface MintNFTModalProps {
     travelType: string;
   };
   onSuccess?: (result: MintResult) => void;
+}
+
+interface MintingStateLocal {
+  status: 'idle' | 'preparing' | 'uploading_metadata' | 'minting' | 'success' | 'error';
+  step: number;
+  totalSteps: number;
+  message: string;
+  tokenId?: string;
+  transactionHash?: string;
+  error?: string;
 }
 
 const MINTING_STEPS = [
@@ -48,7 +58,7 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
 }) => {
   const [walletState, setWalletState] = useState<WalletState>(walletService.getState());
   const [currentStep, setCurrentStep] = useState(1);
-  const [mintingState, setMintingState] = useState<MintingState>({
+  const [mintingState, setMintingState] = useState<MintingStateLocal>({
     status: 'idle',
     step: 1,
     totalSteps: 4,
@@ -62,10 +72,10 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (walletState.isConnected && currentStep === 1) {
+    if (walletState.connected && currentStep === 1) {
       setCurrentStep(2);
     }
-  }, [walletState.isConnected]);
+  }, [walletState.connected]);
 
   const handleConnect = async () => {
     try {
@@ -107,28 +117,28 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
       });
 
       // Llamar API
-      const response = await blockchainApi.mint({
+      const result = await blockchainApi.mintNFTCertificate({
         compensationId,
         walletAddress: walletState.address
       });
 
-      if (!response.success || !response.result) {
-        throw new Error(response.error || 'Minting failed');
+      if (!result.success) {
+        throw new Error('Minting failed');
       }
 
-      setMintResult(response.result);
+      setMintResult(result);
       setMintingState({
         status: 'success',
         step: 4,
         totalSteps: 4,
         message: '¡Certificado NFT creado exitosamente!',
-        tokenId: response.result.tokenId,
-        transactionHash: response.result.transactionHash
+        tokenId: result.tokenId,
+        transactionHash: result.txHash
       });
       setCurrentStep(4);
 
       if (onSuccess) {
-        onSuccess(response.result);
+        onSuccess(result);
       }
     } catch (error: any) {
       setMintingState({
@@ -144,71 +154,71 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !p-4">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="!absolute !inset-0 !bg-black/70 !backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="!relative !w-full !max-w-lg !bg-slate-900 !border !border-slate-700 !rounded-2xl !shadow-2xl !overflow-hidden">
         {/* Header */}
-        <div className="relative p-6 bg-gradient-to-br from-emerald-600/20 to-teal-600/20 border-b border-slate-700">
+        <div className="!relative !p-6 !bg-gradient-to-br !from-emerald-600/20 !to-teal-600/20 !border-b !border-slate-700">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="!absolute !top-4 !right-4 !p-2 hover:!bg-slate-700/50 !rounded-lg !transition-colors !bg-transparent !border-0 !cursor-pointer"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="!w-5 !h-5 !text-slate-400" />
           </button>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-500/20 rounded-xl">
-              <Sparkles className="w-6 h-6 text-emerald-400" />
+          <div className="!flex !items-center !gap-3">
+            <div className="!p-3 !bg-emerald-500/20 !rounded-xl">
+              <Sparkles className="!w-6 !h-6 !text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Mintear Certificado NFT</h2>
-              <p className="text-slate-400 text-sm">Convierte tu compensación en un NFT único</p>
+              <h2 className="!text-xl !font-bold !text-white">Mintear Certificado NFT</h2>
+              <p className="!text-slate-400 !text-sm">Convierte tu compensación en un NFT único</p>
             </div>
           </div>
         </div>
 
         {/* Progress Steps */}
-        <div className="px-6 py-4 border-b border-slate-700">
-          <div className="flex items-center justify-between">
+        <div className="!px-6 !py-4 !border-b !border-slate-700">
+          <div className="!flex !items-center !justify-between">
             {MINTING_STEPS.map((step, index) => (
               <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center">
+                <div className="!flex !flex-col !items-center">
                   <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center
+                    !w-8 !h-8 !rounded-full !flex !items-center !justify-center
                     ${currentStep >= step.id 
-                      ? 'bg-emerald-500 text-white' 
-                      : 'bg-slate-700 text-slate-400'
+                      ? '!bg-emerald-500 !text-white' 
+                      : '!bg-slate-700 !text-slate-400'
                     }
                     ${currentStep === step.id && mintingState.status !== 'error' 
-                      ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-slate-900' 
+                      ? '!ring-2 !ring-emerald-500 !ring-offset-2 !ring-offset-slate-900' 
                       : ''
                     }
                   `}>
                     {currentStep > step.id ? (
-                      <CheckCircle className="w-5 h-5" />
+                      <CheckCircle className="!w-5 !h-5" />
                     ) : mintingState.status === 'error' && currentStep === step.id ? (
-                      <AlertCircle className="w-5 h-5 text-red-400" />
+                      <AlertCircle className="!w-5 !h-5 !text-red-400" />
                     ) : (
                       step.id
                     )}
                   </div>
                   <span className={`
-                    text-xs mt-1 text-center max-w-[60px]
-                    ${currentStep >= step.id ? 'text-white' : 'text-slate-500'}
+                    !text-xs !mt-1 !text-center !max-w-[60px]
+                    ${currentStep >= step.id ? '!text-white' : '!text-slate-500'}
                   `}>
                     {step.label}
                   </span>
                 </div>
                 {index < MINTING_STEPS.length - 1 && (
                   <div className={`
-                    flex-1 h-0.5 mx-2
-                    ${currentStep > step.id ? 'bg-emerald-500' : 'bg-slate-700'}
+                    !flex-1 !h-0.5 !mx-2
+                    ${currentStep > step.id ? '!bg-emerald-500' : '!bg-slate-700'}
                   `} />
                 )}
               </React.Fragment>
@@ -217,29 +227,29 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="!p-6">
           {/* Step 1: Connect Wallet */}
           {currentStep === 1 && (
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-slate-800 rounded-full flex items-center justify-center">
-                <Wallet className="w-8 h-8 text-slate-400" />
+            <div className="!text-center">
+              <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-slate-800 !rounded-full !flex !items-center !justify-center">
+                <Wallet className="!w-8 !h-8 !text-slate-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="!text-lg !font-semibold !text-white !mb-2">
                 Conecta tu Wallet
               </h3>
-              <p className="text-slate-400 text-sm mb-6">
+              <p className="!text-slate-400 !text-sm !mb-6">
                 Necesitas una wallet compatible con Polygon para recibir tu certificado NFT
               </p>
 
               {!walletService.isMetaMaskInstalled() ? (
-                <div className="p-4 bg-yellow-900/20 border border-yellow-700/50 rounded-lg mb-4">
-                  <p className="text-yellow-400 text-sm">
+                <div className="!p-4 !bg-yellow-900/20 !border !border-yellow-700/50 !rounded-lg !mb-4">
+                  <p className="!text-yellow-400 !text-sm">
                     MetaMask no detectado. 
                     <a 
                       href="https://metamask.io/download/" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="underline ml-1"
+                      className="!underline !ml-1 !text-yellow-300"
                     >
                       Instalar MetaMask
                     </a>
@@ -248,21 +258,21 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
               ) : (
                 <button
                   onClick={handleConnect}
-                  disabled={walletState.isConnecting}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3
-                    bg-gradient-to-r from-purple-600 to-blue-600
-                    hover:from-purple-700 hover:to-blue-700
-                    text-white font-medium rounded-lg
-                    disabled:opacity-50 transition-all"
+                  disabled={walletState.connecting}
+                  className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3
+                    !bg-gradient-to-r !from-purple-600 !to-blue-600
+                    hover:!from-purple-700 hover:!to-blue-700
+                    !text-white !font-medium !rounded-lg
+                    disabled:!opacity-50 !transition-all !border-0 !cursor-pointer"
                 >
-                  {walletState.isConnecting ? (
+                  {walletState.connecting ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="!w-5 !h-5 !animate-spin" />
                       Conectando...
                     </>
                   ) : (
                     <>
-                      <Wallet className="w-5 h-5" />
+                      <Wallet className="!w-5 !h-5" />
                       Conectar MetaMask
                     </>
                   )}
@@ -270,7 +280,7 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
               )}
 
               {walletState.error && (
-                <p className="mt-3 text-red-400 text-sm">{walletState.error}</p>
+                <p className="!mt-3 !text-red-400 !text-sm">{walletState.error}</p>
               )}
             </div>
           )}
@@ -278,58 +288,58 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
           {/* Step 2: Confirm */}
           {currentStep === 2 && (
             <div>
-              <div className="p-4 bg-slate-800 rounded-lg mb-4">
-                <h4 className="text-sm font-medium text-slate-400 mb-3">Datos del Certificado</h4>
+              <div className="!p-4 !bg-slate-800 !rounded-lg !mb-4">
+                <h4 className="!text-sm !font-medium !text-slate-400 !mb-3">Datos del Certificado</h4>
                 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">CO2 Compensado</span>
-                    <span className="text-emerald-400 font-bold">
+                <div className="!space-y-3">
+                  <div className="!flex !items-center !justify-between">
+                    <span className="!text-slate-400">CO2 Compensado</span>
+                    <span className="!text-emerald-400 !font-bold">
                       {compensationData.co2Amount.toFixed(2)} kg
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Proyecto</span>
-                    <span className="text-white">{compensationData.projectName}</span>
+                  <div className="!flex !items-center !justify-between">
+                    <span className="!text-slate-400">Proyecto</span>
+                    <span className="!text-white">{compensationData.projectName}</span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Wallet destino</span>
-                    <code className="text-xs text-slate-300 font-mono">
-                      {walletService.getShortAddress()}
+                  <div className="!flex !items-center !justify-between">
+                    <span className="!text-slate-400">Wallet destino</span>
+                    <code className="!text-xs !text-slate-300 !font-mono">
+                      {walletState.address ? walletService.shortenAddress(walletState.address) : ''}
                     </code>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-900/20 border border-emerald-700/50 rounded-lg mb-6">
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-emerald-400 mt-0.5" />
+              <div className="!p-4 !bg-emerald-900/20 !border !border-emerald-700/50 !rounded-lg !mb-6">
+                <div className="!flex !items-start !gap-3">
+                  <Shield className="!w-5 !h-5 !text-emerald-400 !mt-0.5" />
                   <div>
-                    <p className="text-emerald-400 font-medium text-sm">Certificado Inmutable</p>
-                    <p className="text-emerald-300/70 text-xs mt-1">
+                    <p className="!text-emerald-400 !font-medium !text-sm">Certificado Inmutable</p>
+                    <p className="!text-emerald-300/70 !text-xs !mt-1">
                       Una vez creado, este NFT será un registro permanente e inalterable de tu compensación en la blockchain de Polygon.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="!flex !gap-3">
                 <button
                   onClick={() => setCurrentStep(1)}
-                  className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  className="!flex-1 !px-4 !py-3 !bg-slate-700 hover:!bg-slate-600 !text-white !rounded-lg !transition-colors !border-0 !cursor-pointer"
                 >
                   Atrás
                 </button>
                 <button
                   onClick={handleMint}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3
-                    bg-gradient-to-r from-emerald-600 to-teal-600
-                    hover:from-emerald-700 hover:to-teal-700
-                    text-white font-medium rounded-lg transition-all"
+                  className="!flex-1 !flex !items-center !justify-center !gap-2 !px-4 !py-3
+                    !bg-gradient-to-r !from-emerald-600 !to-teal-600
+                    hover:!from-emerald-700 hover:!to-teal-700
+                    !text-white !font-medium !rounded-lg !transition-all !border-0 !cursor-pointer"
                 >
-                  <Leaf className="w-5 h-5" />
+                  <Leaf className="!w-5 !h-5" />
                   Mintear NFT
                 </button>
               </div>
@@ -338,16 +348,16 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
 
           {/* Step 3: Minting */}
           {currentStep === 3 && (
-            <div className="text-center py-6">
+            <div className="!text-center !py-6">
               {mintingState.status === 'error' ? (
                 <>
-                  <div className="w-16 h-16 mx-auto mb-4 bg-red-900/30 rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-8 h-8 text-red-400" />
+                  <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-red-900/30 !rounded-full !flex !items-center !justify-center">
+                    <AlertCircle className="!w-8 !h-8 !text-red-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="!text-lg !font-semibold !text-white !mb-2">
                     Error al mintear
                   </h3>
-                  <p className="text-red-400 text-sm mb-6">
+                  <p className="!text-red-400 !text-sm !mb-6">
                     {mintingState.error}
                   </p>
                   <button
@@ -355,34 +365,34 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                       setCurrentStep(2);
                       setMintingState({ status: 'idle', step: 1, totalSteps: 4, message: '' });
                     }}
-                    className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                    className="!px-6 !py-3 !bg-slate-700 hover:!bg-slate-600 !text-white !rounded-lg !transition-colors !border-0 !cursor-pointer"
                   >
                     Intentar de nuevo
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="w-16 h-16 mx-auto mb-4 relative">
-                    <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" />
-                    <div className="relative w-full h-full bg-slate-800 rounded-full flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                  <div className="!w-16 !h-16 !mx-auto !mb-4 !relative">
+                    <div className="!absolute !inset-0 !bg-emerald-500/20 !rounded-full !animate-ping" />
+                    <div className="!relative !w-full !h-full !bg-slate-800 !rounded-full !flex !items-center !justify-center">
+                      <Loader2 className="!w-8 !h-8 !text-emerald-400 !animate-spin" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="!text-lg !font-semibold !text-white !mb-2">
                     {mintingState.message}
                   </h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className="!text-slate-400 !text-sm">
                     Por favor no cierres esta ventana
                   </p>
 
                   {/* Progress bar */}
-                  <div className="mt-6 w-full bg-slate-700 rounded-full h-2">
+                  <div className="!mt-6 !w-full !bg-slate-700 !rounded-full !h-2">
                     <div 
-                      className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                      className="!bg-emerald-500 !h-2 !rounded-full !transition-all !duration-500"
                       style={{ width: `${(mintingState.step / mintingState.totalSteps) * 100}%` }}
                     />
                   </div>
-                  <p className="text-slate-500 text-xs mt-2">
+                  <p className="!text-slate-500 !text-xs !mt-2">
                     Paso {mintingState.step} de {mintingState.totalSteps}
                   </p>
                 </>
@@ -392,64 +402,80 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
 
           {/* Step 4: Success */}
           {currentStep === 4 && mintResult && (
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-10 h-10 text-emerald-400" />
+            <div className="!text-center">
+              <div className="!w-20 !h-20 !mx-auto !mb-4 !bg-emerald-500/20 !rounded-full !flex !items-center !justify-center">
+                <CheckCircle className="!w-10 !h-10 !text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className="!text-xl !font-bold !text-white !mb-2">
                 ¡NFT Creado! 🎉
               </h3>
-              <p className="text-slate-400 text-sm mb-6">
-                Tu certificado de compensación ahora es un NFT en Polygon
+              <p className="!text-slate-400 !text-sm !mb-6">
+                {(mintResult as any).demoMode
+                  ? 'Tu certificado fue registrado en modo demo (sin blockchain real)'
+                  : 'Tu certificado de compensación ahora es un NFT en Polygon'}
               </p>
 
-              <div className="p-4 bg-slate-800 rounded-lg mb-6 text-left">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">Token ID</span>
-                    <span className="text-emerald-400 font-mono">#{mintResult.tokenId}</span>
+              {(mintResult as any).demoMode && (
+                <div className="!p-3 !bg-amber-500/10 !border !border-amber-500/30 !rounded-lg !mb-4">
+                  <p className="!text-xs !text-amber-300 !text-center">
+                    <strong>Modo Demo:</strong> Los datos se guardaron localmente. Para mintear en la blockchain real de Polygon, configura las variables de entorno del servidor.
+                  </p>
+                </div>
+              )}
+
+              <div className="!p-4 !bg-slate-800 !rounded-lg !mb-6 !text-left">
+                <div className="!space-y-2">
+                  <div className="!flex !items-center !justify-between">
+                    <span className="!text-slate-400 !text-sm">Token ID</span>
+                    <span className="!text-emerald-400 !font-mono">#{mintResult.tokenId}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">Transaction</span>
-                    <code className="text-xs text-slate-300 font-mono">
-                      {mintResult.transactionHash?.slice(0, 10)}...
-                    </code>
+                  <div className="!flex !items-center !justify-between">
+                    <span className="!text-slate-400 !text-sm">Modo</span>
+                    <span className={`!text-xs !font-semibold !px-2 !py-0.5 !rounded-full ${
+                      (mintResult as any).demoMode 
+                        ? '!bg-amber-500/20 !text-amber-400' 
+                        : '!bg-emerald-500/20 !text-emerald-400'
+                    }`}>
+                      {(mintResult as any).demoMode ? 'Demo' : 'Blockchain Real'}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                {mintResult.explorerUrl && (
-                  <a
-                    href={mintResult.explorerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3
-                      bg-slate-700 hover:bg-slate-600
-                      text-white rounded-lg transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Ver en Polygonscan
-                  </a>
-                )}
-                {mintResult.openSeaUrl && (
-                  <a
-                    href={mintResult.openSeaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3
-                      bg-blue-600 hover:bg-blue-500
-                      text-white rounded-lg transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Ver en OpenSea
-                  </a>
-                )}
-              </div>
+              {!(mintResult as any).demoMode && (
+                <div className="!flex !gap-3">
+                  {mintResult.explorerUrl && (
+                    <a
+                      href={mintResult.explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="!flex-1 !flex !items-center !justify-center !gap-2 !px-4 !py-3
+                        !bg-slate-700 hover:!bg-slate-600
+                        !text-white !rounded-lg !transition-colors !no-underline"
+                    >
+                      <ExternalLink className="!w-4 !h-4" />
+                      Ver en Polygonscan
+                    </a>
+                  )}
+                  {mintResult.openSeaUrl && (
+                    <a
+                      href={mintResult.openSeaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="!flex-1 !flex !items-center !justify-center !gap-2 !px-4 !py-3
+                        !bg-blue-600 hover:!bg-blue-500
+                        !text-white !rounded-lg !transition-colors !no-underline"
+                    >
+                      <ExternalLink className="!w-4 !h-4" />
+                      Ver en OpenSea
+                    </a>
+                  )}
+                </div>
+              )}
 
               <button
                 onClick={onClose}
-                className="w-full mt-4 px-4 py-3 text-slate-400 hover:text-white transition-colors"
+                className="!w-full !mt-4 !px-4 !py-3 !text-slate-400 hover:!text-white !transition-colors !bg-transparent !border-0 !cursor-pointer"
               >
                 Cerrar
               </button>

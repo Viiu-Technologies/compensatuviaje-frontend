@@ -1,60 +1,76 @@
-/**
- * CompensaTuViaje - Blockchain Types
- * Tipos TypeScript para la integración blockchain/NFT
- */
-
 // ============================================
-// Blockchain Config
+// Blockchain NFT Types - CompensaTuViaje
 // ============================================
 
-export interface BlockchainConfig {
+// ---- Chain Configuration ----
+export type SupportedChain = 'polygon' | 'localhost';
+
+export interface ChainConfig {
   chainId: number;
-  chainName: string;
+  chainIdHex: string;
+  name: string;
   rpcUrl: string;
-  explorerUrl: string;
+  blockExplorer: string;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
   contractAddress: string;
-  nativeCurrency: {
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
+  openSeaBase: string;
 }
 
-export type SupportedChain = 'polygon' | 'polygon-amoy' | 'localhost';
+export const CHAIN_CONFIGS: Record<SupportedChain, ChainConfig> = {
+  polygon: {
+    chainId: 137,
+    chainIdHex: '0x89',
+    name: 'Polygon Mainnet',
+    rpcUrl: 'https://polygon-rpc.com',
+    blockExplorer: 'https://polygonscan.com',
+    nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+    contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS_POLYGON || '',
+    openSeaBase: 'https://opensea.io/assets/matic',
+  },
+  localhost: {
+    chainId: 31337,
+    chainIdHex: '0x7A69',
+    name: 'Localhost',
+    rpcUrl: 'http://127.0.0.1:8545',
+    blockExplorer: '',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+    contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS_LOCAL || '',
+    openSeaBase: '',
+  },
+};
 
-// ============================================
-// Wallet
-// ============================================
+export const ACTIVE_CHAIN: SupportedChain =
+  (import.meta.env.VITE_BLOCKCHAIN_NETWORK as SupportedChain) || 'polygon';
 
+// ---- Wallet ----
 export interface WalletState {
-  isConnected: boolean;
-  isConnecting: boolean;
+  connected: boolean;
   address: string | null;
   chainId: number | null;
   balance: string | null;
+  isCorrectChain: boolean;
+  connecting: boolean;
   error: string | null;
 }
 
-export interface WalletProvider {
-  name: string;
-  icon: string;
-  installed: boolean;
-  provider: any;
-}
+export const INITIAL_WALLET_STATE: WalletState = {
+  connected: false,
+  address: null,
+  chainId: null,
+  balance: null,
+  isCorrectChain: false,
+  connecting: false,
+  error: null,
+};
 
-export type WalletType = 'metamask' | 'walletconnect' | 'coinbase';
-
-// ============================================
-// NFT Certificate
-// ============================================
-
+// ---- NFT Certificate ----
 export interface NFTCertificate {
   tokenId: string;
   compensationId: string;
   beneficiary: string;
-  currentOwner: string;
-  co2Amount: string; // en gramos
+  co2AmountGrams: number;
   co2AmountKg: number;
+  co2AmountTons: number;
   timestamp: string;
   travelType: TravelType;
   projectId: string;
@@ -62,40 +78,25 @@ export interface NFTCertificate {
   projectCountry: string;
   verified: boolean;
   verificationDate: string | null;
-  tokenUri: string;
-  metadata?: NFTMetadata;
+  tokenURI: string;
+  txHash: string;
+  blockNumber: number;
+  explorerUrl: string;
+  openSeaUrl: string;
 }
 
-export interface NFTMetadata {
-  name: string;
-  description: string;
-  image: string;
-  external_url: string;
-  attributes: NFTAttribute[];
-  properties: {
-    compensationId: string;
-    co2AmountGrams: number;
-    travelType: string;
-    projectId: string;
-    projectName: string;
-    projectCountry: string;
-    compensationDate: string;
-    verificationStatus: string;
-  };
-}
+export type TravelType = 'flight' | 'bus' | 'car' | 'train' | 'ship' | 'other';
 
-export interface NFTAttribute {
-  trait_type: string;
-  value: string | number;
-  display_type?: string;
-}
+export const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
+  flight: 'Vuelo',
+  bus: 'Bus',
+  car: 'Auto',
+  train: 'Tren',
+  ship: 'Barco',
+  other: 'Otro',
+};
 
-export type TravelType = 'flight' | 'bus' | 'car' | 'train' | 'ferry' | 'other';
-
-// ============================================
-// Minting
-// ============================================
-
+// ---- Minting ----
 export interface MintRequest {
   compensationId: string;
   walletAddress: string;
@@ -103,215 +104,67 @@ export interface MintRequest {
 
 export interface MintResult {
   success: boolean;
-  tokenId?: string;
-  transactionHash?: string;
-  contractAddress?: string;
-  blockNumber?: number;
-  gasUsed?: string;
-  metadataUri?: string;
-  explorerUrl?: string;
-  openSeaUrl?: string;
-  error?: string;
+  tokenId: string;
+  txHash: string;
+  contractAddress: string;
+  blockNumber: number;
+  gasUsed: string;
+  explorerUrl: string;
+  openSeaUrl: string;
 }
+
+export type MintingStep = 'connect' | 'confirm' | 'minting' | 'success' | 'error';
 
 export interface MintingState {
-  status: 'idle' | 'preparing' | 'uploading_metadata' | 'confirming' | 'minting' | 'success' | 'error';
-  step: number;
-  totalSteps: number;
-  message: string;
-  transactionHash?: string;
-  tokenId?: string;
-  error?: string;
+  step: MintingStep;
+  txHash: string | null;
+  tokenId: string | null;
+  error: string | null;
 }
 
-// ============================================
-// Verification
-// ============================================
+export const MINTING_STEPS: { key: MintingStep; label: string }[] = [
+  { key: 'connect', label: 'Conectar Wallet' },
+  { key: 'confirm', label: 'Confirmar' },
+  { key: 'minting', label: 'Procesando' },
+  { key: 'success', label: 'Completado' },
+];
 
-export interface TransactionVerification {
-  found: boolean;
-  status?: 'success' | 'failed' | 'pending';
-  blockNumber?: number;
-  blockHash?: string;
-  transactionHash?: string;
-  from?: string;
-  to?: string;
-  gasUsed?: string;
-}
-
-export interface CertificateVerification {
-  isValid: boolean;
-  isOnChain: boolean;
-  certificateData?: NFTCertificate;
-  transactionVerification?: TransactionVerification;
-  explorerUrl?: string;
-  openSeaUrl?: string;
-}
-
-// ============================================
-// Wallet Balance & Stats
-// ============================================
-
-export interface WalletCertificates {
-  address: string;
-  totalCO2: {
-    totalGrams: string;
-    totalKg: string;
-    totalTons: string;
-  };
-  certificatesCount: number;
-  certificates: NFTCertificate[];
-}
-
-export interface BlockchainStats {
-  available: boolean;
-  contractAddress?: string;
-  network?: string;
-  chainId?: string;
-  totalCertificates?: string;
-}
-
-// ============================================
-// API Responses
-// ============================================
-
+// ---- API Responses ----
 export interface BlockchainStatusResponse {
   available: boolean;
-  contractAddress?: string;
-  network?: string;
-  chainId?: string;
-  totalCertificates?: string;
-  message?: string;
+  contractAddress: string;
+  network: string;
+  chainId: string;
+  totalCertificates: string;
 }
 
 export interface CertificateResponse {
   success: boolean;
   hasNFT: boolean;
-  certificate?: NFTCertificate;
-  compensation?: {
-    id: string;
-    co2Amount: number;
-    projectName: string;
-    status: string;
-    canMintNFT: boolean;
-  };
-  explorerUrl?: string;
-  openSeaUrl?: string;
-  error?: string;
-}
-
-export interface MintResponse {
-  success: boolean;
-  message?: string;
-  result?: MintResult;
-  error?: string;
-}
-
-export interface VerifyTransactionResponse {
-  success: boolean;
-  verification?: TransactionVerification;
-  explorerUrl?: string;
-  error?: string;
+  certificate: NFTCertificate | null;
 }
 
 export interface WalletCertificatesResponse {
   success: boolean;
-  address: string;
-  totalCO2: {
-    totalGrams: string;
-    totalKg: string;
-    totalTons: string;
-  };
-  certificatesCount: number;
   certificates: NFTCertificate[];
-  error?: string;
+  totalCO2: number;
 }
 
-// ============================================
-// Events
-// ============================================
-
-export interface BlockchainEvent {
-  type: 'connect' | 'disconnect' | 'accountsChanged' | 'chainChanged' | 'mint' | 'transfer';
-  data: any;
-  timestamp: Date;
+export interface BlockchainStatsResponse {
+  totalCertificates: number;
+  totalCO2Tons: number;
+  uniqueHolders: number;
+  verifiedCount: number;
 }
 
-// ============================================
-// UI State
-// ============================================
-
-export interface NFTViewerState {
+// ---- Verification (public) ----
+export interface PublicVerification {
+  valid: boolean;
   certificate: NFTCertificate | null;
-  isLoading: boolean;
-  error: string | null;
-  showDetails: boolean;
-  showQR: boolean;
+  blockchain: {
+    network: string;
+    contractAddress: string;
+    txHash: string;
+    blockNumber: number;
+  } | null;
 }
-
-export interface WalletModalState {
-  isOpen: boolean;
-  selectedProvider: WalletType | null;
-  isConnecting: boolean;
-  error: string | null;
-}
-
-// ============================================
-// Constants
-// ============================================
-
-export const SUPPORTED_CHAINS: Record<SupportedChain, BlockchainConfig> = {
-  'polygon': {
-    chainId: 137,
-    chainName: 'Polygon Mainnet',
-    rpcUrl: 'https://polygon-rpc.com',
-    explorerUrl: 'https://polygonscan.com',
-    contractAddress: '', // Se setea desde env
-    nativeCurrency: {
-      name: 'MATIC',
-      symbol: 'MATIC',
-      decimals: 18
-    }
-  },
-  'polygon-amoy': {
-    chainId: 80002,
-    chainName: 'Polygon Amoy Testnet',
-    rpcUrl: 'https://rpc-amoy.polygon.technology',
-    explorerUrl: 'https://amoy.polygonscan.com',
-    contractAddress: '', // Se setea desde env
-    nativeCurrency: {
-      name: 'MATIC',
-      symbol: 'MATIC',
-      decimals: 18
-    }
-  },
-  'localhost': {
-    chainId: 31337,
-    chainName: 'Localhost',
-    rpcUrl: 'http://127.0.0.1:8545',
-    explorerUrl: 'http://localhost:8545',
-    contractAddress: '',
-    nativeCurrency: {
-      name: 'ETH',
-      symbol: 'ETH',
-      decimals: 18
-    }
-  }
-};
-
-export const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
-  flight: 'Vuelo',
-  bus: 'Bus',
-  car: 'Automóvil',
-  train: 'Tren',
-  ferry: 'Ferry',
-  other: 'Otro'
-};
-
-export const MINTING_STEPS = [
-  { id: 1, label: 'Preparando datos', description: 'Verificando compensación' },
-  { id: 2, label: 'Subiendo metadata', description: 'Almacenando en IPFS' },
-  { id: 3, label: 'Confirmando', description: 'Esperando firma de wallet' },
-  { id: 4, label: 'Minteando', description: 'Creando NFT en blockchain' },
-  { id: 5, label: 'Completado', description: 'NFT creado exitosamente' }
-];

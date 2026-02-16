@@ -22,7 +22,7 @@ import {
 import blockchainApi from '../../services/blockchainApi';
 import walletService from '../../services/walletService';
 import NFTCertificateCard from './NFTCertificateCard';
-import type { NFTCertificate, CertificateVerification } from '../../../types/blockchain.types';
+import type { NFTCertificate } from '../../../types/blockchain.types';
 
 interface VerificationResult {
   status: 'loading' | 'verified' | 'not-found' | 'invalid' | 'error';
@@ -55,15 +55,15 @@ const CertificateVerificationPage: React.FC = () => {
           setVerification({
             status: 'verified',
             certificate: response.certificate,
-            openSeaUrl: response.openSeaUrl,
-            explorerUrl: walletService.getTransactionExplorerUrl(response.certificate.tokenUri || '')
+            openSeaUrl: response.certificate.openSeaUrl,
+            explorerUrl: response.certificate.explorerUrl
           });
         } else {
           setVerification({ status: 'not-found' });
         }
       } else if (compensationId) {
         // Verificar por compensationId
-        response = await blockchainApi.getCertificate(compensationId);
+        response = await blockchainApi.getCertificateByCompensation(compensationId);
         if (response.success && response.hasNFT && response.certificate) {
           setVerification({
             status: 'verified',
@@ -206,7 +206,7 @@ const CertificateVerificationPage: React.FC = () => {
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Propietario Actual</p>
                     <p className="text-white font-mono text-sm break-all">
-                      {verification.certificate.currentOwner}
+                      {verification.certificate.beneficiary}
                     </p>
                   </div>
 
