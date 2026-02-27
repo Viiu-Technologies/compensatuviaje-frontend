@@ -21,6 +21,11 @@ const PaymentResultPage: React.FC = () => {
   const amount = searchParams.get('amount');
   const tons = searchParams.get('tons');
   const reason = searchParams.get('reason');
+  const code = searchParams.get('code');
+  const order = searchParams.get('order');
+
+  // Detectar si estamos en entorno de desarrollo (sandbox)
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
   // ============================================
   // PAGO EXITOSO
@@ -209,14 +214,30 @@ const PaymentResultPage: React.FC = () => {
               <p className="!text-red-200 !m-0">La transacción no fue aprobada</p>
             </div>
             <div className="!p-8">
-              <p className="!text-gray-600 !text-center !mb-6">
+              <p className="!text-gray-600 !text-center !mb-4">
                 Tu banco o tarjeta rechazó la transacción. Verifica que tengas fondos suficientes o intenta con otra tarjeta.
               </p>
-              {reason && (
-                <div className="!bg-red-50 !rounded-xl !p-4 !mb-6 !text-center">
-                  <span className="!text-xs !text-red-400 !font-mono">Código: {reason}</span>
+              {(code || reason) && (
+                <div className="!bg-red-50 !rounded-xl !p-4 !mb-4 !text-center">
+                  <span className="!text-xs !text-red-400 !font-mono">Código: {code || reason}</span>
                 </div>
               )}
+
+              {/* Instrucciones sandbox en desarrollo */}
+              {isDev && (
+                <div className="!bg-blue-50 !border !border-blue-200 !rounded-xl !p-4 !mb-4">
+                  <p className="!text-blue-800 !font-semibold !text-sm !mb-2 !m-0">🧪 Modo Sandbox — Instrucciones de prueba:</p>
+                  <ol className="!text-blue-700 !text-xs !space-y-1 !pl-4 !m-0">
+                    <li>Tarjeta: <span className="!font-mono">4051 8842 3993 7852</span></li>
+                    <li>CVV: <span className="!font-mono">123</span> — Exp: cualquier fecha futura</li>
+                    <li>En la página del banco simulado, hacer clic en <strong>"Aceptar"</strong></li>
+                    <li>RUT: <span className="!font-mono">11.111.111-1</span></li>
+                    <li>Clave: <span className="!font-mono">123</span></li>
+                    <li>Aceptar nuevamente para confirmar</li>
+                  </ol>
+                </div>
+              )}
+
               <div className="!space-y-3">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -259,14 +280,28 @@ const PaymentResultPage: React.FC = () => {
             <p className="!text-gray-300 !m-0">Ocurrió un problema inesperado</p>
           </div>
           <div className="!p-8">
-            <p className="!text-gray-600 !text-center !mb-6">
+            <p className="!text-gray-600 !text-center !mb-4">
               No pudimos procesar tu pago. Por favor intenta nuevamente. Si el problema persiste, contáctanos.
             </p>
             {reason && (
-              <div className="!bg-gray-50 !rounded-xl !p-4 !mb-6 !text-center">
+              <div className="!bg-gray-50 !rounded-xl !p-4 !mb-4 !text-center">
                 <span className="!text-xs !text-gray-400 !font-mono">{decodeURIComponent(reason)}</span>
               </div>
             )}
+
+            {/* Instrucciones sandbox en desarrollo */}
+            {isDev && (
+              <div className="!bg-blue-50 !border !border-blue-200 !rounded-xl !p-4 !mb-4">
+                <p className="!text-blue-800 !font-semibold !text-sm !mb-2 !m-0">🧪 Modo Sandbox — Instrucciones de prueba:</p>
+                <ol className="!text-blue-700 !text-xs !space-y-1 !pl-4 !m-0">
+                  <li>Tarjeta: <span className="!font-mono">4051 8842 3993 7852</span></li>
+                  <li>CVV: <span className="!font-mono">123</span> — Exp: cualquier fecha futura</li>
+                  <li>En la página del banco, clic en <strong>"Aceptar"</strong></li>
+                  <li>RUT: <span className="!font-mono">11.111.111-1</span> — Clave: <span className="!font-mono">123</span></li>
+                </ol>
+              </div>
+            )}
+
             <div className="!space-y-3">
               <motion.button
                 whileHover={{ scale: 1.02 }}
