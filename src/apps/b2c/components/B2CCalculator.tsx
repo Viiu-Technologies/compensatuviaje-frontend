@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { 
   FaPlane, 
   FaLeaf, 
@@ -238,6 +238,7 @@ const AirportSearchInput: React.FC<{
 const B2CCalculator: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>('form');
   const [isCalculating, setIsCalculating] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -256,6 +257,61 @@ const B2CCalculator: React.FC = () => {
   const [calculationId, setCalculationId] = useState<string | null>(null);
   const [distance, setDistance] = useState(0);
   const [paymentSuccess, setPaymentSuccess] = useState<any>(null);
+
+  // Precarga de datos desde query params (cuando viene desde "Mis Viajes")
+  useEffect(() => {
+    const origin = searchParams.get('origin');
+    const destination = searchParams.get('destination');
+    const cabin = searchParams.get('cabin');
+    const passengers = searchParams.get('passengers');
+    const roundTrip = searchParams.get('roundTrip');
+    const calcId = searchParams.get('calculationId');
+
+    if (origin && destination) {
+      // Actualizar campos básicos de forma
+      setFormData(prev => ({
+        ...prev,
+        cabinCode: cabin || 'economy',
+        passengers: passengers ? parseInt(passengers) : 1,
+        roundTrip: roundTrip === 'true'
+      }));
+      
+      if (calcId) {
+        setCalculationId(calcId);
+      }
+
+      // Buscar los aeropuertos por código
+      const fetchAirports = async () => {
+        try {
+          const [originRes, destRes] = await Promise.all([
+            fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(origin)}`),
+            fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(destination)}`)
+          ]);
+
+          const originData = await originRes.json();
+          const destData = await destRes.json();
+
+          const originAirports = originData.success ? originData.data : (originData.airports || []);
+          const destAirports = destData.success ? destData.data : (destData.airports || []);
+
+          // Seleccionar el primer resultado o exacta matchdel código
+          const originAirport = originAirports.find((a: any) => a.code === origin) || originAirports[0];
+          const destAirport = destAirports.find((a: any) => a.code === destination) || destAirports[0];
+
+          if (originAirport) {
+            setFormData(prev => ({ ...prev, origin: originAirport }));
+          }
+          if (destAirport) {
+            setFormData(prev => ({ ...prev, destination: destAirport }));
+          }
+        } catch (err) {
+          console.error('Error precargando aeropuertos:', err);
+        }
+      };
+
+      fetchAirports();
+    }
+  }, [searchParams]);
 
   // Calcular distancia cuando se seleccionan ambos aeropuertos
   useEffect(() => {

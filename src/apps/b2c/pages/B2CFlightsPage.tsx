@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   FaPlane,
   FaCheckCircle,
@@ -19,6 +19,7 @@ const B2CFlightsPage: React.FC = () => {
   const [flights, setFlights] = useState<B2CCalculation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFlights = async () => {
@@ -35,6 +36,19 @@ const B2CFlightsPage: React.FC = () => {
     };
     fetchFlights();
   }, []);
+
+  const handleCompensate = (flight: B2CCalculation) => {
+    // Pasar los datos del vuelo a la calculadora a través de query params
+    const params = new URLSearchParams({
+      origin: flight.originAirport,
+      destination: flight.destinationAirport,
+      cabin: flight.serviceClass || 'economy',
+      passengers: String(flight.passengers || 1),
+      roundTrip: String(flight.roundTrip || false),
+      calculationId: flight.id
+    });
+    navigate(`/b2c/calculator?${params.toString()}`);
+  };
 
   const totalCompensated = flights
     .filter(f => f.isCompensated)
@@ -222,15 +236,14 @@ const B2CFlightsPage: React.FC = () => {
                           <span className="!inline-flex !items-center !gap-2 !px-3 sm:!px-4 !py-2 !rounded-full !bg-orange-100 !text-orange-700 !text-xs sm:!text-sm !font-semibold">
                             <FaClock className="!text-orange-500" /> Pendiente
                           </span>
-                          <Link to="/b2c/calculator">
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="!px-4 !py-2 !bg-green-600 !text-white !rounded-xl !text-sm !font-semibold hover:!bg-green-700 !transition !border-0 !cursor-pointer"
-                            >
-                              Compensar
-                            </motion.button>
-                          </Link>
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleCompensate(flight)}
+                            className="!px-4 !py-2 !bg-green-600 !text-white !rounded-xl !text-sm !font-semibold hover:!bg-green-700 !transition !border-0 !cursor-pointer"
+                          >
+                            Compensar
+                          </motion.button>
                         </>
                       )}
                     </div>
