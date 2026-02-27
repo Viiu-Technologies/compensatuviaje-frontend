@@ -144,10 +144,25 @@ export interface CertificateResponse {
   certificate: NFTCertificate | null;
 }
 
+export interface TotalCO2Info {
+  totalGrams: string;
+  totalKg: string;
+  totalTons: string;
+}
+
 export interface WalletCertificatesResponse {
   success: boolean;
   certificates: NFTCertificate[];
-  totalCO2: number;
+  totalCO2: TotalCO2Info | number;
+}
+
+export interface RecentMint {
+  certificateNumber: string;
+  tokenId: string;
+  txHash: string | null;
+  walletAddress: string | null;
+  tonsCompensated: number;
+  mintedAt: string | null;
 }
 
 export interface BlockchainStatsResponse {
@@ -155,6 +170,13 @@ export interface BlockchainStatsResponse {
   totalCO2Tons: number;
   uniqueHolders: number;
   verifiedCount: number;
+  recentMints?: RecentMint[];
+  blockchain?: {
+    contractAddress: string;
+    network: string;
+    chainId: string;
+    totalCertificates: string;
+  } | null;
 }
 
 // ---- Verification (public) ----

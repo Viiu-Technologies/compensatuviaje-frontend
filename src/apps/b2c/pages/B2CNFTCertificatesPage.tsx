@@ -42,8 +42,25 @@ const B2CNFTCertificatesPage: React.FC = () => {
     try {
       const res: WalletCertificatesResponse = await getWalletCertificates(wallet.address);
       if (res.success) {
-        setCertificates(res.certificates || []);
-        setTotalCO2(res.totalCO2 || 0);
+        // Normalize certificates to ensure co2AmountKg exists
+        const normalizedCerts = (res.certificates || []).map((c: any) => ({
+          ...c,
+          co2AmountGrams: c.co2AmountGrams ?? Number(c.co2Amount || 0),
+          co2AmountKg: c.co2AmountKg ?? Number(c.co2Amount || 0) / 1000,
+          co2AmountTons: c.co2AmountTons ?? Number(c.co2Amount || 0) / 1000000,
+          tokenURI: c.tokenURI || c.tokenUri || '',
+          txHash: c.txHash || null,
+          explorerUrl: c.explorerUrl || '',
+          openSeaUrl: c.openSeaUrl || '',
+        }));
+        setCertificates(normalizedCerts);
+        // totalCO2 from API is an object { totalGrams, totalKg, totalTons }
+        const co2 = res.totalCO2;
+        if (typeof co2 === 'object' && co2 !== null) {
+          setTotalCO2(parseFloat((co2 as any).totalKg || '0'));
+        } else {
+          setTotalCO2(Number(co2) || 0);
+        }
       } else {
         setError('No se pudieron cargar los certificados');
       }

@@ -220,24 +220,26 @@ const NFTCertificateCard: React.FC<NFTCertificateCardProps> = ({
             </div>
           </div>
 
-          <div className="!flex !items-center !justify-between !p-3 !bg-slate-800/40 !rounded-lg !hover:bg-slate-800/60 !transition-colors">
-            <span className="!text-xs !text-slate-500 !font-medium">Tx Hash</span>
-            <div className="!flex !items-center !gap-2">
-              <code className="!text-xs !text-blue-400 !font-mono !bg-slate-900/50 !px-2 !py-1 !rounded !truncate !max-w-[100px]">
-                {certificate.txHash?.slice(0, 12)}...
-              </code>
-              <motion.button
-                onClick={() => handleCopy(certificate.txHash || '', 'tx')}
-                className="!p-1.5 !hover:bg-slate-700 !rounded-lg !transition-colors !bg-transparent !border-0 !cursor-pointer"
-                whileHover={{ scale: 1.1 }}
-              >
-                {copiedField === 'tx'
-                  ? <Check className="!w-4 !h-4 !text-green-500" />
-                  : <Copy className="!w-4 !h-4 !text-slate-400 !hover:text-slate-300" />
-                }
-              </motion.button>
+          {certificate.txHash && (
+            <div className="!flex !items-center !justify-between !p-3 !bg-slate-800/40 !rounded-lg !hover:bg-slate-800/60 !transition-colors">
+              <span className="!text-xs !text-slate-500 !font-medium">Tx Hash</span>
+              <div className="!flex !items-center !gap-2">
+                <code className="!text-xs !text-blue-400 !font-mono !bg-slate-900/50 !px-2 !py-1 !rounded !truncate !max-w-[100px]">
+                  {certificate.txHash.slice(0, 12)}...
+                </code>
+                <motion.button
+                  onClick={() => handleCopy(certificate.txHash || '', 'tx')}
+                  className="!p-1.5 !hover:bg-slate-700 !rounded-lg !transition-colors !bg-transparent !border-0 !cursor-pointer"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {copiedField === 'tx'
+                    ? <Check className="!w-4 !h-4 !text-green-500" />
+                    : <Copy className="!w-4 !h-4 !text-slate-400 !hover:text-slate-300" />
+                  }
+                </motion.button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Actions - MEJORADOS */}
