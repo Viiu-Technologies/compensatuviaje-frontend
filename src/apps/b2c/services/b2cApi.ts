@@ -238,6 +238,16 @@ export async function getUserProfile(): Promise<any> {
   return res.data;
 }
 
+/**
+ * Eliminar un cálculo/vuelo (solo si no está compensado)
+ */
+export async function deleteCalculation(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await authFetch<{ success: boolean; message: string }>(`/b2c/calculations/${id}`, {
+    method: 'DELETE'
+  });
+  return res;
+}
+
 const b2cApi = {
   getDashboardStats,
   getCalculations,
@@ -247,6 +257,7 @@ const b2cApi = {
   getPublicProjects,
   getPaymentHistory,
   getUserProfile,
+  deleteCalculation,
 };
 
 export default b2cApi;

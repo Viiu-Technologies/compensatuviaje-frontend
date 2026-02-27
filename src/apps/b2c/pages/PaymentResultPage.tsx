@@ -24,6 +24,27 @@ const PaymentResultPage: React.FC = () => {
   const code = searchParams.get('code');
   const order = searchParams.get('order');
 
+  // Datos del vuelo para reintentar (vienen del backend en rejected/cancelled)
+  const origin = searchParams.get('origin');
+  const destination = searchParams.get('destination');
+  const cabin = searchParams.get('cabin');
+  const passengers = searchParams.get('passengers');
+  const roundTrip = searchParams.get('roundTrip');
+  const calculationId = searchParams.get('calculationId');
+
+  // Construir URL de reintento con datos del vuelo
+  const retryUrl = (() => {
+    const params = new URLSearchParams();
+    if (origin) params.set('origin', origin);
+    if (destination) params.set('destination', destination);
+    if (cabin) params.set('cabin', cabin);
+    if (passengers) params.set('passengers', passengers);
+    if (roundTrip) params.set('roundTrip', roundTrip);
+    if (calculationId) params.set('calculationId', calculationId);
+    const qs = params.toString();
+    return `/b2c/calculator${qs ? `?${qs}` : ''}`;
+  })();
+
   // Detectar si estamos en entorno de desarrollo (sandbox)
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
@@ -168,11 +189,11 @@ const PaymentResultPage: React.FC = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/b2c/calculator')}
+                  onClick={() => navigate(retryUrl)}
                   className="!w-full !py-4 !bg-gradient-to-r !from-amber-500 !to-orange-500 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
                 >
                   <FaPlane />
-                  Volver a la Calculadora
+                  {origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la Calculadora'}
                 </motion.button>
                 <Link
                   to="/b2c/dashboard"
@@ -242,10 +263,10 @@ const PaymentResultPage: React.FC = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/b2c/calculator')}
+                  onClick={() => navigate(retryUrl)}
                   className="!w-full !py-4 !bg-gradient-to-r !from-red-500 !to-rose-600 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
                 >
-                  Intentar Nuevamente
+                  {origin && destination ? `Reintentar ${origin} → ${destination}` : 'Intentar Nuevamente'}
                 </motion.button>
                 <Link
                   to="/b2c/dashboard"
@@ -306,11 +327,11 @@ const PaymentResultPage: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/b2c/calculator')}
+                onClick={() => navigate(retryUrl)}
                 className="!w-full !py-4 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
               >
                 <FaPlane />
-                Volver a la Calculadora
+                {origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la Calculadora'}
               </motion.button>
               <Link
                 to="/b2c/dashboard"

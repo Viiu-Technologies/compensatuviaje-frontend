@@ -9,7 +9,8 @@ import {
   FaEye,
   FaMapMarkerAlt,
   FaCalendarAlt,
-  FaPlus
+  FaPlus,
+  FaTrashAlt
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
@@ -48,6 +49,26 @@ const B2CFlightsPage: React.FC = () => {
       calculationId: flight.id
     });
     navigate(`/b2c/calculator?${params.toString()}`);
+  };
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (flight: B2CCalculation) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de eliminar el vuelo ${flight.originAirport} → ${flight.destinationAirport}?\n\nEsta acción no se puede deshacer.`
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(flight.id);
+      await b2cApi.deleteCalculation(flight.id);
+      setFlights(prev => prev.filter(f => f.id !== flight.id));
+    } catch (err: any) {
+      console.error('Error deleting flight:', err);
+      alert(err.message || 'Error al eliminar el vuelo');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const totalCompensated = flights
@@ -243,6 +264,16 @@ const B2CFlightsPage: React.FC = () => {
                             className="!px-4 !py-2 !bg-green-600 !text-white !rounded-xl !text-sm !font-semibold hover:!bg-green-700 !transition !border-0 !cursor-pointer"
                           >
                             Compensar
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleDelete(flight)}
+                            disabled={deletingId === flight.id}
+                            className="!p-2.5 !bg-red-50 !rounded-xl hover:!bg-red-100 !transition !border-0 !cursor-pointer disabled:!opacity-50 disabled:!cursor-not-allowed"
+                            title="Eliminar vuelo"
+                          >
+                            <FaTrashAlt className="!text-red-500" />
                           </motion.button>
                         </>
                       )}
