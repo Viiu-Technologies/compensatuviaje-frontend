@@ -52,23 +52,36 @@ const B2CFlightsPage: React.FC = () => {
   };
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [flightToDelete, setFlightToDelete] = useState<B2CCalculation | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const handleDelete = async (flight: B2CCalculation) => {
-    const confirmed = window.confirm(
-      `¿Estás seguro de eliminar el vuelo ${flight.originAirport} → ${flight.destinationAirport}?\n\nEsta acción no se puede deshacer.`
-    );
-    if (!confirmed) return;
+  const handleDelete = (flight: B2CCalculation) => {
+    setFlightToDelete(flight);
+    setShowDeleteModal(true);
+    setDeleteError(null);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!flightToDelete) return;
     try {
-      setDeletingId(flight.id);
-      await b2cApi.deleteCalculation(flight.id);
-      setFlights(prev => prev.filter(f => f.id !== flight.id));
+      setDeletingId(flightToDelete.id);
+      await b2cApi.deleteCalculation(flightToDelete.id);
+      setFlights(prev => prev.filter(f => f.id !== flightToDelete.id));
+      setShowDeleteModal(false);
+      setFlightToDelete(null);
     } catch (err: any) {
       console.error('Error deleting flight:', err);
-      alert(err.message || 'Error al eliminar el vuelo');
+      setDeleteError(err.message || 'Error al eliminar el vuelo');
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setFlightToDelete(null);
+    setDeleteError(null);
   };
 
   const totalCompensated = flights
@@ -305,6 +318,106 @@ const B2CFlightsPage: React.FC = () => {
             </div>
           )}
         </motion.div>
+
+        {/* 🗑️ Modal de Confirmación de Eliminación */}
+        {showDeleteModal && flightToDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="!fixed !inset-0 !bg-black/50 !backdrop-blur-sm !flex !items-center !justify-center !z-50 !p-4"
+            onClick={handleCancelDelete}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="!bg-white !rounded-3xl !shadow-2xl !max-w-md !w-full !overflow-hidden"
+            >
+              {/* Header Rojo */}
+              <div className="!bg-gradient-to-br !from-red-500 !via-red-600 !to-rose-600 !p-8 !text-center !text-white !relative !overflow-hidden">
+                <div className="!absolute !top-0 !right-0 !w-40 !h-40 !bg-white/10 !rounded-full !blur-3xl"></div>
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+                  className="!w-20 !h-20 !mx-auto !mb-4 !rounded-full !bg-white/20 !backdrop-blur-sm !flex !items-center !justify-center !relative !z-10"
+                >
+                  <FaTrashAlt className="!text-3xl" />
+                </motion.div>
+                <h3 className="!text-2xl !font-bold !mb-2 !m-0 !relative !z-10">¿Eliminar vuelo?</h3>
+                <p className="!text-red-100 !m-0 !relative !z-10">Esta acción no se puede deshacer</p>
+              </div>
+
+              {/* Contenido */}
+              <div className="!p-8">
+                {/* Flight Info */}
+                <div className="!bg-gradient-to-br !from-red-50 !to-rose-50 !rounded-2xl !p-5 !mb-6 !border !border-red-100">
+                  <div className="!flex !items-center !gap-4">
+                    <div className="!w-16 !h-16 !rounded-xl !bg-red-100 !flex !items-center !justify-center !flex-shrink-0">
+                      <FaPlane className="!text-red-600 !text-2xl" />
+                    </div>
+                    <div>
+                      <div className="!font-bold !text-gray-900 !text-lg">
+                        {flightToDelete.originAirport} → {flightToDelete.destinationAirport}
+                      </div>
+                      <div className="!text-sm !text-gray-600 !mt-1">
+                        {flightToDelete.co2Tons.toFixed(2)} t CO₂ • {new Date(flightToDelete.date).toLocaleDateString('es-ES')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Error (si existe) */}
+                {deleteError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="!bg-red-50 !border !border-red-200 !rounded-xl !p-4 !mb-6"
+                  >
+                    <p className="!text-red-700 !text-sm !m-0 !font-medium">{deleteError}</p>
+                  </motion.div>
+                )}
+
+                {/* Aviso */}
+                <p className="!text-gray-600 !text-center !mb-8 !text-sm">
+                  Se eliminará este vuelo de tu historial. No podrás recuperarlo después.
+                </p>
+
+                {/* Botones */}
+                <div className="!flex !gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCancelDelete}
+                    disabled={deletingId === flightToDelete.id}
+                    className="!flex-1 !py-3 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !transition !border-0 !cursor-pointer hover:!bg-gray-200 disabled:!opacity-50"
+                  >
+                    Cancelar
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleConfirmDelete}
+                    disabled={deletingId === flightToDelete.id}
+                    className="!flex-1 !py-3 !bg-gradient-to-r !from-red-500 !to-rose-600 !text-white !rounded-xl !font-bold !transition !border-0 !cursor-pointer hover:!shadow-lg !shadow-red-500/30 disabled:!opacity-50 disabled:!cursor-not-allowed"
+                  >
+                    {deletingId === flightToDelete.id ? (
+                      <span className="!flex !items-center !justify-center !gap-2">
+                        <div className="!w-4 !h-4 !border-2 !border-white/30 !border-t-white !rounded-full !animate-spin"></div>
+                        Eliminando...
+                      </span>
+                    ) : (
+                      'Sí, Eliminar'
+                    )}
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </B2CLayout>
   );
