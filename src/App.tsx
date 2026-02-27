@@ -43,6 +43,7 @@ import B2CProjectsPage from './apps/b2c/pages/B2CProjectsPage';
 import B2CCertificatesPage from './apps/b2c/pages/B2CCertificatesPage';
 import B2CCalculatorPage from './apps/b2c/pages/B2CCalculatorPage';
 import B2CNFTCertificatesPage from './apps/b2c/pages/B2CNFTCertificatesPage';
+import PaymentResultPage from './apps/b2c/pages/PaymentResultPage';
 
 // Pages - Blockchain Verification (Public)
 import { CertificateVerificationPage } from './shared/components/blockchain';
@@ -206,6 +207,12 @@ function App() {
             {/* Rutas B2C - Usuarios individuales */}
             {/* ===================== */}
             
+            {/* Resultado de pago Webpay (público - usuario vuelve de Transbank) */}
+            <Route 
+              path="/b2c/payment-result" 
+              element={<PaymentResultPage />} 
+            />
+
             {/* Redirigir /b2c/login al selector de login principal */}
             <Route 
               path="/b2c/login" 
