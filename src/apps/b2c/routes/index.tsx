@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 import AuthCallback from '../pages/AuthCallback';
 import CompensationPage from '../pages/CompensationPage';
 import B2CDashboardPage from '../pages/B2CDashboardPage';
+import PaymentResultPage from '../pages/PaymentResultPage';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,6 +33,7 @@ const B2CRoutes = () => {
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/payment-result" element={<PaymentResultPage />} />
 
         {/* Protected Routes */}
         <Route

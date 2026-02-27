@@ -28,7 +28,7 @@ const Features = () => {
     { name: 'Google Pay', logo: '/images/payment-logos/google-pay.png' },
     { name: 'Apple Pay', logo: '/images/payment-logos/apple-pay.png' },
     { name: 'PayPal', logo: '/images/payment-logos/paypal-logo.png' },
-    { name: 'Stripe', logo: '/images/payment-logos/stripe.png' }
+    { name: 'Webpay', logo: '/images/payment-logos/webpay.png' }
   ];
 
   const benefits = [

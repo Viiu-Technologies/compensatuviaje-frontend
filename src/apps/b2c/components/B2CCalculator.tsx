@@ -331,13 +331,12 @@ const B2CCalculator: React.FC = () => {
         'Authorization': `Bearer ${token}`
       };
 
-      // 1. Intentar crear sesión de checkout con Stripe
-      const response = await fetch(`${API_URL}/b2c/payments/create-checkout`, {
+      // Crear transacción de pago (Webpay / modo directo)
+      const response = await fetch(`${API_URL}/b2c/payments/create-transaction`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           amount: result.pricing.totalPriceCLP,
-          currency: 'clp',
           calculationId: calculationId,
           flightData: {
             origin: result.meta.route.origin,
@@ -351,40 +350,24 @@ const B2CCalculator: React.FC = () => {
 
       const data = await response.json();
       
-      if (data.success && data.url) {
-        // Redirigir a Stripe Checkout (modo real)
-        window.location.href = data.url;
-      } else if (data.mode === 'demo') {
-        // Modo demo: confirmar compensación directamente en backend
-        const confirmResponse = await fetch(`${API_URL}/b2c/payments/confirm-demo`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            calculationId: calculationId,
-            flightData: {
-              origin: result.meta.route.origin,
-              destination: result.meta.route.destination,
-              emissions: result.emissions,
-              pricing: result.pricing,
-              meta: result.meta
-            }
-          })
-        });
-        
-        const confirmData = await confirmResponse.json();
-        
-        if (confirmData.success) {
-          setPaymentSuccess({
-            certificateId: confirmData.certificateNumber || confirmData.certificateId,
-            emissions: result.emissions,
-            amount: result.pricing.totalPriceCLP
-          });
-          setCurrentStep('success');
-        } else {
-          setError(confirmData.message || 'Error al procesar la compensación');
-        }
+      if (data.success && data.url && data.token) {
+        // Redirigir al formulario de pago de Webpay (Transbank)
+        // El usuario será redirigido al portal de Transbank para pagar
+        // Después Transbank redirige al backend, que procesa y redirige al frontend
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.url;
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'token_ws';
+        input.value = data.token;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        // El usuario sale de la SPA aquí — al volver, llegará a /b2c/payment-result
+        return;
       } else {
-        setError(data.message || 'Error al crear sesión de pago');
+        setError(data.message || 'Error al crear transacción de pago');
       }
     } catch (err) {
       console.error('Error processing payment:', err);
