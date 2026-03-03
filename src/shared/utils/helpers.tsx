@@ -1,7 +1,7 @@
 // Usar el authService del módulo auth (no B2C) para Admin/Partner/B2B
 import authService from '../../apps/auth/services/authService';
 
-const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 /**
  * Wrapper para fetch con autenticación automática

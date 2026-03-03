@@ -53,7 +53,7 @@ const getSupabaseClient = (): SupabaseClient | null => {
 // Export para compatibilidad - se evalúa lazy
 export const supabase = getSupabaseClient();
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export interface B2CUser {
   id: string;

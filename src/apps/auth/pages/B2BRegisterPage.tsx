@@ -16,7 +16,7 @@ interface FormData {
   adminPassword: string;
   confirmPassword: string;
 }
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const B2BRegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
