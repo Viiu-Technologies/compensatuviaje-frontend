@@ -18,6 +18,26 @@ import {
 } from 'lucide-react';
 import { getCompanies, Company, updateCompanyStatus } from '../services/adminApi';
 
+const industryLabels: Record<string, string> = {
+  aerolineas: 'Aerolíneas',
+  maritimo: 'Transporte Marítimo',
+  terrestre: 'Transporte Terrestre',
+  mineria_energia: 'Minería y Energía',
+  tecnologia: 'Tecnología',
+  retail: 'Retail',
+  manufactura: 'Manufactura',
+  construccion: 'Construcción',
+  hoteleria_turismo: 'Hotelería y Turismo',
+  servicios_financieros: 'Servicios Financieros',
+  salud: 'Salud',
+  educacion: 'Educación',
+  alimentacion: 'Alimentación',
+  telecomunicaciones: 'Telecomunicaciones',
+  gobierno: 'Gobierno',
+  consultoria: 'Consultoría',
+  otra: 'Otra',
+};
+
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; dot: string }> = {
   registered:        { label: 'Registrada',          color: 'text-slate-700',   bgColor: 'bg-slate-100',   dot: 'bg-slate-400' },
   pending_contract:  { label: 'Pendiente Contrato',  color: 'text-amber-700',   bgColor: 'bg-amber-100',   dot: 'bg-amber-500' },
@@ -214,7 +234,9 @@ export default function EmpresasPage() {
               <tr className="!bg-slate-50/50 !border-b !border-slate-100">
                 <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Empresa</th>
                 <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">RUT / ID</th>
+                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Industria</th>
                 <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Estado</th>
+                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Docs</th>
                 <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Registro</th>
                 <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest !text-right">Acciones</th>
               </tr>
@@ -223,7 +245,7 @@ export default function EmpresasPage() {
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="!animate-pulse">
-                    <td colSpan={5} className="!px-6 !py-8">
+                    <td colSpan={7} className="!px-6 !py-8">
                       <div className="!h-4 !bg-slate-100 !rounded-full !w-full"></div>
                     </td>
                   </tr>
@@ -248,9 +270,26 @@ export default function EmpresasPage() {
                         <span className="!text-sm !font-medium !text-slate-600">{company.rut || 'N/A'}</span>
                       </td>
                       <td className="!px-6 !py-5">
+                        {company.industry ? (
+                          <span className="!inline-flex !items-center !px-2.5 !py-1 !rounded-full !text-xs !font-bold !bg-indigo-50 !text-indigo-700">
+                            {industryLabels[company.industry] || company.industry}
+                          </span>
+                        ) : (
+                          <span className="!text-xs !text-slate-400 !italic">Sin categoría</span>
+                        )}
+                      </td>
+                      <td className="!px-6 !py-5">
                         <div className={`!inline-flex !items-center !gap-2 !px-3 !py-1.5 !rounded-full !text-xs !font-bold ${statusConfig[company.status]?.bgColor} ${statusConfig[company.status]?.color}`}>
                           <div className={`!w-1.5 !h-1.5 !rounded-full ${statusConfig[company.status]?.dot}`}></div>
                           {statusConfig[company.status]?.label || company.status}
+                        </div>
+                      </td>
+                      <td className="!px-6 !py-5">
+                        <div className="!flex !items-center !gap-1.5">
+                          <FileText className="!w-3.5 !h-3.5 !text-slate-400" />
+                          <span className={`!text-sm !font-bold ${(company._count?.documents || 0) > 0 ? '!text-emerald-600' : '!text-slate-400'}`}>
+                            {company._count?.documents || 0}
+                          </span>
                         </div>
                       </td>
                       <td className="!px-6 !py-5">
@@ -325,7 +364,7 @@ export default function EmpresasPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="!px-6 !py-20 !text-center">
+                  <td colSpan={7} className="!px-6 !py-20 !text-center">
                     <div className="!flex !flex-col !items-center !gap-4">
                       <div className="!w-20 !h-20 !bg-slate-50 !rounded-full !flex !items-center !justify-center">
                         <Building2 className="!w-10 !h-10 !text-slate-300" />

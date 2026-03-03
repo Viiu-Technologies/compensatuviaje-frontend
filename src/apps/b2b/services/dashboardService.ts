@@ -13,7 +13,7 @@ export interface DashboardStats {
 
 export interface RecentActivity {
   id: string;
-  type: 'compensation' | 'project' | 'achievement';
+  type: 'compensation' | 'project' | 'achievement' | 'status_change' | 'document_upload' | 'system_event';
   title: string;
   description: string;
   date: string;
@@ -24,18 +24,37 @@ export interface CompanyOverview {
   id: string;
   razonSocial: string;
   rut: string;
+  industry?: string;
+  tamanoEmpresa?: string;
   status: string;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface OnboardingStep {
+  name: string;
+  completed: boolean;
+  percentage: number;
+  completedAt?: string | null;
 }
 
 export interface OnboardingProgress {
   overall: number;
   steps: {
-    registration: { completed: boolean; percentage: number };
-    documents: { completed: boolean; percentage: number };
-    verification: { completed: boolean; percentage: number };
-    contract: { completed: boolean; percentage: number };
+    registration: OnboardingStep;
+    documents: OnboardingStep;
+    domains: OnboardingStep;
+    approval: OnboardingStep;
   };
+}
+
+export interface TimelineEvent {
+  type: string;
+  timestamp: string;
+  title: string;
+  description: string;
+  actor?: { name: string; email: string };
+  metadata?: Record<string, any>;
 }
 
 export interface DashboardResponse {
@@ -47,22 +66,26 @@ export interface DashboardResponse {
     uploaded: number;
     completionPercentage: number;
     isValid: boolean;
+    summary?: Record<string, any>;
   };
   domains: {
     total: number;
     verified: number;
     pending: number;
+    list?: Array<{ id: string; domain: string; verified: boolean }>;
   };
   users: {
     total: number;
     admins: number;
   };
+  timeline: TimelineEvent[];
   nextSteps: Array<{
     id: string;
     title: string;
     description: string;
     priority: string;
   }>;
+  estimatedTimeToComplete?: string;
 }
 
 // ============ DASHBOARD SERVICE ============
@@ -72,9 +95,9 @@ export interface DashboardResponse {
  */
 export const getCompanyDashboard = async (): Promise<DashboardResponse | null> => {
   try {
-    const response = await api.get('/b2b/dashboard');
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get('/b2b/dashboard') as any;
+    if (response.success) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -88,9 +111,9 @@ export const getCompanyDashboard = async (): Promise<DashboardResponse | null> =
  */
 export const getOnboardingProgress = async (): Promise<OnboardingProgress | null> => {
   try {
-    const response = await api.get('/b2b/dashboard/progress');
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get('/b2b/dashboard/progress') as any;
+    if (response.success) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -104,9 +127,9 @@ export const getOnboardingProgress = async (): Promise<OnboardingProgress | null
  */
 export const getCompanyTimeline = async (): Promise<RecentActivity[]> => {
   try {
-    const response = await api.get('/b2b/dashboard/timeline');
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get('/b2b/dashboard/timeline') as any;
+    if (response.success) {
+      return response.data;
     }
     return [];
   } catch (error) {
@@ -116,55 +139,48 @@ export const getCompanyTimeline = async (): Promise<RecentActivity[]> => {
 };
 
 /**
- * Generar estad├¡sticas simuladas para el demo
- * (Mientras no tengamos datos reales en BD)
+ * Generar estadísticas por defecto (cuando no hay datos reales)
  */
-export const getMockDashboardStats = (): DashboardStats => {
+export const getDefaultDashboardStats = (): DashboardStats => {
   return {
-    totalCO2: 1250.5,
-    treesPlanted: 3420,
-    waterSaved: 125000,
-    projectsActive: 4,
-    monthlyGrowth: 12.5,
-    yearlyTarget: 5000,
-    yearlyProgress: 67
+    totalCO2: 0,
+    treesPlanted: 0,
+    waterSaved: 0,
+    projectsActive: 0,
+    monthlyGrowth: 0,
+    yearlyTarget: 0,
+    yearlyProgress: 0
   };
 };
 
 /**
- * Generar actividad reciente simulada para demo
+ * Formatear timeline del backend como actividad reciente
  */
-export const getMockRecentActivity = (): RecentActivity[] => {
-  return [
-    {
-      id: '1',
-      type: 'compensation',
-      title: 'Compensación de vuelo',
-      description: 'Santiago → Miami (Ida y vuelta)',
-      date: 'Hace 2 horas',
-      amount: 2.4
-    },
-    {
-      id: '2',
-      type: 'project',
-      title: 'Nuevo proyecto agregado',
-      description: 'Reforestación Parque Nacional Torres del Paine',
-      date: 'Hace 1 día'
-    },
-    {
-      id: '3',
-      type: 'achievement',
-      title: 'Insignia desbloqueada',
-      description: '¡Alcanzaste 1000 tCO₂ compensadas!',
-      date: 'Hace 3 días'
-    },
-    {
-      id: '4',
-      type: 'compensation',
-      title: 'Compensación de flota',
-      description: '15 vehículos corporativos - Q4 2024',
-      date: 'Hace 1 semana',
-      amount: 45.2
-    }
-  ];
+export const formatTimelineAsActivity = (timeline: TimelineEvent[]): RecentActivity[] => {
+  return timeline.slice(0, 10).map((event, index) => {
+    const eventDate = new Date(event.timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - eventDate.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    let dateStr = '';
+    if (diffHours < 1) dateStr = 'Hace menos de 1 hora';
+    else if (diffHours < 24) dateStr = `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    else if (diffDays < 7) dateStr = `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+    else dateStr = eventDate.toLocaleDateString('es-CL');
+
+    let type: RecentActivity['type'] = 'system_event';
+    if (event.type === 'status_change') type = 'status_change';
+    else if (event.type === 'document_upload') type = 'document_upload';
+
+    return {
+      id: `timeline-${index}`,
+      type,
+      title: event.title,
+      description: event.description,
+      date: dateStr,
+      amount: undefined
+    };
+  });
 };

@@ -55,9 +55,9 @@ export interface ProfileResponse {
  */
 export const getUserProfile = async (): Promise<UserProfile | null> => {
   try {
-    const response = await api.get('/b2b/profile');
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get('/b2b/profile') as any;
+    if (response.success) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -71,9 +71,9 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
  */
 export const getCurrentUser = async (): Promise<UserProfile | null> => {
   try {
-    const response = await api.get('/b2b/profile/me');
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get('/b2b/profile/me') as any;
+    if (response.success) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -87,11 +87,11 @@ export const getCurrentUser = async (): Promise<UserProfile | null> => {
  */
 export const updateUserProfile = async (data: UpdateProfileData): Promise<ProfileResponse> => {
   try {
-    const response = await api.put('/b2b/profile', data);
+    const response = await api.put('/b2b/profile', data) as any;
     return {
-      success: response.data.success,
-      data: response.data.data,
-      message: response.data.message
+      success: response.success,
+      data: response.data,
+      message: response.message
     };
   } catch (error: any) {
     console.error('Error updating user profile:', error);
@@ -107,10 +107,10 @@ export const updateUserProfile = async (data: UpdateProfileData): Promise<Profil
  */
 export const changePassword = async (data: ChangePasswordData): Promise<ProfileResponse> => {
   try {
-    const response = await api.put('/b2b/profile/password', data);
+    const response = await api.put('/b2b/profile/password', data) as any;
     return {
-      success: response.data.success,
-      message: response.data.message
+      success: response.success,
+      message: response.message
     };
   } catch (error: any) {
     console.error('Error changing password:', error);
@@ -135,10 +135,10 @@ export const changePassword = async (data: ChangePasswordData): Promise<ProfileR
  */
 export const updateEmail = async (newEmail: string): Promise<ProfileResponse> => {
   try {
-    const response = await api.put('/b2b/profile/email', { email: newEmail });
+    const response = await api.put('/b2b/profile/email', { email: newEmail }) as any;
     return {
-      success: response.data.success,
-      message: response.data.message
+      success: response.success,
+      message: response.message
     };
   } catch (error: any) {
     console.error('Error updating email:', error);

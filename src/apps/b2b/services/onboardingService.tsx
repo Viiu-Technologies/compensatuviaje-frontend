@@ -336,6 +336,43 @@ class OnboardingService {
       throw error;
     }
   }
+
+  // Crear empresa (onboarding wizard)
+  async createCompanyOnboarding(formData: any) {
+    try {
+      const payload = {
+        razonSocial: formData.companyName,
+        rut: formData.rut,
+        industry: formData.industry,
+        giroSii: formData.businessType,
+        tamanoEmpresa: formData.employeeCount,
+        direccion: [formData.address, formData.city, formData.region].filter(Boolean).join(', '),
+        phone: formData.contactPhone,
+        adminUser: {
+          name: formData.contactName,
+          email: formData.contactEmail,
+          password: formData.rut.replace(/[.-]/g, '').slice(0, 8) // Temporal password based on RUT
+        }
+      };
+
+      const response = await fetch(`${API_URL}/onboard/companies`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al crear empresa');
+      }
+
+      return data.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 const onboardingService = new OnboardingService();

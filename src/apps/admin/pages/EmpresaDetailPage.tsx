@@ -29,7 +29,8 @@ import {
   ChevronRight,
   Hash,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  Download
 } from 'lucide-react';
 import {
   getCompanyDetail,
@@ -60,6 +61,7 @@ interface CompanyDetail {
   razonSocial: string;
   rut: string;
   nombreComercial?: string;
+  industry?: string;
   giroSii?: string;
   tamanoEmpresa?: string;
   direccion?: string;
@@ -109,6 +111,26 @@ export default function EmpresaDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const industryLabels: Record<string, string> = {
+    aerolineas: 'Aerolíneas y Aviación',
+    maritimo: 'Transporte Marítimo',
+    terrestre: 'Transporte Terrestre y Logística',
+    mineria_energia: 'Minería y Energía',
+    tecnologia: 'Tecnología y SaaS',
+    retail: 'Retail y E-commerce',
+    manufactura: 'Manufactura e Industria',
+    construccion: 'Construcción e Inmobiliaria',
+    hoteleria_turismo: 'Hotelería y Turismo',
+    servicios_financieros: 'Servicios Financieros',
+    salud: 'Salud y Farmacéutica',
+    educacion: 'Educación',
+    alimentacion: 'Alimentación y Agricultura',
+    telecomunicaciones: 'Telecomunicaciones',
+    gobierno: 'Gobierno y Sector Público',
+    consultoria: 'Consultoría y Servicios Profesionales',
+    otra: 'Otra',
+  };
+
   const [company, setCompany] = useState<CompanyDetail | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,9 +177,10 @@ export default function EmpresaDetailPage() {
       setNewStatus('');
       setStatusNote('');
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating status:', err);
-      alert('Error al cambiar el estado. Verifica la transición sea válida.');
+      const msg = err?.response?.data?.message || err?.message || 'Error al cambiar el estado. Verifica la transición sea válida.';
+      alert(msg);
     } finally {
       setChangingStatus(false);
     }
@@ -281,6 +304,7 @@ export default function EmpresaDetailPage() {
                     { icon: Building2, label: 'Razón Social', value: company.razonSocial },
                     { icon: Hash, label: 'RUT', value: company.rut || 'No registrado' },
                     { icon: Briefcase, label: 'Nombre Comercial', value: company.nombreComercial || '—' },
+                    { icon: Globe, label: 'Industria', value: company.industry ? (industryLabels[company.industry] || company.industry) : '—' },
                     { icon: TrendingUp, label: 'Giro SII', value: company.giroSii || '—' },
                     { icon: Users, label: 'Tamaño', value: company.tamanoEmpresa || '—' },
                     { icon: MapPin, label: 'Dirección', value: company.direccion || '—' },
@@ -303,6 +327,38 @@ export default function EmpresaDetailPage() {
               {/* Actions + Status Change */}
               <div className="!space-y-5">
                 <h3 className="!text-lg !font-black !text-slate-900">Acciones</h3>
+
+                {/* Documentation Status Banner */}
+                <div className={`!p-4 !rounded-2xl !border ${
+                  (company.documents && company.documents.length > 0) 
+                    ? '!bg-emerald-50 !border-emerald-200' 
+                    : '!bg-amber-50 !border-amber-200'
+                }`}>
+                  <div className="!flex !items-center !gap-3 !mb-1">
+                    <FileText className={`!w-5 !h-5 ${(company.documents && company.documents.length > 0) ? '!text-emerald-600' : '!text-amber-600'}`} />
+                    <p className={`!font-bold !text-sm ${(company.documents && company.documents.length > 0) ? '!text-emerald-700' : '!text-amber-700'}`}>
+                      Documentación: {company.documents?.length || 0} documento{(company.documents?.length || 0) !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  {(!company.documents || company.documents.length === 0) && (
+                    <p className="!text-xs !text-amber-600 !ml-8">
+                      ⚠️ Sin documentos subidos. Se requiere documentación para avanzar a "Contrato Firmado" o "Activa".
+                    </p>
+                  )}
+                  {company.documents && company.documents.length > 0 && (
+                    <div className="!ml-8 !flex !flex-wrap !gap-2 !mt-1">
+                      {company.documents.map((doc) => (
+                        <span key={doc.id} className={`!text-xs !font-medium !px-2 !py-0.5 !rounded-full ${
+                          doc.status === 'approved' ? '!bg-emerald-100 !text-emerald-700' :
+                          doc.status === 'rejected' ? '!bg-rose-100 !text-rose-700' :
+                          '!bg-amber-100 !text-amber-700'
+                        }`}>
+                          {doc.docType} ({doc.status === 'approved' ? '✓' : doc.status === 'rejected' ? '✗' : '⏳'})
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Status */}
                 <div className={`!p-4 !rounded-2xl !border ${sc.borderColor} ${sc.bgColor}`}>
@@ -441,27 +497,72 @@ export default function EmpresaDetailPage() {
               <h3 className="!text-lg !font-black !text-slate-900">Documentos</h3>
               {company.documents && company.documents.length > 0 ? (
                 <div className="!grid md:!grid-cols-2 !gap-4">
-                  {company.documents.map((doc) => (
-                    <div key={doc.id} className="!bg-slate-50 !rounded-2xl !p-4 !border !border-slate-100 !flex !items-start !gap-4">
-                      <div className="!w-11 !h-11 !rounded-xl !bg-indigo-100 !text-indigo-600 !flex !items-center !justify-center !flex-shrink-0">
-                        <FileText className="!w-5 !h-5" />
-                      </div>
-                      <div className="!flex-1 !min-w-0">
-                        <p className="!font-bold !text-slate-800 !text-sm !truncate">{doc.file?.fileName || doc.docType}</p>
-                        <p className="!text-xs !text-slate-500">{doc.docType} — {new Date(doc.uploadedAt).toLocaleDateString('es-CL')}</p>
-                        <span className={`!inline-block !mt-1 !text-xs !font-bold !px-2 !py-0.5 !rounded-full ${
-                          doc.status === 'approved' ? '!bg-emerald-100 !text-emerald-700' :
-                          doc.status === 'rejected' ? '!bg-rose-100 !text-rose-700' :
-                          '!bg-amber-100 !text-amber-700'
+                  {company.documents.map((doc) => {
+                    const docTypeNames: Record<string, string> = {
+                      rut_empresa: 'RUT Empresa',
+                      escritura_constitucion: 'Escritura de Constitución',
+                      representante_legal: 'Cédula Representante Legal',
+                      poder_notarial: 'Poder Notarial',
+                      otro: 'Otro Documento',
+                    };
+                    const displayName = doc.file?.fileName && !doc.file.fileName.includes(company.id)
+                      ? doc.file.fileName
+                      : docTypeNames[doc.docType] || doc.docType;
+                    const isPdf = doc.file?.mimeType === 'application/pdf';
+
+                    return (
+                      <div key={doc.id} className="!bg-slate-50 !rounded-2xl !p-4 !border !border-slate-100 !flex !items-start !gap-4">
+                        <div className={`!w-11 !h-11 !rounded-xl !flex !items-center !justify-center !flex-shrink-0 ${
+                          isPdf ? '!bg-red-100 !text-red-600' : '!bg-indigo-100 !text-indigo-600'
                         }`}>
-                          {doc.status === 'approved' ? 'Aprobado' : doc.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
-                        </span>
+                          <FileText className="!w-5 !h-5" />
+                        </div>
+                        <div className="!flex-1 !min-w-0">
+                          <p className="!font-bold !text-slate-800 !text-sm !truncate" title={doc.file?.fileName}>{displayName}</p>
+                          <p className="!text-xs !text-slate-500">{docTypeNames[doc.docType] || doc.docType} — {new Date(doc.uploadedAt).toLocaleDateString('es-CL')}</p>
+                          <div className="!flex !items-center !gap-2 !mt-1">
+                            <span className={`!inline-block !text-xs !font-bold !px-2 !py-0.5 !rounded-full ${
+                              doc.status === 'approved' ? '!bg-emerald-100 !text-emerald-700' :
+                              doc.status === 'rejected' ? '!bg-rose-100 !text-rose-700' :
+                              '!bg-amber-100 !text-amber-700'
+                            }`}>
+                              {doc.status === 'approved' ? 'Aprobado' : doc.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
+                            </span>
+                            {doc.file?.sizeBytes && (
+                              <span className="!text-xs !text-slate-400">{(doc.file.sizeBytes / 1024).toFixed(0)} KB</span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem('access_token');
+                              const baseURL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
+                              const resp = await fetch(`${baseURL}/admin/companies/${company.id}/documents/${doc.id}/download`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              if (!resp.ok) throw new Error('Error al descargar');
+                              const blob = await resp.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = displayName;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              window.URL.revokeObjectURL(url);
+                            } catch {
+                              alert('No se pudo descargar el documento');
+                            }
+                          }}
+                          className="!p-2.5 !rounded-xl !bg-indigo-100 !text-indigo-600 hover:!bg-indigo-600 hover:!text-white !transition-all !flex-shrink-0"
+                          title="Descargar documento"
+                        >
+                          <Download className="!w-4 !h-4" />
+                        </button>
                       </div>
-                      {doc.file?.sizeBytes && (
-                        <span className="!text-xs !text-slate-400 !whitespace-nowrap">{(doc.file.sizeBytes / 1024).toFixed(0)} KB</span>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="!flex !flex-col !items-center !py-12 !gap-3">
@@ -547,6 +648,15 @@ export default function EmpresaDetailPage() {
                 <div className="!bg-rose-50 !border !border-rose-200 !rounded-xl !p-3 !flex !items-start !gap-2">
                   <AlertTriangle className="!w-4 !h-4 !text-rose-500 !mt-0.5 !flex-shrink-0" />
                   <p className="!text-xs !text-rose-700">Suspender la empresa deshabilitará el acceso de todos sus usuarios y desactivará la compensación automática.</p>
+                </div>
+              )}
+
+              {['signed', 'active'].includes(newStatus) && (!company.documents || company.documents.length === 0) && (
+                <div className="!bg-amber-50 !border !border-amber-200 !rounded-xl !p-3 !flex !items-start !gap-2">
+                  <AlertTriangle className="!w-4 !h-4 !text-amber-500 !mt-0.5 !flex-shrink-0" />
+                  <p className="!text-xs !text-amber-700">
+                    <strong>Atención:</strong> Esta empresa no tiene documentos subidos. El backend rechazará esta transición hasta que la documentación requerida esté completa.
+                  </p>
                 </div>
               )}
 

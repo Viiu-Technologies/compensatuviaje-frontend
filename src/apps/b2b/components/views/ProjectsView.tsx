@@ -22,7 +22,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../../../shared/context/ThemeContext';
 import { 
-  getMockProjects, 
+  getProjects, 
+  getMockProjects,
   filterMockProjects,
   type Project 
 } from '../../services/projectsService';
@@ -42,17 +43,19 @@ const ProjectsView: React.FC = () => {
     const loadProjects = async () => {
       setIsLoading(true);
       try {
-        // Por ahora usamos mock data, después conectar a API real
-        const mockProjects = getMockProjects();
-        setProjects(mockProjects);
+        // Cargar proyectos reales desde la API
+        const realProjects = await getProjects({ type: filterType, status: filterStatus, search: searchQuery });
+        setProjects(realProjects);
       } catch (error) {
         console.error('Error loading projects:', error);
+        // Fallback a mocks solo si falla la API
+        setProjects(getMockProjects());
       } finally {
         setIsLoading(false);
       }
     };
     loadProjects();
-  }, []);
+  }, [filterType, filterStatus, searchQuery]);
 
   const projectTypes = [
     { value: 'all', label: 'Todos', icon: Grid },

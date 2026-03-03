@@ -50,9 +50,26 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
       params.append('search', filters.search);
     }
     
-    const response = await api.get(`/public/projects?${params.toString()}`);
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get(`/public/projects?${params.toString()}`) as any;
+    if (response.success && response.projects) {
+      // Mapear campos del backend al formato frontend
+      return response.projects.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        location: p.region || p.country || 'Sin ubicación',
+        country: p.country || 'Chile',
+        type: mapProjectType(p.projectType),
+        status: mapProjectStatus(p.status),
+        contribution: p.pricePerTon || 0,
+        co2Offset: p.capacitySold || 0,
+        treesPlanted: undefined,
+        startDate: p.createdAt,
+        endDate: undefined,
+        image: getProjectImage(p.projectType),
+        description: p.description || '',
+        sdgs: p.coBenefits ? extractSDGs(p.coBenefits) : [],
+        isFavorite: false
+      }));
     }
     return getMockProjects(); // Fallback a datos mock
   } catch (error) {
@@ -61,14 +78,58 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
   }
 };
 
+// Helpers para mapear datos del backend
+const mapProjectType = (type: string): Project['type'] => {
+  const typeMap: Record<string, Project['type']> = {
+    reforestation: 'reforestation',
+    conservation: 'conservation',
+    renewable_energy: 'renewable',
+    ocean_cleanup: 'ocean',
+    blue_carbon: 'ocean',
+    avoided_deforestation: 'conservation'
+  };
+  return typeMap[type] || 'conservation';
+};
+
+const mapProjectStatus = (status: string): Project['status'] => {
+  const statusMap: Record<string, Project['status']> = {
+    active: 'active',
+    approved: 'active',
+    completed: 'completed',
+    pending: 'pending',
+    draft: 'pending'
+  };
+  return statusMap[status] || 'active';
+};
+
+const getProjectImage = (type: string): string => {
+  const images: Record<string, string> = {
+    reforestation: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400',
+    conservation: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=400',
+    renewable_energy: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
+    ocean_cleanup: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
+    blue_carbon: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
+    avoided_deforestation: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400'
+  };
+  return images[type] || 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400';
+};
+
+const extractSDGs = (coBenefits: any): number[] => {
+  if (Array.isArray(coBenefits)) {
+    return coBenefits.filter((b: any) => typeof b === 'number').slice(0, 5);
+  }
+  // Default SDGs for carbon projects
+  return [13];
+};
+
 /**
  * Obtener proyecto por ID
  */
 export const getProjectById = async (id: string): Promise<Project | null> => {
   try {
-    const response = await api.get(`/public/projects/${id}`);
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get(`/public/projects/${id}`) as any;
+    if (response.success) {
+      return response.data;
     }
     return null;
   } catch (error) {
@@ -82,9 +143,9 @@ export const getProjectById = async (id: string): Promise<Project | null> => {
  */
 export const getUserFavoriteProjects = async (): Promise<Project[]> => {
   try {
-    const response = await api.get('/b2b/projects/favorites');
-    if (response.data.success) {
-      return response.data.data;
+    const response = await api.get('/b2b/projects/favorites') as any;
+    if (response.success) {
+      return response.data;
     }
     return [];
   } catch (error) {
@@ -98,8 +159,8 @@ export const getUserFavoriteProjects = async (): Promise<Project[]> => {
  */
 export const addToFavorites = async (projectId: string): Promise<boolean> => {
   try {
-    const response = await api.post(`/b2b/projects/${projectId}/favorite`);
-    return response.data.success;
+    const response = await api.post(`/b2b/projects/${projectId}/favorite`) as any;
+    return response.success;
   } catch (error) {
     console.error('Error adding to favorites:', error);
     return false;
@@ -111,8 +172,8 @@ export const addToFavorites = async (projectId: string): Promise<boolean> => {
  */
 export const removeFromFavorites = async (projectId: string): Promise<boolean> => {
   try {
-    const response = await api.delete(`/b2b/projects/${projectId}/favorite`);
-    return response.data.success;
+    const response = await api.delete(`/b2b/projects/${projectId}/favorite`) as any;
+    return response.success;
   } catch (error) {
     console.error('Error removing from favorites:', error);
     return false;

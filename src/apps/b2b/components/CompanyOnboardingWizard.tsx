@@ -59,17 +59,23 @@ const CompanyOnboardingWizard = () => {
   ];
 
   const industries = [
-    'Tecnología',
-    'Retail',
-    'Manufactura',
+    'Aerolíneas y Aviación',
+    'Transporte Marítimo',
+    'Transporte Terrestre y Logística',
+    'Minería y Energía',
+    'Tecnología y SaaS',
+    'Retail y E-commerce',
+    'Manufactura e Industria',
+    'Construcción e Inmobiliaria',
+    'Hotelería y Turismo',
     'Servicios Financieros',
-    'Salud',
+    'Salud y Farmacéutica',
     'Educación',
-    'Construcción',
-    'Turismo',
-    'Transporte',
-    'Energía',
-    'Otro'
+    'Alimentación y Agricultura',
+    'Telecomunicaciones',
+    'Gobierno y Sector Público',
+    'Consultoría y Servicios Profesionales',
+    'Otra'
   ];
 
   const employeeRanges = [

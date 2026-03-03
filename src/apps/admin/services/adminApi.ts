@@ -115,10 +115,16 @@ export interface Company {
   razonSocial: string;
   nombreComercial?: string;
   rut: string;
-  industria?: string;
+  industry?: string;
   tamanoEmpresa?: string;
   status: string;
   createdAt: string;
+  _count?: {
+    companyUsers?: number;
+    certificates?: number;
+    flightRecords?: number;
+    documents?: number;
+  };
   stats?: {
     totalCertificates: number;
     totalEmissionsKg: number;

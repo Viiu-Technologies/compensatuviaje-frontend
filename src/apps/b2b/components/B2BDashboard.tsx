@@ -10,7 +10,8 @@ import {
   Award,
   ShoppingBag,
   Calculator,
-  Bot
+  Bot,
+  FileText
 } from 'lucide-react';
 
 // Import Views
@@ -22,6 +23,7 @@ import BadgesView from './views/BadgesView';
 import SettingsView from './views/SettingsView';
 import CalculatorView from './views/CalculatorView';
 import AssistantView from './views/AssistantView';
+import DocumentsView from './views/DocumentsView';
 
 const B2BDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -33,6 +35,7 @@ const B2BDashboard: React.FC = () => {
   const navItems = [
     { id: 'dashboard', label: 'Tu perfil', icon: User },
     { id: 'panel', label: 'Panel Principal', icon: BarChart3 },
+    { id: 'documentos', label: 'Documentos', icon: FileText },
     { id: 'proyectos', label: 'Proyectos', icon: Trees },
     { id: 'tienda', label: 'Tienda de Impacto', icon: ShoppingBag },
     { id: 'insignias', label: 'Insignias', icon: Award },
@@ -48,6 +51,8 @@ const B2BDashboard: React.FC = () => {
         return <ProfileView />;
       case 'panel':
         return <DashboardPanelView />;
+      case 'documentos':
+        return <DocumentsView />;
       case 'proyectos':
         return <ProjectsView />;
       case 'tienda':
