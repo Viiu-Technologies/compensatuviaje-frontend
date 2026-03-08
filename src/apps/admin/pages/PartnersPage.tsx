@@ -3,7 +3,7 @@
  * Panel SuperAdmin
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
@@ -73,6 +73,8 @@ export default function PartnersPage() {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const fetchPartners = useCallback(async () => {
     try {
@@ -403,19 +405,26 @@ export default function PartnersPage() {
                       </td>
                       <td className="!px-6 !py-4 !text-right">
                         <button
-                          onClick={() => setActionMenuOpen(actionMenuOpen === partner.id ? null : partner.id)}
+                          onClick={(e) => {
+                            if (actionMenuOpen === partner.id) {
+                              setActionMenuOpen(null);
+                            } else {
+                              const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                              setMenuPos({
+                                top: rect.bottom + window.scrollY + 4,
+                                left: rect.right + window.scrollX - 192,
+                              });
+                              setActionMenuOpen(partner.id);
+                            }
+                          }}
                           className="!p-2 !rounded-lg hover:!bg-slate-100 !transition-colors"
                         >
                           <MoreVertical className="!w-5 !h-5 !text-slate-500" />
                         </button>
                         
                         {actionMenuOpen === partner.id && (
-                          <div className="!fixed !bg-white !rounded-xl !shadow-2xl !border !border-slate-200 !py-2 !z-50 !min-w-max !w-56 !animate-in !fade-in !slide-in-from-top-2 !duration-200"
-                            style={{
-                              top: '50%',
-                              left: '50%',
-                              transform: 'translate(-50%, -50%)'
-                            }}
+                          <div ref={menuRef} className="!fixed !bg-white !rounded-xl !shadow-2xl !border !border-slate-200 !py-2 !z-50 !w-48"
+                            style={{ top: menuPos.top, left: menuPos.left }}
                           >
                             <button
                               onClick={() => { navigate(`/admin/partners/${partner.id}`); setActionMenuOpen(null); }}
@@ -514,8 +523,8 @@ export default function PartnersPage() {
 
       {/* Click outside to close menu */}
       {actionMenuOpen && (
-        <div 
-          className="!fixed !inset-0 !z-40" 
+        <div
+          className="!fixed !inset-0 !z-[49]"
           onClick={() => setActionMenuOpen(null)}
         />
       )}

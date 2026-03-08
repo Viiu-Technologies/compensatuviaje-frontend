@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -67,6 +67,7 @@ export default function EmpresasPage() {
 
   // Dropdown & modal
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [newStatus, setNewStatus] = useState('');
@@ -295,7 +296,18 @@ export default function EmpresasPage() {
                           </Link>
                           {/* 3-dot menu */}
                           <button
-                            onClick={() => setOpenDropdown(openDropdown === company.id ? null : company.id)}
+                            onClick={(e) => {
+                              if (openDropdown === company.id) {
+                                setOpenDropdown(null);
+                              } else {
+                                const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                                setMenuPos({
+                                  top: rect.bottom + window.scrollY + 4,
+                                  left: rect.right + window.scrollX - 220,
+                                });
+                                setOpenDropdown(company.id);
+                              }
+                            }}
                             className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-900 hover:!text-white !transition-all"
                           >
                             <MoreVertical className="!w-4 !h-4" />
@@ -304,11 +316,7 @@ export default function EmpresasPage() {
                           {/* Dropdown */}
                           {openDropdown === company.id && (
                             <div className="!fixed !bg-white !rounded-2xl !shadow-2xl !border !border-slate-200 !py-2 !min-w-[220px] !z-50 !animate-in !fade-in !slide-in-from-top-2 !duration-200"
-                              style={{
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)'
-                              }}
+                              style={{ top: menuPos.top, left: menuPos.left }}
                             >
                               {/* View detail */}
                               <button
@@ -473,8 +481,8 @@ export default function EmpresasPage() {
 
       {/* Click outside to close menu */}
       {openDropdown && (
-        <div 
-          className="!fixed !inset-0 !z-40" 
+        <div
+          className="!fixed !inset-0 !z-[49]"
           onClick={() => setOpenDropdown(null)}
         />
       )}
