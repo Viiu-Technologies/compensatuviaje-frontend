@@ -309,11 +309,11 @@ export default function EmpresasPage() {
                                 setOpenDropdown(null);
                               } else {
                                 const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
-                                const menuH = 260; // approx menu height
+                                const menuH = 200; // approx menu height
                                 const spaceBelow = window.innerHeight - rect.bottom;
                                 const top = spaceBelow < menuH
-                                  ? rect.top - menuH - 4   // flip upward
-                                  : rect.bottom + 4;       // normal below
+                                  ? rect.top - menuH        // flip upward, snug to button
+                                  : rect.bottom + 4;        // normal below
                                 setMenuPos({
                                   top: Math.max(8, top),
                                   left: Math.max(8, rect.right - 220),
