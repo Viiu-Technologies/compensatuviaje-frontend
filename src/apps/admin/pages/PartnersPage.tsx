@@ -291,8 +291,8 @@ export default function PartnersPage() {
 
       {/* Table */}
       <div className="!bg-white !rounded-2xl !shadow-sm !border !border-slate-100 !overflow-hidden">
-        <div className="!overflow-x-auto">
-          <table className="!w-full">
+        <div className="!overflow-x-auto" style={{ overflowY: 'visible' }}>
+          <table className="!w-full !relative !z-0">
             <thead className="!bg-slate-50 !border-b !border-slate-100">
               <tr>
                 <th className="!px-6 !py-4 !text-left !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
@@ -411,7 +411,7 @@ export default function PartnersPage() {
                           </button>
                           
                           {actionMenuOpen === partner.id && (
-                            <div className="!absolute !right-0 !top-full !mt-1 !w-48 !bg-white !rounded-xl !shadow-lg !border !border-slate-200 !py-1 !z-10">
+                            <div className="!absolute !right-0 !top-full !mt-1 !w-48 !bg-white !rounded-xl !shadow-2xl !border !border-slate-200 !py-1 !z-50 !min-w-max">
                               <button
                                 onClick={() => { navigate(`/admin/partners/${partner.id}`); setActionMenuOpen(null); }}
                                 className="!w-full !px-4 !py-2 !text-left !text-sm !text-slate-700 hover:!bg-slate-50 !flex !items-center !gap-2"

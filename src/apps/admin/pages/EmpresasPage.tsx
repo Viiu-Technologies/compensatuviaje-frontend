@@ -228,7 +228,7 @@ export default function EmpresasPage() {
 
       {/* Table Section */}
       <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !overflow-hidden">
-        <div className="!overflow-x-auto">
+        <div className="!overflow-x-auto" style={{ overflowY: 'visible' }}>
           <table className="!w-full !text-left !border-collapse">
             <thead>
               <tr className="!bg-slate-50/50 !border-b !border-slate-100">
