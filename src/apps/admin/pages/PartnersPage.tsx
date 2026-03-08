@@ -76,6 +76,14 @@ export default function PartnersPage() {
   const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Close dropdown on scroll so it doesn't float away from button
+  useEffect(() => {
+    if (!actionMenuOpen) return;
+    const close = () => setActionMenuOpen(null);
+    window.addEventListener('scroll', close, true);
+    return () => window.removeEventListener('scroll', close, true);
+  }, [actionMenuOpen]);
+
   const fetchPartners = useCallback(async () => {
     try {
       setLoading(true);
@@ -410,9 +418,14 @@ export default function PartnersPage() {
                               setActionMenuOpen(null);
                             } else {
                               const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                              const menuH = 220; // approx menu height
+                              const spaceBelow = window.innerHeight - rect.bottom;
+                              const top = spaceBelow < menuH
+                                ? rect.top - menuH - 4   // flip upward
+                                : rect.bottom + 4;       // normal below
                               setMenuPos({
-                                top: rect.bottom + 4,
-                                left: rect.right - 192,
+                                top: Math.max(8, top),
+                                left: Math.max(8, rect.right - 192),
                               });
                               setActionMenuOpen(partner.id);
                             }
