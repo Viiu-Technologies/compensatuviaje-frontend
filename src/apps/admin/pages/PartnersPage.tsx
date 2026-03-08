@@ -411,8 +411,8 @@ export default function PartnersPage() {
                             } else {
                               const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
                               setMenuPos({
-                                top: rect.bottom + window.scrollY + 4,
-                                left: rect.right + window.scrollX - 192,
+                                top: rect.bottom + 4,
+                                left: rect.right - 192,
                               });
                               setActionMenuOpen(partner.id);
                             }
@@ -421,60 +421,6 @@ export default function PartnersPage() {
                         >
                           <MoreVertical className="!w-5 !h-5 !text-slate-500" />
                         </button>
-                        
-                        {actionMenuOpen === partner.id && (
-                          <div ref={menuRef} className="!fixed !bg-white !rounded-xl !shadow-2xl !border !border-slate-200 !py-2 !z-50 !w-48"
-                            style={{ top: menuPos.top, left: menuPos.left }}
-                          >
-                            <button
-                              onClick={() => { navigate(`/admin/partners/${partner.id}`); setActionMenuOpen(null); }}
-                              className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-slate-700 hover:!bg-slate-50 !flex !items-center !gap-2 !transition-colors"
-                            >
-                              <Eye className="!w-4 !h-4" />
-                              Ver detalle
-                            </button>
-                            
-                            {!partner.verified_at && (
-                              <button
-                                onClick={() => { navigate(`/admin/partners/${partner.id}?action=verify`); setActionMenuOpen(null); }}
-                                className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-blue-700 hover:!bg-blue-50 !flex !items-center !gap-2 !transition-colors"
-                              >
-                                <Shield className="!w-4 !h-4" />
-                                Verificar
-                              </button>
-                            )}
-                            
-                            <div className="!border-t !border-slate-100 !my-1"></div>
-                            
-                            {partner.status !== 'active' && (
-                              <button
-                                onClick={() => handleStatusChange(partner.id, 'active')}
-                                className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-emerald-700 hover:!bg-emerald-50 !flex !items-center !gap-2 !transition-colors !font-medium"
-                              >
-                                <Play className="!w-4 !h-4" />
-                                Activar
-                              </button>
-                            )}
-                            
-                            {partner.status === 'active' && (
-                              <button
-                                onClick={() => handleStatusChange(partner.id, 'suspended')}
-                                className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-amber-700 hover:!bg-amber-50 !flex !items-center !gap-2 !transition-colors !font-medium"
-                              >
-                                <Pause className="!w-4 !h-4" />
-                                Suspender
-                              </button>
-                            )}
-                            
-                            <button
-                              onClick={() => handleStatusChange(partner.id, 'inactive')}
-                              className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-red-700 hover:!bg-red-50 !flex !items-center !gap-2 !transition-colors !font-medium"
-                            >
-                              <Trash2 className="!w-4 !h-4" />
-                              Desactivar
-                            </button>
-                          </div>
-                        )}
                       </td>
                     </tr>
                   );
@@ -521,12 +467,71 @@ export default function PartnersPage() {
         />
       )}
 
-      {/* Click outside to close menu */}
+      {/* Click outside to close menu + Menu rendered outside table */}
       {actionMenuOpen && (
-        <div
-          className="!fixed !inset-0 !z-[49]"
-          onClick={() => setActionMenuOpen(null)}
-        />
+        <>
+          <div
+            className="!fixed !inset-0 !z-[100]"
+            onClick={() => setActionMenuOpen(null)}
+          />
+          {(() => {
+            const partner = partners.find(p => p.id === actionMenuOpen);
+            if (!partner) return null;
+            return (
+              <div className="!fixed !bg-white !rounded-xl !shadow-2xl !border !border-slate-200 !py-2 !z-[101] !w-48"
+                style={{ top: menuPos.top, left: menuPos.left }}
+              >
+                <button
+                  onClick={() => { navigate(`/admin/partners/${partner.id}`); setActionMenuOpen(null); }}
+                  className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-slate-700 hover:!bg-slate-50 !flex !items-center !gap-2 !transition-colors"
+                >
+                  <Eye className="!w-4 !h-4" />
+                  Ver detalle
+                </button>
+                
+                {!partner.verified_at && (
+                  <button
+                    onClick={() => { navigate(`/admin/partners/${partner.id}?action=verify`); setActionMenuOpen(null); }}
+                    className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-blue-700 hover:!bg-blue-50 !flex !items-center !gap-2 !transition-colors"
+                  >
+                    <Shield className="!w-4 !h-4" />
+                    Verificar
+                  </button>
+                )}
+                
+                <div className="!border-t !border-slate-100 !my-1"></div>
+                
+                {partner.status !== 'active' && (
+                  <button
+                    onClick={() => handleStatusChange(partner.id, 'active')}
+                    className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-emerald-700 hover:!bg-emerald-50 !flex !items-center !gap-2 !transition-colors !font-medium"
+                  >
+                    <Play className="!w-4 !h-4" />
+                    Activar
+                  </button>
+                )}
+                
+                {partner.status === 'active' && (
+                  <button
+                    onClick={() => handleStatusChange(partner.id, 'suspended')}
+                    className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-amber-700 hover:!bg-amber-50 !flex !items-center !gap-2 !transition-colors !font-medium"
+                  >
+                    <Pause className="!w-4 !h-4" />
+                    Suspender
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => handleStatusChange(partner.id, 'inactive')}
+                  className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-red-700 hover:!bg-red-50 !flex !items-center !gap-2 !transition-colors !font-medium"
+                >
+                  <Trash2 className="!w-4 !h-4" />
+                  Desactivar
+                </button>
+              </div>
+            );
+          })()}
+        </>
       )}
     </div>
   );

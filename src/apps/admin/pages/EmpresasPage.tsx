@@ -302,8 +302,8 @@ export default function EmpresasPage() {
                               } else {
                                 const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
                                 setMenuPos({
-                                  top: rect.bottom + window.scrollY + 4,
-                                  left: rect.right + window.scrollX - 220,
+                                  top: rect.bottom + 4,
+                                  left: rect.right - 220,
                                 });
                                 setOpenDropdown(company.id);
                               }
@@ -312,53 +312,6 @@ export default function EmpresasPage() {
                           >
                             <MoreVertical className="!w-4 !h-4" />
                           </button>
-
-                          {/* Dropdown */}
-                          {openDropdown === company.id && (
-                            <div className="!fixed !bg-white !rounded-2xl !shadow-2xl !border !border-slate-200 !py-2 !min-w-[220px] !z-50 !animate-in !fade-in !slide-in-from-top-2 !duration-200"
-                              style={{ top: menuPos.top, left: menuPos.left }}
-                            >
-                              {/* View detail */}
-                              <button
-                                onClick={() => { setOpenDropdown(null); navigate(`/admin/empresas/${company.id}`); }}
-                                className="!w-full !flex !items-center !gap-3 !px-4 !py-2.5 !text-sm !text-slate-700 hover:!bg-slate-50 !transition-colors !text-left"
-                              >
-                                <Eye className="!w-4 !h-4 !text-slate-400" />
-                                <span className="!font-medium">Ver Detalle Completo</span>
-                              </button>
-
-                              {/* Divider */}
-                              {transitions.length > 0 && (
-                                <div className="!border-t !border-slate-100 !my-1" />
-                              )}
-
-                              {/* Status transitions */}
-                              {transitions.map((toStatus) => {
-                                const tsc = statusConfig[toStatus] || statusConfig.registered;
-                                const TIcon = getTransitionIcon(toStatus);
-                                const isSuspend = toStatus === 'suspended';
-                                return (
-                                  <button
-                                    key={toStatus}
-                                    onClick={() => openStatusChangeModal(company, toStatus)}
-                                    className={`!w-full !flex !items-center !gap-3 !px-4 !py-2.5 !text-sm !transition-colors !text-left ${
-                                      isSuspend ? '!text-rose-600 hover:!bg-rose-50' : `${tsc.color} hover:!bg-slate-50`
-                                    }`}
-                                  >
-                                    <TIcon className="!w-4 !h-4" />
-                                    <span className="!font-medium">
-                                      {toStatus === 'suspended' ? 'Suspender' :
-                                       toStatus === 'active' ? 'Activar' :
-                                       toStatus === 'pending_contract' ? 'Enviar a Contrato' :
-                                       toStatus === 'signed' ? 'Marcar como Firmado' :
-                                       toStatus === 'registered' ? 'Volver a Registrada' :
-                                       tsc.label}
-                                    </span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -479,12 +432,65 @@ export default function EmpresasPage() {
         </div>
       )}
 
-      {/* Click outside to close menu */}
+      {/* Click outside overlay + Dropdown menu (rendered outside table for proper z-index) */}
       {openDropdown && (
-        <div
-          className="!fixed !inset-0 !z-[49]"
-          onClick={() => setOpenDropdown(null)}
-        />
+        <>
+          <div
+            className="!fixed !inset-0 !z-[100]"
+            onClick={() => setOpenDropdown(null)}
+          />
+          {(() => {
+            const company = companies.find(c => c.id === openDropdown);
+            if (!company) return null;
+            const transitions = VALID_TRANSITIONS[company.status] || [];
+            return (
+              <div 
+                className="!fixed !bg-white !rounded-2xl !shadow-2xl !border !border-slate-200 !py-2 !min-w-[220px] !z-[101] !animate-in !fade-in !slide-in-from-top-2 !duration-200"
+                style={{ top: menuPos.top, left: menuPos.left }}
+              >
+                {/* View detail */}
+                <button
+                  onClick={() => { setOpenDropdown(null); navigate(`/admin/empresas/${company.id}`); }}
+                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2.5 !text-sm !text-slate-700 hover:!bg-slate-50 !transition-colors !text-left"
+                >
+                  <Eye className="!w-4 !h-4 !text-slate-400" />
+                  <span className="!font-medium">Ver Detalle Completo</span>
+                </button>
+
+                {/* Divider */}
+                {transitions.length > 0 && (
+                  <div className="!border-t !border-slate-100 !my-1" />
+                )}
+
+                {/* Status transitions */}
+                {transitions.map((toStatus) => {
+                  const tsc = statusConfig[toStatus] || statusConfig.registered;
+                  const TIcon = getTransitionIcon(toStatus);
+                  const isSuspend = toStatus === 'suspended';
+                  return (
+                    <button
+                      key={toStatus}
+                      onClick={() => openStatusChangeModal(company, toStatus)}
+                      className={`!w-full !flex !items-center !gap-3 !px-4 !py-2.5 !text-sm !transition-colors !text-left ${
+                        isSuspend ? '!text-rose-600 hover:!bg-rose-50' : `${tsc.color} hover:!bg-slate-50`
+                      }`}
+                    >
+                      <TIcon className="!w-4 !h-4" />
+                      <span className="!font-medium">
+                        {toStatus === 'suspended' ? 'Suspender' :
+                         toStatus === 'active' ? 'Activar' :
+                         toStatus === 'pending_contract' ? 'Enviar a Contrato' :
+                         toStatus === 'signed' ? 'Marcar como Firmado' :
+                         toStatus === 'registered' ? 'Volver a Registrada' :
+                         tsc.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </>
       )}
     </div>
   );
