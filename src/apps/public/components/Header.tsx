@@ -12,6 +12,13 @@ const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Dashboard path based on user type
+  const dashboardPath = user?.userType === 'superadmin' ? '/admin'
+    : user?.userType === 'b2c' ? '/b2c/dashboard'
+    : user?.userType === 'partner' ? '/partner'
+    : user?.userType === 'b2b' ? '/b2b/dashboard'
+    : '/dashboard';
+
   // Detect scroll for glassmorphism effect
   useEffect(() => {
     const handleScroll = () => {
@@ -92,7 +99,7 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to={dashboardPath}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                     scrolled
                       ? 'text-neutral-700 hover:bg-neutral-100'
@@ -194,7 +201,7 @@ const Header = () => {
                 {isAuthenticated && (
                   <motion.div whileHover={{ x: 5 }}>
                     <Link
-                      to="/dashboard"
+                      to={dashboardPath}
                       onClick={closeMenu}
                       className="block px-4 py-3 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 transition-all font-medium flex items-center gap-2"
                     >

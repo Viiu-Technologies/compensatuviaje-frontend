@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import AdminDashboard from '../../admin/components/AdminDashboard';
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -16,9 +15,14 @@ const DashboardPage = () => {
     return <Navigate to="/b2c/dashboard" replace />;
   }
 
-  // SuperAdmin ve el AdminDashboard en /dashboard
+  // SuperAdmin va al panel de administración real
   if (user?.userType === 'superadmin') {
-    return <AdminDashboard />;
+    return <Navigate to="/admin" replace />;
+  }
+
+  // Partner va a su panel
+  if (user?.userType === 'partner') {
+    return <Navigate to="/partner" replace />;
   }
 
   // Si no es ninguno, redirigir al login
