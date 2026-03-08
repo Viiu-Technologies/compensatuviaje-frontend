@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -67,7 +67,6 @@ export default function EmpresasPage() {
 
   // Dropdown & modal
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [newStatus, setNewStatus] = useState('');
@@ -75,17 +74,6 @@ export default function EmpresasPage() {
   const [changingStatus, setChangingStatus] = useState(false);
 
   useEffect(() => { loadCompanies(); }, [searchParams, sortBy, sortOrder]);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const loadCompanies = async () => {
     setLoading(true);
@@ -228,7 +216,7 @@ export default function EmpresasPage() {
 
       {/* Table Section */}
       <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !overflow-hidden">
-        <div className="!overflow-x-auto" style={{ overflowY: 'visible' }}>
+        <div className="!overflow-x-auto">
           <table className="!w-full !text-left !border-collapse">
             <thead>
               <tr className="!bg-slate-50/50 !border-b !border-slate-100">
@@ -296,7 +284,7 @@ export default function EmpresasPage() {
                         <p className="!text-sm !text-slate-600">{new Date(company.createdAt).toLocaleDateString('es-CL')}</p>
                       </td>
                       <td className="!px-6 !py-5 !text-right">
-                        <div className="!flex !items-center !justify-end !gap-2 !relative" ref={openDropdown === company.id ? dropdownRef : undefined}>
+                        <div className="!flex !items-center !justify-end !gap-2 !relative">
                           {/* View detail */}
                           <Link
                             to={`/admin/empresas/${company.id}`}
@@ -315,7 +303,13 @@ export default function EmpresasPage() {
 
                           {/* Dropdown */}
                           {openDropdown === company.id && (
-                            <div className="!absolute !right-0 !top-full !mt-2 !bg-white !rounded-2xl !shadow-xl !border !border-slate-200 !py-2 !min-w-[220px] !z-50 !animate-in !fade-in !slide-in-from-top-2 !duration-200">
+                            <div className="!fixed !bg-white !rounded-2xl !shadow-2xl !border !border-slate-200 !py-2 !min-w-[220px] !z-50 !animate-in !fade-in !slide-in-from-top-2 !duration-200"
+                              style={{
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)'
+                              }}
+                            >
                               {/* View detail */}
                               <button
                                 onClick={() => { setOpenDropdown(null); navigate(`/admin/empresas/${company.id}`); }}
@@ -475,6 +469,14 @@ export default function EmpresasPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Click outside to close menu */}
+      {openDropdown && (
+        <div 
+          className="!fixed !inset-0 !z-40" 
+          onClick={() => setOpenDropdown(null)}
+        />
       )}
     </div>
   );
