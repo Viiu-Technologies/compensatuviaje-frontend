@@ -67,7 +67,7 @@ const Header = () => {
             <motion.img
               whileHover={{ scale: 1.03 }}
               transition={{ duration: 0.2 }}
-              src="/images/brand/logo-horizontal.svg"
+              src="/images/brand/logo-horizontal-white.svg"
               alt="CompensaTuViaje"
               className="h-12 w-auto drop-shadow-lg"
             />

@@ -83,7 +83,7 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
       <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen !bg-white !border-r !border-gray-200 !shadow-sm !fixed !left-0 !top-0 !z-50 !overflow-y-auto">
         {/* Logo Area */}
         <Link to="/b2c/dashboard" className="!flex !items-center !h-20 !px-5 !border-b !border-gray-100 !flex-shrink-0 !no-underline">
-          <img src="/images/brand/logo-horizontal.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
+          <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
         </Link>
         
         {/* Nav Links */}
@@ -154,7 +154,7 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
             >
               <div className="!flex !items-center !justify-between !h-20 !px-6 !border-b !border-gray-100">
                 <Link to="/b2c/dashboard" className="!flex !items-center !no-underline" onClick={() => setSidebarOpen(false)}>
-                  <img src="/images/brand/logo-horizontal.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
+                  <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
                 </Link>
                 <button 
                   onClick={() => setSidebarOpen(false)}
