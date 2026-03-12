@@ -86,9 +86,9 @@ const B2BDashboard: React.FC = () => {
         {/* Logo Area */}
         <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10 !flex-shrink-0">
           <img
-            src="/images/brand/logocompensatuviaje.png"
+            src="/images/brand/logo-horizontal-white.svg"
             alt="CompensaTuViaje"
-            className="!h-12 !w-auto !drop-shadow-lg"
+            className="!h-10 !w-auto !drop-shadow-lg"
           />
         </div>
         
@@ -139,9 +139,9 @@ const B2BDashboard: React.FC = () => {
           <aside className="!fixed !left-0 !top-0 !h-full !w-64 !bg-gradient-to-b !from-gray-900 !via-gray-800 !to-black !shadow-2xl !flex !flex-col !z-[70]">
             <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10">
               <img
-                src="/images/brand/logocompensatuviaje.png"
+                src="/images/brand/logo-horizontal-white.svg"
                 alt="CompensaTuViaje"
-                className="!h-12 !w-auto !drop-shadow-lg"
+                className="!h-10 !w-auto !drop-shadow-lg"
               />
             </div>
             

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FaLeaf,
   FaChartLine,
   FaPlane,
   FaGlobeAmericas,
@@ -83,11 +82,8 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
       {/* --- SIDEBAR DESKTOP --- */}
       <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen !bg-white !border-r !border-gray-200 !shadow-sm !fixed !left-0 !top-0 !z-50 !overflow-y-auto">
         {/* Logo Area */}
-        <Link to="/b2c/dashboard" className="!flex !items-center !gap-3 !h-20 !px-6 !border-b !border-gray-100 !flex-shrink-0 !no-underline">
-          <div className="!w-10 !h-10 !bg-green-100 !rounded-lg !flex !items-center !justify-center">
-            <FaLeaf className="!text-green-600 !text-2xl" />
-          </div>
-          <span className="!text-lg !font-bold !text-gray-800">CompensaTuViaje</span>
+        <Link to="/b2c/dashboard" className="!flex !items-center !h-20 !px-5 !border-b !border-gray-100 !flex-shrink-0 !no-underline">
+          <img src="/images/brand/logo-horizontal.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
         </Link>
         
         {/* Nav Links */}
@@ -157,11 +153,8 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
               className="!fixed !left-0 !top-0 !h-full !w-64 !bg-white !border-r !border-gray-200 !shadow-2xl !flex !flex-col !z-[70] lg:!hidden"
             >
               <div className="!flex !items-center !justify-between !h-20 !px-6 !border-b !border-gray-100">
-                <Link to="/b2c/dashboard" className="!flex !items-center !gap-3 !no-underline" onClick={() => setSidebarOpen(false)}>
-                  <div className="!w-10 !h-10 !bg-green-100 !rounded-lg !flex !items-center !justify-center">
-                    <FaLeaf className="!text-green-600 !text-2xl" />
-                  </div>
-                  <span className="!text-lg !font-bold !text-gray-800">CompensaTuViaje</span>
+                <Link to="/b2c/dashboard" className="!flex !items-center !no-underline" onClick={() => setSidebarOpen(false)}>
+                  <img src="/images/brand/logo-horizontal.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
                 </Link>
                 <button 
                   onClick={() => setSidebarOpen(false)}

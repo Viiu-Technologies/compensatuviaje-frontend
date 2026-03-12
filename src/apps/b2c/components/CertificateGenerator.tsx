@@ -329,7 +329,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
                     boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                   }}>
                     <img 
-                      src="/images/brand/logocompensatuviaje.png" 
+                      src="/images/brand/logo-horizontal.png" 
                       alt="CompensaTuViaje"
                       style={{ height: '48px', width: 'auto', objectFit: 'contain' }}
                       crossOrigin="anonymous"

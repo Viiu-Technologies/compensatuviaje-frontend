@@ -73,10 +73,13 @@ const PartnerLayout: React.FC = () => {
         {/* Logo */}
         <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10 !flex-shrink-0">
           <img
-            src="/images/brand/logocompensatuviaje.png"
+            src="/images/brand/logo-horizontal-white.svg"
             alt="CompensaTuViaje"
-            className={`!h-12 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!scale-75' : ''}`}
+            className={`!h-10 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
           />
+          {sidebarCollapsed && (
+            <img src="/images/brand/favicon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !drop-shadow-lg" />
+          )}
         </div>
 
         {/* Partner Info */}
@@ -183,7 +186,7 @@ const PartnerLayout: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10">
-              <img src="/images/brand/logocompensatuviaje.png" alt="CompensaTuViaje" className="!h-12 !w-auto" />
+              <img src="/images/brand/logo-horizontal-white.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
             </div>
 
             <div className="!px-4 !py-4 !border-b !border-white/10">

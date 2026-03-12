@@ -91,9 +91,9 @@ const Footer = () => {
                 className="flex flex-col items-center md:items-start !gap-6"
               >
                 <img 
-                  src="/images/brand/logocompensatuviaje.png" 
+                  src="/images/brand/logo-horizontal.svg" 
                   alt="CompensaTuViaje"
-                  className="h-16 w-auto drop-shadow-xl md:!ml-0 !mx-auto"
+                  className="h-14 w-auto drop-shadow-xl md:!ml-0 !mx-auto"
                 />
                 <p className="text-neutral-900 text-lg font-bold leading-relaxed drop-shadow-sm !text-left">
                   Compensamos la huella de carbono de tus viajes apoyando proyectos verificados en Chile y el mundo.

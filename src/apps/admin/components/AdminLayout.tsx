@@ -65,10 +65,13 @@ export default function AdminLayout() {
         {/* Logo Area */}
         <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10 !flex-shrink-0">
           <img
-            src="/images/brand/logocompensatuviaje.png"
+            src="/images/brand/logo-horizontal-white.svg"
             alt="CompensaTuViaje"
-            className={`!h-12 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!scale-75' : ''}`}
+            className={`!h-10 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
           />
+          {sidebarCollapsed && (
+            <img src="/images/brand/favicon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !drop-shadow-lg" />
+          )}
         </div>
         
         {/* Admin Info */}
@@ -138,7 +141,7 @@ export default function AdminLayout() {
         <div className="!fixed !inset-0 !z-[60] !bg-black/60 !backdrop-blur-sm lg:!hidden" onClick={() => setMobileMenuOpen(false)}>
           <aside className="!fixed !left-0 !top-0 !h-full !w-72 !bg-gradient-to-b !from-slate-900 !via-slate-800 !to-slate-950 !shadow-2xl !flex !flex-col">
             <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10">
-              <img src="/images/brand/logocompensatuviaje.png" alt="CompensaTuViaje" className="!h-12 !w-auto" />
+              <img src="/images/brand/logo-horizontal-white.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
             </div>
             
             <div className="!px-4 !py-4 !border-b !border-white/10">
