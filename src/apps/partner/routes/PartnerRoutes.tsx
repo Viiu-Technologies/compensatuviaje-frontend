@@ -15,6 +15,8 @@ import PartnerProfile from '../pages/PartnerProfile';
 import PartnerProjects from '../pages/PartnerProjects';
 import ProjectDetail from '../pages/ProjectDetail';
 import ProjectForm from '../pages/ProjectForm';
+import KybVerificationPage from '../pages/KybVerificationPage';
+import ProjectCertificationPage from '../pages/ProjectCertificationPage';
 
 // ============================================
 // PARTNER ROUTES COMPONENT
@@ -27,6 +29,9 @@ const PartnerRoutes: React.FC = () => {
         {/* Dashboard */}
         <Route index element={<PartnerDashboard />} />
         
+        {/* KYB Verification (Agent 1) */}
+        <Route path="kyb" element={<KybVerificationPage />} />
+        
         {/* Profile & Settings */}
         <Route path="profile" element={<PartnerProfile />} />
         
@@ -35,6 +40,9 @@ const PartnerRoutes: React.FC = () => {
         <Route path="projects/create" element={<ProjectForm />} />
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="projects/:id/edit" element={<ProjectForm />} />
+        
+        {/* Project Certification (Agent 2) */}
+        <Route path="projects/:id/certification" element={<ProjectCertificationPage />} />
       </Route>
       
       {/* Fallback - redirect to dashboard */}

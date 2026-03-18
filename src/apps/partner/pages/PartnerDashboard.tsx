@@ -13,12 +13,16 @@ import {
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_COLORS
 } from '../../../types/partner.types';
+import type { KybStatusResponse } from '../../../types/kyb.types';
+import { getKybVisualStatus, KYB_TIER_LABELS, KYB_TIER_ICONS } from '../../../types/kyb.types';
 import {
   getPartnerProfile,
   getPartnerStats,
   getOnboardingStatus,
   getPartnerProjects
 } from '../services/partnerApi';
+import kybApi from '../services/kybApi';
+import { Shield, ArrowRight, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
 
 // ============================================
 // STAT CARD COMPONENT
@@ -239,6 +243,126 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
 };
 
 // ============================================
+// KYB STATUS CARD COMPONENT
+// ============================================
+
+interface KybStatusCardProps {
+  kybStatus: KybStatusResponse | null;
+  loading: boolean;
+}
+
+const KybStatusCard: React.FC<KybStatusCardProps> = ({ kybStatus, loading }) => {
+  if (loading) {
+    return (
+      <div className="!bg-white !rounded-xl !shadow-sm !border !p-6 !animate-pulse">
+        <div className="!h-6 !bg-gray-200 !rounded !w-1/2 !mb-4" />
+        <div className="!h-16 !bg-gray-200 !rounded !mb-4" />
+        <div className="!h-10 !bg-gray-200 !rounded !w-1/3" />
+      </div>
+    );
+  }
+
+  const visualStatus = getKybVisualStatus(kybStatus?.latest_evaluation || null);
+  const evaluation = kybStatus?.latest_evaluation;
+
+  // Determine card style and content based on status
+  const getStatusConfig = () => {
+    switch (visualStatus) {
+      case 'approved':
+        return {
+          bgGradient: '!bg-gradient-to-r !from-green-50 !to-emerald-50',
+          borderColor: '!border-green-200',
+          icon: <CheckCircle className="!w-8 !h-8 !text-green-600" />,
+          title: 'Empresa Verificada',
+          description: evaluation?.partner_tier 
+            ? `Nivel ${KYB_TIER_LABELS[evaluation.partner_tier]} ${KYB_TIER_ICONS[evaluation.partner_tier]}` 
+            : 'Tu cuenta está activa',
+          buttonText: 'Ver Detalles',
+          buttonStyle: '!bg-green-100 !text-green-700 hover:!bg-green-200'
+        };
+      case 'pending':
+        return {
+          bgGradient: '!bg-gradient-to-r !from-blue-50 !to-sky-50',
+          borderColor: '!border-blue-200',
+          icon: <Clock className="!w-8 !h-8 !text-blue-600 !animate-pulse" />,
+          title: 'Verificación en Proceso',
+          description: 'Nuestra IA está evaluando tu dossier empresarial',
+          buttonText: 'Ver Estado',
+          buttonStyle: '!bg-blue-100 !text-blue-700 hover:!bg-blue-200'
+        };
+      case 'ai_approved_pending':
+      case 'ai_rejected_pending':
+        return {
+          bgGradient: '!bg-gradient-to-r !from-amber-50 !to-yellow-50',
+          borderColor: '!border-amber-200',
+          icon: <Clock className="!w-8 !h-8 !text-amber-600" />,
+          title: 'Pendiente Revisión Admin',
+          description: 'La IA completó la evaluación, esperando decisión final',
+          buttonText: 'Ver Resultados',
+          buttonStyle: '!bg-amber-100 !text-amber-700 hover:!bg-amber-200'
+        };
+      case 'rejected':
+        return {
+          bgGradient: '!bg-gradient-to-r !from-red-50 !to-rose-50',
+          borderColor: '!border-red-200',
+          icon: <XCircle className="!w-8 !h-8 !text-red-600" />,
+          title: 'Verificación Rechazada',
+          description: 'Puedes enviar nueva documentación',
+          buttonText: 'Ver Motivo',
+          buttonStyle: '!bg-red-100 !text-red-700 hover:!bg-red-200'
+        };
+      case 'error':
+        return {
+          bgGradient: '!bg-gradient-to-r !from-red-50 !to-rose-50',
+          borderColor: '!border-red-200',
+          icon: <AlertTriangle className="!w-8 !h-8 !text-red-600" />,
+          title: 'Error en Evaluación',
+          description: 'Hubo un problema, intenta nuevamente',
+          buttonText: 'Reintentar',
+          buttonStyle: '!bg-red-100 !text-red-700 hover:!bg-red-200'
+        };
+      default: // 'none'
+        return {
+          bgGradient: '!bg-gradient-to-r !from-slate-50 !to-gray-50',
+          borderColor: '!border-slate-200',
+          icon: <Shield className="!w-8 !h-8 !text-slate-400" />,
+          title: 'Verificación Pendiente',
+          description: 'Verifica tu empresa para activar tu cuenta',
+          buttonText: 'Iniciar Verificación',
+          buttonStyle: '!bg-emerald-600 !text-white hover:!bg-emerald-700'
+        };
+    }
+  };
+
+  const config = getStatusConfig();
+
+  return (
+    <div className={`!rounded-xl !border !p-6 ${config.bgGradient} ${config.borderColor}`}>
+      <div className="!flex !items-start !gap-4">
+        <div className="!flex-shrink-0">
+          {config.icon}
+        </div>
+        <div className="!flex-grow">
+          <h3 className="!text-lg !font-semibold !text-slate-800 !mb-1">
+            {config.title}
+          </h3>
+          <p className="!text-sm !text-slate-600 !mb-4">
+            {config.description}
+          </p>
+          <Link
+            to="/partner/kyb"
+            className={`!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-lg !font-medium !transition-colors !no-underline ${config.buttonStyle}`}
+          >
+            {config.buttonText}
+            <ArrowRight className="!w-4 !h-4" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
 // QUICK ACTIONS COMPONENT
 // ============================================
 
@@ -322,6 +446,8 @@ const PartnerDashboard: React.FC = () => {
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
   const [recentProjects, setRecentProjects] = useState<EsgProject[]>([]);
+  const [kybStatus, setKybStatus] = useState<KybStatusResponse | null>(null);
+  const [kybLoading, setKybLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -331,6 +457,7 @@ const PartnerDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setKybLoading(true);
       
       // Cargar datos en paralelo con manejo de errores individual
       // Usamos Promise.allSettled para que un error no bloquee los demás
@@ -338,7 +465,8 @@ const PartnerDashboard: React.FC = () => {
         getPartnerProfile(),
         getPartnerStats(),
         getOnboardingStatus(),
-        getPartnerProjects({ limit: 5 })
+        getPartnerProjects({ limit: 5 }),
+        kybApi.getStatus()
       ]);
 
       // Extraer resultados solo si fueron exitosos
@@ -346,16 +474,18 @@ const PartnerDashboard: React.FC = () => {
       const statsData = results[1].status === 'fulfilled' ? results[1].value : null;
       const onboardingData = results[2].status === 'fulfilled' ? results[2].value : null;
       const projectsData = results[3].status === 'fulfilled' ? results[3].value : null;
+      const kybData = results[4].status === 'fulfilled' ? results[4].value : null;
 
       setProfile(profileData);
       setStats(statsData);
       setOnboarding(onboardingData);
       setRecentProjects(projectsData?.projects || []);
+      setKybStatus(kybData);
       
       // Log errores para debugging
       results.forEach((result, index) => {
         if (result.status === 'rejected') {
-          const endpoints = ['profile', 'stats', 'onboarding', 'projects'];
+          const endpoints = ['profile', 'stats', 'onboarding', 'projects', 'kybStatus'];
           console.warn(`Error loading ${endpoints[index]}:`, result.reason);
         }
       });
@@ -363,6 +493,7 @@ const PartnerDashboard: React.FC = () => {
       console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
+      setKybLoading(false);
     }
   };
 
@@ -431,6 +562,9 @@ const PartnerDashboard: React.FC = () => {
         {onboarding && !onboarding.completed && (
           <OnboardingProgress status={onboarding} />
         )}
+
+        {/* KYB Status Card */}
+        <KybStatusCard kybStatus={kybStatus} loading={kybLoading} />
 
         {/* Stats Grid */}
         <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">

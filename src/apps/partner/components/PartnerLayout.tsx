@@ -19,7 +19,8 @@ import {
   Menu,
   Bell,
   Plus,
-  Building2
+  Building2,
+  Shield
 } from 'lucide-react';
 
 // ============================================
@@ -59,6 +60,7 @@ const PartnerLayout: React.FC = () => {
   const navItems = [
     { path: '/partner', icon: LayoutDashboard, label: 'Dashboard', exact: true, needsAttention: false },
     { path: '/partner/projects', icon: FolderKanban, label: 'Mis Proyectos', exact: false, needsAttention: false },
+    { path: '/partner/kyb', icon: Shield, label: 'Verificación KYB', exact: false, needsAttention: profile?.status === 'onboarding' },
     { path: '/partner/profile', icon: UserCircle, label: 'Mi Perfil', exact: false, needsAttention: onboarding ? !onboarding.completed : false },
   ];
 

@@ -17,6 +17,7 @@ import {
   submitProjectForReview,
   deleteProject
 } from '../services/partnerApi';
+import { Award } from 'lucide-react';
 
 // ============================================
 // PROJECT INFO CARD COMPONENT
@@ -213,6 +214,7 @@ const ProjectDetail: React.FC = () => {
   const canEdit = ['draft', 'rejected'].includes(project.status);
   const canDelete = project.status === 'draft';
   const canSubmit = project.status === 'draft' || project.status === 'rejected';
+  const canCertify = project.status === 'active';
 
   return (
     <div className="!space-y-6">
@@ -284,6 +286,15 @@ const ProjectDetail: React.FC = () => {
                 </>
               )}
             </button>
+          )}
+          {canCertify && (
+            <Link
+              to={`/partner/projects/${project.id}/certification`}
+              className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-gradient-to-r !from-amber-500 !to-orange-600 !text-white !rounded-xl hover:!from-amber-600 hover:!to-orange-700 !transition-all !font-semibold !shadow-lg !shadow-amber-500/20 !no-underline"
+            >
+              <Award className="!w-4 !h-4" />
+              Certificar Proyecto
+            </Link>
           )}
         </div>
       </div>
