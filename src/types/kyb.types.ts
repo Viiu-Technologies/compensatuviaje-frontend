@@ -76,6 +76,7 @@ export interface KybEvaluation {
   document_url?: string;
   organization_name: string;
   rut_tax_id?: string;
+  overall_score?: number;
   scores: KybScores | null;
   ai_insights: KybInsights | null;
   s3_key: string | null;

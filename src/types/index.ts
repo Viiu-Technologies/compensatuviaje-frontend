@@ -1,18 +1,7 @@
-// ============================================
-// BARREL EXPORT - All Types
-// ============================================
-
-export * from './auth.types';
-export * from './api.types';
-export * from './company.types';
-export * from './document.types';
 export * from './user.types';
-export * from './dashboard.types';
-
-// Partner types - exported separately due to naming conflicts
-// Import directly from './partner.types' when needed
-// export * from './partner.types';
-
-// KYB & Certification types
+// Note: We intentionally do NOT export partner.types to avoid interface conflicts
+// Partner types should be imported explicitly where needed:
+// import { ... } from '../types/partner.types';
 export * from './kyb.types';
 export * from './certification.types';
+export * from './admin-evaluations.types';

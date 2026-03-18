@@ -13,6 +13,9 @@ import PartnersPage from '../pages/PartnersPage';
 import PartnerDetailPage from '../pages/PartnerDetailPage';
 import ProjectsReviewPage from '../pages/ProjectsReviewPage';
 import AdminNFTDashboard from '../pages/AdminNFTDashboard';
+import AIEvaluationsPage from '../pages/AIEvaluationsPage';
+import AIKybDetailPage from '../pages/AIKybDetailPage';
+import AICertDetailPage from '../pages/AICertDetailPage';
 
 const AdminRoutes = () => {
   return (
@@ -33,6 +36,11 @@ const AdminRoutes = () => {
         {/* Gestión de Impact Partners */}
         <Route path="partners" element={<PartnersPage />} />
         <Route path="partners/:id" element={<PartnerDetailPage />} />
+
+        {/* Validaciones IA (Partners y Proyectos) */}
+        <Route path="partners/evaluations" element={<AIEvaluationsPage />} />
+        <Route path="partners/evaluations/:id" element={<AICertDetailPage />} />
+        <Route path="partners/kyb-evaluations/:id" element={<AIKybDetailPage />} />
 
         {/* Revisión de Proyectos ESG (pendientes) */}
         <Route path="proyectos-revision" element={<ProjectsReviewPage />} />
