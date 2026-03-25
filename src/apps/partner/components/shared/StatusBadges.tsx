@@ -17,19 +17,17 @@
  */
 
 import React from 'react';
-import { Clock, CheckCircle, XCircle, AlertTriangle, Loader2, Bot } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, AlertTriangle, Loader2, Bot, Gem, Award, Medal } from 'lucide-react';
 import type { PartnerTier } from '../../../../types/kyb.types';
 import type { CertificationLevel } from '../../../../types/certification.types';
 import {
   KYB_TIER_LABELS,
   KYB_TIER_COLORS,
-  KYB_TIER_ICONS,
   getKybBadgeConfig
 } from '../../../../types/kyb.types';
 import {
   CERT_LEVEL_LABELS,
   CERT_LEVEL_COLORS,
-  CERT_LEVEL_ICONS,
   getCertBadgeConfig
 } from '../../../../types/certification.types';
 import type { KybEvaluation } from '../../../../types/kyb.types';
@@ -109,7 +107,7 @@ export const TierBadge: React.FC<TierBadgeProps> = ({
       ${KYB_TIER_COLORS[tier]}
       ${className}
     `}>
-      <span>{KYB_TIER_ICONS[tier]}</span>
+      {tier === 'PLATINUM' ? <Gem className="!w-3.5 !h-3.5" /> : tier === 'GOLD' ? <Award className="!w-3.5 !h-3.5" /> : <Medal className="!w-3.5 !h-3.5" />}
       <span>{KYB_TIER_LABELS[tier]}</span>
     </span>
   );
@@ -191,7 +189,7 @@ export const CertLevelBadge: React.FC<CertLevelBadgeProps> = ({
       ${CERT_LEVEL_COLORS[level]}
       ${className}
     `}>
-      <span>{CERT_LEVEL_ICONS[level]}</span>
+      {level === 'PLATINO IMPACTO' ? <Gem className="!w-3.5 !h-3.5" /> : level === 'ORO' ? <Award className="!w-3.5 !h-3.5" /> : <Medal className="!w-3.5 !h-3.5" />}
       <span>{CERT_LEVEL_LABELS[level]}</span>
       {score !== undefined && score !== null && (
         <span className="!opacity-75">({score})</span>

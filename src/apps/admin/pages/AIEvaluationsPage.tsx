@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, FileText, Building2, Search, ArrowRight, Clock } from 'lucide-react';
+import { Bot, FileText, Building2, Search, ArrowRight, Clock, Award, Medal, Gem } from 'lucide-react';
 import adminAIApi from '../services/adminAIApi';
 import { 
   AdminCertEvaluationListItem, 
   AdminKybEvaluationListItem 
 } from '../../../types/admin-evaluations.types';
 import AdminPendingBadge from '../components/shared/AdminPendingBadge';
-import { KYB_TIER_LABELS, KYB_TIER_COLORS, KYB_TIER_ICONS } from '../../../types/kyb.types';
-import { CERT_LEVEL_LABELS, CERT_LEVEL_COLORS, CERT_LEVEL_ICONS } from '../../../types/certification.types';
+import { KYB_TIER_LABELS, KYB_TIER_COLORS } from '../../../types/kyb.types';
+import { CERT_LEVEL_LABELS, CERT_LEVEL_COLORS } from '../../../types/certification.types';
 
 type Tab = 'projects' | 'kyb';
+
+const getCertIcon = (level: string) => {
+  if (level === 'PLATINO IMPACTO') return <Gem className="!w-3.5 !h-3.5" />;
+  if (level === 'ORO') return <Award className="!w-3.5 !h-3.5" />;
+  return <Medal className="!w-3.5 !h-3.5" />;
+};
+
+const getKybTieIcon = (tier: string) => {
+  if (tier === 'PLATINUM') return <Gem className="!w-3.5 !h-3.5" />;
+  if (tier === 'GOLD') return <Award className="!w-3.5 !h-3.5" />;
+  return <Medal className="!w-3.5 !h-3.5" />;
+};
 
 const AIEvaluationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('projects');
@@ -163,8 +175,8 @@ const AIEvaluationsPage: React.FC = () => {
                           <div className="!flex !flex-col !gap-1.5 !items-start">
                             <AdminPendingBadge aiStatus={evalItem.ai_status} adminDecision={evalItem.admin_decision} size="sm" />
                             {evalItem.level && (
-                              <div className={`!text-xs !px-2 !py-0.5 !rounded-full !font-medium !border ${CERT_LEVEL_COLORS[evalItem.level]}`}>
-                                {CERT_LEVEL_ICONS[evalItem.level]} {CERT_LEVEL_LABELS[evalItem.level]} (Score: {evalItem.final_score})
+                              <div className={`!flex !items-center !gap-1 !text-xs !px-2.5 !py-1 !rounded-full !font-medium !border ${CERT_LEVEL_COLORS[evalItem.level]}`}>
+                                {getCertIcon(evalItem.level)} {CERT_LEVEL_LABELS[evalItem.level]} (Score: {evalItem.final_score})
                               </div>
                             )}
                           </div>
@@ -229,8 +241,8 @@ const AIEvaluationsPage: React.FC = () => {
                           <div className="!flex !flex-col !gap-1.5 !items-start">
                             <AdminPendingBadge aiStatus={evalItem.ai_status} adminDecision={evalItem.admin_decision} size="sm" />
                             {evalItem.partner_tier && (
-                              <div className={`!text-xs !px-2 !py-0.5 !rounded-full !font-medium !border ${KYB_TIER_COLORS[evalItem.partner_tier]}`}>
-                                {KYB_TIER_ICONS[evalItem.partner_tier]} {KYB_TIER_LABELS[evalItem.partner_tier]} (Score: {evalItem.overall_score})
+                              <div className={`!flex !items-center !gap-1 !text-xs !px-2.5 !py-1 !rounded-full !font-medium !border ${KYB_TIER_COLORS[evalItem.partner_tier]}`}>
+                                {getKybTieIcon(evalItem.partner_tier)} {KYB_TIER_LABELS[evalItem.partner_tier]} (Score: {evalItem.overall_score})
                               </div>
                             )}
                           </div>

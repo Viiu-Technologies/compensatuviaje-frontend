@@ -31,7 +31,8 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  History
+  History,
+  ShieldCheck, Coins, Settings, Phone, BarChart, Award, Bot, Calendar
 } from 'lucide-react';
 
 // Types
@@ -148,16 +149,16 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
               <p className="!font-medium !mb-1">Nuestra IA evaluará:</p>
               <ul className="!space-y-1">
                 <li className="!flex !items-center !gap-2">
-                  <span>📋</span> Documentación legal
+                  <FileText className="!w-4 !h-4" /> Documentación legal
                 </li>
                 <li className="!flex !items-center !gap-2">
-                  <span>💰</span> Solidez financiera
+                  <Coins className="!w-4 !h-4" /> Solidez financiera
                 </li>
                 <li className="!flex !items-center !gap-2">
-                  <span>⚙️</span> Capacidad técnica
+                  <Settings className="!w-4 !h-4" /> Capacidad técnica
                 </li>
                 <li className="!flex !items-center !gap-2">
-                  <span>📞</span> Referencias comerciales
+                  <Phone className="!w-4 !h-4" /> Referencias comerciales
                 </li>
               </ul>
             </div>
@@ -264,10 +265,10 @@ const ScoresGrid: React.FC<ScoresGridProps> = ({ scores, insights }) => {
   const [expandedInsight, setExpandedInsight] = useState<string | null>(null);
 
   const scoreItems = [
-    { key: 'legal', label: 'Legal', icon: '📋', score: scores.legal, notes: insights?.legal_notes },
-    { key: 'financial', label: 'Financiero', icon: '💰', score: scores.financial, notes: insights?.financial_notes },
-    { key: 'technical', label: 'Técnico', icon: '⚙️', score: scores.technical, notes: insights?.technical_notes },
-    { key: 'references', label: 'Referencias', icon: '📞', score: scores.references, notes: insights?.references_notes },
+    { key: 'legal', label: 'Legal', icon: <FileText className="!w-4 !h-4" />, score: scores.legal, notes: insights?.legal_notes },
+    { key: 'financial', label: 'Financiero', icon: <Coins className="!w-4 !h-4" />, score: scores.financial, notes: insights?.financial_notes },
+    { key: 'technical', label: 'Técnico', icon: <Settings className="!w-4 !h-4" />, score: scores.technical, notes: insights?.technical_notes },
+    { key: 'references', label: 'Referencias', icon: <Phone className="!w-4 !h-4" />, score: scores.references, notes: insights?.references_notes },
   ];
 
   return (
@@ -332,14 +333,18 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
       {/* Summary Cards */}
       <div className="!grid !grid-cols-3 !gap-4">
         <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1">📊 Score General</p>
+          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1 !flex !items-center !justify-center !gap-1">
+            <BarChart className="!w-4 !h-4" /> Score General
+          </p>
           <p className="!text-3xl !font-bold !text-slate-800 dark:!text-slate-100">
             {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}
             <span className="!text-lg !font-normal !text-slate-400 dark:!text-slate-500">/100</span>
           </p>
         </div>
         <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1">🏅 Tier Asignado</p>
+          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1 !flex !items-center !justify-center !gap-1">
+            <Award className="!w-4 !h-4" /> Tier Asignado
+          </p>
           {evaluation.partner_tier ? (
             <TierBadge tier={evaluation.partner_tier} size="lg" />
           ) : (
@@ -347,11 +352,13 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
           )}
         </div>
         <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1">🤖 Decisión IA</p>
-          <p className={`!text-lg !font-semibold ${
+          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1 !flex !items-center !justify-center !gap-1">
+            <Bot className="!w-4 !h-4" /> Decisión IA
+          </p>
+          <p className={`!text-lg !font-semibold !flex !items-center !justify-center !gap-1 ${
             evaluation.ai_status === 'ai_approved' ? '!text-green-600 dark:!text-green-400' : '!text-red-600 dark:!text-red-400'
           }`}>
-            {evaluation.ai_status === 'ai_approved' ? '✅ Aprobado' : '❌ Rechazado'}
+            {evaluation.ai_status === 'ai_approved' ? <><CheckCircle className="!w-5 !h-5" /> Aprobado</>  : <><XCircle className="!w-5 !h-5" /> Rechazado</>}
           </p>
         </div>
       </div>
@@ -397,12 +404,12 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
               {evaluation.partner_tier && (
                 <TierBadge tier={evaluation.partner_tier} size="md" />
               )}
-              <span className="!text-green-700 dark:!text-green-400">
-                📊 Score: {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}/100
+              <span className="!flex !items-center !gap-1 !text-green-700 dark:!text-green-400">
+                <BarChart className="!w-4 !h-4" /> Score: {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}/100
               </span>
             </div>
-            <p className="!text-green-700 dark:!text-green-400 !text-sm">
-              📅 Verificada: {evaluation.admin_decided_at 
+            <p className="!flex !items-center !gap-1 !text-green-700 dark:!text-green-400 !text-sm">
+              <Calendar className="!w-4 !h-4" /> Verificada: {evaluation.admin_decided_at 
                 ? new Date(evaluation.admin_decided_at).toLocaleDateString('es-CL', {
                     day: 'numeric',
                     month: 'long',
@@ -517,12 +524,12 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
           {evaluations.map((eval_, index) => (
             <div key={eval_.id} className="!p-4 !flex !items-center !justify-between">
               <div className="!flex !items-center !gap-3">
-                <span className={`!text-lg ${
-                  eval_.admin_decision === 'approved' ? '' : 
-                  eval_.admin_decision === 'rejected' ? '' : '🔄'
+                <span className={`!flex !items-center !justify-center !w-8 !h-8 !rounded-full ${
+                  eval_.admin_decision === 'approved' ? '!bg-green-100 !text-green-600 dark:!bg-green-900/30 dark:!text-green-400' : 
+                  eval_.admin_decision === 'rejected' ? '!bg-red-100 !text-red-600 dark:!bg-red-900/30 dark:!text-red-400' : '!bg-blue-100 !text-blue-600 dark:!bg-blue-900/30 dark:!text-blue-400'
                 }`}>
-                  {eval_.admin_decision === 'approved' ? '✅' : 
-                   eval_.admin_decision === 'rejected' ? '❌' : '🔄'}
+                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5" /> : 
+                   eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5" /> : <RefreshCw className="!w-4 !h-4" />}
                 </span>
                 <div>
                   <p className="!text-sm !text-slate-600 dark:!text-slate-300">

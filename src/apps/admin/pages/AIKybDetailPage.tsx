@@ -5,7 +5,7 @@ import adminAIApi from '../services/adminAIApi';
 import { AdminKybEvaluationDetail, AdminPartnerContext } from '../../../types/admin-evaluations.types';
 import AdminPendingBadge from '../components/shared/AdminPendingBadge';
 import RejectModal from '../components/shared/RejectModal';
-import { KYB_TIER_LABELS, KYB_TIER_COLORS, KYB_TIER_ICONS } from '../../../types/kyb.types';
+import { KYB_TIER_LABELS, KYB_TIER_COLORS } from '../../../types/kyb.types';
 
 const AIKybDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

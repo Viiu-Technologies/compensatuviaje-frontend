@@ -24,8 +24,8 @@ interface ScoreGaugeProps {
   score: number;
   /** Etiqueta descriptiva */
   label: string;
-  /** Icono opcional (emoji o string) */
-  icon?: string;
+  /** Icono opcional (elemento de React o string) */
+  icon?: React.ReactNode;
   /** Tamaño del componente */
   size?: 'sm' | 'md' | 'lg';
   /** Mostrar el porcentaje como texto */
@@ -210,7 +210,7 @@ export const ScoreCircle: React.FC<ScoreCircleProps> = ({
 interface ScoreCardProps {
   score: number;
   label: string;
-  icon?: string;
+  icon?: React.ReactNode;
   description?: string;
   thresholds?: { green: number; yellow: number };
   className?: string;
