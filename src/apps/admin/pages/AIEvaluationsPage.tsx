@@ -66,7 +66,7 @@ const AIEvaluationsPage: React.FC = () => {
   };
 
   return (
-    <div className="!space-y-6">
+    <div className="!space-y-6 !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
       <div className="!flex !items-center !justify-between">
         <div>
           <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100 !flex !items-center !gap-2">
@@ -175,7 +175,7 @@ const AIEvaluationsPage: React.FC = () => {
                         <td className="!py-3 !px-4 !text-right">
                           <Link 
                             to={`/admin/partners/evaluations/${evalItem.id}`}
-                            className="!inline-flex !items-center !gap-1 !px-3 !py-1.5 !text-sm !font-medium !text-indigo-600 dark:!text-indigo-400 !bg-indigo-50 dark:!bg-indigo-900/30 hover:!bg-indigo-100 dark:hover:!bg-indigo-900/50 !rounded-lg !transition-colors"
+                            className="!inline-flex !items-center !gap-1 !px-3 !py-1.5 !text-sm !font-medium !text-white !bg-indigo-600 dark:!bg-indigo-500 hover:!bg-indigo-700 dark:hover:!bg-indigo-600 !rounded-lg !transition-colors"
                           >
                             Revisar
                             <ArrowRight className="!w-4 !h-4" />
@@ -241,7 +241,7 @@ const AIEvaluationsPage: React.FC = () => {
                         <td className="!py-3 !px-4 !text-right">
                           <Link 
                             to={`/admin/partners/kyb-evaluations/${evalItem.id}`}
-                            className="!inline-flex !items-center !gap-1 !px-3 !py-1.5 !text-sm !font-medium !text-indigo-600 dark:!text-indigo-400 !bg-indigo-50 dark:!bg-indigo-900/30 hover:!bg-indigo-100 dark:hover:!bg-indigo-900/50 !rounded-lg !transition-colors"
+                            className="!inline-flex !items-center !gap-1 !px-3 !py-1.5 !text-sm !font-medium !text-white !bg-indigo-600 dark:!bg-indigo-500 hover:!bg-indigo-700 dark:hover:!bg-indigo-600 !rounded-lg !transition-colors"
                           >
                             Revisar
                             <ArrowRight className="!w-4 !h-4" />

@@ -88,7 +88,7 @@ const AIKybDetailPage: React.FC = () => {
   const isDecided = evaluation.admin_decision !== null;
 
   return (
-    <div className="!space-y-6 !pb-24">
+    <div className="!space-y-6 !pb-24 !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
       {/* Header */}
       <div className="!flex !items-center !justify-between">
         <div className="!flex !items-center !gap-4">
