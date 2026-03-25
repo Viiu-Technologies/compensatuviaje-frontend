@@ -36,18 +36,18 @@ const ProjectFilters: React.FC<FilterProps> = ({ currentStatus, onStatusChange }
   ];
 
   return (
-    <div className="!bg-white !rounded-lg !border !p-4 !mb-6">
+    <div className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-lg !border !p-4 !mb-6">
       <div className="!flex !flex-wrap !items-center !gap-4">
         <div className="!flex !items-center !gap-2">
-          <svg className="!w-5 !h-5 !text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          <span className="!text-sm !text-gray-600">Filtrar:</span>
+          <span className="!text-sm !text-slate-600 dark:!text-slate-300">Filtrar:</span>
         </div>
         <select
           value={currentStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="!px-3 !py-2 !border !border-gray-300 !rounded-lg !text-sm focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500"
+          className="!px-3 !py-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg !text-sm focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500"
         >
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -88,7 +88,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
 
   return (
     <>
-      <div className="!bg-white !rounded-xl !border !shadow-sm hover:!shadow-md !transition-shadow !overflow-hidden">
+      <div className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-xl !border !shadow-sm hover:!shadow-md !transition-shadow !overflow-hidden">
         {/* Card Header */}
         <div className="!p-6">
           <div className="!flex !items-start !justify-between">
@@ -105,12 +105,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
                   </svg>
                 </div>
                 <div>
-                  <span className="!text-xs !font-mono !text-gray-500">{project.code}</span>
-                  <h3 className="!font-semibold !text-gray-800 !truncate">{project.name}</h3>
+                  <span className="!text-xs !font-mono !text-slate-500 dark:!text-slate-400">{project.code}</span>
+                  <h3 className="!font-semibold !text-slate-800 dark:!text-slate-100 !truncate">{project.name}</h3>
                 </div>
               </div>
               
-              <p className="!text-sm !text-gray-500 !line-clamp-2 !mb-4">
+              <p className="!text-sm !text-slate-500 dark:!text-slate-400 !line-clamp-2 !mb-4">
                 {project.description || 'Sin descripción'}
               </p>
 
@@ -118,12 +118,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
                 <span className={`!px-2.5 !py-1 !text-xs !font-medium !rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>
                   {PROJECT_STATUS_LABELS[project.status]}
                 </span>
-                <span className="!text-gray-400">•</span>
-                <span className="!text-gray-600">
+                <span className="!text-slate-400 dark:!text-slate-500">•</span>
+                <span className="!text-slate-600 dark:!text-slate-300">
                   {PROJECT_TYPE_LABELS[project.type]}
                 </span>
-                <span className="!text-gray-400">•</span>
-                <span className="!text-gray-600">
+                <span className="!text-slate-400 dark:!text-slate-500">•</span>
+                <span className="!text-slate-600 dark:!text-slate-300">
                   {project.location_country}
                   {project.location_region && `, ${project.location_region}`}
                 </span>
@@ -133,15 +133,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
         </div>
 
         {/* Card Footer */}
-        <div className="!px-6 !py-4 !bg-gray-50 !border-t !flex !items-center !justify-between">
-          <div className="!text-sm !text-gray-500">
+        <div className="!px-6 !py-4 !bg-slate-50 dark:!bg-slate-900 !border-t !flex !items-center !justify-between">
+          <div className="!text-sm !text-slate-500 dark:!text-slate-400">
             Creado: {new Date(project.created_at).toLocaleDateString('es-CL')}
           </div>
           <div className="!flex !items-center !gap-2">
             {canDelete && (
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="!p-2 !text-gray-400 hover:!text-red-600 hover:!bg-red-50 !rounded-lg !transition-colors"
+                className="!p-2 !text-slate-400 dark:!text-slate-500 hover:!text-red-600 dark:!text-red-400 hover:!bg-red-50 dark:!bg-red-900/30 !rounded-lg !transition-colors"
                 title="Eliminar"
               >
                 <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
             {canEdit && (
               <Link
                 to={`/partner/projects/${project.id}/edit`}
-                className="!p-2 !text-gray-400 hover:!text-blue-600 hover:!bg-blue-50 !rounded-lg !transition-colors"
+                className="!p-2 !text-slate-400 dark:!text-slate-500 hover:!text-blue-600 hover:!bg-blue-50 !rounded-lg !transition-colors"
                 title="Editar"
               >
                 <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +176,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
       {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,18 +184,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">Eliminar proyecto</h3>
-                <p className="text-sm text-gray-500">Esta acción no se puede deshacer</p>
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Eliminar proyecto</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Esta acción no se puede deshacer</p>
               </div>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-600 dark:text-slate-300 mb-6">
               ¿Estás seguro de que deseas eliminar el proyecto <strong>{project.name}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:bg-slate-900 disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -219,9 +219,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
 // ============================================
 
 const EmptyState: React.FC<{ hasFilter: boolean }> = ({ hasFilter }) => (
-  <div className="!bg-white !rounded-xl !border !p-12 !text-center">
-    <div className="!w-20 !h-20 !bg-gray-100 !rounded-full !flex !items-center !justify-center !mx-auto !mb-6">
-      <svg className="!w-10 !h-10 !text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-xl !border !p-12 !text-center">
+    <div className="!w-20 !h-20 !bg-slate-100 dark:!bg-slate-800 !rounded-full !flex !items-center !justify-center !mx-auto !mb-6">
+      <svg className="!w-10 !h-10 !text-slate-400 dark:!text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -232,19 +232,19 @@ const EmptyState: React.FC<{ hasFilter: boolean }> = ({ hasFilter }) => (
     </div>
     {hasFilter ? (
       <>
-        <h3 className="!text-lg !font-semibold !text-gray-800 !mb-2">
+        <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">
           No hay proyectos con este filtro
         </h3>
-        <p className="!text-gray-500 !mb-6">
+        <p className="!text-slate-500 dark:!text-slate-400 !mb-6">
           Intenta cambiar los filtros de búsqueda
         </p>
       </>
     ) : (
       <>
-        <h3 className="!text-lg !font-semibold !text-gray-800 !mb-2">
+        <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">
           No tienes proyectos aún
         </h3>
-        <p className="!text-gray-500 !mb-6">
+        <p className="!text-slate-500 dark:!text-slate-400 !mb-6">
           Crea tu primer proyecto ESG para comenzar a recibir compensaciones
         </p>
         <Link
@@ -284,7 +284,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="!p-2 !border !border-gray-300 !rounded-lg hover:!bg-gray-50 disabled:!opacity-50 disabled:!cursor-not-allowed"
+        className="!p-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg hover:!bg-slate-50 dark:!bg-slate-900 disabled:!opacity-50 disabled:!cursor-not-allowed"
       >
         <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -298,7 +298,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           className={`!w-10 !h-10 !rounded-lg !font-medium ${
             page === currentPage
               ? '!bg-emerald-600 !text-white'
-              : '!border !border-gray-300 hover:!bg-gray-50'
+              : '!border !border-slate-300 dark:!border-slate-600 hover:!bg-slate-50 dark:!bg-slate-900'
           }`}
         >
           {page}
@@ -308,7 +308,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="!p-2 !border !border-gray-300 !rounded-lg hover:!bg-gray-50 disabled:!opacity-50 disabled:!cursor-not-allowed"
+        className="!p-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg hover:!bg-slate-50 dark:!bg-slate-900 disabled:!opacity-50 disabled:!cursor-not-allowed"
       >
         <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -426,16 +426,16 @@ const PartnerProjects: React.FC = () => {
         {loading ? (
           <div className="!grid !grid-cols-1 lg:!grid-cols-2 !gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="!bg-white !rounded-xl !border !p-6 !animate-pulse">
+              <div key={i} className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-xl !border !p-6 !animate-pulse">
                 <div className="!flex !items-start !gap-4">
-                  <div className="!w-10 !h-10 !bg-gray-200 !rounded-lg" />
+                  <div className="!w-10 !h-10 !bg-slate-200 dark:!bg-slate-700 !rounded-lg" />
                   <div className="!flex-1">
-                    <div className="!h-4 !bg-gray-200 !rounded !w-1/4 !mb-2" />
-                    <div className="!h-5 !bg-gray-200 !rounded !w-3/4 !mb-4" />
-                    <div className="!h-4 !bg-gray-200 !rounded !w-full !mb-4" />
+                    <div className="!h-4 !bg-slate-200 dark:!bg-slate-700 !rounded !w-1/4 !mb-2" />
+                    <div className="!h-5 !bg-slate-200 dark:!bg-slate-700 !rounded !w-3/4 !mb-4" />
+                    <div className="!h-4 !bg-slate-200 dark:!bg-slate-700 !rounded !w-full !mb-4" />
                     <div className="!flex !gap-2">
-                      <div className="!h-6 !bg-gray-200 !rounded !w-20" />
-                      <div className="!h-6 !bg-gray-200 !rounded !w-24" />
+                      <div className="!h-6 !bg-slate-200 dark:!bg-slate-700 !rounded !w-20" />
+                      <div className="!h-6 !bg-slate-200 dark:!bg-slate-700 !rounded !w-24" />
                     </div>
                   </div>
                 </div>

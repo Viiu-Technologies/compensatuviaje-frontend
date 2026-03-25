@@ -28,8 +28,8 @@ interface InfoCardProps {
 }
 
 const InfoCard: React.FC<InfoCardProps> = ({ title, children }) => (
-  <div className="!bg-white !rounded-xl !border !shadow-sm !p-6">
-    <h3 className="!text-lg !font-semibold !text-gray-800 !mb-4">{title}</h3>
+  <div className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6">
+    <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-4">{title}</h3>
     {children}
   </div>
 );
@@ -162,17 +162,17 @@ const ProjectDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4" />
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8" />
+            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-4" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-8" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded-lg" />
+                <div key={i} className="h-24 bg-slate-200 dark:bg-slate-700 rounded-lg" />
               ))}
             </div>
-            <div className="h-64 bg-gray-200 rounded-xl" />
+            <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl" />
           </div>
         </div>
       </div>
@@ -234,7 +234,7 @@ const ProjectDetail: React.FC = () => {
           {canDelete && (
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="!p-2 !text-slate-400 hover:!text-red-600 hover:!bg-red-50 !rounded-lg !transition-colors"
+              className="!p-2 !text-slate-400 hover:!text-red-600 dark:!text-red-400 hover:!bg-red-50 dark:!bg-red-900/30 !rounded-lg !transition-colors"
               title="Eliminar"
             >
               <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,25 +361,25 @@ const ProjectDetail: React.FC = () => {
           <InfoCard title="Información General">
             <dl className="space-y-4">
               <div>
-                <dt className="text-sm text-gray-500">Tipo de Proyecto</dt>
-                <dd className="font-medium text-gray-800">{PROJECT_TYPE_LABELS[project.type]}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Tipo de Proyecto</dt>
+                <dd className="font-medium text-slate-800 dark:text-slate-100">{PROJECT_TYPE_LABELS[project.type]}</dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">Ubicación</dt>
-                <dd className="font-medium text-gray-800">
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Ubicación</dt>
+                <dd className="font-medium text-slate-800 dark:text-slate-100">
                   {project.location_country}
                   {project.location_region && `, ${project.location_region}`}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">Descripción</dt>
-                <dd className="text-gray-700">
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Descripción</dt>
+                <dd className="text-slate-700 dark:text-slate-200">
                   {project.description || 'Sin descripción'}
                 </dd>
               </div>
               {project.transparency_url && (
                 <div>
-                  <dt className="text-sm text-gray-500">URL de Transparencia</dt>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">URL de Transparencia</dt>
                   <dd>
                     <a
                       href={project.transparency_url}
@@ -402,35 +402,35 @@ const ProjectDetail: React.FC = () => {
             <dl className="space-y-4">
               {project.provider_cost_unit_clp !== undefined && (
                 <div>
-                  <dt className="text-sm text-gray-500">Costo por Unidad (CLP)</dt>
-                  <dd className="font-medium text-gray-800">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Costo por Unidad (CLP)</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
                     {formatCurrency(project.provider_cost_unit_clp)}
                   </dd>
                 </div>
               )}
               {project.carbon_capture_per_unit !== undefined && (
                 <div>
-                  <dt className="text-sm text-gray-500">Captura CO₂ por Unidad</dt>
-                  <dd className="font-medium text-gray-800">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Captura CO₂ por Unidad</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
                     {formatNumber(project.carbon_capture_per_unit)} kg
                   </dd>
                 </div>
               )}
               {project.capacity_total !== undefined && (
                 <div>
-                  <dt className="text-sm text-gray-500">Capacidad Total</dt>
-                  <dd className="font-medium text-gray-800">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Capacidad Total</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
                     {formatNumber(project.capacity_total)} unidades
                   </dd>
                 </div>
               )}
               {project.capacity_sold !== undefined && (
                 <div>
-                  <dt className="text-sm text-gray-500">Capacidad Vendida</dt>
-                  <dd className="font-medium text-gray-800">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Capacidad Vendida</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
                     {formatNumber(project.capacity_sold)} unidades
                     {project.capacity_total && project.capacity_total > 0 && (
-                      <span className="text-gray-500 ml-2">
+                      <span className="text-slate-500 dark:text-slate-400 ml-2">
                         ({((project.capacity_sold / project.capacity_total) * 100).toFixed(1)}%)
                       </span>
                     )}
@@ -438,8 +438,8 @@ const ProjectDetail: React.FC = () => {
                 </div>
               )}
               <div>
-                <dt className="text-sm text-gray-500">Fecha de Creación</dt>
-                <dd className="font-medium text-gray-800">
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Fecha de Creación</dt>
+                <dd className="font-medium text-slate-800 dark:text-slate-100">
                   {new Date(project.created_at).toLocaleDateString('es-CL', {
                     year: 'numeric',
                     month: 'long',
@@ -448,8 +448,8 @@ const ProjectDetail: React.FC = () => {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">Última Actualización</dt>
-                <dd className="font-medium text-gray-800">
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Última Actualización</dt>
+                <dd className="font-medium text-slate-800 dark:text-slate-100">
                   {new Date(project.updated_at).toLocaleDateString('es-CL', {
                     year: 'numeric',
                     month: 'long',
@@ -465,7 +465,7 @@ const ProjectDetail: React.FC = () => {
       {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,18 +473,18 @@ const ProjectDetail: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">Eliminar proyecto</h3>
-                <p className="text-sm text-gray-500">Esta acción no se puede deshacer</p>
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Eliminar proyecto</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Esta acción no se puede deshacer</p>
               </div>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-600 dark:text-slate-300 mb-6">
               ¿Estás seguro de que deseas eliminar el proyecto <strong>{project.name}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:bg-slate-900 disabled:opacity-50"
               >
                 Cancelar
               </button>
