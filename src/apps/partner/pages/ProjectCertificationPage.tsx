@@ -36,7 +36,8 @@ import {
   ExternalLink,
   Leaf,
   Users,
-  Globe
+  Globe,
+  BarChart, Search, Tag, FileCheck, Calendar, ClipboardList
 } from 'lucide-react';
 
 // Types
@@ -258,14 +259,18 @@ const EsgScoresGrid: React.FC<EsgScoresGridProps> = ({ scores, finalScore, confi
       {/* Summary Row */}
       <div className="!grid !grid-cols-2 md:!grid-cols-3 !gap-4">
         <div className="!bg-emerald-50 dark:!bg-emerald-900/30 !border !border-emerald-200 dark:!border-emerald-700 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-emerald-600 dark:!text-emerald-400 !mb-1">📊 Score Final</p>
+          <p className="!text-sm !text-emerald-600 dark:!text-emerald-400 !mb-1 !flex !items-center !justify-center !gap-1">
+            <BarChart className="!w-4 !h-4" /> Score Final
+          </p>
           <p className="!text-3xl !font-bold !text-emerald-700 dark:!text-emerald-300">
             {finalScore ?? 0}
             <span className="!text-lg !font-normal !text-emerald-500 dark:!text-emerald-400">/100</span>
           </p>
         </div>
         <div className="!bg-blue-50 dark:!bg-blue-900/30 !border !border-blue-200 dark:!border-blue-700 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-blue-600 dark:!text-blue-400 !mb-1">🔍 Confianza IA</p>
+          <p className="!text-sm !text-blue-600 dark:!text-blue-400 !mb-1 !flex !items-center !justify-center !gap-1">
+            <Search className="!w-4 !h-4" /> Confianza IA
+          </p>
           <p className="!text-3xl !font-bold !text-blue-700 dark:!text-blue-300">
             {confidenceScore ?? 0}
             <span className="!text-lg !font-normal !text-blue-500 dark:!text-blue-400">%</span>
@@ -410,7 +415,9 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
       {/* Detected Project Type */}
       {evaluation.project_type_detected && (
         <div className="!flex !items-center !gap-2 !p-3 !bg-slate-50 dark:!bg-slate-800 !rounded-lg">
-          <span className="!text-sm !text-slate-500 dark:!text-slate-400">🏷️ Tipo detectado:</span>
+          <span className="!flex !items-center !gap-1 !text-sm !text-slate-500 dark:!text-slate-400">
+            <Tag className="!w-4 !h-4" /> Tipo detectado:
+          </span>
           <span className="!font-medium !text-slate-700 dark:!text-slate-200">{evaluation.project_type_detected}</span>
         </div>
       )}
@@ -472,12 +479,12 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
               {evaluation.level && (
                 <CertLevelBadge level={evaluation.level} score={evaluation.final_score} size="md" />
               )}
-              <span className="!text-green-700 dark:!text-green-300">
-                🔍 Confianza: {evaluation.confidence_score}%
+              <span className="!flex !items-center !gap-1 !text-green-700 dark:!text-green-300">
+                <Search className="!w-4 !h-4" /> Confianza: {evaluation.confidence_score}%
               </span>
             </div>
-            <p className="!text-green-700 dark:!text-green-300 !text-sm">
-              📅 Certificado: {formatCertDate(evaluation.admin_decided_at)}
+            <p className="!flex !items-center !gap-1 !text-green-700 dark:!text-green-300 !text-sm">
+              <Calendar className="!w-4 !h-4" /> Certificado: {formatCertDate(evaluation.admin_decided_at)}
             </p>
             <p className="!text-green-600 dark:!text-green-400 !text-sm !mt-2">
               Tu proyecto ha sido certificado exitosamente y está listo para recibir compensaciones.
@@ -490,12 +497,16 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
       <div className="!grid !grid-cols-2 !gap-4">
         {evaluation.project_type_detected && (
           <div className="!p-3 !bg-slate-50 dark:!bg-slate-800 !rounded-lg">
-            <span className="!text-sm !text-slate-500 dark:!text-slate-400">🏷️ Tipo detectado:</span>
+            <span className="!flex !items-center !gap-1 !text-sm !text-slate-500 dark:!text-slate-400">
+              <Tag className="!w-4 !h-4" /> Tipo detectado:
+            </span>
             <p className="!font-medium !text-slate-700 dark:!text-slate-200">{evaluation.project_type_detected}</p>
           </div>
         )}
         <div className="!p-3 !bg-slate-50 dark:!bg-slate-800 !rounded-lg">
-          <span className="!text-sm !text-slate-500 dark:!text-slate-400">📋 Certificación:</span>
+          <span className="!flex !items-center !gap-1 !text-sm !text-slate-500 dark:!text-slate-400">
+            <ClipboardList className="!w-4 !h-4" /> Certificación:
+          </span>
           <p className="!font-medium !text-slate-700 dark:!text-slate-200">{evaluation.certification_type}</p>
         </div>
       </div>
@@ -613,9 +624,10 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
           {evaluations.map((eval_) => (
             <div key={eval_.id} className="!p-4 !flex !items-center !justify-between !bg-white dark:!bg-slate-900">
               <div className="!flex !items-center !gap-3">
-                <span className="!text-lg">
-                  {eval_.admin_decision === 'approved' ? '✅' : 
-                   eval_.admin_decision === 'rejected' ? '❌' : '🔄'}
+                <span className="!flex !items-center !justify-center !w-8 !h-8 !rounded-full !bg-slate-100 dark:!bg-slate-800">
+                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5 !text-green-500" /> : 
+                   eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5 !text-red-500" /> : 
+                   <RefreshCw className="!w-5 !h-5 !text-blue-500" />}
                 </span>
                 <div>
                   <p className="!text-sm !text-slate-600 dark:!text-slate-300">
@@ -777,9 +789,10 @@ const ProjectCertificationPage: React.FC = () => {
   // ============================================
 
   return (
-    <div className="!max-w-4xl !mx-auto">
-      {/* Back Link */}
-      <Link 
+    <div className="!bg-slate-50 dark:!bg-slate-900 !min-h-screen !p-6 md:!p-8">
+      <div className="!max-w-4xl !mx-auto">
+        {/* Back Link */}
+        <Link 
         to={`/partner/projects/${projectId}`}
         className="!inline-flex !items-center !gap-2 !text-slate-600 dark:!text-slate-400 hover:!text-slate-800 dark:hover:!text-slate-200 !mb-6 !transition-colors"
       >
@@ -897,6 +910,7 @@ const ProjectCertificationPage: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
