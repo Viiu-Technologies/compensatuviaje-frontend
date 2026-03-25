@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle, TreePine, FileText, Download, Building2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, TreePine, FileText, Download, Building2, Award, Medal, Gem } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import adminAIApi from '../services/adminAIApi';
 import { AdminCertEvaluationDetail, AdminProjectContext } from '../../../types/admin-evaluations.types';
 import AdminPendingBadge from '../components/shared/AdminPendingBadge';
 import RejectModal from '../components/shared/RejectModal';
-import { CERT_LEVEL_LABELS, CERT_LEVEL_COLORS, CERT_LEVEL_ICONS, SCORE_LABELS } from '../../../types/certification.types';
+import { CERT_LEVEL_LABELS, CERT_LEVEL_COLORS, SCORE_LABELS } from '../../../types/certification.types';
+
+const getCertIcon = (level: string) => {
+  switch (level) {
+    case 'PLATTE': return <Gem className="!w-5 !h-5" />;
+    case 'GOLD': return <Award className="!w-5 !h-5" />;
+    case 'SILVER': return <Medal className="!w-5 !h-5" />;
+    default: return <Award className="!w-5 !h-5" />;
+  }
+};
 
 const AICertDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -97,7 +106,7 @@ const AICertDetailPage: React.FC = () => {
   const isDecided = evaluation.admin_decision !== null;
 
   return (
-    <div className="!space-y-6 !pb-24">
+    <div className="!space-y-6 !pb-24 !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
       {/* Header */}
       <div className="!flex !items-center !justify-between">
         <div className="!flex !items-center !gap-4">
@@ -228,7 +237,7 @@ const AICertDetailPage: React.FC = () => {
             <div className="!mb-6 !flex !gap-4">
               {evaluation.level && (
                 <div className={`!px-4 !py-2 !rounded-lg !border ${CERT_LEVEL_COLORS[evaluation.level]} !flex !items-center !gap-2`}>
-                  <span className="!text-xl">{CERT_LEVEL_ICONS[evaluation.level]}</span>
+                  <span className="!flex !items-center !justify-center">{getCertIcon(evaluation.level)}</span>
                   <span className="!font-bold">{CERT_LEVEL_LABELS[evaluation.level]}</span>
                 </div>
               )}
