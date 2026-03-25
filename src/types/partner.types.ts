@@ -108,24 +108,51 @@ export interface EsgProject {
   code: string;
   name: string;
   description?: string;
+  // API returns both 'type' and 'project_type' - we normalize to 'type'
   type: ProjectType;
+  project_type?: ProjectType;
   status: ProjectStatus;
+  // API returns both 'country'/'region' and 'location_country'/'location_region'
   location_country: string;
   location_region?: string;
+  country?: string;
+  region?: string;
+  // Provider/organization info
+  provider_organization?: string;
+  // Numeric fields - API may return as string, we normalize to number
   provider_cost_unit_clp?: number;
+  provider_currency?: string;
   carbon_capture_per_unit?: number;
   capacity_total?: number;
   capacity_sold?: number;
+  capacity_available?: number;
+  base_price_usd_per_ton?: number;
+  // Additional fields
+  certification?: string | null;
+  co_benefits?: string[] | null;
+  impact_unit?: string;
+  impact_ratio_per_ton?: number | null;
   transparency_url?: string;
   created_at: string;
   updated_at: string;
+  // Related entities
+  partner_id?: string;
   partner?: {
     id: string;
     name: string;
+    logo_url?: string | null;
   };
   documents?: ProjectDocument[];
-  evidences?: ProjectEvidence[];
-  metrics?: ProjectMetrics;
+  documents_count?: number;
+  recent_evidence?: ProjectEvidence[];
+  evidence_count?: number;
+  recent_metrics?: any[];
+  // Stats (only in detail response)
+  stats?: {
+    certificates_issued: number;
+    compensation_orders: number;
+    capacity_remaining: number;
+  };
 }
 
 export type ProjectType =
@@ -197,6 +224,7 @@ export interface UpdateProjectRequest {
   provider_cost_unit_clp?: number;
   carbon_capture_per_unit?: number;
   capacity_total?: number;
+  currentBasePriceUsdPerTon?: number;
 }
 
 // ============================================

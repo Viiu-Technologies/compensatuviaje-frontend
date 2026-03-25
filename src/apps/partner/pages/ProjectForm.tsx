@@ -110,7 +110,8 @@ const ProjectForm: React.FC = () => {
     transparencyUrl: '',
     provider_cost_unit_clp: undefined,
     carbon_capture_per_unit: undefined,
-    capacity_total: undefined
+    capacity_total: undefined,
+    currentBasePriceUsdPerTon: undefined
   });
 
   useEffect(() => {
@@ -135,7 +136,8 @@ const ProjectForm: React.FC = () => {
           transparencyUrl: project.transparency_url || '',
           provider_cost_unit_clp: project.provider_cost_unit_clp,
           carbon_capture_per_unit: project.carbon_capture_per_unit,
-          capacity_total: project.capacity_total
+          capacity_total: project.capacity_total,
+          currentBasePriceUsdPerTon: project.base_price_usd_per_ton
         });
       }
     } catch (error) {
@@ -167,6 +169,10 @@ const ProjectForm: React.FC = () => {
       newErrors.country = 'El país es requerido';
     }
 
+    if (!formData.currentBasePriceUsdPerTon) {
+      newErrors.currentBasePriceUsdPerTon = 'El precio base es requerido para su validación';
+    }
+
     if (formData.transparencyUrl && !/^https?:\/\/.+/.test(formData.transparencyUrl)) {
       newErrors.transparencyUrl = 'La URL debe comenzar con http:// o https://';
     }
@@ -193,7 +199,8 @@ const ProjectForm: React.FC = () => {
           transparency_url: formData.transparencyUrl,
           provider_cost_unit_clp: formData.provider_cost_unit_clp,
           carbon_capture_per_unit: formData.carbon_capture_per_unit,
-          capacity_total: formData.capacity_total
+          capacity_total: formData.capacity_total,
+          currentBasePriceUsdPerTon: formData.currentBasePriceUsdPerTon
         };
         const result = await updateProject(id!, updateData);
         if (result) {
@@ -402,6 +409,28 @@ const ProjectForm: React.FC = () => {
             <h2 className="!text-lg !font-semibold !text-gray-800 !mb-6">Datos Técnicos</h2>
             
             <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
+              <FormField
+                label="Precio Base (USD por Tonelada)"
+                help="Precio referencial internacional en dólares (USD)"
+                required
+                error={errors.currentBasePriceUsdPerTon}
+              >
+                <input
+                  type="number"
+                  value={formData.currentBasePriceUsdPerTon || ''}
+                  onChange={(e) => handleChange(
+                    'currentBasePriceUsdPerTon',
+                    e.target.value ? parseFloat(e.target.value) : undefined
+                  )}
+                  min="0"
+                  step="0.01"
+                  placeholder="Ej: 12.5"
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white !text-gray-900 ${
+                    errors.currentBasePriceUsdPerTon ? '!border-red-300' : '!border-gray-300'
+                  }`}
+                />
+              </FormField>
+
               <FormField
                 label="Costo por Unidad (CLP)"
                 help="Costo en pesos chilenos por cada unidad de compensación"

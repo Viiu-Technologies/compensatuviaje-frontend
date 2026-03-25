@@ -398,7 +398,7 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
                 <TierBadge tier={evaluation.partner_tier} size="md" />
               )}
               <span className="!text-green-700">
-                📊 Score: {evaluation.scores?.overall || 0}/100
+                📊 Score: {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}/100
               </span>
             </div>
             <p className="!text-green-700 !text-sm">

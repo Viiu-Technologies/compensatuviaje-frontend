@@ -26,13 +26,14 @@ interface NavItem {
   icon: React.ElementType;
   label: string;
   badge?: number;
+  end?: boolean;
 }
 
 const navItems: NavItem[] = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/admin/empresas', icon: Building2, label: 'Empresas B2B' },
   { path: '/admin/usuarios-b2c', icon: Users, label: 'Usuarios B2C' },
-  { path: '/admin/partners', icon: Handshake, label: 'Impact Partners' },
+  { path: '/admin/partners', icon: Handshake, label: 'Impact Partners', end: true },
   { path: '/admin/partners/evaluations', icon: Bot, label: 'Validaciones IA' },
   { path: '/admin/proyectos-revision', icon: ClipboardCheck, label: 'Revisión Proyectos' },
   { path: '/admin/proyectos', icon: TreePine, label: 'Proyectos ESG' },
@@ -97,7 +98,7 @@ export default function AdminLayout() {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/admin'}
+              end={item.path === '/admin' || item.end}
               className={({ isActive }) =>
                 `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none ${
                   isActive

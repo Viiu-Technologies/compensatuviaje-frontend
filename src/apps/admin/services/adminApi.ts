@@ -595,6 +595,33 @@ export const rejectPartnerProject = async (
   return response;
 };
 
+/**
+ * Activate an approved project (makes it available for certifications and compensations)
+ * Only SuperAdmin can activate projects
+ * @param projectId - The project ID to activate
+ * @returns Response with success status and updated project data
+ */
+export const activatePartnerProject = async (projectId: string) => {
+  const response = await api.post(`/admin/partners/projects/${projectId}/activate`) as any;
+  return response;
+};
+
+/**
+ * Get all approved projects waiting for activation
+ * @param params - Pagination parameters
+ * @returns List of approved projects
+ */
+export const getProjectsApproved = async (params?: {
+  page?: number;
+  limit?: number;
+}) => {
+  const response = await api.get('/admin/partners/projects/approved', { params }) as any;
+  return {
+    projects: response.data || [],
+    pagination: response.pagination || { page: 1, limit: 10, total: 0, totalPages: 1 }
+  };
+};
+
 // Partner Stats
 export const getPartnersStats = async () => {
   // El interceptor ya extrae response.data, así que response = { success, data }

@@ -35,16 +35,16 @@ const RejectModal: React.FC<RejectModalProps> = ({
 
   return (
     <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !p-4 !bg-black/50 !backdrop-blur-sm">
-      <div className="!bg-white !rounded-xl !shadow-xl !max-w-md !w-full !overflow-hidden">
+      <div className="!bg-white dark:!bg-slate-800 !rounded-xl !shadow-xl !max-w-md !w-full !overflow-hidden">
         {/* Header */}
-        <div className="!flex !items-center !justify-between !p-4 !border-b !bg-red-50">
-          <div className="!flex !items-center !gap-2 !text-red-700">
+        <div className="!flex !items-center !justify-between !p-4 !border-b !border-red-200 dark:!border-red-800 !bg-red-50 dark:!bg-red-900/30">
+          <div className="!flex !items-center !gap-2 !text-red-700 dark:!text-red-400">
             <XCircle className="!w-5 !h-5" />
             <h3 className="!font-semibold">{title}</h3>
           </div>
           <button 
             onClick={onClose}
-            className="!text-slate-400 hover:!text-slate-600 !transition-colors"
+            className="!text-slate-400 dark:!text-slate-500 hover:!text-slate-600 dark:hover:!text-slate-300 !transition-colors"
             disabled={loading}
           >
             <svg className="!w-5 !h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,15 +55,15 @@ const RejectModal: React.FC<RejectModalProps> = ({
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="!p-6 !space-y-4">
-          <p className="!text-sm !text-slate-600">
-            Estás a punto de rechazar: <span className="!font-medium !text-slate-900">{itemName}</span>
+          <p className="!text-sm !text-slate-600 dark:!text-slate-400">
+            Estás a punto de rechazar: <span className="!font-medium !text-slate-900 dark:!text-slate-100">{itemName}</span>
           </p>
 
           <div>
-            <label className="!block !text-sm !font-medium !text-slate-700 !mb-1">
+            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">
               Motivo del rechazo <span className="!text-red-500">*</span>
             </label>
-            <p className="!text-xs !text-slate-500 !mb-2">
+            <p className="!text-xs !text-slate-500 dark:!text-slate-400 !mb-2">
               Este mensaje será enviado al partner para que pueda corregir el problema.
             </p>
             <textarea
@@ -73,29 +73,29 @@ const RejectModal: React.FC<RejectModalProps> = ({
                 if (e.target.value.length >= 10) setError('');
               }}
               placeholder="Explica detalladamente por qué se rechaza esta evaluación..."
-              className={`!w-full !p-3 !border !rounded-lg !focus:ring-2 !focus:ring-red-500 !focus:border-red-500 !min-h-[120px] ${
-                error ? '!border-red-300 !bg-red-50' : '!border-slate-300'
+              className={`!w-full !p-3 !border !rounded-lg !bg-white dark:!bg-slate-700 !text-slate-900 dark:!text-slate-100 !placeholder-slate-400 dark:!placeholder-slate-500 focus:!ring-2 focus:!ring-red-500 focus:!border-red-500 !min-h-[120px] ${
+                error ? '!border-red-300 dark:!border-red-600 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
               }`}
               disabled={loading}
             />
             {error && (
-              <div className="!flex !items-center !gap-1 !mt-1 !text-red-600 !text-xs">
+              <div className="!flex !items-center !gap-1 !mt-1 !text-red-600 dark:!text-red-400 !text-xs">
                 <AlertCircle className="!w-3 !h-3" />
                 <span>{error}</span>
               </div>
             )}
-            <div className={`!text-right !text-xs !mt-1 ${reason.length < 10 ? '!text-red-500' : '!text-slate-500'}`}>
+            <div className={`!text-right !text-xs !mt-1 ${reason.length < 10 ? '!text-red-500 dark:!text-red-400' : '!text-slate-500 dark:!text-slate-400'}`}>
               {reason.length}/10 caracteres mínimo
             </div>
           </div>
 
           {/* Footer */}
-          <div className="!flex !items-center !justify-end !gap-3 !pt-4 !border-t">
+          <div className="!flex !items-center !justify-end !gap-3 !pt-4 !border-t !border-slate-200 dark:!border-slate-700">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="!px-4 !py-2 !text-slate-700 !bg-slate-100 hover:!bg-slate-200 !rounded-lg !transition-colors !font-medium disabled:!opacity-50"
+              className="!px-4 !py-2 !text-slate-700 dark:!text-slate-300 !bg-slate-100 dark:!bg-slate-700 hover:!bg-slate-200 dark:hover:!bg-slate-600 !rounded-lg !transition-colors !font-medium disabled:!opacity-50"
             >
               Cancelar
             </button>

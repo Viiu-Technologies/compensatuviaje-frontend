@@ -351,7 +351,14 @@ const PartnerProjects: React.FC = () => {
 
       if (result) {
         setProjects(result.projects);
-        setPagination(result.pagination);
+        // API returns snake_case pagination, normalize to our format
+        const pag = result.pagination || {};
+        setPagination({
+          page: pag.page || 1,
+          limit: pag.limit || 10,
+          total: pag.total || 0,
+          totalPages: pag.total_pages || pag.totalPages || 1
+        });
       }
     } catch (error) {
       console.error('Error loading projects:', error);

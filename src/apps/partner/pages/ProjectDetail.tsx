@@ -13,7 +13,6 @@ import {
 } from '../../../types/partner.types';
 import {
   getProjectById,
-  getProjectStats,
   submitProjectForReview,
   deleteProject
 } from '../services/partnerApi';
@@ -75,11 +74,6 @@ const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<EsgProject | null>(null);
-  const [stats, setStats] = useState<{
-    total_certificates: number;
-    total_kg_co2: number;
-    total_revenue_clp: number;
-  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -96,22 +90,12 @@ const ProjectDetail: React.FC = () => {
   const loadProjectData = async () => {
     try {
       setLoading(true);
-      const results = await Promise.allSettled([
-        getProjectById(id!),
-        getProjectStats(id!).catch(() => null)
-      ]);
+      const projectData = await getProjectById(id!);
       
-      const projectResult = results[0];
-      const statsResult = results[1];
-      
-      if (projectResult.status === 'fulfilled' && projectResult.value) {
-        setProject(projectResult.value);
+      if (projectData) {
+        setProject(projectData);
       } else {
         setError('Error al cargar el proyecto');
-      }
-      
-      if (statsResult.status === 'fulfilled' && statsResult.value) {
-        setStats(statsResult.value);
       }
     } catch (error) {
       console.error('Error loading project:', error);
@@ -158,11 +142,17 @@ const ProjectDetail: React.FC = () => {
     }
   };
 
-  const formatNumber = (num: number): string => {
+  const formatNumber = (num: number | undefined | null): string => {
+    if (num === null || num === undefined || isNaN(num)) {
+      return '0';
+    }
     return new Intl.NumberFormat('es-CL').format(num);
   };
 
-  const formatCurrency = (num: number): string => {
+  const formatCurrency = (num: number | undefined | null): string => {
+    if (num === null || num === undefined || isNaN(num)) {
+      return '$0';
+    }
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
       currency: 'CLP',
@@ -331,11 +321,11 @@ const ProjectDetail: React.FC = () => {
         )}
 
         {/* Stats Cards */}
-        {stats && (
+        {project.stats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatItem
               label="Certificados Emitidos"
-              value={formatNumber(stats.total_certificates)}
+              value={formatNumber(project.stats.certificates_issued || 0)}
               color="green"
               icon={
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,8 +334,8 @@ const ProjectDetail: React.FC = () => {
               }
             />
             <StatItem
-              label="CO₂ Compensado"
-              value={`${formatNumber(stats.total_kg_co2)} kg`}
+              label="Órdenes de Compensación"
+              value={formatNumber(project.stats.compensation_orders || 0)}
               color="blue"
               icon={
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,8 +344,8 @@ const ProjectDetail: React.FC = () => {
               }
             />
             <StatItem
-              label="Ingresos Generados"
-              value={formatCurrency(stats.total_revenue_clp)}
+              label="Capacidad Disponible"
+              value={`${formatNumber(project.stats.capacity_remaining || 0)} unidades`}
               color="purple"
               icon={
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -439,7 +429,7 @@ const ProjectDetail: React.FC = () => {
                   <dt className="text-sm text-gray-500">Capacidad Vendida</dt>
                   <dd className="font-medium text-gray-800">
                     {formatNumber(project.capacity_sold)} unidades
-                    {project.capacity_total && (
+                    {project.capacity_total && project.capacity_total > 0 && (
                       <span className="text-gray-500 ml-2">
                         ({((project.capacity_sold / project.capacity_total) * 100).toFixed(1)}%)
                       </span>
