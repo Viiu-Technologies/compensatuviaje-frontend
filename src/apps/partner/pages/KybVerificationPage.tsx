@@ -134,17 +134,17 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
   return (
     <div className="!space-y-6">
       {/* Info Banner */}
-      <div className="!bg-amber-50 !border !border-amber-200 !rounded-xl !p-6">
+      <div className="!bg-amber-50 dark:!bg-amber-900/30 !border !border-amber-200 dark:!border-amber-800/50 !rounded-xl !p-6">
         <div className="!flex !gap-4">
-          <AlertTriangle className="!w-6 !h-6 !text-amber-600 !flex-shrink-0 !mt-0.5" />
+          <AlertTriangle className="!w-6 !h-6 !text-amber-600 dark:!text-amber-400 !flex-shrink-0 !mt-0.5" />
           <div>
-            <h3 className="!text-amber-800 !font-semibold !mb-2">
+            <h3 className="!text-amber-800 dark:!text-amber-300 !font-semibold !mb-2">
               Tu empresa aún no ha sido verificada
             </h3>
-            <p className="!text-amber-700 !text-sm !mb-3">
+            <p className="!text-amber-700 dark:!text-amber-400 !text-sm !mb-3">
               Para activar tu cuenta y operar en la plataforma, necesitas enviar tus documentos empresariales para evaluación.
             </p>
-            <div className="!text-sm !text-amber-700">
+            <div className="!text-sm !text-amber-700 dark:!text-amber-400">
               <p className="!font-medium !mb-1">Nuestra IA evaluará:</p>
               <ul className="!space-y-1">
                 <li className="!flex !items-center !gap-2">
@@ -168,13 +168,13 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
       {/* Upload Form */}
       <form onSubmit={handleSubmit} className="!space-y-6">
         <div>
-          <h3 className="!text-lg !font-semibold !text-slate-800 !mb-4">
+          <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-white !mb-4">
             Subir Dossier KYB
           </h3>
           
           {/* Organization Name */}
           <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 !mb-1">
+            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">
               Nombre de la Organización *
             </label>
             <input
@@ -182,19 +182,19 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
               value={formData.organizationName}
               onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
               placeholder="Ej: EcoForest Chile SpA"
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 ${
-                errors.organizationName ? '!border-red-300 !bg-red-50' : '!border-slate-300'
+              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
+                errors.organizationName ? '!border-red-300 dark:!border-red-500/50 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
               }`}
               disabled={isSubmitting}
             />
             {errors.organizationName && (
-              <p className="!text-red-600 !text-sm !mt-1">{errors.organizationName}</p>
+              <p className="!text-red-600 dark:!text-red-400 !text-sm !mt-1">{errors.organizationName}</p>
             )}
           </div>
 
           {/* RUT */}
           <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 !mb-1">
+            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">
               RUT Tributario *
             </label>
             <input
@@ -202,19 +202,19 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
               value={formData.rutTaxId}
               onChange={(e) => setFormData(prev => ({ ...prev, rutTaxId: e.target.value }))}
               placeholder="Ej: 76123456-7"
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 ${
-                errors.rutTaxId ? '!border-red-300 !bg-red-50' : '!border-slate-300'
+              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
+                errors.rutTaxId ? '!border-red-300 dark:!border-red-500/50 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
               }`}
               disabled={isSubmitting}
             />
             {errors.rutTaxId && (
-              <p className="!text-red-600 !text-sm !mt-1">{errors.rutTaxId}</p>
+              <p className="!text-red-600 dark:!text-red-400 !text-sm !mt-1">{errors.rutTaxId}</p>
             )}
           </div>
 
           {/* PDF Upload */}
           <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
               Dossier Empresarial (PDF) *
             </label>
             <PdfUploader
@@ -272,7 +272,7 @@ const ScoresGrid: React.FC<ScoresGridProps> = ({ scores, insights }) => {
 
   return (
     <div className="!space-y-4">
-      <h4 className="!text-sm !font-semibold !text-slate-700 !uppercase !tracking-wide">
+      <h4 className="!text-sm !font-semibold !text-slate-700 dark:!text-slate-300 !uppercase !tracking-wide">
         Scores Detallados
       </h4>
       <div className="!grid !grid-cols-2 md:!grid-cols-4 !gap-4">
@@ -287,7 +287,7 @@ const ScoresGrid: React.FC<ScoresGridProps> = ({ scores, insights }) => {
             {item.notes && (
               <button
                 onClick={() => setExpandedInsight(expandedInsight === item.key ? null : item.key)}
-                className="!absolute !top-2 !right-2 !text-slate-400 hover:!text-slate-600 !transition-colors"
+                className="!absolute !top-2 !right-2 !text-slate-400 hover:!text-slate-600 dark:hover:!text-slate-200 !transition-colors"
                 title="Ver detalle"
               >
                 {expandedInsight === item.key ? (
@@ -303,12 +303,12 @@ const ScoresGrid: React.FC<ScoresGridProps> = ({ scores, insights }) => {
       
       {/* Expanded Insight */}
       {expandedInsight && (
-        <div className="!bg-slate-50 !border !border-slate-200 !rounded-lg !p-4 !mt-4">
-          <h5 className="!font-medium !text-slate-700 !mb-2">
+        <div className="!bg-slate-50 dark:!bg-slate-800/50 !border !border-slate-200 dark:!border-slate-700 !rounded-lg !p-4 !mt-4">
+          <h5 className="!font-medium !text-slate-700 dark:!text-slate-200 !mb-2">
             {scoreItems.find(s => s.key === expandedInsight)?.icon}{' '}
             Notas - {scoreItems.find(s => s.key === expandedInsight)?.label}
           </h5>
-          <p className="!text-sm !text-slate-600">
+          <p className="!text-sm !text-slate-600 dark:!text-slate-400">
             {scoreItems.find(s => s.key === expandedInsight)?.notes}
           </p>
         </div>
@@ -331,25 +331,25 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
       
       {/* Summary Cards */}
       <div className="!grid !grid-cols-3 !gap-4">
-        <div className="!bg-white !border !border-slate-200 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 !mb-1">📊 Score General</p>
-          <p className="!text-3xl !font-bold !text-slate-800">
+        <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
+          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1">📊 Score General</p>
+          <p className="!text-3xl !font-bold !text-slate-800 dark:!text-slate-100">
             {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}
-            <span className="!text-lg !font-normal !text-slate-400">/100</span>
+            <span className="!text-lg !font-normal !text-slate-400 dark:!text-slate-500">/100</span>
           </p>
         </div>
-        <div className="!bg-white !border !border-slate-200 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 !mb-1">🏅 Tier Asignado</p>
+        <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
+          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1">🏅 Tier Asignado</p>
           {evaluation.partner_tier ? (
             <TierBadge tier={evaluation.partner_tier} size="lg" />
           ) : (
-            <p className="!text-slate-400">Por determinar</p>
+            <p className="!text-slate-400 dark:!text-slate-500">Por determinar</p>
           )}
         </div>
-        <div className="!bg-white !border !border-slate-200 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 !mb-1">🤖 Decisión IA</p>
+        <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
+          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1">🤖 Decisión IA</p>
           <p className={`!text-lg !font-semibold ${
-            evaluation.ai_status === 'ai_approved' ? '!text-green-600' : '!text-red-600'
+            evaluation.ai_status === 'ai_approved' ? '!text-green-600 dark:!text-green-400' : '!text-red-600 dark:!text-red-400'
           }`}>
             {evaluation.ai_status === 'ai_approved' ? '✅ Aprobado' : '❌ Rechazado'}
           </p>
@@ -362,9 +362,9 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
       )}
 
       {/* Waiting message */}
-      <div className="!flex !items-center !gap-3 !p-4 !bg-slate-50 !rounded-lg !border !border-slate-200">
-        <Clock className="!w-5 !h-5 !text-slate-500 !animate-pulse" />
-        <p className="!text-slate-600">
+      <div className="!flex !items-center !gap-3 !p-4 !bg-slate-50 dark:!bg-slate-800/80 !rounded-lg !border !border-slate-200 dark:!border-slate-700">
+        <Clock className="!w-5 !h-5 !text-slate-500 dark:!text-slate-400 !animate-pulse" />
+        <p className="!text-slate-600 dark:!text-slate-300">
           Esperando revisión del equipo de administración...
         </p>
       </div>
@@ -384,24 +384,24 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
   return (
     <div className="!space-y-6">
       {/* Success Banner */}
-      <div className="!bg-green-50 !border !border-green-200 !rounded-xl !p-6">
+      <div className="!bg-green-50 dark:!bg-green-900/30 !border !border-green-200 dark:!border-green-800/50 !rounded-xl !p-6">
         <div className="!flex !items-start !gap-4">
-          <div className="!w-12 !h-12 !bg-green-100 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
-            <CheckCircle className="!w-6 !h-6 !text-green-600" />
+          <div className="!w-12 !h-12 !bg-green-100 dark:!bg-green-900 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
+            <CheckCircle className="!w-6 !h-6 !text-green-600 dark:!text-green-400" />
           </div>
           <div className="!flex-grow">
-            <h3 className="!text-green-800 !font-semibold !text-lg !mb-1">
+            <h3 className="!text-green-800 dark:!text-green-300 !font-semibold !text-lg !mb-1">
               Empresa Verificada
             </h3>
             <div className="!flex !flex-wrap !items-center !gap-3 !mb-2">
               {evaluation.partner_tier && (
                 <TierBadge tier={evaluation.partner_tier} size="md" />
               )}
-              <span className="!text-green-700">
+              <span className="!text-green-700 dark:!text-green-400">
                 📊 Score: {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}/100
               </span>
             </div>
-            <p className="!text-green-700 !text-sm">
+            <p className="!text-green-700 dark:!text-green-400 !text-sm">
               📅 Verificada: {evaluation.admin_decided_at 
                 ? new Date(evaluation.admin_decided_at).toLocaleDateString('es-CL', {
                     day: 'numeric',
@@ -411,7 +411,7 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
                 : 'N/A'
               }
             </p>
-            <p className="!text-green-600 !text-sm !mt-2">
+            <p className="!text-green-600 dark:!text-green-500 !text-sm !mt-2">
               Tu empresa ha sido verificada exitosamente. Tu cuenta está activa y puedes operar en la plataforma.
             </p>
           </div>
@@ -444,23 +444,23 @@ const RejectedState: React.FC<RejectedStateProps> = ({ evaluation, history, onRe
   return (
     <div className="!space-y-6">
       {/* Rejected Banner */}
-      <div className="!bg-red-50 !border !border-red-200 !rounded-xl !p-6">
+      <div className="!bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-800/50 !rounded-xl !p-6">
         <div className="!flex !items-start !gap-4">
-          <div className="!w-12 !h-12 !bg-red-100 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
-            <XCircle className="!w-6 !h-6 !text-red-600" />
+          <div className="!w-12 !h-12 !bg-red-100 dark:!bg-red-900 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
+            <XCircle className="!w-6 !h-6 !text-red-600 dark:!text-red-400" />
           </div>
           <div className="!flex-grow">
-            <h3 className="!text-red-800 !font-semibold !text-lg !mb-2">
+            <h3 className="!text-red-800 dark:!text-red-300 !font-semibold !text-lg !mb-2">
               Verificación Rechazada
             </h3>
             {evaluation.admin_reason && (
-              <div className="!bg-white !border !border-red-200 !rounded-lg !p-3 !mb-3">
-                <p className="!text-red-800 !text-sm">
+              <div className="!bg-white dark:!bg-red-900/50 !border !border-red-200 dark:!border-red-700 !rounded-lg !p-3 !mb-3">
+                <p className="!text-red-800 dark:!text-red-200 !text-sm">
                   <strong>Motivo:</strong> "{evaluation.admin_reason}"
                 </p>
               </div>
             )}
-            <p className="!text-red-600 !text-sm">
+            <p className="!text-red-600 dark:!text-red-400 !text-sm">
               Puedes corregir la documentación y volver a enviarla.
             </p>
           </div>
@@ -495,25 +495,25 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="!border !border-slate-200 !rounded-xl !overflow-hidden">
+    <div className="!border !border-slate-200 dark:!border-slate-700 !rounded-xl !overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="!w-full !flex !items-center !justify-between !p-4 !bg-slate-50 !text-left hover:!bg-slate-100 !transition-colors"
+        className="!w-full !flex !items-center !justify-between !p-4 !bg-slate-50 dark:!bg-slate-800/80 !text-left hover:!bg-slate-100 dark:hover:!bg-slate-700/50 !transition-colors"
       >
         <div className="!flex !items-center !gap-2">
-          <History className="!w-5 !h-5 !text-slate-500" />
-          <span className="!font-medium !text-slate-700">Historial de Evaluaciones</span>
-          <span className="!text-sm !text-slate-500">({evaluations.length})</span>
+          <History className="!w-5 !h-5 !text-slate-500 dark:!text-slate-400" />
+          <span className="!font-medium !text-slate-700 dark:!text-slate-200">Historial de Evaluaciones</span>
+          <span className="!text-sm !text-slate-500 dark:!text-slate-400">({evaluations.length})</span>
         </div>
         {isExpanded ? (
-          <ChevronUp className="!w-5 !h-5 !text-slate-400" />
+          <ChevronUp className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
         ) : (
-          <ChevronDown className="!w-5 !h-5 !text-slate-400" />
+          <ChevronDown className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
         )}
       </button>
 
       {isExpanded && (
-        <div className="!divide-y !divide-slate-200">
+        <div className="!divide-y !divide-slate-200 dark:!divide-slate-700">
           {evaluations.map((eval_, index) => (
             <div key={eval_.id} className="!p-4 !flex !items-center !justify-between">
               <div className="!flex !items-center !gap-3">
@@ -525,10 +525,10 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
                    eval_.admin_decision === 'rejected' ? '❌' : '🔄'}
                 </span>
                 <div>
-                  <p className="!text-sm !text-slate-600">
+                  <p className="!text-sm !text-slate-600 dark:!text-slate-300">
                     {new Date(eval_.created_at).toLocaleDateString('es-CL')}
                   </p>
-                  <p className="!text-xs !text-slate-500">
+                  <p className="!text-xs !text-slate-500 dark:!text-slate-400">
                     {eval_.document_name}
                   </p>
                 </div>
@@ -537,7 +537,7 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
                 {eval_.partner_tier && (
                   <TierBadge tier={eval_.partner_tier} size="sm" />
                 )}
-                <span className="!text-sm !text-slate-600">
+                <span className="!text-sm !text-slate-600 dark:!text-slate-300">
                   Score: {eval_.overall_score}
                 </span>
               </div>
@@ -670,14 +670,14 @@ const KybVerificationPage: React.FC = () => {
   // ============================================
 
   return (
-    <div className="!max-w-4xl !mx-auto">
+    <div className="!max-w-4xl !mx-auto !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
       {/* Header */}
       <div className="!mb-8">
         <div className="!flex !items-center !gap-3 !mb-2">
-          <div className="!w-10 !h-10 !bg-emerald-100 !rounded-xl !flex !items-center !justify-center">
-            <Building2 className="!w-5 !h-5 !text-emerald-600" />
+          <div className="!w-10 !h-10 !bg-emerald-100 dark:!bg-emerald-900/50 !rounded-xl !flex !items-center !justify-center">
+            <Building2 className="!w-5 !h-5 !text-emerald-600 dark:!text-emerald-400" />
           </div>
-          <h1 className="!text-2xl !font-bold !text-slate-800">
+          <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100">
             Verificación Empresarial (KYB)
           </h1>
         </div>
@@ -690,15 +690,15 @@ const KybVerificationPage: React.FC = () => {
 
       {/* Error Banner */}
       {error && (
-        <div className="!mb-6 !bg-red-50 !border !border-red-200 !rounded-lg !p-4 !flex !items-start !gap-3">
-          <AlertTriangle className="!w-5 !h-5 !text-red-500 !flex-shrink-0 !mt-0.5" />
+        <div className="!mb-6 !bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-800/50 !rounded-lg !p-4 !flex !items-start !gap-3">
+          <AlertTriangle className="!w-5 !h-5 !text-red-500 dark:!text-red-400 !flex-shrink-0 !mt-0.5" />
           <div>
-            <p className="!text-red-800 !font-medium">Error</p>
-            <p className="!text-red-600 !text-sm">{error}</p>
+            <p className="!text-red-800 dark:!text-red-300 !font-medium">Error</p>
+            <p className="!text-red-600 dark:!text-red-400 !text-sm">{error}</p>
           </div>
           <button
             onClick={() => setError(null)}
-            className="!ml-auto !text-red-400 hover:!text-red-600"
+            className="!ml-auto !text-red-400 hover:!text-red-600 dark:hover:!text-red-300"
           >
             ×
           </button>
@@ -706,13 +706,13 @@ const KybVerificationPage: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <div className="!bg-white !rounded-2xl !shadow-sm !border !border-slate-200 !p-6 md:!p-8">
+      <div className="!bg-white dark:!bg-slate-800 !rounded-2xl !shadow-sm !border !border-slate-200 dark:!border-slate-700 !p-6 md:!p-8">
         
         {/* Loading State */}
         {pageState === 'loading' && (
           <div className="!flex !flex-col !items-center !justify-center !py-12">
-            <div className="!w-12 !h-12 !border-4 !border-emerald-200 !border-t-emerald-600 !rounded-full !animate-spin !mb-4" />
-            <p className="!text-slate-600">Cargando estado de verificación...</p>
+            <div className="!w-12 !h-12 !border-4 !border-emerald-200 dark:!border-emerald-800 !border-t-emerald-600 !rounded-full !animate-spin !mb-4" />
+            <p className="!text-slate-600 dark:!text-slate-400">Cargando estado de verificación...</p>
           </div>
         )}
 
@@ -757,13 +757,13 @@ const KybVerificationPage: React.FC = () => {
         {/* State: Error */}
         {pageState === 'error' && (
           <div className="!text-center !py-12">
-            <div className="!w-16 !h-16 !bg-red-100 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
-              <AlertTriangle className="!w-8 !h-8 !text-red-500" />
+            <div className="!w-16 !h-16 !bg-red-100 dark:!bg-red-900/50 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
+              <AlertTriangle className="!w-8 !h-8 !text-red-500 dark:!text-red-400" />
             </div>
-            <h3 className="!text-lg !font-semibold !text-slate-800 !mb-2">
+            <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-white !mb-2">
               Error en la Evaluación
             </h3>
-            <p className="!text-slate-600 !mb-4">
+            <p className="!text-slate-600 dark:!text-slate-400 !mb-4">
               Ocurrió un error durante la evaluación de tu dossier. Por favor, intenta enviar nuevamente.
             </p>
             <button
