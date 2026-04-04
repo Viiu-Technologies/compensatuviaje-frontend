@@ -662,3 +662,76 @@ export const getProjectsPendingReview = async (params?: {
     }
   };
 };
+
+// ============================================
+// PLATFORM SETTINGS
+// ============================================
+
+export interface PlatformSettings {
+  id: string;
+  clp_usd_rate: number;
+  default_margin_percent: number;
+  min_price_usd_per_ton: number;
+  max_price_usd_per_ton: number;
+  updated_at: string;
+  updated_by?: string;
+}
+
+export interface ExchangeRateInfo {
+  current_rate: number;
+  last_updated: string;
+  source: string;
+}
+
+/**
+ * Get all platform settings
+ */
+export const getSettings = async (): Promise<PlatformSettings> => {
+  const response = await api.get('/admin/settings') as any;
+  return response.data || response;
+};
+
+/**
+ * Update platform settings
+ */
+export const updateSettings = async (data: Partial<Omit<PlatformSettings, 'id' | 'updated_at' | 'updated_by'>>): Promise<PlatformSettings> => {
+  const response = await api.put('/admin/settings', data) as any;
+  return response.data || response;
+};
+
+/**
+ * Get current exchange rate info
+ */
+export const getExchangeRate = async (): Promise<ExchangeRateInfo> => {
+  const response = await api.get('/admin/settings/exchange-rate') as any;
+  return response.data || response;
+};
+
+/**
+ * Preview price calculation (for project approval)
+ */
+export const previewProjectPrice = async (projectId: string, params: {
+  cost_clp: number;
+  capacity_kg_co2: number;
+  margin_percent?: number;
+}): Promise<{
+  precio_usd_ton: number;
+  fx_rate: number;
+  margin_applied: number;
+  cost_usd: number;
+}> => {
+  const response = await api.post(`/admin/projects/${projectId}/preview-price`, params) as any;
+  return response.data || response;
+};
+
+/**
+ * Approve project with pricing (Double-Lock: Admin sets financial fields)
+ */
+export const approveProjectWithPricing = async (projectId: string, data: {
+  carbon_capture_per_unit: number;
+  calculated_price_usd_ton: number;
+  admin_notes?: string;
+}): Promise<{ project: Project }> => {
+  const response = await api.put(`/admin/projects/${projectId}/approve`, data) as any;
+  return response.data || response;
+};

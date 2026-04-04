@@ -16,6 +16,7 @@ import AdminNFTDashboard from '../pages/AdminNFTDashboard';
 import AIEvaluationsPage from '../pages/AIEvaluationsPage';
 import AIKybDetailPage from '../pages/AIKybDetailPage';
 import AICertDetailPage from '../pages/AICertDetailPage';
+import SettingsPage from '../pages/SettingsPage';
 
 const AdminRoutes = () => {
   return (
@@ -40,6 +41,7 @@ const AdminRoutes = () => {
         {/* Validaciones IA (Partners y Proyectos) */}
         <Route path="partners/evaluations" element={<AIEvaluationsPage />} />
         <Route path="partners/evaluations/:id" element={<AICertDetailPage />} />
+        <Route path="partners/kyb-evaluations" element={<AIEvaluationsPage />} />
         <Route path="partners/kyb-evaluations/:id" element={<AIKybDetailPage />} />
 
         {/* Revisión de Proyectos ESG (pendientes) */}
@@ -56,6 +58,9 @@ const AdminRoutes = () => {
 
         {/* NFT Blockchain Management */}
         <Route path="nft-blockchain" element={<AdminNFTDashboard />} />
+
+        {/* Platform Settings */}
+        <Route path="settings" element={<SettingsPage />} />
 
         {/* Redirección legacy */}
         <Route path="verification" element={<Navigate to="/admin/verificacion" replace />} />
