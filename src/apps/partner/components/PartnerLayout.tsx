@@ -2,10 +2,14 @@
 // PARTNER LAYOUT
 // Layout principal con navegación para el módulo Partner
 // Estilo consistente con AdminLayout
+// 
+// ARQUITECTURA DOBLE CANDADO:
+// - Partner en estado 'onboarding' solo puede acceder a KYB y perfil
+// - Menú de proyectos bloqueado hasta completar verificación KYB
 // ============================================
 
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { getPartnerProfile, getOnboardingStatus } from '../services/partnerApi';
 import { PartnerProfile, OnboardingStatus } from '../../../types/partner.types';
@@ -20,7 +24,9 @@ import {
   Bell,
   Plus,
   Building2,
-  Shield
+  Shield,
+  Lock,
+  AlertCircle
 } from 'lucide-react';
 
 // ============================================
@@ -34,10 +40,22 @@ const PartnerLayout: React.FC = () => {
   const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // DOBLE CANDADO: Verificar si el partner está en onboarding
+  const isOnboarding = profile?.status === 'onboarding';
+  const isKybRequired = isOnboarding;
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // DOBLE CANDADO: Redirigir a KYB si intenta acceder a proyectos en estado onboarding
+  useEffect(() => {
+    if (isKybRequired && location.pathname.includes('/partner/projects')) {
+      navigate('/partner/kyb', { replace: true });
+    }
+  }, [isKybRequired, location.pathname, navigate]);
 
   const loadData = async () => {
     try {
@@ -57,11 +75,41 @@ const PartnerLayout: React.FC = () => {
     navigate('/login');
   };
 
+  // DOBLE CANDADO: Configurar items de navegación con bloqueo condicional
   const navItems = [
-    { path: '/partner', icon: LayoutDashboard, label: 'Dashboard', exact: true, needsAttention: false },
-    { path: '/partner/projects', icon: FolderKanban, label: 'Mis Proyectos', exact: false, needsAttention: false },
-    { path: '/partner/kyb', icon: Shield, label: 'Verificación KYB', exact: false, needsAttention: profile?.status === 'onboarding' },
-    { path: '/partner/profile', icon: UserCircle, label: 'Mi Perfil', exact: false, needsAttention: onboarding ? !onboarding.completed : false },
+    { 
+      path: '/partner', 
+      icon: LayoutDashboard, 
+      label: 'Dashboard', 
+      exact: true, 
+      needsAttention: false,
+      locked: false // Dashboard siempre accesible
+    },
+    { 
+      path: '/partner/projects', 
+      icon: FolderKanban, 
+      label: 'Mis Proyectos', 
+      exact: false, 
+      needsAttention: false,
+      locked: isKybRequired, // BLOQUEADO si está en onboarding
+      lockedMessage: 'Complete la verificación KYB para acceder'
+    },
+    { 
+      path: '/partner/kyb', 
+      icon: Shield, 
+      label: 'Verificación KYB', 
+      exact: false, 
+      needsAttention: isOnboarding, // Alerta si está en onboarding
+      locked: false
+    },
+    { 
+      path: '/partner/profile', 
+      icon: UserCircle, 
+      label: 'Mi Perfil', 
+      exact: false, 
+      needsAttention: onboarding ? !onboarding.completed : false,
+      locked: false
+    },
   ];
 
   return (
@@ -110,50 +158,90 @@ const PartnerLayout: React.FC = () => {
         {/* Navigation */}
         <nav className="!flex-1 !px-4 !py-6 !space-y-2">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.exact}
-              className={({ isActive }) =>
-                `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none !relative !no-underline ${
-                  isActive
-                    ? '!bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !shadow-lg !shadow-emerald-500/50'
-                    : '!bg-transparent !text-slate-300 hover:!bg-white/10 hover:!text-white'
-                } ${sidebarCollapsed ? '!justify-center' : ''}`
-              }
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <item.icon className="!w-5 !h-5 !flex-shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="!truncate">{item.label}</span>
-              )}
-              {!sidebarCollapsed && item.needsAttention && (
-                <span className="!ml-auto !w-2.5 !h-2.5 !bg-amber-400 !rounded-full !shadow-lg !shadow-amber-400/50" />
-              )}
-            </NavLink>
+            item.locked ? (
+              // ITEM BLOQUEADO - Mostrar con candado
+              <div
+                key={item.path}
+                className={`!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-left !font-medium !cursor-not-allowed !opacity-50 !bg-slate-800/50 !text-slate-500 ${sidebarCollapsed ? '!justify-center' : ''}`}
+                title={item.lockedMessage || 'Bloqueado'}
+              >
+                <div className="!relative">
+                  <item.icon className="!w-5 !h-5 !flex-shrink-0" />
+                  <Lock className="!absolute !-top-1 !-right-1 !w-3 !h-3 !text-amber-400" />
+                </div>
+                {!sidebarCollapsed && (
+                  <>
+                    <span className="!truncate">{item.label}</span>
+                    <Lock className="!ml-auto !w-4 !h-4 !text-amber-400" />
+                  </>
+                )}
+              </div>
+            ) : (
+              // ITEM NORMAL - NavLink activo
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.exact}
+                className={({ isActive }) =>
+                  `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none !relative !no-underline ${
+                    isActive
+                      ? '!bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !shadow-lg !shadow-emerald-500/50'
+                      : '!bg-transparent !text-slate-300 hover:!bg-white/10 hover:!text-white'
+                  } ${sidebarCollapsed ? '!justify-center' : ''}`
+                }
+                title={sidebarCollapsed ? item.label : undefined}
+              >
+                <item.icon className="!w-5 !h-5 !flex-shrink-0" />
+                {!sidebarCollapsed && (
+                  <span className="!truncate">{item.label}</span>
+                )}
+                {!sidebarCollapsed && item.needsAttention && (
+                  <span className="!ml-auto !w-2.5 !h-2.5 !bg-amber-400 !rounded-full !shadow-lg !shadow-amber-400/50" />
+                )}
+              </NavLink>
+            )
           ))}
 
-          {/* New Project Button */}
+          {/* New Project Button - También bloqueado si está en onboarding */}
           {!sidebarCollapsed && (
             <div className="!pt-4 !mt-4 !border-t !border-white/10">
-              <NavLink
-                to="/partner/projects/create"
-                className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-green-700 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/30 !no-underline"
-              >
-                <Plus className="!w-5 !h-5" />
-                Nuevo Proyecto
-              </NavLink>
+              {isKybRequired ? (
+                <div 
+                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-slate-700/50 !text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60"
+                  title="Complete la verificación KYB para crear proyectos"
+                >
+                  <Lock className="!w-4 !h-4" />
+                  <span className="!line-through">Nuevo Proyecto</span>
+                </div>
+              ) : (
+                <NavLink
+                  to="/partner/projects/create"
+                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-green-700 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/30 !no-underline"
+                >
+                  <Plus className="!w-5 !h-5" />
+                  Nuevo Proyecto
+                </NavLink>
+              )}
             </div>
           )}
           {sidebarCollapsed && (
             <div className="!pt-4 !mt-4 !border-t !border-white/10 !flex !justify-center">
-              <NavLink
-                to="/partner/projects/create"
-                className="!p-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-green-700 !transition-all !shadow-lg !no-underline"
-                title="Nuevo Proyecto"
-              >
-                <Plus className="!w-5 !h-5" />
-              </NavLink>
+              {isKybRequired ? (
+                <div 
+                  className="!p-3 !bg-slate-700/50 !text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60"
+                  title="Complete la verificación KYB para crear proyectos"
+                >
+                  <Lock className="!w-5 !h-5" />
+                </div>
+              ) : (
+                <NavLink
+                  to="/partner/projects/create"
+                  className="!p-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-green-700 !transition-all !shadow-lg !no-underline"
+                  title="Nuevo Proyecto"
+                >
+                  <Plus className="!w-5 !h-5" />
+                </NavLink>
+              )}
             </div>
           )}
         </nav>
@@ -209,35 +297,58 @@ const PartnerLayout: React.FC = () => {
 
             <nav className="!flex-1 !px-4 !py-6 !space-y-2">
               {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.exact}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !no-underline ${
-                      isActive
-                        ? '!bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !shadow-lg'
-                        : '!text-slate-300 hover:!bg-white/10'
-                    }`
-                  }
-                >
-                  <item.icon className="!w-5 !h-5" />
-                  {item.label}
-                  {item.needsAttention && (
-                    <span className="!ml-auto !w-2.5 !h-2.5 !bg-amber-400 !rounded-full" />
-                  )}
-                </NavLink>
+                item.locked ? (
+                  // ITEM BLOQUEADO (Mobile)
+                  <div
+                    key={item.path}
+                    className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-left !font-medium !cursor-not-allowed !opacity-50 !bg-slate-800/50 !text-slate-500"
+                    title={item.lockedMessage || 'Bloqueado'}
+                  >
+                    <div className="!relative">
+                      <item.icon className="!w-5 !h-5" />
+                      <Lock className="!absolute !-top-1 !-right-1 !w-3 !h-3 !text-amber-400" />
+                    </div>
+                    {item.label}
+                    <Lock className="!ml-auto !w-4 !h-4 !text-amber-400" />
+                  </div>
+                ) : (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.exact}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !no-underline ${
+                        isActive
+                          ? '!bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !shadow-lg'
+                          : '!text-slate-300 hover:!bg-white/10'
+                      }`
+                    }
+                  >
+                    <item.icon className="!w-5 !h-5" />
+                    {item.label}
+                    {item.needsAttention && (
+                      <span className="!ml-auto !w-2.5 !h-2.5 !bg-amber-400 !rounded-full" />
+                    )}
+                  </NavLink>
+                )
               ))}
               <div className="!pt-4 !mt-4 !border-t !border-white/10">
-                <NavLink
-                  to="/partner/projects/create"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl !font-semibold !shadow-lg !no-underline"
-                >
-                  <Plus className="!w-5 !h-5" />
-                  Nuevo Proyecto
-                </NavLink>
+                {isKybRequired ? (
+                  <div className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-slate-700/50 !text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60">
+                    <Lock className="!w-4 !h-4" />
+                    <span className="!line-through">Nuevo Proyecto</span>
+                  </div>
+                ) : (
+                  <NavLink
+                    to="/partner/projects/create"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl !font-semibold !shadow-lg !no-underline"
+                  >
+                    <Plus className="!w-5 !h-5" />
+                    Nuevo Proyecto
+                  </NavLink>
+                )}
               </div>
             </nav>
 
@@ -310,6 +421,31 @@ const PartnerLayout: React.FC = () => {
 
         {/* Page Content */}
         <div className="!max-w-7xl !mx-auto !px-6 !py-8">
+          {/* KYB Required Banner */}
+          {isKybRequired && (
+            <div className="!mb-6 !p-4 !bg-amber-50 dark:!bg-amber-900/20 !border !border-amber-200 dark:!border-amber-800 !rounded-xl">
+              <div className="!flex !items-start !gap-3">
+                <AlertCircle className="!w-5 !h-5 !text-amber-600 dark:!text-amber-400 !flex-shrink-0 !mt-0.5" />
+                <div className="!flex-1">
+                  <h3 className="!text-sm !font-semibold !text-amber-800 dark:!text-amber-300">
+                    Verificación KYB Pendiente
+                  </h3>
+                  <p className="!text-sm !text-amber-700 dark:!text-amber-400 !mt-1">
+                    Para crear proyectos ESG, primero debe completar la verificación de su empresa (KYB). 
+                    Este proceso nos permite validar su organización y habilitar todas las funcionalidades de la plataforma.
+                  </p>
+                  <NavLink 
+                    to="/partner/kyb"
+                    className="!inline-flex !items-center !gap-2 !mt-3 !px-4 !py-2 !bg-amber-600 !text-white !rounded-lg hover:!bg-amber-700 !transition-colors !text-sm !font-medium !no-underline"
+                  >
+                    <Shield className="!w-4 !h-4" />
+                    Completar Verificación KYB
+                  </NavLink>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Outlet />
         </div>
       </main>
