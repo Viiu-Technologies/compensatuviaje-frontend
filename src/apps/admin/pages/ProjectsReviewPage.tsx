@@ -1,6 +1,7 @@
 /**
  * Projects Review Page
  * Proyectos ESG pendientes de revisión y aprobados por activar
+ * Double-Lock Architecture: Admin sets financial fields during approval
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -24,14 +25,20 @@ import {
   DollarSign,
   Filter,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Calculator,
+  Info,
+  AlertCircle
 } from 'lucide-react';
 import { 
   getProjectsPendingReview, 
   getProjectsApproved,
   approvePartnerProject, 
   rejectPartnerProject,
-  activatePartnerProject 
+  activatePartnerProject,
+  getSettings,
+  approveProjectWithPricing,
+  PlatformSettings
 } from '../services/adminApi';
 
 interface PendingProject {
@@ -43,6 +50,9 @@ interface PendingProject {
   country: string;
   region?: string;
   price_per_ton_usd?: number;
+  // Partner-submitted operational data (Double-Lock)
+  operational_cost_clp?: number;
+  estimated_capacity_kg_co2?: number;
   status: string;
   submitted_at: string;
   created_at: string;
@@ -65,11 +75,21 @@ interface ProjectsResponse {
 }
 
 const projectTypeLabels: Record<string, string> = {
+  // Bosque
   reforestation: 'Reforestación',
   conservation: 'Conservación',
-  renewable_energy: 'Energía Renovable',
+  // Agua
+  clean_water: 'Agua Limpia',
+  water_security: 'Seguridad Hídrica',
+  // Textil
+  circular_economy: 'Economía Circular',
   waste_management: 'Gestión de Residuos',
-  water_conservation: 'Conservación de Agua',
+  // Social
+  energy_efficiency: 'Eficiencia Energética',
+  social_housing: 'Vivienda Social',
+  community_development: 'Desarrollo Comunitario',
+  // Legacy
+  renewable_energy: 'Energía Renovable',
   biodiversity: 'Biodiversidad',
   other: 'Otro',
 };
@@ -101,6 +121,17 @@ export default function ProjectsReviewPage() {
   const [showRejectModal, setShowRejectModal] = useState<PendingProject | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [search, setSearch] = useState('');
+
+  // Double-Lock Pricing Modal State
+  const [showPricingModal, setShowPricingModal] = useState<PendingProject | null>(null);
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings | null>(null);
+  const [pricingForm, setPricingForm] = useState({
+    carbon_capture_per_unit: 0,
+    cost_clp: 0,
+    margin_percent: 25,
+    admin_notes: ''
+  });
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
 
   const fetchPendingProjects = useCallback(async () => {
     try {
@@ -138,6 +169,79 @@ export default function ProjectsReviewPage() {
     fetchPendingProjects();
     fetchApprovedProjects();
   }, [fetchPendingProjects, fetchApprovedProjects]);
+
+  // Load platform settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await getSettings();
+        setPlatformSettings(settings);
+      } catch (err) {
+        console.warn('Could not load platform settings:', err);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  // Calculate price whenever pricing form changes
+  useEffect(() => {
+    if (!platformSettings || !pricingForm.carbon_capture_per_unit || !pricingForm.cost_clp) {
+      setCalculatedPrice(0);
+      return;
+    }
+    
+    const fxRate = platformSettings.clp_usd_rate;
+    const costUsd = pricingForm.cost_clp / fxRate;
+    const marginMultiplier = 1 + (pricingForm.margin_percent / 100);
+    const pricePerKg = (costUsd * marginMultiplier) / pricingForm.carbon_capture_per_unit;
+    const pricePerTon = pricePerKg * 1000;
+    
+    setCalculatedPrice(pricePerTon);
+  }, [pricingForm, platformSettings]);
+
+  // Open pricing modal with project data pre-filled
+  const openPricingModal = (project: PendingProject) => {
+    setPricingForm({
+      carbon_capture_per_unit: project.estimated_capacity_kg_co2 || 0,
+      cost_clp: project.operational_cost_clp || 0,
+      margin_percent: platformSettings?.default_margin_percent || 25,
+      admin_notes: ''
+    });
+    setShowPricingModal(project);
+  };
+
+  // Handle approve with pricing (Double-Lock)
+  const handleApproveWithPricing = async () => {
+    if (!showPricingModal || !calculatedPrice) return;
+    
+    // Validate price limits
+    if (platformSettings) {
+      if (calculatedPrice < platformSettings.min_price_usd_per_ton) {
+        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es menor al mínimo permitido ($${platformSettings.min_price_usd_per_ton})`);
+        return;
+      }
+      if (calculatedPrice > platformSettings.max_price_usd_per_ton) {
+        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es mayor al máximo permitido ($${platformSettings.max_price_usd_per_ton})`);
+        return;
+      }
+    }
+
+    setActionLoading(showPricingModal.id);
+    try {
+      await approveProjectWithPricing(showPricingModal.id, {
+        carbon_capture_per_unit: pricingForm.carbon_capture_per_unit,
+        calculated_price_usd_ton: calculatedPrice,
+        admin_notes: pricingForm.admin_notes || undefined
+      });
+      setShowPricingModal(null);
+      fetchPendingProjects();
+      fetchApprovedProjects();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Error al aprobar proyecto');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleApprove = async (project: PendingProject) => {
     if (!confirm(`¿Aprobar el proyecto "${project.name}"?`)) return;
@@ -405,16 +509,16 @@ export default function ProjectsReviewPage() {
                   {activeTab === 'pending' ? (
                     <>
                       <button
-                        onClick={() => handleApprove(project)}
+                        onClick={() => openPricingModal(project)}
                         disabled={actionLoading === project.id}
-                        className="!flex !items-center !justify-center !gap-2 !px-4 !py-2.5 !bg-emerald-600 !text-white !rounded-xl !font-medium hover:!bg-emerald-700 !transition-colors disabled:!opacity-60"
+                        className="!flex !items-center !justify-center !gap-2 !px-4 !py-2.5 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl !font-medium hover:!from-emerald-600 hover:!to-green-700 !transition-all !shadow-lg !shadow-emerald-500/30 disabled:!opacity-60"
                       >
                         {actionLoading === project.id ? (
                           <RefreshCw className="!w-4 !h-4 !animate-spin" />
                         ) : (
-                          <Check className="!w-4 !h-4" />
+                          <Calculator className="!w-4 !h-4" />
                         )}
-                        Aprobar
+                        Aprobar con Precio
                       </button>
                       <button
                         onClick={() => setShowRejectModal(project)}
@@ -505,6 +609,172 @@ export default function ProjectsReviewPage() {
                 className="!flex-1 !py-2.5 !bg-red-600 !text-white !rounded-xl !font-medium hover:!bg-red-700 disabled:!opacity-60"
               >
                 {actionLoading === showRejectModal.id ? 'Rechazando...' : 'Confirmar Rechazo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Double-Lock Pricing Modal */}
+      {showPricingModal && (
+        <div className="!fixed !inset-0 !bg-black/50 !backdrop-blur-sm !flex !items-center !justify-center !z-50 !p-4 !overflow-y-auto">
+          <div className="!bg-white dark:!bg-slate-800 !rounded-2xl !shadow-2xl !max-w-2xl !w-full !p-6 !my-8">
+            {/* Header */}
+            <div className="!flex !items-start !gap-4 !mb-6">
+              <div className="!w-14 !h-14 !rounded-2xl !bg-gradient-to-br !from-emerald-400 !to-green-600 !flex !items-center !justify-center !flex-shrink-0">
+                <Calculator className="!w-7 !h-7 !text-white" />
+              </div>
+              <div>
+                <h3 className="!text-xl !font-bold !text-slate-800 dark:!text-slate-100">
+                  Aprobar Proyecto con Precio
+                </h3>
+                <p className="!text-sm !text-slate-600 dark:!text-slate-400 !mt-1">
+                  <strong>{showPricingModal.name}</strong> ({showPricingModal.code})
+                </p>
+              </div>
+            </div>
+
+            {/* Double-Lock Info Box */}
+            <div className="!bg-indigo-50 dark:!bg-indigo-900/20 !border !border-indigo-200 dark:!border-indigo-700 !rounded-xl !p-4 !mb-6">
+              <div className="!flex !items-start !gap-3">
+                <Info className="!w-5 !h-5 !text-indigo-600 dark:!text-indigo-400 !flex-shrink-0 !mt-0.5" />
+                <div>
+                  <h4 className="!text-sm !font-semibold !text-indigo-800 dark:!text-indigo-300">
+                    Arquitectura Double-Lock
+                  </h4>
+                  <p className="!text-xs !text-indigo-600 dark:!text-indigo-400 !mt-1">
+                    El partner envía datos operacionales. Tú defines el precio final usando la calculadora oficial.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Formula Display */}
+            <div className="!bg-slate-100 dark:!bg-slate-700 !rounded-xl !p-4 !mb-6">
+              <code className="!text-sm !text-slate-700 dark:!text-slate-300 !font-mono">
+                precio_usd_ton = ((costo_clp / fx_rate) × (1 + margen) / kg_co2) × 1000
+              </code>
+            </div>
+
+            {/* Form Grid */}
+            <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-4 !mb-6">
+              <div>
+                <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
+                  Costo Operacional (CLP)
+                </label>
+                <input
+                  type="number"
+                  value={pricingForm.cost_clp}
+                  onChange={(e) => setPricingForm({ ...pricingForm, cost_clp: parseFloat(e.target.value) || 0 })}
+                  className="!w-full !px-4 !py-3 !border !border-slate-300 dark:!border-slate-600 !rounded-xl !bg-white dark:!bg-slate-700 !text-slate-800 dark:!text-slate-200 focus:!ring-2 focus:!ring-emerald-500/20 focus:!border-emerald-500"
+                  placeholder="5000000"
+                />
+                <p className="!text-xs !text-slate-500 !mt-1">
+                  = ${platformSettings ? (pricingForm.cost_clp / platformSettings.clp_usd_rate).toFixed(2) : '0'} USD
+                </p>
+              </div>
+              <div>
+                <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
+                  Capacidad CO2 (kg)
+                </label>
+                <input
+                  type="number"
+                  value={pricingForm.carbon_capture_per_unit}
+                  onChange={(e) => setPricingForm({ ...pricingForm, carbon_capture_per_unit: parseFloat(e.target.value) || 0 })}
+                  className="!w-full !px-4 !py-3 !border !border-slate-300 dark:!border-slate-600 !rounded-xl !bg-white dark:!bg-slate-700 !text-slate-800 dark:!text-slate-200 focus:!ring-2 focus:!ring-emerald-500/20 focus:!border-emerald-500"
+                  placeholder="1000"
+                />
+                <p className="!text-xs !text-slate-500 !mt-1">
+                  = {(pricingForm.carbon_capture_per_unit / 1000).toFixed(2)} toneladas
+                </p>
+              </div>
+              <div>
+                <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
+                  Margen (%)
+                </label>
+                <input
+                  type="number"
+                  value={pricingForm.margin_percent}
+                  onChange={(e) => setPricingForm({ ...pricingForm, margin_percent: parseFloat(e.target.value) || 0 })}
+                  className="!w-full !px-4 !py-3 !border !border-slate-300 dark:!border-slate-600 !rounded-xl !bg-white dark:!bg-slate-700 !text-slate-800 dark:!text-slate-200 focus:!ring-2 focus:!ring-emerald-500/20 focus:!border-emerald-500"
+                  min="0"
+                  max="100"
+                />
+              </div>
+              <div>
+                <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
+                  FX Rate (CLP/USD)
+                </label>
+                <input
+                  type="text"
+                  value={platformSettings?.clp_usd_rate.toLocaleString('es-CL') || 'N/A'}
+                  disabled
+                  className="!w-full !px-4 !py-3 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !bg-slate-50 dark:!bg-slate-600 !text-slate-600 dark:!text-slate-300"
+                />
+              </div>
+            </div>
+
+            {/* Calculated Price */}
+            <div className="!bg-gradient-to-r !from-emerald-500 !to-green-600 !rounded-xl !p-6 !mb-6 !text-center">
+              <p className="!text-emerald-100 !text-sm !mb-1">Precio Calculado</p>
+              <p className="!text-white !text-4xl !font-bold">
+                ${calculatedPrice.toFixed(2)} <span className="!text-lg !font-normal">USD/ton</span>
+              </p>
+              {platformSettings && (
+                <p className="!text-emerald-200 !text-xs !mt-2">
+                  Rango permitido: ${platformSettings.min_price_usd_per_ton} - ${platformSettings.max_price_usd_per_ton} USD/ton
+                </p>
+              )}
+            </div>
+
+            {/* Price Validation Warning */}
+            {platformSettings && calculatedPrice > 0 && (calculatedPrice < platformSettings.min_price_usd_per_ton || calculatedPrice > platformSettings.max_price_usd_per_ton) && (
+              <div className="!bg-amber-50 dark:!bg-amber-900/20 !border !border-amber-200 dark:!border-amber-700 !rounded-xl !p-4 !mb-6 !flex !items-center !gap-3">
+                <AlertCircle className="!w-5 !h-5 !text-amber-600 !flex-shrink-0" />
+                <p className="!text-sm !text-amber-700 dark:!text-amber-400">
+                  El precio está fuera del rango permitido. Ajusta los parámetros.
+                </p>
+              </div>
+            )}
+
+            {/* Admin Notes */}
+            <div className="!mb-6">
+              <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
+                Notas del Admin (opcional)
+              </label>
+              <textarea
+                value={pricingForm.admin_notes}
+                onChange={(e) => setPricingForm({ ...pricingForm, admin_notes: e.target.value })}
+                placeholder="Notas internas sobre la aprobación..."
+                rows={2}
+                className="!w-full !px-4 !py-3 !border !border-slate-300 dark:!border-slate-600 !rounded-xl !bg-white dark:!bg-slate-700 !text-slate-800 dark:!text-slate-200 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-emerald-500/20 focus:!border-emerald-500 !resize-none"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="!flex !gap-3">
+              <button
+                onClick={() => setShowPricingModal(null)}
+                className="!flex-1 !py-3 !border !border-slate-200 dark:!border-slate-600 !text-slate-700 dark:!text-slate-300 !rounded-xl !font-medium hover:!bg-slate-50 dark:hover:!bg-slate-700"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleApproveWithPricing}
+                disabled={!calculatedPrice || actionLoading === showPricingModal.id || (platformSettings && (calculatedPrice < platformSettings.min_price_usd_per_ton || calculatedPrice > platformSettings.max_price_usd_per_ton))}
+                className="!flex-1 !py-3 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !rounded-xl !font-semibold hover:!from-emerald-600 hover:!to-green-700 !transition-all !shadow-lg !shadow-emerald-500/30 disabled:!opacity-60 !flex !items-center !justify-center !gap-2"
+              >
+                {actionLoading === showPricingModal.id ? (
+                  <>
+                    <RefreshCw className="!w-4 !h-4 !animate-spin" />
+                    Aprobando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="!w-4 !h-4" />
+                    Aprobar con ${calculatedPrice.toFixed(2)} USD/ton
+                  </>
+                )}
               </button>
             </div>
           </div>
