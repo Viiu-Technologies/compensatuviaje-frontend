@@ -155,14 +155,22 @@ export interface EsgProject {
   };
 }
 
+// Tipos de proyecto (4 Verticales ESG)
+// Sincronizado con Backend: src/modules/partner/validators/partnerValidatos.js
 export type ProjectType =
-  | 'reforestation'
-  | 'conservation'
-  | 'renewable_energy'
-  | 'methane_capture'
-  | 'ocean_cleanup'
-  | 'sustainable_agriculture'
-  | 'other';
+  // Vertical BOSQUE
+  | 'reforestation'      // Reforestación
+  | 'conservation'       // Conservación
+  // Vertical AGUA
+  | 'clean_water'        // Agua Limpia
+  | 'water_security'     // Seguridad Hídrica
+  // Vertical TEXTIL
+  | 'circular_economy'   // Economía Circular
+  | 'waste_management'   // Gestión de Residuos
+  // Vertical SOCIAL
+  | 'energy_efficiency'  // Eficiencia Energética
+  | 'social_housing'     // Vivienda Social
+  | 'community_development'; // Desarrollo Comunitario
 
 export type ProjectStatus =
   | 'draft'
@@ -329,14 +337,21 @@ export interface RejectProjectRequest {
 // FORM HELPERS
 // ============================================
 
+// Labels para tipos de proyecto (4 Verticales ESG)
 export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  // Vertical BOSQUE
   reforestation: 'Reforestación',
   conservation: 'Conservación',
-  renewable_energy: 'Energía Renovable',
-  methane_capture: 'Captura de Metano',
-  ocean_cleanup: 'Limpieza Oceánica',
-  sustainable_agriculture: 'Agricultura Sostenible',
-  other: 'Otro'
+  // Vertical AGUA
+  clean_water: 'Agua Limpia',
+  water_security: 'Seguridad Hídrica',
+  // Vertical TEXTIL
+  circular_economy: 'Economía Circular',
+  waste_management: 'Gestión de Residuos',
+  // Vertical SOCIAL
+  energy_efficiency: 'Eficiencia Energética',
+  social_housing: 'Vivienda Social',
+  community_development: 'Desarrollo Comunitario'
 };
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
