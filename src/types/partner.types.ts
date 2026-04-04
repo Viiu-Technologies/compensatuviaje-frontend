@@ -208,6 +208,13 @@ export interface ProjectMetrics {
 // PROJECT CRUD
 // ============================================
 
+/**
+ * Request para crear un proyecto (Partner)
+ * 
+ * ARQUITECTURA DOBLE CANDADO:
+ * - Partner solo envía datos operativos
+ * - currentBasePriceUsdPerTon y carbon_capture_per_unit son definidos por Admin
+ */
 export interface CreateProjectRequest {
   name: string;
   code: string;
@@ -216,23 +223,32 @@ export interface CreateProjectRequest {
   country: string;
   region?: string;
   providerOrganization?: string;
-  currentBasePriceUsdPerTon?: number;
   transparencyUrl?: string;
+  // Datos operativos que el Partner puede definir
   provider_cost_unit_clp?: number;
-  carbon_capture_per_unit?: number;
   capacity_total?: number;
+  // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
+  // NO se incluyen - son definidos por Admin en aprobación
 }
 
+/**
+ * Request para actualizar un proyecto (Partner)
+ * 
+ * ARQUITECTURA DOBLE CANDADO:
+ * - Partner solo puede editar datos operativos
+ * - Campos financieros son de solo lectura
+ */
 export interface UpdateProjectRequest {
   name?: string;
   description?: string;
   country?: string;
   region?: string;
   transparency_url?: string;
+  // Datos operativos editables por Partner
   provider_cost_unit_clp?: number;
-  carbon_capture_per_unit?: number;
   capacity_total?: number;
-  currentBasePriceUsdPerTon?: number;
+  // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
+  // NO se incluyen - solo Admin puede modificarlos
 }
 
 // ============================================

@@ -1,6 +1,10 @@
 // ============================================
 // CREATE/EDIT PROJECT PAGE
 // Formulario para crear o editar proyectos ESG
+// 
+// ARQUITECTURA DOBLE CANDADO:
+// - Partner solo ingresa datos operativos (costos locales, capacidad)
+// - Admin define campos financieros (precio USD, captura CO2) en aprobación
 // ============================================
 
 import React, { useState, useEffect } from 'react';
@@ -109,9 +113,9 @@ const ProjectForm: React.FC = () => {
     providerOrganization: '',
     transparencyUrl: '',
     provider_cost_unit_clp: undefined,
-    carbon_capture_per_unit: undefined,
-    capacity_total: undefined,
-    currentBasePriceUsdPerTon: undefined
+    capacity_total: undefined
+    // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
+    // son definidos por el Admin durante la aprobación
   });
 
   useEffect(() => {
@@ -135,9 +139,9 @@ const ProjectForm: React.FC = () => {
           providerOrganization: '',
           transparencyUrl: project.transparency_url || '',
           provider_cost_unit_clp: project.provider_cost_unit_clp,
-          carbon_capture_per_unit: project.carbon_capture_per_unit,
-          capacity_total: project.capacity_total,
-          currentBasePriceUsdPerTon: project.base_price_usd_per_ton
+          capacity_total: project.capacity_total
+          // NOTA: carbon_capture_per_unit y base_price_usd_per_ton 
+          // son de solo lectura para el Partner (definidos por Admin)
         });
       }
     } catch (error) {
@@ -169,8 +173,9 @@ const ProjectForm: React.FC = () => {
       newErrors.country = 'El país es requerido';
     }
 
-    if (!formData.currentBasePriceUsdPerTon) {
-      newErrors.currentBasePriceUsdPerTon = 'El precio base es requerido para su validación';
+    // Validar costo operativo (recomendado pero no obligatorio)
+    if (formData.provider_cost_unit_clp !== undefined && formData.provider_cost_unit_clp < 0) {
+      newErrors.provider_cost_unit_clp = 'El costo debe ser un número positivo';
     }
 
     if (formData.transparencyUrl && !/^https?:\/\/.+/.test(formData.transparencyUrl)) {
@@ -198,9 +203,9 @@ const ProjectForm: React.FC = () => {
           region: formData.region,
           transparency_url: formData.transparencyUrl,
           provider_cost_unit_clp: formData.provider_cost_unit_clp,
-          carbon_capture_per_unit: formData.carbon_capture_per_unit,
-          capacity_total: formData.capacity_total,
-          currentBasePriceUsdPerTon: formData.currentBasePriceUsdPerTon
+          capacity_total: formData.capacity_total
+          // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
+          // NO se envían - solo Admin puede modificarlos
         };
         const result = await updateProject(id!, updateData);
         if (result) {
@@ -404,36 +409,18 @@ const ProjectForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Technical Data Section */}
+          {/* Technical Data Section - Partner Operational Data Only */}
           <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
-            <h2 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-6">Datos Técnicos</h2>
+            <h2 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">Datos Operativos</h2>
+            <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-6">
+              Ingresa los costos y capacidad en tu moneda local. El precio final en USD será calculado por nuestro equipo durante la revisión.
+            </p>
             
             <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
               <FormField
-                label="Precio Base (USD por Tonelada)"
-                help="Precio referencial internacional en dólares (USD)"
-                required
-                error={errors.currentBasePriceUsdPerTon}
-              >
-                <input
-                  type="number"
-                  value={formData.currentBasePriceUsdPerTon || ''}
-                  onChange={(e) => handleChange(
-                    'currentBasePriceUsdPerTon',
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  )}
-                  min="0"
-                  step="0.01"
-                  placeholder="Ej: 12.5"
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100 ${
-                    errors.currentBasePriceUsdPerTon ? '!border-red-300 dark:!border-red-500/50' : '!border-slate-300 dark:!border-slate-600'
-                  }`}
-                />
-              </FormField>
-
-              <FormField
                 label="Costo por Unidad (CLP)"
-                help="Costo en pesos chilenos por cada unidad de compensación"
+                help="Costo en pesos chilenos por cada unidad de impacto (ej: por árbol, por m³ de agua)"
+                error={errors.provider_cost_unit_clp}
               >
                 <input
                   type="number"
@@ -443,32 +430,16 @@ const ProjectForm: React.FC = () => {
                     e.target.value ? parseInt(e.target.value) : undefined
                   )}
                   min="0"
-                  placeholder="Ej: 5000"
-                  className="!w-full !px-4 !py-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100"
-                />
-              </FormField>
-
-              <FormField
-                label="Captura CO₂ por Unidad (kg)"
-                help="Cantidad de CO₂ capturado por cada unidad vendida"
-              >
-                <input
-                  type="number"
-                  value={formData.carbon_capture_per_unit || ''}
-                  onChange={(e) => handleChange(
-                    'carbon_capture_per_unit',
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  )}
-                  min="0"
-                  step="0.01"
-                  placeholder="Ej: 100"
-                  className="!w-full !px-4 !py-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100"
+                  placeholder="Ej: 432"
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100 ${
+                    errors.provider_cost_unit_clp ? '!border-red-300 dark:!border-red-500/50' : '!border-slate-300 dark:!border-slate-600'
+                  }`}
                 />
               </FormField>
 
               <FormField
                 label="Capacidad Total (unidades)"
-                help="Cantidad total de unidades disponibles para venta"
+                help="Cantidad total de unidades disponibles para compensación"
               >
                 <input
                   type="number"
@@ -498,6 +469,22 @@ const ProjectForm: React.FC = () => {
                   }`}
                 />
               </FormField>
+            </div>
+
+            {/* Info Box about Admin-controlled fields */}
+            <div className="!mt-6 !p-4 !bg-blue-50 dark:!bg-blue-900/20 !border !border-blue-200 dark:!border-blue-800 !rounded-lg">
+              <div className="!flex !gap-3">
+                <svg className="!w-5 !h-5 !text-blue-600 dark:!text-blue-400 !flex-shrink-0 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="!text-sm !font-medium !text-blue-800 dark:!text-blue-300">Precio y Captura de CO₂</h4>
+                  <p className="!text-sm !text-blue-600 dark:!text-blue-400 !mt-1">
+                    El precio en USD/Tonelada y la captura de CO₂ por unidad serán definidos por nuestro equipo 
+                    durante el proceso de revisión, basándose en el dossier técnico y la documentación del proyecto.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
