@@ -18,8 +18,18 @@ import {
   Handshake,
   ClipboardCheck,
   Blocks,
-  Bot
+  Bot,
+  Inbox,
+  Settings,
+  FileCheck,
+  Package,
+  RefreshCw
 } from 'lucide-react';
+
+// ============================================
+// NUEVA ESTRUCTURA DE NAVEGACIÓN - MODELO INBOX
+// Organizado por Flujos de Trabajo en vez de Tecnologías
+// ============================================
 
 interface NavItem {
   path: string;
@@ -29,17 +39,42 @@ interface NavItem {
   end?: boolean;
 }
 
-const navItems: NavItem[] = [
-  { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+// A. Centro de Auditoría (Inbox de Decisiones con IA)
+const auditCenterItems: NavItem[] = [
+  { path: '/admin/partners/kyb-evaluations', icon: FileCheck, label: 'Solicitudes KYB', end: true },
+  { path: '/admin/proyectos-revision', icon: ClipboardCheck, label: 'Proyectos en Revisión' },
+  { path: '/admin/partners/evaluations', icon: Bot, label: 'Evaluaciones IA' },
+];
+
+// B. Ecosistema de Oferta (Catálogo Activo)
+const supplyEcosystemItems: NavItem[] = [
+  { path: '/admin/partners', icon: Handshake, label: 'Impact Partners', end: true },
+  { path: '/admin/proyectos', icon: TreePine, label: 'Proyectos ESG' },
+];
+
+// C. Ecosistema de Demanda
+const demandEcosystemItems: NavItem[] = [
   { path: '/admin/empresas', icon: Building2, label: 'Empresas B2B' },
   { path: '/admin/usuarios-b2c', icon: Users, label: 'Usuarios B2C' },
-  { path: '/admin/partners', icon: Handshake, label: 'Impact Partners', end: true },
-  { path: '/admin/partners/evaluations', icon: Bot, label: 'Validaciones IA' },
-  { path: '/admin/proyectos-revision', icon: ClipboardCheck, label: 'Revisión Proyectos' },
-  { path: '/admin/proyectos', icon: TreePine, label: 'Proyectos ESG' },
+];
+
+// D. Trazabilidad y Configuración
+const traceabilityItems: NavItem[] = [
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
-  { path: '/admin/verificacion', icon: CheckSquare, label: 'Verificación' },
   { path: '/admin/nft-blockchain', icon: Blocks, label: 'NFT Blockchain' },
+  { path: '/admin/settings', icon: Settings, label: 'Configuración' },
+];
+
+const navSections: NavSection[] = [
+  { title: 'Centro de Auditoría', items: auditCenterItems },
+  { title: 'Ecosistema de Oferta', items: supplyEcosystemItems },
+  { title: 'Ecosistema de Demanda', items: demandEcosystemItems },
+  { title: 'Trazabilidad', items: traceabilityItems },
 ];
 
 export default function AdminLayout() {
@@ -92,32 +127,43 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="!flex-1 !px-4 !py-6 !space-y-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/admin' || item.end}
-              className={({ isActive }) =>
-                `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none ${
-                  isActive
-                    ? '!bg-gradient-to-r !from-indigo-500 !to-purple-600 !text-white !shadow-lg !shadow-indigo-500/50'
-                    : '!bg-transparent !text-slate-300 hover:!bg-white/10 hover:!text-white'
-                } ${sidebarCollapsed ? '!justify-center' : ''}`
-              }
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <item.icon className="!text-xl !flex-shrink-0" />
+        {/* Navigation - Organized by Sections */}
+        <nav className="!flex-1 !px-4 !py-6 !space-y-6 !overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.title}>
               {!sidebarCollapsed && (
-                <span className="!truncate">{item.label}</span>
+                <h3 className="!px-4 !mb-2 !text-xs !font-semibold !text-slate-400 !uppercase !tracking-wider">
+                  {section.title}
+                </h3>
               )}
-              {!sidebarCollapsed && item.badge && (
-                <span className="!ml-auto !bg-red-500 !text-white !text-xs !rounded-full !px-2 !py-0.5">
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
+              <div className="!space-y-1">
+                {section.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none ${
+                        isActive
+                          ? '!bg-gradient-to-r !from-indigo-500 !to-purple-600 !text-white !shadow-lg !shadow-indigo-500/50'
+                          : '!bg-transparent !text-slate-300 hover:!bg-white/10 hover:!text-white'
+                      } ${sidebarCollapsed ? '!justify-center' : ''}`
+                    }
+                    title={sidebarCollapsed ? item.label : undefined}
+                  >
+                    <item.icon className="!w-5 !h-5 !flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="!truncate">{item.label}</span>
+                    )}
+                    {!sidebarCollapsed && item.badge && (
+                      <span className="!ml-auto !bg-red-500 !text-white !text-xs !rounded-full !px-2 !py-0.5">
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
@@ -159,21 +205,36 @@ export default function AdminLayout() {
               </div>
             </div>
             
-            <nav className="!flex-1 !px-4 !py-6 !space-y-2">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 ${
-                      isActive ? '!bg-gradient-to-r !from-indigo-500 !to-purple-600 !text-white !shadow-lg' : '!text-slate-300 hover:!bg-white/10'
-                    }`
-                  }
-                >
-                  <item.icon className="!text-xl" />
-                  {item.label}
-                </NavLink>
+            <nav className="!flex-1 !px-4 !py-6 !space-y-6 !overflow-y-auto">
+              {navSections.map((section) => (
+                <div key={section.title}>
+                  <h3 className="!px-4 !mb-2 !text-xs !font-semibold !text-slate-400 !uppercase !tracking-wider">
+                    {section.title}
+                  </h3>
+                  <div className="!space-y-1">
+                    {section.items.map((item) => (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.end}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={({ isActive }) =>
+                          `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 ${
+                            isActive ? '!bg-gradient-to-r !from-indigo-500 !to-purple-600 !text-white !shadow-lg' : '!text-slate-300 hover:!bg-white/10'
+                          }`
+                        }
+                      >
+                        <item.icon className="!w-5 !h-5" />
+                        {item.label}
+                        {item.badge && (
+                          <span className="!ml-auto !bg-red-500 !text-white !text-xs !rounded-full !px-2 !py-0.5">
+                            {item.badge}
+                          </span>
+                        )}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
               ))}
             </nav>
             <button className="!absolute !top-4 !right-4 !text-white/60 !text-2xl !border-0 !bg-transparent" onClick={() => setMobileMenuOpen(false)}>×</button>
