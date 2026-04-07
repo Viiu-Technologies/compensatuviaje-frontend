@@ -32,7 +32,7 @@ export interface RefreshTokenRequest {
 export interface RefreshTokenResponse {
   success: boolean;
   access_token: string;
-  refresh_token: string;
+  refresh_token?: string;
   token_type: 'Bearer';
   expires_in: number;
   user_info: UserInfo;

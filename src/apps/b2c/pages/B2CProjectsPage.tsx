@@ -113,15 +113,17 @@ const B2CProjectsPage: React.FC = () => {
         <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-3 xl:!grid-cols-4 !gap-4 sm:!gap-6">
           {filteredProjects.map((project, index) => {
             const tc = getTypeConfig(project.projectType);
+            const soldOut = project.isSoldOut ?? (project.capacityTotal > 0 && project.capacitySold >= project.capacityTotal);
+            const availableUnits = project.availableUnits ?? Math.max(project.capacityTotal - project.capacitySold, 0);
             return (
               <motion.div
                 key={project.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                whileHover={soldOut ? undefined : { y: -5, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
                 onClick={() => setSelectedProject(project)}
-                className={`!rounded-2xl !border !border-gray-200 !bg-gradient-to-br ${tc.colorFrom} ${tc.colorTo} !p-6 !flex !flex-col !shadow-sm !transition-all !cursor-pointer group`}
+                className={`!rounded-2xl !border !border-gray-200 !bg-gradient-to-br ${tc.colorFrom} ${tc.colorTo} !p-6 !flex !flex-col !shadow-sm !transition-all !cursor-pointer group ${soldOut ? '!grayscale !opacity-70' : ''}`}
               >
                 {/* Project Header */}
                 <div className="!flex !items-start !justify-between !mb-4">
@@ -130,6 +132,11 @@ const B2CProjectsPage: React.FC = () => {
                     {tc.label}
                   </span>
                 </div>
+                {soldOut && (
+                  <div className="!inline-flex !items-center !gap-1 !px-2 !py-1 !rounded-full !bg-gray-800 !text-white !text-xs !font-semibold !mb-3 !w-fit">
+                    Meta Completada 🎯
+                  </div>
+                )}
 
                 {/* Project Info */}
                 <h3 className="!text-lg !font-bold !text-gray-800 !mb-2 group-hover:!text-green-700 !transition-colors">
@@ -157,6 +164,10 @@ const B2CProjectsPage: React.FC = () => {
                     <span className="!font-semibold !text-gray-800">{project.capacityTotal.toLocaleString()} t</span>
                   </div>
                   <div className="!flex !justify-between !text-sm">
+                    <span className="!text-gray-600">Disponible:</span>
+                    <span className="!font-semibold !text-gray-800">{availableUnits.toLocaleString()} t</span>
+                  </div>
+                  <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Precio:</span>
                     <span className="!font-semibold !text-gray-800">${project.pricePerTon}/t</span>
                   </div>
@@ -173,14 +184,14 @@ const B2CProjectsPage: React.FC = () => {
                       initial={{ width: 0 }}
                       whileInView={{ width: `${project.progress}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      className="!h-2 !bg-green-500 !rounded-full"
+                      className={`!h-2 !rounded-full ${soldOut ? '!bg-gray-400' : '!bg-green-500'}`}
                     />
                   </div>
                 </div>
 
                 {/* Hover Indicator */}
-                <div className="!mt-4 !text-sm !text-green-600 !font-semibold !opacity-0 group-hover:!opacity-100 !transition-opacity !flex !items-center !gap-1">
-                  Ver detalles <span>→</span>
+                <div className={`!mt-4 !text-sm !font-semibold !opacity-0 group-hover:!opacity-100 !transition-opacity !flex !items-center !gap-1 ${soldOut ? '!text-gray-600' : '!text-green-600'}`}>
+                  {soldOut ? 'Solo lectura' : 'Ver detalles'} <span>→</span>
                 </div>
               </motion.div>
             );
@@ -200,6 +211,8 @@ const B2CProjectsPage: React.FC = () => {
         <AnimatePresence>
           {selectedProject && (() => {
             const tc = getTypeConfig(selectedProject.projectType);
+            const selectedProjectIsSoldOut = selectedProject.isSoldOut ?? (selectedProject.capacityTotal > 0 && selectedProject.capacitySold >= selectedProject.capacityTotal);
+            const selectedAvailableUnits = selectedProject.availableUnits ?? Math.max(selectedProject.capacityTotal - selectedProject.capacitySold, 0);
             return (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -273,33 +286,35 @@ const B2CProjectsPage: React.FC = () => {
                     <div className="!bg-gradient-to-br !from-green-50 !to-white !rounded-xl !p-6 !mb-6">
                       <div className="!flex !items-center !justify-between !mb-3">
                         <h3 className="!text-lg !font-bold !text-gray-900">Progreso del Proyecto</h3>
-                        <span className="!text-2xl !font-bold !text-green-600">{selectedProject.progress}%</span>
+                        <span className={`!text-2xl !font-bold ${selectedProjectIsSoldOut ? '!text-gray-600' : '!text-green-600'}`}>{selectedProject.progress}%</span>
                       </div>
                       <div className="!w-full !h-4 !bg-white !rounded-full !overflow-hidden !shadow-inner">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${selectedProject.progress}%` }}
                           transition={{ duration: 1, ease: "easeOut" }}
-                          className="!h-4 !bg-gradient-to-r !from-green-500 !to-green-600 !rounded-full"
+                          className={`!h-4 !rounded-full ${selectedProjectIsSoldOut ? '!bg-gradient-to-r !from-gray-400 !to-gray-500' : '!bg-gradient-to-r !from-green-500 !to-green-600'}`}
                         />
                       </div>
                       <div className="!flex !justify-between !text-sm !text-gray-500 !mt-2">
                         <span>{selectedProject.capacitySold.toLocaleString()} t vendidas</span>
-                        <span>{(selectedProject.capacityTotal - selectedProject.capacitySold).toLocaleString()} t disponibles</span>
+                        <span>{selectedAvailableUnits.toLocaleString()} t disponibles</span>
                       </div>
                     </div>
 
                     {/* CTA */}
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="!w-full !px-6 !py-4 !bg-gradient-to-r !from-green-600 !to-green-700 !text-white !rounded-xl !font-bold !shadow-lg hover:!shadow-xl !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
+                      whileHover={selectedProjectIsSoldOut ? undefined : { scale: 1.02 }}
+                      whileTap={selectedProjectIsSoldOut ? undefined : { scale: 0.98 }}
+                      className={`!w-full !px-6 !py-4 !text-white !rounded-xl !font-bold !shadow-lg !transition !border-0 !flex !items-center !justify-center !gap-2 ${selectedProjectIsSoldOut ? '!bg-gray-400 !cursor-not-allowed !shadow-none' : '!bg-gradient-to-r !from-green-600 !to-green-700 hover:!shadow-xl !cursor-pointer'}`}
+                      disabled={selectedProjectIsSoldOut}
                       onClick={() => {
+                        if (selectedProjectIsSoldOut) return;
                         setSelectedProject(null);
-                        window.location.href = '/b2c/calculator';
+                        window.location.href = `/b2c/calculator?projectId=${encodeURIComponent(selectedProject.id)}`;
                       }}
                     >
-                      <FaLeaf /> Apoyar Este Proyecto
+                      <FaLeaf /> {selectedProjectIsSoldOut ? 'Meta Completada 🎯' : 'Apoyar Este Proyecto'}
                     </motion.button>
                   </div>
                 </motion.div>

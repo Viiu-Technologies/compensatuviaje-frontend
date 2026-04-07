@@ -106,7 +106,10 @@ export interface B2CProject {
   pricePerTon: number;
   capacityTotal: number;
   capacitySold: number;
+  availableUnits?: number;
+  isSoldOut?: boolean;
   progress: number;
+  marginPercent?: number;
   coBenefits: any;
   partner: { name: string; logoUrl: string | null } | null;
   metrics: { name: string; value: number; date: string }[];

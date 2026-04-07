@@ -95,7 +95,8 @@ class ApiClient {
       const data = await response.json();
       
       if (data.success && data.access_token) {
-        this.setTokens(data.access_token, data.refresh_token);
+        const nextRefreshToken = data.refresh_token || refreshToken;
+        this.setTokens(data.access_token, nextRefreshToken);
         return data.access_token;
       }
       

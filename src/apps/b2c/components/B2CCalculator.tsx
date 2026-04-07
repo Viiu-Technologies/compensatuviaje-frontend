@@ -71,6 +71,10 @@ interface CalculationResult {
 
 type Step = 'form' | 'result' | 'payment' | 'success';
 
+interface B2CCalculatorProps {
+  projectId?: string | null;
+}
+
 const CABIN_OPTIONS = [
   { value: 'economy', label: 'Económica', icon: '💺', description: 'Clase estándar' },
   { value: 'premium_economy', label: 'Premium', icon: '🛋️', description: 'Mayor espacio' },
@@ -235,7 +239,7 @@ const AirportSearchInput: React.FC<{
   );
 };
 
-const B2CCalculator: React.FC = () => {
+const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromProps }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -257,6 +261,9 @@ const B2CCalculator: React.FC = () => {
   const [calculationId, setCalculationId] = useState<string | null>(null);
   const [distance, setDistance] = useState(0);
   const [paymentSuccess, setPaymentSuccess] = useState<any>(null);
+
+  const projectIdFromQuery = searchParams.get('projectId');
+  const selectedProjectId = projectIdFromProps || projectIdFromQuery || null;
 
   // Precarga de datos desde query params (cuando viene desde "Mis Viajes")
   useEffect(() => {
@@ -394,6 +401,8 @@ const B2CCalculator: React.FC = () => {
         body: JSON.stringify({
           amount: result.pricing.totalPriceCLP,
           calculationId: calculationId,
+          ...(selectedProjectId ? { projectId: selectedProjectId } : {}),
+          unitsPurchased: result.emissions.tonCO2e,
           flightData: {
             origin: result.meta.route.origin,
             destination: result.meta.route.destination,

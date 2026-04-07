@@ -4,7 +4,6 @@
 
 import apiClient from '../../../shared/services/apiClient';
 import type {
-  LoginRequest,
   LoginResponse,
   RegisterCompanyRequest,
   RegisterCompanyResponse,
@@ -12,6 +11,12 @@ import type {
   UserInfo,
   UserType,
 } from '../../../types';
+
+interface LoginRequest {
+  email: string;
+  password: string;
+  remember_me?: boolean;
+}
 
 // Determinar tipo de usuario basado en la respuesta del backend
 const determineUserType = (userInfo: UserInfo): UserType => {
@@ -213,7 +218,9 @@ class AuthService {
 
       if (response.success) {
         localStorage.setItem('access_token', response.access_token);
-        localStorage.setItem('refresh_token', response.refresh_token);
+        if (response.refresh_token) {
+          localStorage.setItem('refresh_token', response.refresh_token);
+        }
         
         // Agregar user_type
         response.user_info.user_type = determineUserType(response.user_info);

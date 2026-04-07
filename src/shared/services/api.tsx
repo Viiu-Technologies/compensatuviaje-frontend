@@ -50,15 +50,19 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
           // Llamar al endpoint de refresh del backend
-          const response = await axios.post(`${API_URL}/auth/refresh`, {
-            refresh_token: refreshToken
+          const response = await axios.post(`${API_URL}/public/auth/refresh`, {
+            refreshToken
           });
           
           // El backend devuelve: { success, access_token, refresh_token, expires_in }
           if (response.data.success) {
             const { access_token, refresh_token } = response.data;
             localStorage.setItem('access_token', access_token);
-            localStorage.setItem('refresh_token', refresh_token);
+
+            // Si backend no rota refresh token, mantener el actual guardado.
+            if (refresh_token) {
+              localStorage.setItem('refresh_token', refresh_token);
+            }
             
             // Reintentar la request original con el nuevo token
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
