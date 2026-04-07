@@ -106,13 +106,14 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleSubmitForReview = async () => {
-    if (!id) return;
+    if (!id || !project) return;
     
     setError(null);
     setSuccess(null);
     setSubmitting(true);
 
     try {
+      // DOUBLE-LOCK: No se requiere precio - Admin lo define durante la aprobación
       const updatedProject = await submitProjectForReview(id);
       if (updatedProject) {
         setProject(updatedProject);

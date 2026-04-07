@@ -127,6 +127,7 @@ export interface EsgProject {
   capacity_sold?: number;
   capacity_available?: number;
   base_price_usd_per_ton?: number;
+  currentBasePriceUsdPerTon?: number;
   // Additional fields
   certification?: string | null;
   co_benefits?: string[] | null;
