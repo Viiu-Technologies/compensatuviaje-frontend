@@ -2,8 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   FaFacebook, 
-  FaTwitter, 
-  FaInstagram, 
   FaLinkedin,
   FaEnvelope,
   FaLeaf,
@@ -49,8 +47,6 @@ const Footer = () => {
 
   const socialLinks = [
     { icon: FaFacebook, label: 'Facebook', href: '#', color: 'hover:text-blue-400' },
-    { icon: FaTwitter, label: 'Twitter', href: '#', color: 'hover:text-sky-400' },
-    { icon: FaInstagram, label: 'Instagram', href: '#', color: 'hover:text-pink-400' },
     { icon: FaLinkedin, label: 'LinkedIn', href: '#', color: 'hover:text-blue-500' }
   ];
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaCalculator, FaLeaf, FaChartLine, FaShieldAlt, FaBolt, FaGlobe } from 'react-icons/fa';
+import { FaCalculator, FaLeaf, FaChartLine, FaShieldAlt, FaBolt, FaGlobe, FaDatabase, FaAward, FaLock } from 'react-icons/fa';
 import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
 import { useInView } from 'react-intersection-observer';
 import './Features.css';
@@ -25,16 +25,16 @@ const Features = () => {
 
   const paymentMethods = [
     { name: 'Visa', logo: '/images/payment-logos/visa.png' },
+    { name: 'Webpay', logo: '/images/payment-logos/stripe.png' },
     { name: 'Google Pay', logo: '/images/payment-logos/google-pay.png' },
     { name: 'Apple Pay', logo: '/images/payment-logos/apple-pay.png' },
-    { name: 'PayPal', logo: '/images/payment-logos/paypal-logo.png' },
-    { name: 'Webpay', logo: '/images/payment-logos/webpay.png' }
+    { name: 'PayPal', logo: '/images/payment-logos/paypal-logo.png' }
   ];
 
   const benefits = [
-    { icon: FaBolt, text: 'Cálculo en segundos', color: 'text-accent-500' },
-    { icon: FaShieldAlt, text: '100% Verificado', color: 'text-primary-500' },
-    { icon: FaGlobe, text: 'Impacto Global', color: 'text-secondary-500' },
+    { icon: FaDatabase, text: 'Datos DEFRA UK actualizados', color: 'text-emerald-500' },
+    { icon: FaShieldAlt, text: 'Metodología verificada', color: 'text-blue-500' },
+    { icon: FaAward, text: '1 cálculo gratuito', color: 'text-amber-500' },
   ];
 
   const openCalculator = () => {
@@ -102,7 +102,7 @@ const Features = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
 
-            {/* Tarjeta de calculadora mejorada */}
+            {/* Tarjeta de calculadora premium */}
             <motion.div 
               className="calculator-card-modern"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -114,6 +114,23 @@ const Features = () => {
               <div className="card-gradient-bg"></div>
               
               <div className="card-content">
+                {/* Premium badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.6 }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: '#fff', fontSize: '12px', fontWeight: 700,
+                    padding: '4px 12px', borderRadius: '100px',
+                    marginBottom: '16px', letterSpacing: '0.5px'
+                  }}
+                >
+                  <FaAward style={{ fontSize: '12px' }} />
+                  1 CÁLCULO GRATUITO
+                </motion.div>
+
                 <div className="card-icon-wrapper">
                   <motion.div
                     animate={{ rotate: [0, 5, -5, 0] }}
@@ -129,11 +146,11 @@ const Features = () => {
                   Calculadora de Carbono
                 </h4>
                 
-                <p className="card-description">
-                  Calcula tu huella de carbono en segundos y descubre cómo compensar tu impacto ambiental
+                <p className="card-description" style={{ fontSize: '14px', lineHeight: 1.6 }}>
+                  Nuestra calculadora utiliza los factores de emisión oficiales del <strong>DEFRA</strong> (UK Government) y metodologías certificadas internacionalmente para entregar cálculos precisos de tu huella de carbono.
                 </p>
 
-                {/* Benefits */}
+                {/* Trust indicators */}
                 <div className="card-benefits">
                   {benefits.map((benefit, index) => {
                     const Icon = benefit.icon;
@@ -152,13 +169,19 @@ const Features = () => {
                   })}
                 </div>
 
+                {/* Fine print */}
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '12px 0 16px', lineHeight: 1.5 }}>
+                  <FaLock style={{ display: 'inline', marginRight: '4px', fontSize: '10px' }} />
+                  Datos basados en DEFRA 2024 · GHG Protocol · ICAO Carbon Calculator
+                </p>
+
                 <motion.button 
                   className="calculator-cta-btn"
                   onClick={openCalculator}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className="btn-text">Abrir Calculadora</span>
+                  <span className="btn-text">Calcular mi huella gratis</span>
                   <motion.span 
                     className="btn-arrow"
                     animate={{ x: [0, 5, 0] }}
