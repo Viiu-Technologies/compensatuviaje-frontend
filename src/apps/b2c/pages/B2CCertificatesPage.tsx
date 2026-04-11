@@ -18,14 +18,17 @@ import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
 import b2cApi, { type B2CCertificate } from '../services/b2cApi';
 import { MintNFTModal } from '../../../shared/components/blockchain';
-import { generateCertificatePDF } from '../utils/generateCertificatePDF';
+import CertificateGenerator from '../components/CertificateGenerator';
+import { useAuth } from '../context/AuthContext';
 
 const B2CCertificatesPage: React.FC = () => {
+  const { user } = useAuth();
   const [certificates, setCertificates] = useState<B2CCertificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCertificate, setSelectedCertificate] = useState<B2CCertificate | null>(null);
   const [mintCert, setMintCert] = useState<B2CCertificate | null>(null);
+  const [pdfCert, setPdfCert] = useState<B2CCertificate | null>(null);
 
   useEffect(() => {
     const fetchCertificates = async () => {
@@ -47,11 +50,27 @@ const B2CCertificatesPage: React.FC = () => {
   const totalTrees = Math.round(totalCompensated * 50); // ~50 trees per ton CO2
 
   const handleDownload = (cert: B2CCertificate) => {
-    try {
-      generateCertificatePDF(cert);
-    } catch {
-      console.error('Error generando PDF del certificado');
-    }
+    setPdfCert(cert);
+  };
+
+  const mapToCertData = (cert: B2CCertificate) => {
+    const [origin, destination] = (cert.flightRoute || '').split('→').map(s => s.trim());
+    return {
+      certificateId: cert.certificateNumber || cert.id,
+      userName: user?.nombre || user?.email?.split('@')[0] || 'Usuario',
+      userEmail: user?.email,
+      emissionsTons: cert.co2Compensated,
+      emissionsKg: cert.co2Compensated * 1000,
+      origin: origin || '',
+      destination: destination || '',
+      compensationDate: cert.date,
+      projectName: cert.project,
+      projectType: 'Ambiental',
+      equivalences: {
+        treesPlanted: cert.equivalencies?.trees || Math.round(cert.co2Compensated * 50),
+        carKmAvoided: Math.round(cert.co2Compensated * 4000),
+      },
+    };
   };
 
   const handleShare = (cert: B2CCertificate) => {
@@ -441,6 +460,14 @@ const B2CCertificatesPage: React.FC = () => {
               setCertificates(data.certificates || []);
             });
           }}
+        />
+      )}
+
+      {/* PDF Certificate Generator Modal */}
+      {pdfCert && (
+        <CertificateGenerator
+          data={mapToCertData(pdfCert)}
+          onClose={() => setPdfCert(null)}
         />
       )}
     </B2CLayout>
