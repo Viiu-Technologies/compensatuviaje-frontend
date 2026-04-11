@@ -5,6 +5,7 @@ import Features from '../components/Features';
 import CertificateSearch from '../components/CertificateSearch';
 import Testimonials from '../components/Testimonials';
 import FAQ from '../components/FAQ';
+import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
 
 const LandingPage = () => {
@@ -16,6 +17,7 @@ const LandingPage = () => {
       <CertificateSearch />
       <Testimonials />
       <FAQ />
+      <ContactSection />
       <Footer />
     </>
   );
