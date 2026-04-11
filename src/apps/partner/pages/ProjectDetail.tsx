@@ -16,7 +16,10 @@ import {
   submitProjectForReview,
   deleteProject
 } from '../services/partnerApi';
-import { Award } from 'lucide-react';
+import { getProjectEvidence } from '../services/evidenceApi';
+import PhotoCarousel from '../../../shared/components/PhotoCarousel';
+import DocumentViewer from '../../../shared/components/DocumentViewer';
+import { Bot, CheckCircle2, Clock, AlertTriangle, Camera, FileText, Upload } from 'lucide-react';
 
 // ============================================
 // PROJECT INFO CARD COMPONENT
@@ -80,6 +83,9 @@ const ProjectDetail: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [evidencePhotos, setEvidencePhotos] = useState<any[]>([]);
+  const [evidenceDocs, setEvidenceDocs] = useState<any[]>([]);
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -94,6 +100,8 @@ const ProjectDetail: React.FC = () => {
       
       if (projectData) {
         setProject(projectData);
+        // Load evidence files after project data
+        loadEvidence();
       } else {
         setError('Error al cargar el proyecto');
       }
@@ -102,6 +110,34 @@ const ProjectDetail: React.FC = () => {
       setError('Error al cargar el proyecto');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadEvidence = async () => {
+    try {
+      setEvidenceLoading(true);
+      const result = await getProjectEvidence(id!);
+      if (result?.data?.evidences) {
+        const allFiles = result.data.evidences.flatMap((ev: any) => ev.files || []);
+        const photos = allFiles
+          .filter((f: any) => f.mimeType?.startsWith('image/'))
+          .map((f: any) => ({ url: f.storageUrl, thumbnailUrl: f.thumbnailUrl, fileName: f.fileName }));
+        const docs = allFiles
+          .filter((f: any) => !f.mimeType?.startsWith('image/'))
+          .map((f: any) => ({
+            fileName: f.fileName,
+            fileType: f.fileType || 'document',
+            signedUrl: f.signedUrl,
+            storageUrl: f.storageUrl,
+            mimeType: f.mimeType,
+          }));
+        setEvidencePhotos(photos);
+        setEvidenceDocs(docs);
+      }
+    } catch (err) {
+      console.error('Error loading evidence:', err);
+    } finally {
+      setEvidenceLoading(false);
     }
   };
 
@@ -205,7 +241,6 @@ const ProjectDetail: React.FC = () => {
   const canEdit = ['draft', 'rejected'].includes(project.status);
   const canDelete = project.status === 'draft';
   const canSubmit = project.status === 'draft' || project.status === 'rejected';
-  const canCertify = project.status === 'active';
 
   return (
     <div className="!space-y-6">
@@ -278,13 +313,14 @@ const ProjectDetail: React.FC = () => {
               )}
             </button>
           )}
-          {canCertify && (
+          {/* AI Evaluation link (replaces manual 'Certificar' button) */}
+          {['active', 'approved', 'pending_review'].includes(project.status) && (
             <Link
               to={`/partner/projects/${project.id}/certification`}
-              className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-gradient-to-r !from-amber-500 !to-orange-600 !text-white !rounded-xl hover:!from-amber-600 hover:!to-orange-700 !transition-all !font-semibold !shadow-lg !shadow-amber-500/20 !no-underline"
+              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !bg-indigo-50 dark:!bg-indigo-900/30 !border !border-indigo-200 dark:!border-indigo-700 !text-indigo-700 dark:!text-indigo-300 !text-sm !font-medium hover:!bg-indigo-100 dark:hover:!bg-indigo-900/50 !transition-colors !no-underline"
             >
-              <Award className="!w-4 !h-4" />
-              Certificar Proyecto
+              <Bot className="!w-4 !h-4" />
+              Ver Evaluación IA
             </Link>
           )}
         </div>
@@ -461,6 +497,69 @@ const ProjectDetail: React.FC = () => {
             </dl>
           </InfoCard>
         </div>
+
+        {/* ====== Mis Archivos Subidos ====== */}
+        {!evidenceLoading && (evidencePhotos.length > 0 || evidenceDocs.length > 0) && (
+          <InfoCard title="Mis Archivos Subidos">
+            <div className="!space-y-6">
+              {/* Photos */}
+              {evidencePhotos.length > 0 && (
+                <div>
+                  <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold !text-slate-700 dark:!text-slate-300 !mb-3">
+                    <Camera className="!w-4 !h-4 !text-emerald-600" />
+                    Fotos ({evidencePhotos.length})
+                  </h4>
+                  <div className="!bg-slate-50 dark:!bg-slate-900 !rounded-xl !p-2">
+                    <PhotoCarousel photos={evidencePhotos} />
+                  </div>
+                </div>
+              )}
+
+              {/* Documents */}
+              {evidenceDocs.length > 0 && (
+                <div>
+                  <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold !text-slate-700 dark:!text-slate-300 !mb-3">
+                    <FileText className="!w-4 !h-4 !text-blue-600" />
+                    Documentos ({evidenceDocs.length})
+                  </h4>
+                  <DocumentViewer documents={evidenceDocs} />
+                </div>
+              )}
+            </div>
+          </InfoCard>
+        )}
+
+        {evidenceLoading && (
+          <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6">
+            <div className="!flex !items-center !gap-3 !text-slate-500">
+              <div className="!w-5 !h-5 !border-2 !border-slate-300 !border-t-emerald-500 !rounded-full !animate-spin" />
+              Cargando archivos...
+            </div>
+          </div>
+        )}
+
+        {/* Restock Button - only for active projects */}
+        {project.status === 'active' && (
+          <div className="!bg-gradient-to-r !from-emerald-50 !to-teal-50 dark:!from-emerald-900/20 dark:!to-teal-900/20 !rounded-xl !border !border-emerald-200 dark:!border-emerald-800 !p-6">
+            <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-4">
+              <div>
+                <h3 className="!text-lg !font-semibold !text-emerald-800 dark:!text-emerald-200">
+                  Evidencia Mensual
+                </h3>
+                <p className="!text-sm !text-emerald-700/70 dark:!text-emerald-300/70 !mt-1">
+                  Sube fotos y documentos de avance para solicitar reposición de stock
+                </p>
+              </div>
+              <Link
+                to={`/partner/projects/${project.id}/restock`}
+                className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-emerald-600 hover:!bg-emerald-700 !text-white !rounded-xl !font-semibold !transition-colors !shadow-lg !shadow-emerald-500/20 !no-underline"
+              >
+                <Upload className="!w-4 !h-4" />
+                Subir Evidencia Mensual
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Modal */}

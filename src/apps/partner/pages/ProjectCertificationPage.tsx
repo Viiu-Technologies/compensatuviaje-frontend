@@ -1,60 +1,39 @@
 // ============================================
-// PROJECT CERTIFICATION PAGE
-// Página de Certificación de Proyectos ESG (Agent 2)
+// PROJECT CERTIFICATION PAGE (Read-Only Status)
+// Evaluación IA se envía automáticamente al crear el proyecto.
+// Esta página solo muestra el estado actual.
 // ============================================
 
-/**
- * CONCEPTO: Certificación por Proyecto
- * 
- * A diferencia del KYB (que es por Partner), la certificación ESG
- * es por proyecto. Cada proyecto puede tener su propio proceso
- * de certificación con documentos PDD específicos.
- * 
- * Estados visuales:
- * 1. NONE - Sin certificación: Formulario de upload
- * 2. PROCESSING - IA evaluando: Estado de carga con polling
- * 3. AI_COMPLETED - IA terminó: Scores ESG, esperando admin
- * 4. CERTIFIED - Admin aprobó: Certificado con nivel (PLATINO/ORO/PLATA)
- * 5. REJECTED - Admin rechazó: Motivo y opción de reenviar
- */
-
 import React, { useState, useCallback, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  Award, 
-  FileText, 
-  CheckCircle, 
-  XCircle, 
+import { useParams, Link } from 'react-router-dom';
+import {
+  Award,
+  FileText,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   Clock,
-  Send,
   RefreshCw,
   ChevronDown,
   ChevronUp,
   ArrowLeft,
   History,
-  ExternalLink,
-  Leaf,
-  Users,
-  Globe,
-  BarChart, Search, Tag, FileCheck, Calendar, ClipboardList
+  Search,
+  Tag,
+  BarChart,
+  Calendar,
+  ClipboardList,
+  Bot
 } from 'lucide-react';
 
 // Types
-import type { 
-  CertStatusResponse, 
+import type {
+  CertStatusResponse,
   CertificationEvaluation,
   CertHistoryResponse,
   CertScoreDetails,
-  CertificationType
 } from '../../../types/certification.types';
-import { 
-  getCertVisualStatus, 
-  CERTIFICATION_TYPES,
-  CERTIFICATION_TYPE_LABELS,
-  CERT_LEVEL_LABELS, 
-  CERT_LEVEL_ICONS,
-  CERT_LEVEL_COLORS,
+import {
   SCORE_LABELS,
   formatCertDate
 } from '../../../types/certification.types';
@@ -66,13 +45,12 @@ import certificationApi from '../services/certificationApi';
 import { usePolling } from '../hooks/usePolling';
 
 // Shared Components
-import PdfUploader from '../components/shared/PdfUploader';
 import ScoreGauge, { ScoreCard } from '../components/shared/ScoreGauge';
-import { 
-  CertStatusBadge, 
-  CertLevelBadge, 
-  AdminPendingBanner, 
-  ProcessingState 
+import {
+  CertStatusBadge,
+  CertLevelBadge,
+  AdminPendingBanner,
+  ProcessingState
 } from '../components/shared/StatusBadges';
 
 // ============================================
@@ -81,162 +59,9 @@ import {
 
 type PageState = 'none' | 'processing' | 'ai_completed' | 'certified' | 'rejected' | 'error' | 'loading';
 
-interface FormData {
-  certificationType: CertificationType;
-  file: File | null;
-}
-
 // ============================================
 // SUB-COMPONENTS
 // ============================================
-
-/**
- * Estado: Sin certificación - Formulario de upload
- */
-interface UploadFormProps {
-  projectName: string;
-  onSubmit: (data: FormData) => Promise<void>;
-  isSubmitting: boolean;
-}
-
-const UploadForm: React.FC<UploadFormProps> = ({ projectName, onSubmit, isSubmitting }) => {
-  const [formData, setFormData] = useState<FormData>({
-    certificationType: 'PDD',
-    file: null
-  });
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
-    
-    if (!formData.certificationType) {
-      newErrors.certificationType = 'Selecciona un tipo de certificación';
-    }
-    
-    if (!formData.file) {
-      newErrors.file = 'Debes seleccionar un archivo PDF';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      await onSubmit(formData);
-    }
-  };
-
-  const handleFileSelect = (file: File) => {
-    setFormData(prev => ({ ...prev, file }));
-    setErrors(prev => ({ ...prev, file: undefined }));
-  };
-
-  return (
-    <div className="!space-y-6">
-      {/* Info Banner */}
-      <div className="!bg-blue-50 dark:!bg-blue-900/30 !border !border-blue-200 dark:!border-blue-700 !rounded-xl !p-6">
-        <div className="!flex !gap-4">
-          <FileText className="!w-6 !h-6 !text-blue-600 dark:!text-blue-400 !flex-shrink-0 !mt-0.5" />
-          <div>
-            <h3 className="!text-blue-800 dark:!text-blue-200 !font-semibold !mb-2">
-              Este proyecto aún no tiene certificación
-            </h3>
-            <p className="!text-blue-700 dark:!text-blue-300 !text-sm !mb-3">
-              Sube tu documento PDD (Project Design Document) para iniciar la evaluación automática de impacto ESG del proyecto.
-            </p>
-            <div className="!text-sm !text-blue-700 dark:!text-blue-300">
-              <p className="!font-medium !mb-1">La evaluación analiza:</p>
-              <ul className="!space-y-1">
-                <li className="!flex !items-center !gap-2">
-                  <span>🌱</span> Biodiversidad - Impacto en ecosistemas
-                </li>
-                <li className="!flex !items-center !gap-2">
-                  <span>👥</span> Desarrollo Social - Beneficios comunitarios
-                </li>
-                <li className="!flex !items-center !gap-2">
-                  <span>🌍</span> Estándares Ambientales - Cumplimiento normativo
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Upload Form */}
-      <form onSubmit={handleSubmit} className="!space-y-6">
-        <div>
-          <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-4">
-            Subir Documento PDD
-          </h3>
-          
-          {/* Certification Type */}
-          <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">
-              Tipo de Certificación *
-            </label>
-            <select
-              value={formData.certificationType}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                certificationType: e.target.value as CertificationType 
-              }))}
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 !bg-white dark:!bg-slate-700 dark:!text-slate-100 ${
-                errors.certificationType ? '!border-red-300 !bg-red-50 dark:!bg-red-900/30' : '!border-slate-300 dark:!border-slate-600'
-              }`}
-              disabled={isSubmitting}
-            >
-              {CERTIFICATION_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type} - {CERTIFICATION_TYPE_LABELS[type]}
-                </option>
-              ))}
-            </select>
-            {errors.certificationType && (
-              <p className="!text-red-600 dark:!text-red-400 !text-sm !mt-1">{errors.certificationType}</p>
-            )}
-          </div>
-
-          {/* PDF Upload */}
-          <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
-              Documento PDD (PDF) *
-            </label>
-            <PdfUploader
-              onFileSelect={handleFileSelect}
-              disabled={isSubmitting}
-              isUploading={isSubmitting}
-              instruction="Arrastra tu documento PDD aquí o haz clic para seleccionar"
-            />
-            {errors.file && (
-              <p className="!text-red-600 dark:!text-red-400 !text-sm !mt-1">{errors.file}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-emerald-600 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-emerald-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <>
-              <RefreshCw className="!w-5 !h-5 !animate-spin" />
-              Enviando...
-            </>
-          ) : (
-            <>
-              <Send className="!w-5 !h-5" />
-              Enviar para Certificación
-            </>
-          )}
-        </button>
-      </form>
-    </div>
-  );
-};
 
 /**
  * ESG Scores Grid - Muestra los 3 scores ESG (B, D, E)
@@ -301,7 +126,6 @@ const EsgScoresGrid: React.FC<EsgScoresGridProps> = ({ scores, finalScore, confi
 
 /**
  * Markdown Report Display
- * Note: This is a basic implementation. We'll enhance it when react-markdown is installed.
  */
 interface ReportDisplayProps {
   markdown: string | null;
@@ -312,7 +136,6 @@ interface ReportDisplayProps {
 const ReportDisplay: React.FC<ReportDisplayProps> = ({ markdown, isExpanded, onToggle }) => {
   if (!markdown) return null;
 
-  // Basic markdown-to-html conversion (will be replaced with react-markdown)
   const renderBasicMarkdown = (md: string): string => {
     return md
       .replace(/^### (.*$)/gim, '<h3 class="!text-lg !font-semibold !text-slate-800 dark:!text-slate-200 !mt-4 !mb-2">$1</h3>')
@@ -342,7 +165,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ markdown, isExpanded, onT
 
       {isExpanded && (
         <div className="!p-6 !bg-white dark:!bg-slate-900 !border-t !border-slate-200 dark:!border-slate-700">
-          <div 
+          <div
             className="!prose !prose-slate dark:!prose-invert !max-w-none"
             dangerouslySetInnerHTML={{ __html: renderBasicMarkdown(markdown) }}
           />
@@ -353,7 +176,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ markdown, isExpanded, onT
 };
 
 /**
- * Compliance Badges - Shows which standards the project complies with
+ * Compliance Badges
  */
 interface ComplianceBadgesProps {
   compliance: Record<string, boolean | undefined> | null;
@@ -401,8 +224,7 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
   return (
     <div className="!space-y-6">
       <AdminPendingBanner />
-      
-      {/* Level Preview */}
+
       {evaluation.level && (
         <div className="!flex !items-center !justify-center !gap-4 !p-6 !bg-gradient-to-r !from-amber-50 !to-yellow-50 dark:!from-amber-900/30 dark:!to-yellow-900/30 !rounded-xl !border !border-amber-200 dark:!border-amber-700">
           <div className="!text-center">
@@ -412,7 +234,6 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
         </div>
       )}
 
-      {/* Detected Project Type */}
       {evaluation.project_type_detected && (
         <div className="!flex !items-center !gap-2 !p-3 !bg-slate-50 dark:!bg-slate-800 !rounded-lg">
           <span className="!flex !items-center !gap-1 !text-sm !text-slate-500 dark:!text-slate-400">
@@ -422,26 +243,22 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
         </div>
       )}
 
-      {/* Scores */}
       {evaluation.details && (
-        <EsgScoresGrid 
-          scores={evaluation.details} 
+        <EsgScoresGrid
+          scores={evaluation.details}
           finalScore={evaluation.final_score}
           confidenceScore={evaluation.confidence_score}
         />
       )}
 
-      {/* Compliance */}
       <ComplianceBadges compliance={evaluation.compliance} />
 
-      {/* Report */}
-      <ReportDisplay 
+      <ReportDisplay
         markdown={evaluation.report_markdown}
         isExpanded={showReport}
         onToggle={() => setShowReport(!showReport)}
       />
 
-      {/* Waiting message */}
       <div className="!flex !items-center !gap-3 !p-4 !bg-slate-50 dark:!bg-slate-800 !rounded-lg !border !border-slate-200 dark:!border-slate-700">
         <Clock className="!w-5 !h-5 !text-slate-500 dark:!text-slate-400 !animate-pulse" />
         <p className="!text-slate-600 dark:!text-slate-300">
@@ -465,7 +282,6 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
 
   return (
     <div className="!space-y-6">
-      {/* Success Banner */}
       <div className="!bg-gradient-to-r !from-green-50 !to-emerald-50 dark:!from-green-900/30 dark:!to-emerald-900/30 !border !border-green-200 dark:!border-green-700 !rounded-xl !p-6">
         <div className="!flex !items-start !gap-4">
           <div className="!w-12 !h-12 !bg-green-100 dark:!bg-green-900/50 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
@@ -493,7 +309,6 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
         </div>
       </div>
 
-      {/* Detected Type & Certification Type */}
       <div className="!grid !grid-cols-2 !gap-4">
         {evaluation.project_type_detected && (
           <div className="!p-3 !bg-slate-50 dark:!bg-slate-800 !rounded-lg">
@@ -511,26 +326,22 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
         </div>
       </div>
 
-      {/* Scores */}
       {evaluation.details && (
-        <EsgScoresGrid 
-          scores={evaluation.details} 
+        <EsgScoresGrid
+          scores={evaluation.details}
           finalScore={evaluation.final_score}
           confidenceScore={evaluation.confidence_score}
         />
       )}
 
-      {/* Compliance */}
       <ComplianceBadges compliance={evaluation.compliance} />
 
-      {/* Report */}
-      <ReportDisplay 
+      <ReportDisplay
         markdown={evaluation.report_markdown}
         isExpanded={showReport}
         onToggle={() => setShowReport(!showReport)}
       />
 
-      {/* History */}
       {history && history.evaluations.length > 0 && (
         <EvaluationHistory evaluations={history.evaluations} />
       )}
@@ -539,18 +350,16 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
 };
 
 /**
- * Estado: Certificación Rechazada
+ * Estado: Certificación Rechazada (read-only, no retry button)
  */
 interface RejectedStateProps {
   evaluation: CertificationEvaluation;
   history: CertHistoryResponse | null;
-  onRetry: () => void;
 }
 
-const RejectedState: React.FC<RejectedStateProps> = ({ evaluation, history, onRetry }) => {
+const RejectedState: React.FC<RejectedStateProps> = ({ evaluation, history }) => {
   return (
     <div className="!space-y-6">
-      {/* Rejected Banner */}
       <div className="!bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-700 !rounded-xl !p-6">
         <div className="!flex !items-start !gap-4">
           <div className="!w-12 !h-12 !bg-red-100 dark:!bg-red-900/50 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
@@ -568,22 +377,12 @@ const RejectedState: React.FC<RejectedStateProps> = ({ evaluation, history, onRe
               </div>
             )}
             <p className="!text-red-600 dark:!text-red-400 !text-sm">
-              Puedes subir un nuevo documento PDD corregido.
+              Contacta al administrador para más información. La evaluación IA se envía automáticamente al crear o editar el proyecto.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Retry Button */}
-      <button
-        onClick={onRetry}
-        className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-emerald-600 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-emerald-700"
-      >
-        <RefreshCw className="!w-5 !h-5" />
-        Subir Nuevo PDD
-      </button>
-
-      {/* History */}
       {history && history.evaluations.length > 0 && (
         <EvaluationHistory evaluations={history.evaluations} />
       )}
@@ -625,8 +424,8 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
             <div key={eval_.id} className="!p-4 !flex !items-center !justify-between !bg-white dark:!bg-slate-900">
               <div className="!flex !items-center !gap-3">
                 <span className="!flex !items-center !justify-center !w-8 !h-8 !rounded-full !bg-slate-100 dark:!bg-slate-800">
-                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5 !text-green-500" /> : 
-                   eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5 !text-red-500" /> : 
+                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5 !text-green-500" /> :
+                   eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5 !text-red-500" /> :
                    <RefreshCw className="!w-5 !h-5 !text-blue-500" />}
                 </span>
                 <div>
@@ -660,16 +459,13 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
 
 const ProjectCertificationPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  
+
   // State
   const [pageState, setPageState] = useState<PageState>('loading');
   const [evaluation, setEvaluation] = useState<CertificationEvaluation | null>(null);
   const [history, setHistory] = useState<CertHistoryResponse | null>(null);
   const [projectName, setProjectName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showUploadForm, setShowUploadForm] = useState(false);
 
   /**
    * Determine page state based on evaluation
@@ -680,16 +476,16 @@ const ProjectCertificationPage: React.FC = () => {
     }
 
     const eval_ = statusResponse.latest_evaluation;
-    
+
     if (eval_.admin_decision === 'approved') return 'certified';
     if (eval_.admin_decision === 'rejected') return 'rejected';
-    
+
     if (eval_.status === 'pending') return 'processing';
     if (eval_.status === 'error') return 'error';
     if (eval_.status === 'ai_approved' || eval_.status === 'ai_rejected') {
       return 'ai_completed';
     }
-    
+
     return 'none';
   }, []);
 
@@ -701,8 +497,7 @@ const ProjectCertificationPage: React.FC = () => {
     setProjectName(status.project.name);
     const newState = determinePageState(status);
     setPageState(newState);
-    
-    // If we just got certified/rejected, fetch history
+
     if ((newState === 'certified' || newState === 'rejected') && projectId) {
       certificationApi.getHistory(projectId).then(setHistory).catch(console.error);
     }
@@ -711,14 +506,13 @@ const ProjectCertificationPage: React.FC = () => {
   /**
    * Polling hook - polls while status is 'processing'
    */
-  const { data: statusData, loading: pollingLoading, refetch } = usePolling<CertStatusResponse>(
+  const { data: statusData, loading: pollingLoading } = usePolling<CertStatusResponse>(
     () => certificationApi.getStatus(projectId!),
     (status) => {
-      // Continue polling if AI is still processing
       const latestEval = status?.latest_evaluation;
       return latestEval?.status === 'pending' && !latestEval?.admin_decision;
     },
-    30000, // 30 seconds
+    30000,
     {
       enabled: !!projectId,
       onSuccess: handleStatusUpdate,
@@ -728,42 +522,6 @@ const ProjectCertificationPage: React.FC = () => {
       }
     }
   );
-
-  /**
-   * Handle form submission
-   */
-  const handleSubmit = async (formData: FormData) => {
-    if (!formData.file || !projectId) return;
-    
-    setIsSubmitting(true);
-    setError(null);
-    
-    try {
-      const submitFormData = certificationApi.createFormData(
-        formData.file,
-        formData.certificationType
-      );
-      
-      await certificationApi.upload(projectId, submitFormData);
-      
-      // After successful upload, refetch status
-      setShowUploadForm(false);
-      setPageState('processing');
-      await refetch();
-    } catch (err: any) {
-      console.error('Upload error:', err);
-      setError(err.message || 'Error al enviar el documento');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  /**
-   * Handle retry (show upload form again)
-   */
-  const handleRetry = () => {
-    setShowUploadForm(true);
-  };
 
   // Fetch history on mount if already certified/rejected
   useEffect(() => {
@@ -792,125 +550,128 @@ const ProjectCertificationPage: React.FC = () => {
     <div className="!bg-slate-50 dark:!bg-slate-900 !min-h-screen !p-6 md:!p-8">
       <div className="!max-w-4xl !mx-auto">
         {/* Back Link */}
-        <Link 
-        to={`/partner/projects/${projectId}`}
-        className="!inline-flex !items-center !gap-2 !text-slate-600 dark:!text-slate-400 hover:!text-slate-800 dark:hover:!text-slate-200 !mb-6 !transition-colors"
-      >
-        <ArrowLeft className="!w-4 !h-4" />
-        Volver a Proyecto
-      </Link>
+        <Link
+          to={`/partner/projects/${projectId}`}
+          className="!inline-flex !items-center !gap-2 !text-slate-600 dark:!text-slate-400 hover:!text-slate-800 dark:hover:!text-slate-200 !mb-6 !transition-colors"
+        >
+          <ArrowLeft className="!w-4 !h-4" />
+          Volver a Proyecto
+        </Link>
 
-      {/* Header */}
-      <div className="!mb-8">
-        <div className="!flex !items-center !gap-3 !mb-2">
-          <div className="!w-10 !h-10 !bg-emerald-100 dark:!bg-emerald-900/50 !rounded-xl !flex !items-center !justify-center">
-            <Award className="!w-5 !h-5 !text-emerald-600 dark:!text-emerald-400" />
-          </div>
-          <div>
-            <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100">
-              Certificación de Proyecto
-            </h1>
-            {projectName && (
-              <p className="!text-slate-500 dark:!text-slate-400">{projectName}</p>
-            )}
-          </div>
-        </div>
-        {evaluation && (
-          <div className="!ml-13">
-            <CertStatusBadge evaluation={evaluation} size="md" />
-          </div>
-        )}
-      </div>
-
-      {/* Error Banner */}
-      {error && (
-        <div className="!mb-6 !bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-700 !rounded-lg !p-4 !flex !items-start !gap-3">
-          <AlertTriangle className="!w-5 !h-5 !text-red-500 dark:!text-red-400 !flex-shrink-0 !mt-0.5" />
-          <div>
-            <p className="!text-red-800 dark:!text-red-200 !font-medium">Error</p>
-            <p className="!text-red-600 dark:!text-red-400 !text-sm">{error}</p>
-          </div>
-          <button
-            onClick={() => setError(null)}
-            className="!ml-auto !text-red-400 hover:!text-red-600 dark:hover:!text-red-300"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <div className="!bg-white dark:!bg-slate-800 !rounded-2xl !shadow-sm !border !border-slate-200 dark:!border-slate-700 !p-6 md:!p-8">
-        
-        {/* Loading State */}
-        {pageState === 'loading' && (
-          <div className="!flex !flex-col !items-center !justify-center !py-12">
-            <div className="!w-12 !h-12 !border-4 !border-emerald-200 dark:!border-emerald-700 !border-t-emerald-600 dark:!border-t-emerald-400 !rounded-full !animate-spin !mb-4" />
-            <p className="!text-slate-600 dark:!text-slate-300">Cargando estado de certificación...</p>
-          </div>
-        )}
-
-        {/* State: None - No evaluation, show upload form */}
-        {(pageState === 'none' || showUploadForm) && !pollingLoading && (
-          <UploadForm
-            projectName={projectName}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-          />
-        )}
-
-        {/* State: Processing - AI is evaluating */}
-        {pageState === 'processing' && !showUploadForm && (
-          <ProcessingState
-            title="Evaluación ESG en Proceso"
-            message="Tu documento PDD está siendo evaluado por nuestra IA. Este proceso puede tomar entre 5 y 15 minutos."
-            documentName={evaluation?.document_name}
-            submittedAt={evaluation?.created_at}
-          />
-        )}
-
-        {/* State: AI Completed - Waiting for admin */}
-        {pageState === 'ai_completed' && evaluation && !showUploadForm && (
-          <AiCompletedState evaluation={evaluation} />
-        )}
-
-        {/* State: Certified */}
-        {pageState === 'certified' && evaluation && !showUploadForm && (
-          <CertifiedState evaluation={evaluation} history={history} />
-        )}
-
-        {/* State: Rejected */}
-        {pageState === 'rejected' && evaluation && !showUploadForm && (
-          <RejectedState 
-            evaluation={evaluation} 
-            history={history}
-            onRetry={handleRetry}
-          />
-        )}
-
-        {/* State: Error */}
-        {pageState === 'error' && (
-          <div className="!text-center !py-12">
-            <div className="!w-16 !h-16 !bg-red-100 dark:!bg-red-900/40 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
-              <AlertTriangle className="!w-8 !h-8 !text-red-500 dark:!text-red-400" />
+        {/* Header */}
+        <div className="!mb-8">
+          <div className="!flex !items-center !gap-3 !mb-2">
+            <div className="!w-10 !h-10 !bg-emerald-100 dark:!bg-emerald-900/50 !rounded-xl !flex !items-center !justify-center">
+              <Bot className="!w-5 !h-5 !text-emerald-600 dark:!text-emerald-400" />
             </div>
-            <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">
-              Error en la Evaluación
-            </h3>
-            <p className="!text-slate-600 dark:!text-slate-400 !mb-4">
-              Ocurrió un error durante la evaluación de tu documento. Por favor, intenta enviar nuevamente.
-            </p>
+            <div>
+              <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100">
+                Evaluación IA del Proyecto
+              </h1>
+              {projectName && (
+                <p className="!text-slate-500 dark:!text-slate-400">{projectName}</p>
+              )}
+            </div>
+          </div>
+          {evaluation && (
+            <div className="!ml-13">
+              <CertStatusBadge evaluation={evaluation} size="md" />
+            </div>
+          )}
+        </div>
+
+        {/* Info Banner: auto-evaluation notice */}
+        <div className="!mb-6 !bg-indigo-50 dark:!bg-indigo-900/20 !border !border-indigo-200 dark:!border-indigo-700 !rounded-xl !p-4 !flex !items-start !gap-3">
+          <Bot className="!w-5 !h-5 !text-indigo-600 dark:!text-indigo-400 !flex-shrink-0 !mt-0.5" />
+          <p className="!text-indigo-700 dark:!text-indigo-300 !text-sm">
+            La evaluación IA se envía automáticamente cuando subes un documento técnico al crear el proyecto. No es necesario subir documentos manualmente.
+          </p>
+        </div>
+
+        {/* Error Banner */}
+        {error && (
+          <div className="!mb-6 !bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-700 !rounded-lg !p-4 !flex !items-start !gap-3">
+            <AlertTriangle className="!w-5 !h-5 !text-red-500 dark:!text-red-400 !flex-shrink-0 !mt-0.5" />
+            <div>
+              <p className="!text-red-800 dark:!text-red-200 !font-medium">Error</p>
+              <p className="!text-red-600 dark:!text-red-400 !text-sm">{error}</p>
+            </div>
             <button
-              onClick={handleRetry}
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-emerald-600 !text-white !rounded-lg hover:!bg-emerald-700 !transition-colors"
+              onClick={() => setError(null)}
+              className="!ml-auto !text-red-400 hover:!text-red-600 dark:hover:!text-red-300"
             >
-              <RefreshCw className="!w-4 !h-4" />
-              Reintentar
+              x
             </button>
           </div>
         )}
+
+        {/* Main Content */}
+        <div className="!bg-white dark:!bg-slate-800 !rounded-2xl !shadow-sm !border !border-slate-200 dark:!border-slate-700 !p-6 md:!p-8">
+
+          {/* Loading State */}
+          {pageState === 'loading' && (
+            <div className="!flex !flex-col !items-center !justify-center !py-12">
+              <div className="!w-12 !h-12 !border-4 !border-emerald-200 dark:!border-emerald-700 !border-t-emerald-600 dark:!border-t-emerald-400 !rounded-full !animate-spin !mb-4" />
+              <p className="!text-slate-600 dark:!text-slate-300">Cargando estado de evaluación...</p>
+            </div>
+          )}
+
+          {/* State: None - No evaluation yet */}
+          {pageState === 'none' && !pollingLoading && (
+            <div className="!text-center !py-12">
+              <div className="!w-16 !h-16 !bg-slate-100 dark:!bg-slate-700 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
+                <Bot className="!w-8 !h-8 !text-slate-400" />
+              </div>
+              <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">
+                Sin evaluación IA
+              </h3>
+              <p className="!text-slate-500 dark:!text-slate-400 !max-w-md !mx-auto">
+                Este proyecto aún no tiene una evaluación IA. La evaluación se envía automáticamente al subir un documento técnico (PDD) durante la creación del proyecto.
+              </p>
+            </div>
+          )}
+
+          {/* State: Processing - AI is evaluating */}
+          {pageState === 'processing' && (
+            <ProcessingState
+              title="Evaluación ESG en Proceso"
+              message="Tu documento PDD está siendo evaluado por nuestra IA. Este proceso puede tomar entre 5 y 15 minutos."
+              documentName={evaluation?.document_name}
+              submittedAt={evaluation?.created_at}
+            />
+          )}
+
+          {/* State: AI Completed - Waiting for admin */}
+          {pageState === 'ai_completed' && evaluation && (
+            <AiCompletedState evaluation={evaluation} />
+          )}
+
+          {/* State: Certified */}
+          {pageState === 'certified' && evaluation && (
+            <CertifiedState evaluation={evaluation} history={history} />
+          )}
+
+          {/* State: Rejected */}
+          {pageState === 'rejected' && evaluation && (
+            <RejectedState evaluation={evaluation} history={history} />
+          )}
+
+          {/* State: Error */}
+          {pageState === 'error' && (
+            <div className="!text-center !py-12">
+              <div className="!w-16 !h-16 !bg-red-100 dark:!bg-red-900/40 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
+                <AlertTriangle className="!w-8 !h-8 !text-red-500 dark:!text-red-400" />
+              </div>
+              <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">
+                Error en la Evaluación
+              </h3>
+              <p className="!text-slate-600 dark:!text-slate-400 !mb-4">
+                Ocurrió un error durante la evaluación del documento. Contacta al administrador o intenta editar el proyecto para volver a subir el documento técnico.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 };

@@ -16,11 +16,14 @@ import {
   UpdateProjectRequest,
   PROJECT_TYPE_LABELS
 } from '../../../types/partner.types';
+import { IMPACT_UNIT_TYPES } from '../../../types/evidence.types';
 import {
   createProject,
   updateProject,
   getProjectById
 } from '../services/partnerApi';
+import { uploadProjectFiles } from '../services/evidenceApi';
+import FileUploader from '../../../shared/components/FileUploader';
 
 // ============================================
 // FORM FIELD COMPONENT
@@ -113,10 +116,18 @@ const ProjectForm: React.FC = () => {
     providerOrganization: '',
     transparencyUrl: '',
     provider_cost_unit_clp: undefined,
-    capacity_total: undefined
-    // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
-    // son definidos por el Admin durante la aprobación
+    capacity_total: undefined,
+    // Phase 2
+    impact_unit_type: '',
+    impact_unit_spec: '',
+    monthly_stock: undefined,
   });
+
+  // Phase 2: File upload state
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [techDocFiles, setTechDocFiles] = useState<File[]>([]);
+  const [operationalDocFiles, setOperationalDocFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -139,9 +150,11 @@ const ProjectForm: React.FC = () => {
           providerOrganization: '',
           transparencyUrl: project.transparency_url || '',
           provider_cost_unit_clp: project.provider_cost_unit_clp,
-          capacity_total: project.capacity_total
-          // NOTA: carbon_capture_per_unit y base_price_usd_per_ton 
-          // son de solo lectura para el Partner (definidos por Admin)
+          capacity_total: project.capacity_total,
+          // Phase 2
+          impact_unit_type: project.impact_unit_type || '',
+          impact_unit_spec: project.impact_unit_spec || '',
+          monthly_stock: project.monthly_stock_approved || undefined,
         });
       }
     } catch (error) {
@@ -195,6 +208,8 @@ const ProjectForm: React.FC = () => {
     setSaving(true);
 
     try {
+      let projectResult: EsgProject | null = null;
+
       if (isEditing) {
         const updateData: UpdateProjectRequest = {
           name: formData.name,
@@ -204,18 +219,37 @@ const ProjectForm: React.FC = () => {
           transparency_url: formData.transparencyUrl,
           provider_cost_unit_clp: formData.provider_cost_unit_clp,
           capacity_total: formData.capacity_total
-          // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
-          // NO se envían - solo Admin puede modificarlos
         };
-        const result = await updateProject(id!, updateData);
-        if (result) {
-          navigate(`/partner/projects/${id}`);
-        }
+        projectResult = await updateProject(id!, updateData);
       } else {
-        const result = await createProject(formData);
-        if (result) {
-          navigate(`/partner/projects/${result.id}`);
+        projectResult = await createProject(formData);
+      }
+
+      // Phase 2: Upload files after project creation
+      if (projectResult && !isEditing) {
+        const projectId = projectResult.id;
+        setUploadingFiles(true);
+
+        try {
+          if (photoFiles.length > 0) {
+            await uploadProjectFiles(projectId, photoFiles, 'photo');
+          }
+          if (techDocFiles.length > 0) {
+            await uploadProjectFiles(projectId, techDocFiles, 'technical_doc');
+          }
+          if (operationalDocFiles.length > 0) {
+            await uploadProjectFiles(projectId, operationalDocFiles, 'operational_doc');
+          }
+        } catch (uploadErr) {
+          console.warn('Some files failed to upload:', uploadErr);
+          // Don't block navigation — project was created successfully
+        } finally {
+          setUploadingFiles(false);
         }
+
+        navigate(`/partner/projects/${projectId}`);
+      } else if (projectResult) {
+        navigate(`/partner/projects/${id}`);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al guardar el proyecto');
@@ -409,6 +443,56 @@ const ProjectForm: React.FC = () => {
             </div>
           </div>
 
+          {/* Phase 2: Impact Unit Specification */}
+          <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
+            <h2 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">🌿 Unidad de Impacto</h2>
+            <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-6">
+              Especifica exactamente qué unidad de impacto entregas y de qué especie o tipo.
+            </p>
+            
+            <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
+              <FormField label="Tipo de Unidad" required error={errors.impact_unit_type}>
+                <select
+                  value={formData.impact_unit_type}
+                  onChange={(e) => handleChange('impact_unit_type' as any, e.target.value)}
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100 ${
+                    errors.impact_unit_type ? '!border-red-300' : '!border-slate-300 dark:!border-slate-600'
+                  }`}
+                >
+                  <option value="">Seleccionar...</option>
+                  {IMPACT_UNIT_TYPES.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField 
+                label="Especificación" 
+                required 
+                error={errors.impact_unit_spec}
+                help="Ej: Quillay nativo, Ropa textil recuperada, Agua potable"
+              >
+                <input
+                  type="text"
+                  value={formData.impact_unit_spec}
+                  onChange={(e) => handleChange('impact_unit_spec' as any, e.target.value)}
+                  placeholder="Ej: Quillay nativo"
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100 ${
+                    errors.impact_unit_spec ? '!border-red-300' : '!border-slate-300 dark:!border-slate-600'
+                  }`}
+                />
+              </FormField>
+            </div>
+
+            {formData.impact_unit_type && formData.impact_unit_spec && (
+              <div className="!mt-4 !p-3 !bg-emerald-50 dark:!bg-emerald-900/20 !rounded-lg !border !border-emerald-200 dark:!border-emerald-800">
+                <p className="!text-sm !text-emerald-700 dark:!text-emerald-300">
+                  ✅ Tu unidad de impacto: <strong>1 {formData.impact_unit_type}</strong> de <strong>{formData.impact_unit_spec}</strong>
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Technical Data Section - Partner Operational Data Only */}
           <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
             <h2 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">Datos Operativos</h2>
@@ -418,8 +502,8 @@ const ProjectForm: React.FC = () => {
             
             <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
               <FormField
-                label="Costo por Unidad (CLP)"
-                help="Costo en pesos chilenos por cada unidad de impacto (ej: por árbol, por m³ de agua)"
+                label={`Costo por ${formData.impact_unit_type || 'Unidad'} (CLP)`}
+                help={formData.impact_unit_type ? `Costo en pesos chilenos por 1 ${formData.impact_unit_type} de ${formData.impact_unit_spec || '...'}` : 'Costo en pesos chilenos por cada unidad de impacto'}
                 error={errors.provider_cost_unit_clp}
               >
                 <input
@@ -438,8 +522,26 @@ const ProjectForm: React.FC = () => {
               </FormField>
 
               <FormField
-                label="Capacidad Total (unidades)"
-                help="Cantidad total de unidades disponibles para compensación"
+                label="📦 Stock Disponible para este MES (Unidades)"
+                help="Cantidad de unidades que puedes entregar en los próximos 30 días"
+                required
+              >
+                <input
+                  type="number"
+                  value={formData.monthly_stock || ''}
+                  onChange={(e) => handleChange(
+                    'monthly_stock' as any,
+                    e.target.value ? parseInt(e.target.value) : undefined
+                  )}
+                  min="0"
+                  placeholder="Ej: 5000"
+                  className="!w-full !px-4 !py-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100"
+                />
+              </FormField>
+
+              <FormField
+                label="Capacidad Total (histórica)"
+                help="Capacidad total del proyecto a lo largo de su vida"
               >
                 <input
                   type="number"
@@ -449,7 +551,7 @@ const ProjectForm: React.FC = () => {
                     e.target.value ? parseInt(e.target.value) : undefined
                   )}
                   min="0"
-                  placeholder="Ej: 10000"
+                  placeholder="Ej: 50000"
                   className="!w-full !px-4 !py-2 !border !border-slate-300 dark:!border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-slate-100"
                 />
               </FormField>
@@ -487,6 +589,50 @@ const ProjectForm: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Phase 2: Evidence Upload Section */}
+          {!isEditing && (
+            <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
+              <h2 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">📸 Evidencia Inicial</h2>
+              <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-6">
+                Sube fotos reales de tu operación y documentación técnica para demostrar que tu proyecto existe.
+              </p>
+              
+              <div className="!space-y-6">
+                <FileUploader
+                  label="Fotos de Operación"
+                  description="Sube mínimo 3 fotos de tu operación actual (plantaciones, centro de reciclaje, etc.)"
+                  accept="image/jpeg,image/png,image/webp"
+                  maxFiles={10}
+                  maxSizeMB={15}
+                  required
+                  files={photoFiles}
+                  onFilesChange={setPhotoFiles}
+                />
+
+                <FileUploader
+                  label="Documentación Técnica/Científica"
+                  description="Sube al menos 1 documento técnico (PDF). Ej: Estudio de impacto, certificación forestal."
+                  accept="application/pdf"
+                  maxFiles={5}
+                  maxSizeMB={15}
+                  required
+                  files={techDocFiles}
+                  onFilesChange={setTechDocFiles}
+                />
+
+                <FileUploader
+                  label="Documentación Operativa (Opcional)"
+                  description="Guías de despacho, facturas, contratos. Opcional pero aumenta la confianza."
+                  accept="application/pdf,image/jpeg,image/png"
+                  maxFiles={5}
+                  maxSizeMB={15}
+                  files={operationalDocFiles}
+                  onFilesChange={setOperationalDocFiles}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="!flex !items-center !justify-between">

@@ -15,6 +15,7 @@ import PartnerProfile from '../pages/PartnerProfile';
 import PartnerProjects from '../pages/PartnerProjects';
 import ProjectDetail from '../pages/ProjectDetail';
 import ProjectForm from '../pages/ProjectForm';
+import MonthlyRestockPage from '../pages/MonthlyRestockPage';
 import KybVerificationPage from '../pages/KybVerificationPage';
 import ProjectCertificationPage from '../pages/ProjectCertificationPage';
 
@@ -40,6 +41,7 @@ const PartnerRoutes: React.FC = () => {
         <Route path="projects/create" element={<ProjectForm />} />
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="projects/:id/edit" element={<ProjectForm />} />
+        <Route path="projects/:id/restock" element={<MonthlyRestockPage />} />
         
         {/* Project Certification (Agent 2) */}
         <Route path="projects/:id/certification" element={<ProjectCertificationPage />} />
