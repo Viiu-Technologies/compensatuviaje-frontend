@@ -179,7 +179,7 @@ export default function SettingsPage() {
                 </span>
               </div>
               <p className="!text-xs !text-slate-500 !mt-2">
-                1 USD = {formData.clp_usd_rate.toLocaleString('es-CL')} CLP
+                1 USD = {formData.clp_usd_rate?.toLocaleString('es-CL')} CLP
               </p>
             </div>
 
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                     Source: <strong>{exchangeRate.source}</strong>
                   </span>
                   <span className="!text-lg !font-bold !text-green-600">
-                    ${exchangeRate.current_rate.toLocaleString('es-CL')}
+                    ${exchangeRate.current_rate?.toLocaleString('es-CL')}
                   </span>
                 </div>
                 <p className="!text-xs !text-slate-500 !mt-1">
