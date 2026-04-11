@@ -18,7 +18,6 @@ import {
   Handshake,
   ClipboardCheck,
   Blocks,
-  Bot,
   Inbox,
   Settings,
   FileCheck,
@@ -48,7 +47,6 @@ interface NavSection {
 const auditCenterItems: NavItem[] = [
   { path: '/admin/partners/kyb-evaluations', icon: FileCheck, label: 'Solicitudes KYB', end: true },
   { path: '/admin/proyectos-revision', icon: ClipboardCheck, label: 'Proyectos en Revisión' },
-  { path: '/admin/partners/evaluations', icon: Bot, label: 'Evaluaciones IA' },
 ];
 
 // B. Ecosistema de Oferta (Catálogo Activo)

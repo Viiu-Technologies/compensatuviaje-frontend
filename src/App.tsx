@@ -51,7 +51,6 @@ import { CertificateVerificationPage } from './shared/components/blockchain';
 // Pages - Admin
 import AdminRoutes from './apps/admin/routes';
 import VerificationPage from './apps/admin/pages/VerificationPage';
-import BatchUploadPage from './apps/admin/pages/BatchUploadPage';
 
 // Pages - Partner
 import { PartnerRoutes } from './apps/partner';
