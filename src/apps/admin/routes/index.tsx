@@ -12,6 +12,8 @@ import VerificationPage from '../pages/VerificationPage';
 import PartnersPage from '../pages/PartnersPage';
 import PartnerDetailPage from '../pages/PartnerDetailPage';
 import ProjectsReviewPage from '../pages/ProjectsReviewPage';
+import MonthlyEvidenceReviewPage from '../pages/MonthlyEvidenceReviewPage';
+import AdminProjectDetailPage from '../pages/AdminProjectDetailPage';
 import AdminNFTDashboard from '../pages/AdminNFTDashboard';
 import AIEvaluationsPage from '../pages/AIEvaluationsPage';
 import AIKybDetailPage from '../pages/AIKybDetailPage';
@@ -38,8 +40,8 @@ const AdminRoutes = () => {
         <Route path="partners" element={<PartnersPage />} />
         <Route path="partners/:id" element={<PartnerDetailPage />} />
 
-        {/* Validaciones IA (Partners y Proyectos) */}
-        <Route path="partners/evaluations" element={<AIEvaluationsPage />} />
+        {/* Validaciones IA (KYB only - project evaluations are in Cabina de Control) */}
+        <Route path="partners/evaluations" element={<Navigate to="/admin/proyectos-revision" replace />} />
         <Route path="partners/evaluations/:id" element={<AICertDetailPage />} />
         <Route path="partners/kyb-evaluations" element={<AIEvaluationsPage />} />
         <Route path="partners/kyb-evaluations/:id" element={<AIKybDetailPage />} />
@@ -49,6 +51,8 @@ const AdminRoutes = () => {
 
         {/* Gestión de Proyectos ESG */}
         <Route path="proyectos" element={<ProyectosPage />} />
+        <Route path="proyectos/:id" element={<AdminProjectDetailPage />} />
+        <Route path="proyectos/:id/evidence" element={<MonthlyEvidenceReviewPage />} />
 
         {/* Reportes y Exportación */}
         <Route path="reportes" element={<ReportesPage />} />
