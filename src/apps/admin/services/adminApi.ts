@@ -304,15 +304,155 @@ export interface Project {
   country: string;
   region?: string;
   status: string;
-  pricePerTonCLP?: number;
-  pricePerTonUSD?: number;
-  availableCredits: number;
-  totalCredits: number;
-  imageUrl?: string;
+  providerOrganization?: string;
+  certification?: string;
+  // Pricing (from active pricing version or fallback)
+  currentPrice?: {
+    pricePerTonUsd?: number;
+    basePriceUsd?: number;
+    marginPercent?: number;
+  };
+  // Double-Lock fields
+  provider_cost_unit_clp?: number;
+  carbon_capture_per_unit?: number;
+  // Stock & capacity
+  capacity_total?: number;
+  capacity_sold?: number;
+  monthly_stock_approved?: number;
+  monthly_stock_remaining?: number;
+  is_sold_out?: boolean;
+  // Partner
+  partner?: { id: string; name: string; logo_url?: string } | null;
+  // Counts
   certificatesCount?: number;
   evidencesCount?: number;
+  pricingVersionsCount?: number;
+  transparencyUrl?: string;
   createdAt: string;
   updatedAt: string;
+  // Legacy compat (kept for type safety)
+  imageUrl?: string;
+  pricePerTonCLP?: number;
+  pricePerTonUSD?: number;
+  availableCredits?: number;
+  totalCredits?: number;
+}
+
+// ── Detalle completo de un proyecto (Admin) ──
+export interface ProjectDetailPricing {
+  id: string;
+  version: string;
+  basePriceUsdPerTon: number;
+  marginPercent: number;
+  finalPriceUsdPerTon: number;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  status: string;
+  reason?: string;
+  createdBy?: { id: string; email: string; name: string } | null;
+}
+
+export interface ProjectDetailEvaluation {
+  id: string;
+  ai_status: string; // 'pending' | 'ai_approved' | 'ai_rejected'
+  admin_decision: string | null; // null | 'approved' | 'rejected'
+  admin_reason?: string | null;
+  level?: string | null;
+  final_score?: number | null;
+  confidence_score?: number | null;
+  report_markdown?: string | null;
+  details_json?: any;
+  compliance_json?: any;
+  createdAt: string;
+}
+
+export interface ProjectDetailCertificate {
+  id: string;
+  number: string;
+  tonsCompensated: number;
+  priceUsdPerTon: number;
+  amountUsd: number;
+  status: string;
+  issuedAt: string;
+  purchaser: { type: 'b2b' | 'b2c'; id: string; [key: string]: any } | null;
+}
+
+export interface ProjectDetailFile {
+  id: string;
+  fileName: string;
+  fileType: string;
+  mimeType?: string;
+  storageUrl: string;
+  thumbnailUrl?: string | null;
+  sizeBytes?: number;
+  evidenceId?: string;
+  evidencePeriod?: string;
+}
+
+export interface ProjectDetailData {
+  // Core
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  projectType: string;
+  status: string;
+  country: string;
+  region?: string;
+  providerOrganization?: string;
+  certification?: string;
+  transparencyUrl?: string;
+  coBenefits?: any;
+  createdAt: string;
+  updatedAt: string;
+  // Double-Lock
+  provider_cost_unit_clp?: number | null;
+  provider_cost_unit_usd?: number | null;
+  carbon_capture_per_unit?: number | null;
+  impact_unit?: string | null;
+  // Stock
+  capacity_total?: number | null;
+  capacity_sold?: number | null;
+  monthly_stock_approved?: number | null;
+  monthly_stock_remaining?: number | null;
+  is_sold_out?: boolean;
+  // Partner
+  partner?: {
+    id: string;
+    name: string;
+    logo_url?: string;
+    contact_email?: string;
+    website_url?: string;
+    status?: string;
+  } | null;
+  // Pricing
+  currentPricing: ProjectDetailPricing | null;
+  currentBasePriceUsdPerTon?: number | null;
+  pricingHistory: ProjectDetailPricing[];
+  // Evidence files (pre-processed)
+  photos: ProjectDetailFile[];
+  techDocs: ProjectDetailFile[];
+  evidences: Array<{
+    id: string;
+    periodMonth?: string;
+    status?: string;
+    metricName?: string;
+    metricValue?: number;
+    note?: string;
+    filesCount: number;
+    createdAt: string;
+  }>;
+  // AI evaluations
+  evaluations: ProjectDetailEvaluation[];
+  // Certificates
+  recentCertificates: ProjectDetailCertificate[];
+  // Stats
+  stats: {
+    totalCertificates: number;
+    totalTonsAllocated: number;
+    totalRevenueUsd: number;
+    evidenceCount: number;
+  };
 }
 
 export interface ProjectsListResponse {
@@ -348,7 +488,7 @@ export const getProjects = async (params: {
   };
 };
 
-export const getProjectDetail = async (id: string) => {
+export const getProjectDetail = async (id: string): Promise<ProjectDetailData> => {
   // El interceptor ya extrae response.data
   const response = await api.get(`/admin/projects/${id}`) as any;
   return response.data || response;
@@ -381,12 +521,12 @@ export const addProjectEvidence = async (projectId: string, data: {
   fileUrl: string;
   documentDate?: string;
 }) => {
-  const response = await api.post(`/admin/projects/${projectId}/evidences`, data) as any;
+  const response = await api.post(`/admin/projects/${projectId}/evidence`, data) as any;
   return response.data || response;
 };
 
 export const deleteProjectEvidence = async (projectId: string, evidenceId: string) => {
-  const response = await api.delete(`/admin/projects/${projectId}/evidences/${evidenceId}`) as any;
+  const response = await api.delete(`/admin/projects/${projectId}/evidence/${evidenceId}`) as any;
   return response;
 };
 
@@ -729,7 +869,10 @@ export const previewProjectPrice = async (projectId: string, params: {
  */
 export const approveProjectWithPricing = async (projectId: string, data: {
   carbon_capture_per_unit: number;
-  calculated_price_usd_ton: number;
+  margin_percent?: number;
+  auto_activate?: boolean;
+  provider_cost_unit_clp?: number;
+  monthly_stock_approved?: number;
   admin_notes?: string;
 }): Promise<{ project: Project }> => {
   const response = await api.put(`/admin/projects/${projectId}/approve`, data) as any;
