@@ -18,6 +18,7 @@ import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
 import b2cApi, { type B2CCertificate } from '../services/b2cApi';
 import { MintNFTModal } from '../../../shared/components/blockchain';
+import { generateCertificatePDF } from '../utils/generateCertificatePDF';
 
 const B2CCertificatesPage: React.FC = () => {
   const [certificates, setCertificates] = useState<B2CCertificate[]>([]);
@@ -45,21 +46,11 @@ const B2CCertificatesPage: React.FC = () => {
   const totalCompensated = certificates.reduce((sum, cert) => sum + cert.co2Compensated, 0);
   const totalTrees = Math.round(totalCompensated * 50); // ~50 trees per ton CO2
 
-  const handleDownload = async (cert: B2CCertificate) => {
-    if (cert.pdfUrl) {
-      window.open(cert.pdfUrl, '_blank');
-    } else {
-      try {
-        const blob = await b2cApi.downloadCertificate(cert.id);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `certificado-${cert.certificateNumber || cert.id}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch {
-        console.log('Descarga de certificado no disponible aún');
-      }
+  const handleDownload = (cert: B2CCertificate) => {
+    try {
+      generateCertificatePDF(cert);
+    } catch {
+      console.error('Error generando PDF del certificado');
     }
   };
 
