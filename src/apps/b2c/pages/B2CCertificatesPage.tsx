@@ -18,7 +18,7 @@ import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
 import b2cApi, { type B2CCertificate } from '../services/b2cApi';
 import { MintNFTModal } from '../../../shared/components/blockchain';
-import CertificateGenerator from '../components/CertificateGenerator';
+import { downloadCertificatePDF } from '../utils/CertificatePDF';
 import { useAuth } from '../context/AuthContext';
 
 const B2CCertificatesPage: React.FC = () => {
@@ -28,7 +28,6 @@ const B2CCertificatesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCertificate, setSelectedCertificate] = useState<B2CCertificate | null>(null);
   const [mintCert, setMintCert] = useState<B2CCertificate | null>(null);
-  const [pdfCert, setPdfCert] = useState<B2CCertificate | null>(null);
 
   useEffect(() => {
     const fetchCertificates = async () => {
@@ -49,28 +48,25 @@ const B2CCertificatesPage: React.FC = () => {
   const totalCompensated = certificates.reduce((sum, cert) => sum + cert.co2Compensated, 0);
   const totalTrees = Math.round(totalCompensated * 50); // ~50 trees per ton CO2
 
-  const handleDownload = (cert: B2CCertificate) => {
-    setPdfCert(cert);
-  };
-
-  const mapToCertData = (cert: B2CCertificate) => {
+  const handleDownload = async (cert: B2CCertificate) => {
     const [origin, destination] = (cert.flightRoute || '').split('→').map(s => s.trim());
-    return {
-      certificateId: cert.certificateNumber || cert.id,
+    const treesEquiv = cert.equivalencies?.trees || Math.round(cert.co2Compensated * 50);
+    const waterLiters = cert.equivalencies?.water || Math.round(cert.co2Compensated * 5000);
+    await downloadCertificatePDF({
+      certificateNumber: cert.certificateNumber || cert.id,
       userName: user?.nombre || user?.email?.split('@')[0] || 'Usuario',
       userEmail: user?.email,
-      emissionsTons: cert.co2Compensated,
-      emissionsKg: cert.co2Compensated * 1000,
+      co2Tons: cert.co2Compensated,
+      co2Kg: cert.co2Compensated * 1000,
       origin: origin || '',
       destination: destination || '',
-      compensationDate: cert.date,
+      date: cert.date,
       projectName: cert.project,
-      projectType: 'Ambiental',
-      equivalences: {
-        treesPlanted: cert.equivalencies?.trees || Math.round(cert.co2Compensated * 50),
-        carKmAvoided: Math.round(cert.co2Compensated * 4000),
-      },
-    };
+      treesEquiv,
+      carKmAvoided: Math.round(cert.co2Compensated * 4000),
+      waterLiters,
+      nftTxHash: cert.nftTxHash,
+    });
   };
 
   const handleShare = (cert: B2CCertificate) => {
@@ -460,14 +456,6 @@ const B2CCertificatesPage: React.FC = () => {
               setCertificates(data.certificates || []);
             });
           }}
-        />
-      )}
-
-      {/* PDF Certificate Generator Modal */}
-      {pdfCert && (
-        <CertificateGenerator
-          data={mapToCertData(pdfCert)}
-          onClose={() => setPdfCert(null)}
         />
       )}
     </B2CLayout>
