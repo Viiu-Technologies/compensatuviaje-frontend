@@ -133,6 +133,13 @@ export interface EsgProject {
   co_benefits?: string[] | null;
   impact_unit?: string;
   impact_ratio_per_ton?: number | null;
+  // Phase 2: Monthly stock & impact specification
+  impact_unit_type?: string;
+  impact_unit_spec?: string;
+  monthly_stock_approved?: number;
+  monthly_stock_remaining?: number;
+  stock_period_start?: string;
+  stock_period_end?: string;
   transparency_url?: string;
   created_at: string;
   updated_at: string;
@@ -228,6 +235,10 @@ export interface CreateProjectRequest {
   // Datos operativos que el Partner puede definir
   provider_cost_unit_clp?: number;
   capacity_total?: number;
+  // Phase 2: Impact specification & monthly stock
+  impact_unit_type?: string;
+  impact_unit_spec?: string;
+  monthly_stock?: number;
   // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
   // NO se incluyen - son definidos por Admin en aprobación
 }
