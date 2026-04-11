@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
 import { getRedirectPath } from '../services/authService';
-import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2, Facebook, Twitter } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BsGoogle } from 'react-icons/bs';
 
@@ -157,14 +157,7 @@ const Login: React.FC = () => {
               {isGoogleSigningIn ? 'Conectando...' : 'Iniciar sesión con Google'}
             </button>
             
-            <div className="!flex !gap-4 !w-full !max-w-xs">
-              <button className="!flex-1 !flex !items-center !justify-center !py-3 !rounded-full !bg-white/80 !text-emerald-800 !shadow-md hover:!bg-white hover:!scale-105 !transition-all">
-                <Facebook className="!w-5 !h-5" />
-              </button>
-              <button className="!flex-1 !flex !items-center !justify-center !py-3 !rounded-full !bg-white/80 !text-emerald-800 !shadow-md hover:!bg-white hover:!scale-105 !transition-all">
-                <Twitter className="!w-5 !h-5" />
-              </button>
-            </div>
+
           </motion.div>
         </div>
 
@@ -321,12 +314,7 @@ const Login: React.FC = () => {
 
           <div className="!mt-10 !text-center">
             <p className="!text-emerald-200/60 !text-sm !mb-4">O continúa con</p>
-            <div className="!flex !justify-center !gap-4 lg:!hidden">
-               {/* Mobile Social Buttons */}
-               <button className="!p-3 !rounded-full !bg-emerald-800 !text-white !border !border-emerald-700"><span className="!font-bold">G</span></button>
-               <button className="!p-3 !rounded-full !bg-emerald-800 !text-white !border !border-emerald-700"><Facebook className="!w-5 !h-5"/></button>
-               <button className="!p-3 !rounded-full !bg-emerald-800 !text-white !border !border-emerald-700"><Twitter className="!w-5 !h-5"/></button>
-            </div>
+
             <div className="!mt-6">
               <span className="!text-emerald-200/80">¿No tienes cuenta? </span>
               <Link to="/register" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">

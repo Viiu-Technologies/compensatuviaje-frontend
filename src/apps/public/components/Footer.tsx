@@ -62,78 +62,77 @@ const Footer = () => {
 
 
   return (
-    <footer className="relative text-neutral-900 overflow-hidden !backdrop-blur-2xl !bg-white/10">
+    <footer className="!relative !text-white !overflow-hidden">
       {/* Background con imagen de Chile */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="!absolute !inset-0 !bg-cover !bg-center !bg-no-repeat"
         style={{ backgroundImage: 'url(/images/hero-background.jpg)' }}
       >
-        {/* Overlay con gradiente sunset inspirado en el atardecer */}
+        {/* Overlay oscuro for text readability */}
         <div 
-          className="absolute inset-0"
+          className="!absolute !inset-0"
           style={{ 
             background: `
-              linear-gradient(180deg, rgba(30,41,82,0.85) 0%, rgba(255,183,120,0.45) 40%, rgba(120,80,160,0.35) 100%),
-              linear-gradient(135deg, rgba(30,41,82,0.25) 0%, rgba(255,183,120,0.18) 60%, rgba(120,80,160,0.12) 100%)
+              linear-gradient(180deg, rgba(15,23,42,0.92) 0%, rgba(30,41,82,0.80) 40%, rgba(15,23,42,0.88) 100%)
             `
           }}
         />
       </div>
 
-      {/* Main content - igual que Hero */}
-      <div className="container mx-auto !px-4 sm:!px-6 lg:!px-8 relative z-10 !py-16 lg:!py-20" style={{ maxWidth: '1280px' }}>
-        <div className="grid md:grid-cols-2 !gap-12 lg:!gap-16 items-center !mb-16">
+      {/* Main content */}
+      <div className="!relative !z-10 !py-16 lg:!py-20" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+        <div className="!grid md:!grid-cols-2 !gap-12 lg:!gap-16 !items-start !mb-16">
           {/* Columna izquierda: logo, texto, badges */}
-          <div className="flex flex-col items-center md:items-start !gap-6">
+          <div className="!flex !flex-col !items-center md:!items-start !gap-6">
             <ScrollReveal>
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="flex flex-col items-center md:items-start !gap-6"
+                className="!flex !flex-col !items-center md:!items-start !gap-6"
               >
                 <img 
                   src="/images/brand/logo-horizontal.svg" 
                   alt="CompensaTuViaje"
-                  className="h-14 w-auto drop-shadow-xl md:!ml-0 !mx-auto"
+                  className="!h-14 !w-auto !drop-shadow-xl md:!ml-0 !mx-auto !brightness-0 !invert"
                 />
-                <p className="text-neutral-900 text-lg font-bold leading-relaxed drop-shadow-sm !text-left">
+                <p className="!text-gray-300 !text-lg !leading-relaxed !text-center md:!text-left">
                   Compensamos la huella de carbono de tus viajes apoyando proyectos verificados en Chile y el mundo.
                 </p>
                 {/* Features badges */}
-                <div className="flex flex-wrap !gap-4 md:!justify-start !justify-center">
+                <div className="!flex !flex-wrap !gap-3 md:!justify-start !justify-center">
                   {features.map((feature, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-center !gap-2 !px-4 !py-2 !rounded-full !bg-white/20 !backdrop-blur-xl !border !border-white/30 shadow-xl"
-                      style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)' }}
+                      className="!flex !items-center !gap-2 !px-4 !py-2 !rounded-full !bg-white/10 !backdrop-blur-xl !border !border-white/20"
                     >
-                      <feature.icon className={`text-lg ${feature.color}`} />
-                      <span className="text-sm font-extrabold text-neutral-900 drop-shadow-sm">{feature.text}</span>
+                      <feature.icon className={`!text-lg ${feature.color === 'text-primary-900' ? '!text-emerald-400' : feature.color === 'text-secondary-900' ? '!text-blue-400' : '!text-amber-400'}`} />
+                      <span className="!text-sm !font-semibold !text-white/90">{feature.text}</span>
                     </motion.div>
                   ))}
                 </div>
               </motion.div>
             </ScrollReveal>
           </div>
-          {/* Columna derecha: links distribuidos horizontalmente */}
-          <div className="w-full flex flex-col items-center md:items-end">
-            <div className="grid sm:grid-cols-3 !gap-12 w-full md:w-auto">
+
+          {/* Columna derecha: links */}
+          <div className="!w-full !flex !flex-col !items-center md:!items-end">
+            <div className="!grid sm:!grid-cols-3 !gap-10 !w-full md:!w-auto">
               {footerLinks.map((section, sectionIndex) => (
                 <ScrollReveal key={sectionIndex} delay={sectionIndex * 0.1}>
-                  <div className="!space-y-4 flex flex-col items-center md:items-end mt-8">
-                    <h3 className="text-lg font-extrabold text-neutral-900 flex items-center gap-2 drop-shadow-sm text-center md:text-right">
-                      <HiSparkles className="text-primary-600" />
+                  <div className="!space-y-4 !flex !flex-col !items-center md:!items-end">
+                    <h3 className="!text-lg !font-bold !text-white !flex !items-center !gap-2 !text-center md:!text-right">
+                      <HiSparkles className="!text-emerald-400" />
                       {section.title}
                     </h3>
-                    <ul className="!space-y-3 w-full">
+                    <ul className="!space-y-3 !w-full">
                       {section.links.map((link, linkIndex) => (
-                        <li key={linkIndex} className="flex justify-center md:justify-end">
+                        <li key={linkIndex} className="!flex !justify-center md:!justify-end">
                           <motion.a
                             href={link.href}
-                            whileHover={{ x: 5, color: '#22c55e' }}
-                            className="text-neutral-900 font-bold hover:text-primary-400 transition-colors duration-200 inline-block drop-shadow-sm text-center md:text-right"
+                            whileHover={{ x: 5, color: '#34d399' }}
+                            className="!text-gray-400 hover:!text-emerald-400 !transition-colors !duration-200 !inline-block !text-center md:!text-right"
                           >
                             {link.label}
                           </motion.a>
@@ -149,29 +148,28 @@ const Footer = () => {
 
         {/* Newsletter section */}
         <ScrollReveal>
-          <div className="card-glass !bg-white/15 !backdrop-blur-xl !p-8 !rounded-2xl !border !border-white/30 !mb-12 shadow-2xl"
-            style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)' }}>
-            <div className="grid md:grid-cols-2 !gap-8 items-center">
+          <div className="!bg-white/10 !backdrop-blur-xl !p-8 !rounded-2xl !border !border-white/20 !mb-12">
+            <div className="!grid md:!grid-cols-2 !gap-8 !items-center">
               <div>
-                <h3 className="text-2xl font-extrabold text-neutral-900 mb-2 flex items-center gap-2 drop-shadow-sm">
-                  <FaEnvelope className="text-primary-600" />
+                <h3 className="!text-2xl !font-bold !text-white !mb-2 !flex !items-center !gap-2">
+                  <FaEnvelope className="!text-emerald-400" />
                   Mantente Informado
                 </h3>
-                <p className="text-neutral-900 font-semibold drop-shadow-sm">
+                <p className="!text-gray-400">
                   Recibe noticias sobre sostenibilidad y compensación de carbono
                 </p>
               </div>
               
-              <div className="flex !gap-3">
+              <div className="!flex !gap-3">
                 <input
                   type="email"
                   placeholder="tu@email.com"
-                  className="input flex-1 !bg-white/60 !border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:!border-primary-500 focus:!ring-primary-200/30"
+                  className="!flex-1 !bg-white/10 !border !border-white/20 !text-white !placeholder-gray-500 !rounded-xl !px-4 !py-3 focus:!border-emerald-400 focus:!outline-none focus:!ring-2 focus:!ring-emerald-400/20"
                 />
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="btn-primary px-8 whitespace-nowrap !bg-primary-600 !text-white !shadow-md"
+                  className="!px-8 !py-3 !whitespace-nowrap !bg-emerald-600 !text-white !font-semibold !rounded-xl !shadow-md hover:!bg-emerald-700 !transition-colors"
                 >
                   Suscribirse
                 </motion.button>
@@ -181,15 +179,15 @@ const Footer = () => {
         </ScrollReveal>
 
         {/* Bottom section */}
-        <div className="!border-t !border-neutral-200 !pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center !gap-6">
+        <div className="!border-t !border-white/20 !pt-8">
+          <div className="!flex !flex-col md:!flex-row !justify-between !items-center !gap-6">
             {/* Copyright */}
-            <p className="text-neutral-900 text-base font-bold drop-shadow-sm">
+            <p className="!text-gray-400 !text-base">
               © {currentYear} CompensaTuViaje. Todos los derechos reservados.
             </p>
 
             {/* Social links */}
-            <div className="flex items-center !gap-4">
+            <div className="!flex !items-center !gap-4">
               {socialLinks.map((social, index) => (
                 <motion.a
                   key={index}
@@ -197,27 +195,27 @@ const Footer = () => {
                   aria-label={social.label}
                   whileHover={{ scale: 1.2, y: -3 }}
                   whileTap={{ scale: 0.9 }}
-                  className={`!w-10 !h-10 !rounded-full !bg-white/70 !backdrop-blur !border !border-neutral-200 flex items-center justify-center text-neutral-700 ${social.color} transition-colors duration-200 shadow`}
+                  className={`!w-10 !h-10 !rounded-full !bg-white/10 !backdrop-blur !border !border-white/20 !flex !items-center !justify-center !text-gray-300 ${social.color} !transition-colors !duration-200`}
                   onClick={(e) => e.preventDefault()}
                 >
-                  <social.icon className="text-lg" />
+                  <social.icon className="!text-lg" />
                 </motion.a>
               ))}
             </div>
 
             {/* Legal links */}
-            <div className="flex !gap-6 text-sm">
+            <div className="!flex !gap-6 !text-sm">
               <motion.a
                 href="#privacidad"
-                whileHover={{ color: '#22c55e' }}
-                className="text-neutral-900 font-bold hover:text-primary-400 transition-colors drop-shadow-sm"
+                whileHover={{ color: '#34d399' }}
+                className="!text-gray-400 hover:!text-emerald-400 !transition-colors"
               >
                 Privacidad
               </motion.a>
               <motion.a
                 href="#terminos"
-                whileHover={{ color: '#22c55e' }}
-                className="text-neutral-500 hover:text-primary-600 transition-colors"
+                whileHover={{ color: '#34d399' }}
+                className="!text-gray-400 hover:!text-emerald-400 !transition-colors"
               >
                 Términos
               </motion.a>
