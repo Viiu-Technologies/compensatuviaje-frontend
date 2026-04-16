@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import {
   FaGlobeAmericas,
   FaTree,
@@ -11,11 +12,13 @@ import {
   FaMapMarkerAlt,
   FaCheckCircle,
   FaCertificate,
-  FaIndustry
+  FaIndustry,
+  FaCreditCard,
+  FaSpinner
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
-import b2cApi, { type B2CProject } from '../services/b2cApi';
+import b2cApi, { createPaymentTransaction, type B2CProject } from '../services/b2cApi';
 
 const projectTypeConfig: Record<string, { label: string; emoji: string; icon: any; colorFrom: string; colorTo: string; badgeBg: string; badgeText: string }> = {
   reforestation: { label: 'Reforestación', emoji: '🌳', icon: FaTree, colorFrom: '!from-green-50', colorTo: '!to-green-100', badgeBg: '!bg-green-100', badgeText: '!text-green-700' },
@@ -32,11 +35,20 @@ function getTypeConfig(type: string) {
 }
 
 const B2CProjectsPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState<B2CProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<B2CProject | null>(null);
   const [filter, setFilter] = useState<string>('all');
+  const [payingProjectId, setPayingProjectId] = useState<string | null>(null);
+
+  // Read calculator context from query params
+  const calcId = searchParams.get('calcId');
+  const tonsParam = searchParams.get('tons');
+  const kgParam = searchParams.get('kg');
+  const emissionsKg = kgParam ? parseFloat(kgParam) : (tonsParam ? parseFloat(tonsParam) * 1000 : null);
+  const hasCalculation = Boolean(calcId && emissionsKg && emissionsKg > 0);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -53,6 +65,45 @@ const B2CProjectsPage: React.FC = () => {
     };
     fetchProjects();
   }, []);
+
+  /** Calculate per-project total CLP for the user's emissions */
+  const getProjectTotalCLP = (project: B2CProject): number | null => {
+    if (!emissionsKg || project.pricePerTonCLP <= 0) return null;
+    return Math.round(emissionsKg * (project.pricePerTonCLP / 1000));
+  };
+
+  /** Trigger Webpay payment for a project */
+  const handlePayProject = async (project: B2CProject) => {
+    if (!calcId) return;
+    setPayingProjectId(project.id);
+    setError(null);
+    try {
+      const data = await createPaymentTransaction({
+        calculationId: calcId,
+        projectId: project.id,
+      });
+
+      if (data.success && data.url && data.token) {
+        // Redirect to Webpay
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.url;
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'token_ws';
+        input.value = data.token;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        return;
+      }
+    } catch (err: any) {
+      console.error('Error creating payment:', err);
+      setError(err.message || 'Error al crear transacción de pago');
+    } finally {
+      setPayingProjectId(null);
+    }
+  };
 
   // Build dynamic filter list from existing project types
   const uniqueTypes = [...new Set(projects.map(p => p.projectType))];
@@ -85,6 +136,38 @@ const B2CProjectsPage: React.FC = () => {
   return (
     <B2CLayout title="Proyectos Ambientales" subtitle="Conoce los proyectos que estás apoyando con tus compensaciones">
       <div className="!space-y-6">
+        {/* Calculator context banner */}
+        {hasCalculation && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="!bg-gradient-to-r !from-emerald-50 !to-teal-50 !border !border-emerald-200 !rounded-2xl !p-5 !flex !items-center !gap-4"
+          >
+            <div className="!w-12 !h-12 !rounded-xl !bg-emerald-100 !flex !items-center !justify-center !flex-shrink-0">
+              <HiSparkles className="!text-emerald-600 !text-xl" />
+            </div>
+            <div>
+              <p className="!text-emerald-800 !font-semibold !m-0">
+                Tu huella: {emissionsKg!.toLocaleString()} kg CO₂e ({(emissionsKg! / 1000).toFixed(4)} ton)
+              </p>
+              <p className="!text-emerald-600 !text-sm !m-0">
+                Elige un proyecto para compensar tu vuelo. El precio se calcula automáticamente.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="!bg-red-50 !border !border-red-200 !rounded-xl !p-4 !text-red-700 !text-sm"
+          >
+            {error}
+          </motion.div>
+        )}
+
         {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -169,8 +252,17 @@ const B2CProjectsPage: React.FC = () => {
                   </div>
                   <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Precio:</span>
-                    <span className="!font-semibold !text-gray-800">${project.pricePerTon}/t</span>
+                    <span className="!font-semibold !text-gray-800">${project.pricePerTonCLP.toLocaleString()}/t</span>
                   </div>
+                  {hasCalculation && (() => {
+                    const total = getProjectTotalCLP(project);
+                    return total ? (
+                      <div className="!flex !justify-between !text-sm !pt-1 !border-t !border-gray-200/50">
+                        <span className="!text-emerald-700 !font-medium">Tu compensación:</span>
+                        <span className="!font-bold !text-emerald-700">${total.toLocaleString()} CLP</span>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Progress */}
@@ -270,7 +362,7 @@ const B2CProjectsPage: React.FC = () => {
                       </div>
                       <div className="!bg-gray-50 !rounded-xl !p-4">
                         <div className="!text-sm !text-gray-600 !mb-1">Precio por Tonelada</div>
-                        <div className="!text-xl !font-bold !text-gray-900">${selectedProject.pricePerTon} USD</div>
+                        <div className="!text-xl !font-bold !text-gray-900">${selectedProject.pricePerTonCLP.toLocaleString()} CLP</div>
                       </div>
                       {selectedProject.certification && (
                         <div className="!bg-gray-50 !rounded-xl !p-4">
@@ -302,19 +394,51 @@ const B2CProjectsPage: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Per-project total for user's emissions */}
+                    {hasCalculation && (() => {
+                      const total = getProjectTotalCLP(selectedProject);
+                      return total ? (
+                        <div className="!bg-emerald-50 !rounded-xl !p-5 !mb-6 !text-center !border !border-emerald-200">
+                          <div className="!text-sm !text-emerald-600 !font-medium !mb-1">Total a pagar por tu compensación</div>
+                          <div className="!text-3xl !font-bold !text-emerald-700">${total.toLocaleString()} CLP</div>
+                          <div className="!text-xs !text-emerald-500 !mt-1">
+                            {tonsParam ? `${parseFloat(tonsParam).toFixed(4)}` : (emissionsKg! / 1000).toFixed(4)} ton CO₂ × ${selectedProject.pricePerTonCLP.toLocaleString()} CLP/ton
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+
                     {/* CTA */}
                     <motion.button
                       whileHover={selectedProjectIsSoldOut ? undefined : { scale: 1.02 }}
                       whileTap={selectedProjectIsSoldOut ? undefined : { scale: 0.98 }}
                       className={`!w-full !px-6 !py-4 !text-white !rounded-xl !font-bold !shadow-lg !transition !border-0 !flex !items-center !justify-center !gap-2 ${selectedProjectIsSoldOut ? '!bg-gray-400 !cursor-not-allowed !shadow-none' : '!bg-gradient-to-r !from-green-600 !to-green-700 hover:!shadow-xl !cursor-pointer'}`}
-                      disabled={selectedProjectIsSoldOut}
+                      disabled={selectedProjectIsSoldOut || payingProjectId === selectedProject.id}
                       onClick={() => {
                         if (selectedProjectIsSoldOut) return;
-                        setSelectedProject(null);
-                        window.location.href = `/b2c/calculator?projectId=${encodeURIComponent(selectedProject.id)}`;
+                        if (hasCalculation) {
+                          handlePayProject(selectedProject);
+                        } else {
+                          setSelectedProject(null);
+                          window.location.href = `/b2c/calculator`;
+                        }
                       }}
                     >
-                      <FaLeaf /> {selectedProjectIsSoldOut ? 'Meta Completada 🎯' : 'Apoyar Este Proyecto'}
+                      {payingProjectId === selectedProject.id ? (
+                        <>
+                          <FaSpinner className="!animate-spin" /> Procesando pago...
+                        </>
+                      ) : selectedProjectIsSoldOut ? (
+                        <>Meta Completada</>
+                      ) : hasCalculation ? (
+                        <>
+                          <FaCreditCard /> Compensar con Este Proyecto
+                        </>
+                      ) : (
+                        <>
+                          <FaLeaf /> Calcular mi Huella Primero
+                        </>
+                      )}
                     </motion.button>
                   </div>
                 </motion.div>

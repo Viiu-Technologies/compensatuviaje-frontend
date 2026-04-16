@@ -11,7 +11,6 @@ import {
   FaMapMarkerAlt,
   FaUsers,
   FaExchangeAlt,
-  FaCreditCard,
   FaCheckCircle,
   FaArrowLeft,
   FaLock,
@@ -24,7 +23,6 @@ import {
 } from 'react-icons/fa';
 import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
-import authService from '../services/authService';
 import CertificateGenerator from './CertificateGenerator';
 
 // Types
@@ -55,12 +53,6 @@ interface CalculationResult {
     factorUsed: number;
     passengers: number;
   };
-  pricing: {
-    currency: string;
-    totalPriceCLP: number;
-    totalPriceUSD: number;
-    pricePerTonCLP: number;
-  };
   equivalencies: {
     trees: number;
     waterLiters: number;
@@ -69,7 +61,7 @@ interface CalculationResult {
   };
 }
 
-type Step = 'form' | 'result' | 'payment' | 'success';
+type Step = 'form' | 'result' | 'success';
 
 interface B2CCalculatorProps {
   projectId?: string | null;
@@ -245,7 +237,6 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>('form');
   const [isCalculating, setIsCalculating] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCertificate, setShowCertificate] = useState(false);
   
@@ -261,9 +252,6 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
   const [calculationId, setCalculationId] = useState<string | null>(null);
   const [distance, setDistance] = useState(0);
   const [paymentSuccess, setPaymentSuccess] = useState<any>(null);
-
-  const projectIdFromQuery = searchParams.get('projectId');
-  const selectedProjectId = projectIdFromProps || projectIdFromQuery || null;
 
   // Precarga de datos desde query params (cuando viene desde "Mis Viajes")
   useEffect(() => {
@@ -375,71 +363,14 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
     }
   };
 
-  const handlePayment = async () => {
-    if (!result) return;
-
-    setIsProcessingPayment(true);
-    try {
-      // Obtener token de Supabase para autenticación
-      const session = await authService.getSession();
-      const token = session?.access_token;
-      
-      if (!token) {
-        setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        return;
-      }
-
-      const headers: Record<string, string> = { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
-
-      // Crear transacción de pago (Webpay / modo directo)
-      const response = await fetch(`${API_URL}/b2c/payments/create-transaction`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          amount: result.pricing.totalPriceCLP,
-          calculationId: calculationId,
-          ...(selectedProjectId ? { projectId: selectedProjectId } : {}),
-          unitsPurchased: result.emissions.tonCO2e,
-          flightData: {
-            origin: result.meta.route.origin,
-            destination: result.meta.route.destination,
-            emissions: result.emissions,
-            pricing: result.pricing,
-            meta: result.meta
-          }
-        })
-      });
-
-      const data = await response.json();
-      
-      if (data.success && data.url && data.token) {
-        // Redirigir al formulario de pago de Webpay (Transbank)
-        // El usuario será redirigido al portal de Transbank para pagar
-        // Después Transbank redirige al backend, que procesa y redirige al frontend
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.url;
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'token_ws';
-        input.value = data.token;
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-        // El usuario sale de la SPA aquí — al volver, llegará a /b2c/payment-result
-        return;
-      } else {
-        setError(data.message || 'Error al crear transacción de pago');
-      }
-    } catch (err) {
-      console.error('Error processing payment:', err);
-      setError('Error de conexión al procesar el pago. Intenta nuevamente.');
-    } finally {
-      setIsProcessingPayment(false);
-    }
+  const handleViewProjects = () => {
+    if (!calculationId || !result) return;
+    const params = new URLSearchParams({
+      calcId: calculationId,
+      tons: String(result.emissions.tonCO2e),
+      kg: String(result.emissions.kgCO2e),
+    });
+    navigate(`/b2c/projects?${params.toString()}`);
   };
 
   const resetCalculator = () => {
@@ -917,22 +848,12 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
                 </div>
               </div>
 
-              {/* Pricing & Actions */}
+              {/* Actions */}
               <div className="!bg-white !rounded-3xl !shadow-xl !shadow-gray-200/50 !border !border-gray-100 !p-6 sm:!p-8">
-                <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !mb-8 !gap-4">
-                  <div>
-                    <div className="!text-sm !text-gray-500 !font-medium">Total a compensar</div>
-                    <div className="!text-4xl !font-bold !text-gray-900">
-                      ${result.pricing.totalPriceCLP.toLocaleString()} <span className="!text-xl !font-normal !text-gray-500">CLP</span>
-                    </div>
-                    <div className="!text-sm !text-gray-500">≈ ${result.pricing.totalPriceUSD.toFixed(2)} USD</div>
-                  </div>
-                  <div className="!text-left sm:!text-right !bg-gray-50 !rounded-xl !px-4 !py-3">
-                    <div className="!text-xs !text-gray-500 !font-medium">Precio por tonelada</div>
-                    <div className="!text-lg !font-bold !text-gray-700">
-                      ${result.pricing.pricePerTonCLP.toLocaleString()} CLP
-                    </div>
-                  </div>
+                <div className="!text-center !mb-6">
+                  <p className="!text-gray-600 !text-sm !m-0">
+                    Elige un proyecto ambiental verificado para compensar tu huella de carbono
+                  </p>
                 </div>
 
                 <div className="!flex !flex-col sm:!flex-row !gap-4">
@@ -948,21 +869,12 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={handlePayment}
-                    disabled={isProcessingPayment}
+                    onClick={handleViewProjects}
+                    disabled={!calculationId}
                     className="!flex-[2] !py-4 !rounded-xl !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !font-bold !shadow-xl !shadow-emerald-500/30 hover:!shadow-2xl !transition !flex !items-center !justify-center !gap-3 !cursor-pointer !border-0"
                   >
-                    {isProcessingPayment ? (
-                      <>
-                        <FaSpinner className="!animate-spin !text-xl" />
-                        Procesando...
-                      </>
-                    ) : (
-                      <>
-                        <FaCreditCard className="!text-xl" />
-                        Compensar Ahora
-                      </>
-                    )}
+                    <FaLeaf className="!text-xl" />
+                    Ver Proyectos para Compensar
                   </motion.button>
                 </div>
               </div>
@@ -1079,7 +991,7 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
                 treesPlanted: result.equivalencies.trees,
                 carKmAvoided: Math.round(result.emissions.kgCO2e * 5.5),
               } : undefined,
-              amountPaid: result.pricing.totalPriceCLP,
+              amountPaid: 0,
               currency: 'CLP'
             }}
             onClose={() => setShowCertificate(false)}

@@ -103,13 +103,12 @@ export interface B2CProject {
   status: string;
   providerOrganization: string;
   certification: string | null;
-  pricePerTon: number;
+  pricePerTonCLP: number;
   capacityTotal: number;
   capacitySold: number;
   availableUnits?: number;
   isSoldOut?: boolean;
   progress: number;
-  marginPercent?: number;
   coBenefits: any;
   partner: { name: string; logoUrl: string | null } | null;
   metrics: { name: string; value: number; date: string }[];
@@ -234,6 +233,28 @@ export async function getPaymentHistory(): Promise<any[]> {
 }
 
 /**
+ * Crear transacción de pago (Webpay) — server-side price calculation
+ * Frontend only sends calculationId + projectId; backend calculates amount.
+ */
+export async function createPaymentTransaction(params: {
+  calculationId: string;
+  projectId: string;
+}): Promise<{
+  success: boolean;
+  url: string;
+  token: string;
+  buyOrder: string;
+  paymentId: string;
+  amountCLP: number;
+  project: { id: string; name: string };
+}> {
+  return authFetch('/b2c/payments/create-transaction', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+
+/**
  * Obtener datos del usuario (auth/me)
  */
 export async function getUserProfile(): Promise<any> {
@@ -259,6 +280,7 @@ const b2cApi = {
   downloadCertificate,
   getPublicProjects,
   getPaymentHistory,
+  createPaymentTransaction,
   getUserProfile,
   deleteCalculation,
 };
