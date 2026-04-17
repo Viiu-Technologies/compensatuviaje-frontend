@@ -1,16 +1,9 @@
 import React from 'react';
 import { FaLeaf, FaPlane, FaChartLine, FaUsers, FaBuilding } from 'react-icons/fa';
 import { HiArrowRight } from 'react-icons/hi';
-import CountUp from 'react-countup';
-import { useInView } from 'react-intersection-observer';
 import './Hero.css';
 
 const Hero = () => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
   const stats = [
     { 
       icon: FaLeaf, 
@@ -49,7 +42,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden" id="inicio">
+    <section className="relative min-h-[100svh] lg:min-h-screen lg:flex lg:items-center overflow-hidden" id="inicio">
       {/* Background con overlay premium */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -74,15 +67,15 @@ const Hero = () => {
       </div>
 
       {/* Contenido Principal */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-24 lg:py-32" style={{ maxWidth: '1280px' }}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 !pt-28 !pb-16 sm:!pt-32 lg:!pt-36 lg:!pb-24" style={{ maxWidth: '1280px' }}>
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           
           {/* Columna Izquierda */}
-          <div className="hero-fade-in flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div className="flex flex-col items-start">
 
             {/* Título Principal */}
             <h1 
-              className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight !mb-6"
+              className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
               style={{ textShadow: '0 4px 30px rgba(0,0,0,0.4)' }}
             >
               <span className="text-white">Compensa</span>
@@ -94,9 +87,9 @@ const Hero = () => {
               </span>
             </h1>
 
-            {/* Subtítulo — alineado igual que el título */}
+            {/* Subtítulo — alineado a la izquierda igual que el título */}
             <p 
-              className="text-lg sm:text-xl lg:text-2xl text-white/85 leading-relaxed max-w-lg !mb-10"
+              className="text-base sm:text-lg lg:text-xl text-white/85 leading-relaxed max-w-md !mb-8 lg:!mb-10"
               style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}
             >
               La forma más <span className="text-white font-bold">transparente</span> y{' '}
@@ -105,26 +98,26 @@ const Hero = () => {
             </p>
 
             {/* Botones CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto !mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto !mb-6 lg:!mb-8">
               <button
                 onClick={scrollToCalculator}
-                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-900 font-bold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl shadow-2xl shadow-amber-500/40 hover:shadow-amber-400/50 hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300 overflow-hidden"
+                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-900 font-bold text-base sm:text-lg !px-8 sm:!px-10 !py-3.5 sm:!py-4 !leading-[1.15] !min-h-[48px] sm:!min-h-[56px] whitespace-nowrap rounded-2xl shadow-2xl shadow-amber-500/40 hover:shadow-amber-400/50 hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <FaChartLine className="text-xl group-hover:scale-110 transition-transform relative z-10" />
+                <FaChartLine className="text-lg sm:text-xl group-hover:scale-110 transition-transform relative z-10" />
                 <span className="relative z-10">Calcula tu Huella</span>
               </button>
               
               <button
-                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-xl text-white font-semibold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl border-2 border-white/40 hover:border-white/70 shadow-lg shadow-black/20 hover:shadow-xl hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300"
+                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-xl text-white font-semibold text-base sm:text-lg !px-8 sm:!px-10 !py-3.5 sm:!py-4 !leading-[1.15] !min-h-[48px] sm:!min-h-[56px] whitespace-nowrap rounded-2xl border-2 border-white/40 hover:border-white/70 shadow-lg shadow-black/20 hover:shadow-xl hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300"
               >
                 <span>Cómo Funciona</span>
-                <HiArrowRight className="text-xl group-hover:translate-x-1 transition-transform" />
+                <HiArrowRight className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3">
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
               {[
                 { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
                 { color: 'bg-blue-400', glow: 'shadow-blue-400/80', text: 'Certificación ISO' },
@@ -132,7 +125,7 @@ const Hero = () => {
               ].map((item, i) => (
                 <div 
                   key={i} 
-                  className="flex items-center gap-2.5 text-white/90 text-sm font-medium"
+                  className="flex items-center gap-2 text-white/90 text-xs sm:text-sm font-medium"
                   style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
                 >
                   <div className={`w-2 h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
@@ -142,10 +135,9 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Columna Derecha - Cards */}
+          {/* Columna Derecha - Cards (solo desktop) */}
           <div
-            ref={ref}
-            className="hero-fade-in-right flex flex-col gap-4 w-full max-w-[420px] mx-auto lg:mx-0 lg:ml-auto"
+            className="hidden lg:flex flex-col gap-4 w-full max-w-[420px] lg:ml-auto"
           >
             {/* Stats Cards */}
             {stats.map((stat, index) => {
@@ -157,45 +149,36 @@ const Hero = () => {
                   className={`
                     group relative overflow-hidden
                     bg-white/10 backdrop-blur-2xl 
-                    rounded-2xl lg:rounded-3xl 
-                    !px-8 py-5 lg:!px-10 lg:py-6
+                    rounded-3xl 
+                    !px-10 py-6
                     flex items-center gap-5
                     border border-white/20 hover:border-white/40
                     shadow-2xl ${stat.glow}
                     hover:!-translate-y-1 hover:!scale-[1.02]
                     !transition-all !duration-300 !ease-out
                   `}
-                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Glow effect en hover */}
                   <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${stat.gradient} blur-3xl -z-10`} />
                   
-                  {/* Icono */}
                   <div className={`
                     relative flex-shrink-0
-                    p-3.5 rounded-xl lg:rounded-2xl 
+                    p-3.5 rounded-2xl 
                     ${stat.iconBg}
                     shadow-lg ${stat.glow}
                     group-hover:scale-110 group-hover:rotate-3
                     transition-all duration-300
                   `}>
-                    <Icon className="text-2xl lg:text-3xl text-white drop-shadow-md" />
+                    <Icon className="text-3xl text-white drop-shadow-md" />
                   </div>
                   
-                  {/* Contenido */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-1">
-                      {inView && (
-                        <CountUp
-                          end={stat.value}
-                          duration={2.5}
-                          separator=","
-                          className="text-3xl lg:text-4xl font-black text-white tracking-tight"
-                        />
-                      )}
-                      <span className="text-xl lg:text-2xl font-bold text-white/80">{stat.suffix}</span>
+                      <span className="text-4xl font-black text-white tracking-tight">
+                        {stat.value.toLocaleString()}
+                      </span>
+                      <span className="text-2xl font-bold text-white/80">{stat.suffix}</span>
                     </div>
-                    <p className="text-white/60 font-medium text-sm lg:text-base mt-1 truncate">
+                    <p className="text-white/60 font-medium text-base mt-1 truncate">
                       {stat.label}
                     </p>
                   </div>
@@ -204,20 +187,20 @@ const Hero = () => {
             })}
 
             {/* Card Empresa */}
-            <div className="group relative overflow-hidden rounded-2xl lg:rounded-3xl hover:!-translate-y-1 hover:!scale-[1.02] !transition-all !duration-300 !ease-out">
+            <div className="group relative overflow-hidden rounded-3xl hover:!-translate-y-1 hover:!scale-[1.02] !transition-all !duration-300 !ease-out">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
               <div className="absolute inset-0 bg-white/5" />
               
-              <div className="relative !px-8 py-5 lg:!px-10 lg:py-6 flex items-center gap-5">
-                <div className="flex-shrink-0 p-3.5 rounded-xl lg:rounded-2xl bg-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <FaBuilding className="text-2xl lg:text-3xl text-white" />
+              <div className="relative !px-10 py-6 flex items-center gap-5">
+                <div className="flex-shrink-0 p-3.5 rounded-2xl bg-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <FaBuilding className="text-3xl text-white" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg lg:text-xl font-bold text-white mb-0.5">
+                  <h3 className="text-xl font-bold text-white mb-0.5">
                     ¿Eres Empresa?
                   </h3>
-                  <p className="text-white/80 text-sm lg:text-base mb-2 leading-snug">
+                  <p className="text-white/80 text-base mb-2 leading-snug">
                     Certifica tus operaciones y lidera el cambio sostenible.
                   </p>
                   <button className="group/btn inline-flex items-center gap-2 text-emerald-300 hover:text-white font-semibold text-sm transition-colors duration-200">
@@ -228,6 +211,28 @@ const Hero = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Stats compactos para móvil */}
+        <div className="grid grid-cols-3 gap-3 mt-8 lg:hidden">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={index}
+                className="bg-white/10 backdrop-blur-xl rounded-xl !p-3 text-center border border-white/15"
+              >
+                <Icon className={`text-lg mx-auto mb-1 text-emerald-400`} />
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">
+                  {stat.value.toLocaleString()}
+                  <span className="text-sm font-bold text-white/70">{stat.suffix}</span>
+                </div>
+                <p className="text-white/50 text-[10px] sm:text-xs font-medium mt-1 leading-tight">
+                  {stat.label}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 

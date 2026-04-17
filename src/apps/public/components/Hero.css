@@ -199,22 +199,7 @@
   animation: blob-slow-mid 10s ease-in-out infinite;
 }
 
-/* Hero entrance animations — CSS only, replaces framer-motion */
-.hero-fade-in {
-  animation: heroFadeUp 0.9s ease-out both;
-}
-.hero-fade-in-right {
-  animation: heroFadeRight 0.9s 0.3s ease-out both;
-}
-
-@keyframes heroFadeUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes heroFadeRight {
-  from { opacity: 0; transform: translateX(50px); }
-  to { opacity: 1; transform: translateX(0); }
-}
+/* Hero entrance — no layout-shifting animations to avoid CLS */
 
 /* Scroll indicator animations */
 .animate-pulse-slow {
