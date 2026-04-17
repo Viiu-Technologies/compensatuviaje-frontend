@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { FaCalculator, FaLeaf, FaChartLine, FaShieldAlt, FaBolt, FaGlobe, FaDatabase, FaAward, FaLock } from 'react-icons/fa';
 import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
@@ -7,7 +7,7 @@ import './Features.css';
 import LogoLoopComponent from './LogoLoop';
 // import local image from src assets so bundler serves it correctly
 import scapelandImg from '../../../assets/images/scapeland-chileflag.jpg';
-import CarbonCalculatorModal from '../../b2c/components/CarbonCalculatorModal';
+const CarbonCalculatorModal = lazy(() => import('../../b2c/components/CarbonCalculatorModal'));
 
 const Features = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -132,12 +132,9 @@ const Features = () => {
                 </motion.div>
 
                 <div className="card-icon-wrapper">
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  >
+                  <div className="animate-wiggle">
                     <FaCalculator className="card-icon" />
-                  </motion.div>
+                  </div>
                   <div className="icon-glow"></div>
                 </div>
 
@@ -182,13 +179,7 @@ const Features = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <span className="btn-text">Calcular mi huella gratis</span>
-                  <motion.span 
-                    className="btn-arrow"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    →
-                  </motion.span>
+                  <span className="btn-arrow animate-bounce-x">→</span>
                 </motion.button>
               </div>
             </motion.div>
@@ -230,10 +221,14 @@ const Features = () => {
       </div>
 
       {/* Modal de Calculadora */}
-      <CarbonCalculatorModal 
-        isOpen={isModalOpen} 
-        onClose={closeCalculator} 
-      />
+      {isModalOpen && (
+        <Suspense fallback={null}>
+          <CarbonCalculatorModal 
+            isOpen={isModalOpen} 
+            onClose={closeCalculator} 
+          />
+        </Suspense>
+      )}
     </section>
   );
 };

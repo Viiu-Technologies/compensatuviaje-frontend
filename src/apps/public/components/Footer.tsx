@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { 
   FaFacebook, 
   FaLinkedin,
@@ -62,7 +61,7 @@ const Footer = () => {
       {/* Background con imagen de Chile */}
       <div 
         className="!absolute !inset-0 !bg-cover !bg-center !bg-no-repeat"
-        style={{ backgroundImage: 'url(/images/hero-background.jpg)' }}
+        style={{ backgroundImage: 'url(/images/hero-background.webp)' }}
       >
         {/* Overlay oscuro for text readability */}
         <div 
@@ -81,14 +80,14 @@ const Footer = () => {
           {/* Columna izquierda: logo, texto, badges */}
           <div className="!flex !flex-col !items-center md:!items-start !gap-6">
             <ScrollReveal>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="!flex !flex-col !items-center md:!items-start !gap-6"
+              <div
+                className="!flex !flex-col !items-center md:!items-start !gap-6 hover:!scale-[1.02] !transition-transform !duration-300"
               >
                 <img 
                   src="/images/brand/logo-horizontal.svg" 
                   alt="CompensaTuViaje"
                   className="!h-14 !w-auto !drop-shadow-xl md:!ml-0 !mx-auto !brightness-0 !invert"
+                  loading="lazy"
                 />
                 <p className="!text-gray-300 !text-lg !leading-relaxed !text-center md:!text-left">
                   Compensamos la huella de carbono de tus viajes apoyando proyectos verificados en Chile y el mundo.
@@ -96,19 +95,16 @@ const Footer = () => {
                 {/* Features badges */}
                 <div className="!flex !flex-wrap !gap-3 md:!justify-start !justify-center">
                   {features.map((feature, index) => (
-                    <motion.div
+                    <div
                       key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
                       className="!flex !items-center !gap-2 !px-4 !py-2 !rounded-full !bg-white/10 !backdrop-blur-xl !border !border-white/20"
                     >
                       <feature.icon className={`!text-lg ${feature.color === 'text-primary-900' ? '!text-emerald-400' : feature.color === 'text-secondary-900' ? '!text-blue-400' : '!text-amber-400'}`} />
                       <span className="!text-sm !font-semibold !text-white/90">{feature.text}</span>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </ScrollReveal>
           </div>
 
@@ -125,13 +121,12 @@ const Footer = () => {
                     <ul className="!space-y-3 !w-full">
                       {section.links.map((link, linkIndex) => (
                         <li key={linkIndex} className="!flex !justify-center md:!justify-end">
-                          <motion.a
+                          <a
                             href={link.href}
-                            whileHover={{ x: 5, color: '#34d399' }}
-                            className="!text-gray-400 hover:!text-emerald-400 !transition-colors !duration-200 !inline-block !text-center md:!text-right"
+                            className="!text-gray-400 hover:!text-emerald-400 hover:!translate-x-1 !transition-all !duration-200 !inline-block !text-center md:!text-right"
                           >
                             {link.label}
-                          </motion.a>
+                          </a>
                         </li>
                       ))}
                     </ul>
@@ -162,13 +157,11 @@ const Footer = () => {
                   placeholder="tu@email.com"
                   className="!flex-1 !bg-white/10 !border !border-white/20 !text-white !placeholder-gray-500 !rounded-xl !px-4 !py-3 focus:!border-emerald-400 focus:!outline-none focus:!ring-2 focus:!ring-emerald-400/20"
                 />
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="!px-8 !py-3 !whitespace-nowrap !bg-emerald-600 !text-white !font-semibold !rounded-xl !shadow-md hover:!bg-emerald-700 !transition-colors"
+                <button
+                  className="!px-8 !py-3 !whitespace-nowrap !bg-emerald-600 !text-white !font-semibold !rounded-xl !shadow-md hover:!bg-emerald-700 hover:!scale-105 active:!scale-95 !transition-all !duration-200"
                 >
                   Suscribirse
-                </motion.button>
+                </button>
               </div>
             </div>
           </div>
@@ -185,17 +178,15 @@ const Footer = () => {
             {/* Social links */}
             <div className="!flex !items-center !gap-4">
               {socialLinks.map((social, index) => (
-                <motion.a
+                <a
                   key={index}
                   href={social.href}
                   aria-label={social.label}
-                  whileHover={{ scale: 1.2, y: -3 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`!w-10 !h-10 !rounded-full !bg-white/10 !backdrop-blur !border !border-white/20 !flex !items-center !justify-center !text-gray-300 ${social.color} !transition-colors !duration-200`}
+                  className={`!w-10 !h-10 !rounded-full !bg-white/10 !backdrop-blur !border !border-white/20 !flex !items-center !justify-center !text-gray-300 ${social.color} hover:!scale-120 hover:!-translate-y-0.5 active:!scale-90 !transition-all !duration-200`}
                   onClick={(e) => e.preventDefault()}
                 >
                   <social.icon className="!text-lg" />
-                </motion.a>
+                </a>
               ))}
             </div>
 

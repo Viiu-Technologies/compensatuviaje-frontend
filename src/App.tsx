@@ -2,6 +2,7 @@
 // App.tsx - Routing con Multi-User Support
 // ============================================
 
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
@@ -10,7 +11,7 @@ import { AuthProvider } from './apps/auth/context/AuthContext';
 import { AuthProvider as B2CAuthProvider } from './apps/b2c/context/AuthContext';
 import { ThemeProvider } from './shared/context/ThemeContext';
 
-// Auth Components
+// Auth Components (needed for route guards - keep eager)
 import ProtectedRoute, { 
   SuperAdminRoute, 
   B2BRoute, 
@@ -20,40 +21,42 @@ import ProtectedRoute, {
 import PublicRoute from './apps/auth/components/PublicRoute';
 import B2CProtectedRoute from './apps/auth/components/B2CProtectedRoute';
 
-// Pages - Public
+// Landing Page - eager (es la ruta principal)
 import LandingPage from './apps/public/pages/LandingPage';
 
-// Pages - Auth
-import LoginPage from './apps/auth/pages/LoginPage';
-import RegisterPage from './apps/auth/pages/RegisterPage';
-import ForgotPasswordPage from './apps/auth/pages/ForgotPasswordPage';
-import DashboardPage from './apps/auth/pages/DashboardPage';
-import AuthCallbackPage from './apps/b2c/pages/AuthCallback';
+// Lazy-loaded pages (code splitting)
+const LoginPage = lazy(() => import('./apps/auth/pages/LoginPage'));
+const RegisterPage = lazy(() => import('./apps/auth/pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./apps/auth/pages/ForgotPasswordPage'));
+const DashboardPage = lazy(() => import('./apps/auth/pages/DashboardPage'));
+const AuthCallbackPage = lazy(() => import('./apps/b2c/pages/AuthCallback'));
 
-// Pages - B2B (Onboarding)
-import OnboardingWizardPage from './apps/b2b/pages/OnboardingWizardPage';
-import OnboardingStatusPage from './apps/b2b/pages/OnboardingStatusPage';
-import OnboardingEditPage from './apps/b2b/pages/OnboardingEditPage';
-import B2BDashboardPage from './apps/b2b/pages/DashboardPage';
+const OnboardingWizardPage = lazy(() => import('./apps/b2b/pages/OnboardingWizardPage'));
+const OnboardingStatusPage = lazy(() => import('./apps/b2b/pages/OnboardingStatusPage'));
+const OnboardingEditPage = lazy(() => import('./apps/b2b/pages/OnboardingEditPage'));
+const B2BDashboardPage = lazy(() => import('./apps/b2b/pages/DashboardPage'));
 
-// Pages - B2C
-import B2CDashboardPage from './apps/b2c/pages/B2CDashboardPage';
-import B2CFlightsPage from './apps/b2c/pages/B2CFlightsPage';
-import B2CProjectsPage from './apps/b2c/pages/B2CProjectsPage';
-import B2CCertificatesPage from './apps/b2c/pages/B2CCertificatesPage';
-import B2CCalculatorPage from './apps/b2c/pages/B2CCalculatorPage';
-import B2CNFTCertificatesPage from './apps/b2c/pages/B2CNFTCertificatesPage';
-import PaymentResultPage from './apps/b2c/pages/PaymentResultPage';
+const B2CDashboardPage = lazy(() => import('./apps/b2c/pages/B2CDashboardPage'));
+const B2CFlightsPage = lazy(() => import('./apps/b2c/pages/B2CFlightsPage'));
+const B2CProjectsPage = lazy(() => import('./apps/b2c/pages/B2CProjectsPage'));
+const B2CCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CCertificatesPage'));
+const B2CCalculatorPage = lazy(() => import('./apps/b2c/pages/B2CCalculatorPage'));
+const B2CNFTCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CNFTCertificatesPage'));
+const PaymentResultPage = lazy(() => import('./apps/b2c/pages/PaymentResultPage'));
 
-// Pages - Blockchain Verification (Public)
-import { CertificateVerificationPage } from './shared/components/blockchain';
+const CertificateVerificationPage = lazy(() => import('./shared/components/blockchain').then(m => ({ default: m.CertificateVerificationPage })));
 
-// Pages - Admin
-import AdminRoutes from './apps/admin/routes';
-import VerificationPage from './apps/admin/pages/VerificationPage';
+const AdminRoutes = lazy(() => import('./apps/admin/routes'));
+const VerificationPage = lazy(() => import('./apps/admin/pages/VerificationPage'));
 
-// Pages - Partner
-import { PartnerRoutes } from './apps/partner';
+const PartnerRoutes = lazy(() => import('./apps/partner').then(m => ({ default: m.PartnerRoutes })));
+
+// Loading fallback minimalista
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+    <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Smart redirect based on user type
 const SmartRedirect = () => {
@@ -67,6 +70,7 @@ function App() {
         <B2CAuthProvider>
         <ThemeProvider>
           <div className="App min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+            <Suspense fallback={<PageLoader />}>
             <Routes>
             {/* ===================== */}
             {/* Rutas P├║blicas */}
@@ -291,6 +295,7 @@ function App() {
             
             <Route path="*" element={<SmartRedirect />} />
           </Routes>
+          </Suspense>
         </div>
       </ThemeProvider>
       </B2CAuthProvider>

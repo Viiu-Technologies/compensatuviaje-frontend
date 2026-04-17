@@ -174,3 +174,27 @@
     font-size: 1.1rem;
   }
 }
+
+/* Blob CSS animations - reemplazo de framer-motion infinite */
+@keyframes blob-slow {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+}
+@keyframes blob-slow-reverse {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.15); opacity: 0.35; }
+}
+@keyframes blob-slow-mid {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.2; }
+}
+
+.animate-blob-slow {
+  animation: blob-slow 12s ease-in-out infinite;
+}
+.animate-blob-slow-reverse {
+  animation: blob-slow-reverse 14s ease-in-out infinite;
+}
+.animate-blob-slow-mid {
+  animation: blob-slow-mid 10s ease-in-out infinite;
+}

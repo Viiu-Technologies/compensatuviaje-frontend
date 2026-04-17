@@ -17,6 +17,18 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-pdf': ['@react-pdf/renderer', 'file-saver'],
+          'vendor-charts': ['recharts'],
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     open: true,
