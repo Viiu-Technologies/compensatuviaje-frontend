@@ -1,5 +1,4 @@
-/* Google Fonts - debe estar primero */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Google Fonts loaded via index.html <link> for non-blocking render */
 
 /* Tailwind CSS v4 */
 @import "tailwindcss";

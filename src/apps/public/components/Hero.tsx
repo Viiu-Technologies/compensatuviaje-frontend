@@ -117,7 +117,7 @@ const Hero = () => {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <div className="flex flex-nowrap gap-x-3 sm:gap-x-5">
               {[
                 { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
                 { color: 'bg-blue-400', glow: 'shadow-blue-400/80', text: 'Certificación ISO' },
@@ -125,10 +125,10 @@ const Hero = () => {
               ].map((item, i) => (
                 <div 
                   key={i} 
-                  className="flex items-center gap-2 text-white/90 text-xs sm:text-sm font-medium"
+                  className="flex items-center gap-1.5 sm:gap-2 text-white/90 text-[11px] sm:text-sm font-medium"
                   style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
                 >
-                  <div className={`w-2 h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
+                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
                   <span>{item.text}</span>
                 </div>
               ))}

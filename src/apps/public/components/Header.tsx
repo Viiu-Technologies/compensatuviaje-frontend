@@ -60,6 +60,8 @@ const Header = () => {
             <img
               src="/images/brand/logo-horizontal-white.svg"
               alt="CompensaTuViaje"
+              width="200"
+              height="48"
               className="h-12 w-auto drop-shadow-lg hover:!scale-[1.03] !transition-transform !duration-200"
             />
           </Link>
