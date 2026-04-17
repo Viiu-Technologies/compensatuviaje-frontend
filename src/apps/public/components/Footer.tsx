@@ -192,20 +192,18 @@ const Footer = () => {
 
             {/* Legal links */}
             <div className="!flex !gap-6 !text-sm">
-              <motion.a
+              <a
                 href="#privacidad"
-                whileHover={{ color: '#34d399' }}
                 className="!text-gray-400 hover:!text-emerald-400 !transition-colors"
               >
                 Privacidad
-              </motion.a>
-              <motion.a
+              </a>
+              <a
                 href="#terminos"
-                whileHover={{ color: '#34d399' }}
                 className="!text-gray-400 hover:!text-emerald-400 !transition-colors"
               >
                 Términos
-              </motion.a>
+              </a>
             </div>
           </div>
         </div>
