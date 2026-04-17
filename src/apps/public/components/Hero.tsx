@@ -1,7 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { FaLeaf, FaPlane, FaChartLine, FaUsers, FaBuilding } from 'react-icons/fa';
-import { HiSparkles, HiArrowRight } from 'react-icons/hi';
+import { HiArrowRight } from 'react-icons/hi';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import './Hero.css';
@@ -56,7 +55,6 @@ const Hero = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: 'url(/images/hero-background.webp)' }}
       >
-        {/* Overlay con gradiente más sofisticado */}
         <div 
           className="absolute inset-0"
           style={{ 
@@ -68,109 +66,65 @@ const Hero = () => {
         />
       </div>
 
-      {/* Blobs decorativos sutiles - CSS animations (no JS) */}
+      {/* Blobs decorativos sutiles - CSS animations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow"
-        />
-        <div
-          className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow-reverse"
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] will-change-transform animate-blob-slow-mid"
-        />
+        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow" />
+        <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow-reverse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] will-change-transform animate-blob-slow-mid" />
       </div>
 
       {/* Contenido Principal */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-28 lg:py-32" style={{ maxWidth: '1280px' }}>
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-24 lg:py-32" style={{ maxWidth: '1280px' }}>
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           
           {/* Columna Izquierda */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            className="text-center lg:text-left flex flex-col items-center lg:items-start"
-          >
-            {/* Badge Premium */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="inline-flex items-center !gap-3.5 bg-white/15 backdrop-blur-xl border border-white/25 !px-7 !py-0.5 rounded-full shadow-xl !mt-10 !mb-6"
-            >
-              <HiSparkles className="text-emerald-400 text-lg animate-pulse shrink-0" />
-              <span className="text-sm font-semibold text-white/95 tracking-wide !leading-[1.2]">
-                Plataforma #1 en Chile
-              </span>
-            </motion.div>
+          <div className="hero-fade-in flex flex-col items-center lg:items-start text-center lg:text-left">
 
             {/* Título Principal */}
-            <motion.h1 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.2] tracking-tight mb-10"
+            <h1 
+              className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight !mb-6"
               style={{ textShadow: '0 4px 30px rgba(0,0,0,0.4)' }}
             >
               <span className="text-white">Compensa</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400" style={{ WebkitTextStroke: '0.5px rgba(255,255,255,0.1)' }}>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
                 tu Viaje
               </span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400" style={{ WebkitTextStroke: '0.5px rgba(255,255,255,0.1)' }}>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
                 Sostenible
               </span>
-            </motion.h1>
+            </h1>
 
-            {/* Subtítulo */}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-              className="text-lg sm:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-lg !mb-14 sm:!mb-16 text-left"
+            {/* Subtítulo — alineado igual que el título */}
+            <p 
+              className="text-lg sm:text-xl lg:text-2xl text-white/85 leading-relaxed max-w-lg !mb-10"
               style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}
             >
               La forma más <span className="text-white font-bold">transparente</span> y{' '}
               <span className="text-white font-bold">efectiva</span> de neutralizar el impacto 
               ambiental de tus viajes corporativos y personales.
-            </motion.p>
+            </p>
 
             {/* Botones CTA */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.7 }}
-              className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto mb-12"
-            >
-              <motion.button
-                whileHover={{ scale: 1.04, y: -4 }}
-                whileTap={{ scale: 0.97 }}
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto !mb-8">
+              <button
                 onClick={scrollToCalculator}
-                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-900 font-bold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl shadow-2xl shadow-amber-500/40 hover:shadow-amber-400/50 transition-all duration-300 overflow-hidden"
+                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-900 font-bold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl shadow-2xl shadow-amber-500/40 hover:shadow-amber-400/50 hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300 overflow-hidden"
               >
-                {/* Shine effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <FaChartLine className="text-xl group-hover:scale-110 transition-transform relative z-10" />
                 <span className="relative z-10">Calcula tu Huella</span>
-              </motion.button>
+              </button>
               
-              <motion.button
-                whileHover={{ scale: 1.04, y: -4 }}
-                whileTap={{ scale: 0.97 }}
-                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-xl text-white font-semibold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl border-2 border-white/40 hover:border-white/70 shadow-lg shadow-black/20 hover:shadow-xl transition-all duration-300"
+              <button
+                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-xl text-white font-semibold text-lg !px-10 !py-4 !leading-[1.15] !min-h-[56px] whitespace-nowrap rounded-2xl border-2 border-white/40 hover:border-white/70 shadow-lg shadow-black/20 hover:shadow-xl hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300"
               >
                 <span>Cómo Funciona</span>
                 <HiArrowRight className="text-xl group-hover:translate-x-1 transition-transform" />
-              </motion.button>
-            </motion.div>
+              </button>
+            </div>
 
             {/* Trust Indicators */}
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-              className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 !pt-8 lg:!pt-10"
-            >
+            <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3">
               {[
                 { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
                 { color: 'bg-blue-400', glow: 'shadow-blue-400/80', text: 'Certificación ISO' },
@@ -178,57 +132,48 @@ const Hero = () => {
               ].map((item, i) => (
                 <div 
                   key={i} 
-                  className="flex items-center gap-2.5 text-white text-sm font-semibold"
+                  className="flex items-center gap-2.5 text-white/90 text-sm font-medium"
                   style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
                 >
-                  <div className={`w-2.5 h-2.5 ${item.color} rounded-full shadow-lg ${item.glow}`} />
+                  <div className={`w-2 h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
                   <span>{item.text}</span>
                 </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Columna Derecha - Cards */}
-          <motion.div
+          <div
             ref={ref}
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, delay: 0.3, ease: "easeOut" }}
-            className="flex flex-col gap-5 w-full max-w-[420px] mx-auto lg:mx-0 lg:ml-auto"
+            className="hero-fade-in-right flex flex-col gap-4 w-full max-w-[420px] mx-auto lg:mx-0 lg:ml-auto"
           >
             {/* Stats Cards */}
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               
               return (
-                <motion.div
+                <div
                   key={index}
-                  initial={{ opacity: 0, x: 40, y: 20 }}
-                  animate={{ opacity: 1, x: 0, y: 0 }}
-                  transition={{ delay: 0.5 + index * 0.15, duration: 0.6 }}
-                  whileHover={{ 
-                    y: -6, 
-                    scale: 1.02, 
-                    transition: { duration: 0.25 } 
-                  }}
                   className={`
                     group relative overflow-hidden
                     bg-white/10 backdrop-blur-2xl 
                     rounded-2xl lg:rounded-3xl 
-                    !px-9 py-6 lg:!px-12 lg:py-7
-                    flex items-center gap-6
+                    !px-8 py-5 lg:!px-10 lg:py-6
+                    flex items-center gap-5
                     border border-white/20 hover:border-white/40
                     shadow-2xl ${stat.glow}
-                    transition-all duration-300
+                    hover:!-translate-y-1 hover:!scale-[1.02]
+                    !transition-all !duration-300 !ease-out
                   `}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Glow effect en hover */}
                   <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${stat.gradient} blur-3xl -z-10`} />
                   
-                  {/* Icono con gradiente vibrante */}
+                  {/* Icono */}
                   <div className={`
                     relative flex-shrink-0
-                    p-4 rounded-xl lg:rounded-2xl 
+                    p-3.5 rounded-xl lg:rounded-2xl 
                     ${stat.iconBg}
                     shadow-lg ${stat.glow}
                     group-hover:scale-110 group-hover:rotate-3
@@ -254,40 +199,25 @@ const Hero = () => {
                       {stat.label}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
 
-            {/* Card Empresa - Premium Glass */}
-            <motion.div
-              initial={{ opacity: 0, x: 40, y: 20 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ delay: 0.95, duration: 0.6 }}
-              whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.25 } }}
-              className="group relative overflow-hidden rounded-2xl lg:rounded-3xl"
-            >
-              {/* Background gradient */}
+            {/* Card Empresa */}
+            <div className="group relative overflow-hidden rounded-2xl lg:rounded-3xl hover:!-translate-y-1 hover:!scale-[1.02] !transition-all !duration-300 !ease-out">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
+              <div className="absolute inset-0 bg-white/5" />
               
-              {/* Glass overlay */}
-              <div className="absolute inset-0 bg-white/5 backdrop-blur-sm" />
-              
-              {/* Pattern overlay sutil */}
-              <div className="absolute inset-0 opacity-[0.03]" 
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="20" height="20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0z" fill="none"/%3E%3Cpath d="M10 0v20M0 10h20" stroke="%23fff" stroke-width=".5"/%3E%3C/svg%3E")' }}
-              />
-              
-              {/* Contenido */}
-              <div className="relative !px-9 py-6 lg:!px-12 lg:py-7 flex items-center gap-6">
-                <div className="flex-shrink-0 p-4 rounded-xl lg:rounded-2xl bg-white/20 backdrop-blur-md shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <div className="relative !px-8 py-5 lg:!px-10 lg:py-6 flex items-center gap-5">
+                <div className="flex-shrink-0 p-3.5 rounded-xl lg:rounded-2xl bg-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <FaBuilding className="text-2xl lg:text-3xl text-white" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl lg:text-2xl font-bold text-white mb-1">
+                  <h3 className="text-lg lg:text-xl font-bold text-white mb-0.5">
                     ¿Eres Empresa?
                   </h3>
-                  <p className="text-white/80 text-sm lg:text-base mb-3 leading-snug">
+                  <p className="text-white/80 text-sm lg:text-base mb-2 leading-snug">
                     Certifica tus operaciones y lidera el cambio sostenible.
                   </p>
                   <button className="group/btn inline-flex items-center gap-2 text-emerald-300 hover:text-white font-semibold text-sm transition-colors duration-200">
@@ -296,41 +226,26 @@ const Hero = () => {
                   </button>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Scroll Indicator mejorado */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 cursor-pointer group"
+      {/* Scroll Indicator — CSS only */}
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 cursor-pointer group"
         onClick={() => {
           const element = document.getElementById('calculadora');
           if (element) element.scrollIntoView({ behavior: 'smooth' });
         }}
       >
-        <motion.span 
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="text-xs uppercase tracking-[0.25em] text-white/60 font-semibold group-hover:text-white/90 transition-colors"
-        >
+        <span className="text-xs uppercase tracking-[0.25em] text-white/50 font-semibold group-hover:text-white/80 transition-colors animate-pulse-slow">
           Descubre más
-        </motion.span>
-        <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          className="w-7 h-11 rounded-full border-2 border-white/30 group-hover:border-white/60 flex justify-center pt-2.5 transition-colors"
-        >
-          <motion.div 
-            animate={{ y: [0, 6, 0], opacity: [1, 0.5, 1] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            className="w-1.5 h-3 bg-white/60 group-hover:bg-white/90 rounded-full transition-colors" 
-          />
-        </motion.div>
-      </motion.div>
+        </span>
+        <div className="w-6 h-10 rounded-full border-2 border-white/25 group-hover:border-white/50 flex justify-center pt-2 transition-colors">
+          <div className="w-1.5 h-2.5 bg-white/50 group-hover:bg-white/80 rounded-full animate-scroll-dot transition-colors" />
+        </div>
+      </div>
     </section>
   );
 };

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaLeaf, FaUser, FaChartBar, FaBars, FaTimes } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
+import { FaUser, FaChartBar, FaBars, FaTimes } from 'react-icons/fa';
 import './Header.css';
 
 const Header = () => {
@@ -25,7 +23,7 @@ const Header = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Run on mount
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -50,37 +48,30 @@ const Header = () => {
   ];
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
-        backdrop-blur-2xl bg-black/30
+        backdrop-blur-2xl bg-black/30 header-slide-in
       `}
     >
       <div className="container mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center group flex-shrink-0">
-            <motion.img
-              whileHover={{ scale: 1.03 }}
-              transition={{ duration: 0.2 }}
+            <img
               src="/images/brand/logo-horizontal-white.svg"
               alt="CompensaTuViaje"
-              className="h-12 w-auto drop-shadow-lg"
+              className="h-12 w-auto drop-shadow-lg hover:!scale-[1.03] !transition-transform !duration-200"
             />
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center justify-center flex-1 gap-6">
             {navLinks.map((link) => (
-              <motion.a
+              <a
                 key={link.href}
                 href={link.href}
                 onClick={closeMenu}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className={`px-4 py-2 rounded-lg transition-all font-semibold text-base tracking-wide ${
+                className={`px-4 py-2 rounded-lg transition-all font-semibold text-base tracking-wide hover:!-translate-y-0.5 active:!scale-[0.98] ${
                   scrolled 
                     ? 'text-neutral-700 hover:text-primary-600 hover:bg-neutral-100' 
                     : 'text-white hover:text-white hover:bg-white/10'
@@ -88,7 +79,7 @@ const Header = () => {
                 style={!scrolled ? { textShadow: '0 2px 12px rgba(0,0,0,0.4)' } : {}}
               >
                 {link.label}
-              </motion.a>
+              </a>
             ))}
           </nav>
 
@@ -119,51 +110,44 @@ const Header = () => {
                     {user?.firstName || user?.name}
                   </span>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={handleLogout}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:!scale-[1.02] active:!scale-[0.98] ${
                     scrolled
                       ? 'text-neutral-700 hover:bg-neutral-100'
                       : 'text-white hover:bg-white/10'
                   }`}
                 >
                   Salir
-                </motion.button>
+                </button>
               </>
             ) : (
               <>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link 
-                    to="/login" 
-                    className={`inline-flex items-center justify-center !px-8 !py-3 !rounded-lg text-base font-semibold transition-all ${
-                      scrolled
-                        ? 'text-neutral-700 hover:bg-neutral-100 border-2 border-neutral-300'
-                        : 'text-white hover:bg-white/15 border-2 border-white/50'
-                    }`}
-                    style={!scrolled ? { textShadow: '0 2px 8px rgba(0,0,0,0.3)' } : {}}
-                  >
-                    Iniciar Sesión
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link 
-                    to="/register" 
-                    className="inline-flex items-center justify-center !px-8 !py-3 !rounded-lg text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 shadow-lg shadow-amber-500/25 transition-all"
-                  >
-                    Registrarse Gratis
-                  </Link>
-                </motion.div>
+                <Link 
+                  to="/login" 
+                  className={`inline-flex items-center justify-center !px-8 !py-3 !rounded-lg text-base font-semibold transition-all hover:!scale-[1.02] active:!scale-[0.98] ${
+                    scrolled
+                      ? 'text-neutral-700 hover:bg-neutral-100 border-2 border-neutral-300'
+                      : 'text-white hover:bg-white/15 border-2 border-white/50'
+                  }`}
+                  style={!scrolled ? { textShadow: '0 2px 8px rgba(0,0,0,0.3)' } : {}}
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="inline-flex items-center justify-center !px-8 !py-3 !rounded-lg text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 shadow-lg shadow-amber-500/25 transition-all hover:!scale-[1.02] active:!scale-[0.98]"
+                >
+                  Registrarse Gratis
+                </Link>
               </>
             )}
           </div>
 
           {/* Mobile Menu Toggle */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          <button
             onClick={toggleMenu}
-            className="lg:hidden p-3 rounded-xl hover:bg-neutral-100 transition-colors"
+            className="lg:hidden p-3 rounded-xl hover:bg-neutral-100 transition-colors active:!scale-90"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? (
@@ -171,94 +155,81 @@ const Header = () => {
             ) : (
               <FaBars className="text-2xl text-neutral-700" />
             )}
-          </motion.button>
+          </button>
         </div>
 
         {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="lg:hidden overflow-hidden"
-            >
-              <nav className="py-6 space-y-2">
-                {navLinks.map((link) => (
-                  <motion.a
-                    key={link.href}
-                    href={link.href}
-                    onClick={closeMenu}
-                    whileHover={{ x: 5 }}
-                    className="block px-4 py-3 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 transition-all font-medium"
-                  >
-                    {link.label}
-                  </motion.a>
-                ))}
-                {isAuthenticated && (
-                  <motion.div whileHover={{ x: 5 }}>
-                    <Link
-                      to={dashboardPath}
-                      onClick={closeMenu}
-                      className="block px-4 py-3 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 transition-all font-medium flex items-center gap-2"
-                    >
-                      <FaChartBar />
-                      Dashboard
-                    </Link>
-                  </motion.div>
-                )}
+        <div className={`lg:hidden overflow-hidden transition-all duration-300 ${isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <nav className="py-6 space-y-2">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={closeMenu}
+                className="block px-4 py-3 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 hover:!translate-x-1 transition-all font-medium"
+              >
+                {link.label}
+              </a>
+            ))}
+            {isAuthenticated && (
+              <Link
+                to={dashboardPath}
+                onClick={closeMenu}
+                className="block px-4 py-3 rounded-lg text-neutral-700 hover:text-primary-600 hover:bg-primary-50 hover:!translate-x-1 transition-all font-medium flex items-center gap-2"
+              >
+                <FaChartBar />
+                Dashboard
+              </Link>
+            )}
 
-                <div className="pt-4 border-t border-neutral-200 space-y-2">
-                  {isAuthenticated ? (
-                    <>
-                      <div className="px-4 py-3 rounded-lg bg-neutral-100">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                            <FaUser className="text-white" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-neutral-900">
-                              {user?.firstName || user?.name}
-                            </p>
-                            <p className="text-sm text-neutral-600">
-                              {user?.roles?.[0] || 'Usuario'}
-                            </p>
-                          </div>
-                        </div>
+            <div className="pt-4 border-t border-neutral-200 space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <div className="px-4 py-3 rounded-lg bg-neutral-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                        <FaUser className="text-white" />
                       </div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full btn-ghost justify-start"
-                      >
-                        Cerrar Sesión
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        to="/login"
-                        onClick={closeMenu}
-                        className="block w-full btn-ghost justify-start"
-                      >
-                        Iniciar Sesión
-                      </Link>
-                      <Link
-                        to="/register"
-                        onClick={closeMenu}
-                        className="block w-full btn-primary justify-start"
-                      >
-                        Registrarse Gratis
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                      <div>
+                        <p className="font-semibold text-neutral-900">
+                          {user?.firstName || user?.name}
+                        </p>
+                        <p className="text-sm text-neutral-600">
+                          {user?.roles?.[0] || 'Usuario'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full btn-ghost justify-start"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={closeMenu}
+                    className="block w-full btn-ghost justify-start"
+                  >
+                    Iniciar Sesión
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={closeMenu}
+                    className="block w-full btn-primary justify-start"
+                  >
+                    Registrarse Gratis
+                  </Link>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
       </div>
-    </motion.header>
+    </header>
   );
 };
 

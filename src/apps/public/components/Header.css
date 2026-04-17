@@ -1,3 +1,12 @@
+/* Header slide-in animation */
+.header-slide-in {
+  animation: headerSlideIn 0.5s ease-out both;
+}
+@keyframes headerSlideIn {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
 .header {
   background: #1e293b;
   padding: 15px 0;

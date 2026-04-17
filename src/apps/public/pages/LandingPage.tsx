@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
-import CertificateSearch from '../components/CertificateSearch';
-import Testimonials from '../components/Testimonials';
-import FAQ from '../components/FAQ';
-import ContactSection from '../components/ContactSection';
-import Footer from '../components/Footer';
+
+// Below-fold sections — lazy loaded for faster FCP/LCP
+const CertificateSearch = lazy(() => import('../components/CertificateSearch'));
+const Testimonials = lazy(() => import('../components/Testimonials'));
+const FAQ = lazy(() => import('../components/FAQ'));
+const ContactSection = lazy(() => import('../components/ContactSection'));
+const Footer = lazy(() => import('../components/Footer'));
 
 const LandingPage = () => {
   return (
@@ -14,11 +16,13 @@ const LandingPage = () => {
       <Header />
       <Hero />
       <Features />
-      <CertificateSearch />
-      <Testimonials />
-      <FAQ />
-      <ContactSection />
-      <Footer />
+      <Suspense fallback={null}>
+        <CertificateSearch />
+        <Testimonials />
+        <FAQ />
+        <ContactSection />
+        <Footer />
+      </Suspense>
     </>
   );
 };

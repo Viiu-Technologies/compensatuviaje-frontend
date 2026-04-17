@@ -1,11 +1,9 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
 import { FaCalculator, FaLeaf, FaChartLine, FaShieldAlt, FaBolt, FaGlobe, FaDatabase, FaAward, FaLock } from 'react-icons/fa';
 import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
 import { useInView } from 'react-intersection-observer';
 import './Features.css';
 import LogoLoopComponent from './LogoLoop';
-// import local image from src assets so bundler serves it correctly
 import scapelandImg from '../../../assets/images/scapeland-chileflag.jpg';
 const CarbonCalculatorModal = lazy(() => import('../../b2c/components/CarbonCalculatorModal'));
 
@@ -66,59 +64,32 @@ const Features = () => {
         </div>
 
         {/* Título principal centrado */}
-        <motion.div 
-          className="features-main-title"
-          initial={{ opacity: 0, y: -30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+        <div 
+          className={`features-main-title ${inView ? 'features-visible' : 'features-hidden'}`}
           ref={ref}
         >
-          <motion.div 
-            className="calculator-badge-centered"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ delay: 0.2 }}
-          >
+          <div className="calculator-badge-centered">
             <HiSparkles className="badge-icon" />
             Compensa tu huella de carbono hoy
-          </motion.div>
+          </div>
           
-          <motion.h2
-            className="main-title-large"
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.3 }}
-          >
+          <h2 className="main-title-large">
             La forma más <span className="text-gradient">transparente</span> de compensar tu impacto en el planeta
-          </motion.h2>
-        </motion.div>
+          </h2>
+        </div>
 
         {/* Contenido principal con calculadora */}
         <div className="features-content" id="calculadora-content">
-          <motion.div 
-            className="content-left"
-            initial={{ opacity: 0, x: -50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
+          <div className={`content-left ${inView ? 'features-visible' : 'features-hidden'}`}>
 
             {/* Tarjeta de calculadora premium */}
-            <motion.div 
-              className="calculator-card-modern"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
+            <div className="calculator-card-modern hover:!scale-[1.02] hover:!-translate-y-1 !transition-all !duration-300">
               {/* Gradient background animado */}
               <div className="card-gradient-bg"></div>
               
               <div className="card-content">
                 {/* Premium badge */}
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.6 }}
+                <div
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '6px',
                     background: 'linear-gradient(135deg, #f59e0b, #d97706)',
@@ -129,7 +100,7 @@ const Features = () => {
                 >
                   <FaAward style={{ fontSize: '12px' }} />
                   1 CÁLCULO GRATUITO
-                </motion.div>
+                </div>
 
                 <div className="card-icon-wrapper">
                   <div className="animate-wiggle">
@@ -152,16 +123,13 @@ const Features = () => {
                   {benefits.map((benefit, index) => {
                     const Icon = benefit.icon;
                     return (
-                      <motion.div 
+                      <div 
                         key={index}
                         className="benefit-item"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={inView ? { opacity: 1, x: 0 } : {}}
-                        transition={{ delay: 0.6 + index * 0.1 }}
                       >
                         <Icon className={`benefit-icon ${benefit.color}`} />
                         <span>{benefit.text}</span>
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
@@ -172,35 +140,26 @@ const Features = () => {
                   Datos basados en DEFRA 2024 · GHG Protocol · ICAO Carbon Calculator
                 </p>
 
-                <motion.button 
-                  className="calculator-cta-btn"
+                <button 
+                  className="calculator-cta-btn hover:!scale-105 active:!scale-95 !transition-transform"
                   onClick={openCalculator}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   <span className="btn-text">Calcular mi huella gratis</span>
                   <span className="btn-arrow animate-bounce-x">→</span>
-                </motion.button>
+                </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div 
-            className="content-right"
-            initial={{ opacity: 0, x: 50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
+          <div className={`content-right ${inView ? 'features-visible' : 'features-hidden'}`}>
             <div className="nature-image">
-              <motion.div 
-                className="image-placeholder"
+              <div 
+                className="image-placeholder hover:!scale-[1.03] !transition-transform !duration-400"
                 data-loaded={imageLoaded}
                 style={{
                   backgroundImage: imageLoaded ? `url(${scapelandImg})` : 'none',
                   opacity: imageLoaded ? 1 : 0.8
                 }}
-                whileHover={{ scale: 1.03 }}
-                transition={{ duration: 0.4 }}
               >
                 <div className="image-floating-badge">
                   <FaLeaf className="badge-leaf-icon" />
@@ -214,9 +173,9 @@ const Features = () => {
                   <FaGlobe className="overlay-icon" />
                   <span>Paisajes naturales que ayudamos a preservar</span>
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
