@@ -19,6 +19,7 @@ import AIEvaluationsPage from '../pages/AIEvaluationsPage';
 import AIKybDetailPage from '../pages/AIKybDetailPage';
 import AICertDetailPage from '../pages/AICertDetailPage';
 import SettingsPage from '../pages/SettingsPage';
+import OrdenesB2BPage from '../pages/OrdenesB2BPage';
 
 const AdminRoutes = () => {
   return (
@@ -62,6 +63,9 @@ const AdminRoutes = () => {
 
         {/* NFT Blockchain Management */}
         <Route path="nft-blockchain" element={<AdminNFTDashboard />} />
+
+        {/* Órdenes B2B */}
+        <Route path="ordenes-b2b" element={<OrdenesB2BPage />} />
 
         {/* Platform Settings */}
         <Route path="settings" element={<SettingsPage />} />

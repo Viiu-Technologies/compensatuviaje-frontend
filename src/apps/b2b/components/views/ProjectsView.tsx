@@ -18,7 +18,13 @@ import {
   Droplets,
   Bird,
   Mountain,
-  Loader2
+  Loader2,
+  X,
+  ShoppingCart,
+  Building2,
+  Copy,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { useTheme } from '../../../../shared/context/ThemeContext';
 import { 
@@ -27,8 +33,219 @@ import {
   filterMockProjects,
   type Project 
 } from '../../services/projectsService';
+import { createOrder, getBankDetails, type BankDetails } from '../../services/ordersService';
 
-const ProjectsView: React.FC = () => {
+interface CheckoutModalProps {
+  project: Project;
+  isDark: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose, onSuccess }) => {
+  const [tonsTco2, setTonsTco2] = useState<string>('1');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [orderCreated, setOrderCreated] = useState<{ id: string; amount: number } | null>(null);
+  const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const tons = parseFloat(tonsTco2) || 0;
+  const totalCLP = tons > 0 ? Math.round(tons * project.pricePerTonCLP) : 0;
+
+  useEffect(() => {
+    getBankDetails().then(setBankDetails).catch(() => {});
+  }, []);
+
+  const handleSubmit = async () => {
+    if (tons <= 0) {
+      setError('Ingresa una cantidad válida de toneladas');
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const response = await createOrder({ projectId: project.id, tonsTco2: tons });
+      setOrderCreated({ id: response.order.id, amount: response.order.amount });
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Error al crear la orden');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="!fixed !inset-0 !z-[100] !flex !items-center !justify-center !p-4">
+      <div className="!absolute !inset-0 !bg-black/60 !backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className={`!relative !w-full !max-w-lg !rounded-2xl !shadow-2xl !overflow-hidden !max-h-[90vh] !overflow-y-auto ${
+          isDark ? '!bg-gray-800 !border !border-gray-700' : '!bg-white'
+        }`}
+      >
+        {/* Header */}
+        <div className="!bg-gradient-to-r !from-green-500 !to-emerald-600 !p-6 !text-white">
+          <button onClick={onClose} className="!absolute !top-4 !right-4 !text-white/80 hover:!text-white !border-0 !bg-transparent">
+            <X className="!w-5 !h-5" />
+          </button>
+          <h2 className="!text-xl !font-bold">
+            {orderCreated ? 'Orden Creada' : 'Compensar con Transferencia'}
+          </h2>
+          <p className="!text-sm !text-green-100 !mt-1">{project.name}</p>
+        </div>
+
+        <div className="!p-6 !space-y-5">
+          {!orderCreated ? (
+            <>
+              {/* Tons input */}
+              <div>
+                <label className={`!block !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
+                  Toneladas de CO₂ a compensar
+                </label>
+                <input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={tonsTco2}
+                  onChange={(e) => { setTonsTco2(e.target.value); setError(null); }}
+                  className={`!w-full !px-4 !py-3 !rounded-xl !border !text-lg !font-semibold !outline-none focus:!ring-2 focus:!ring-green-500 ${
+                    isDark ? '!bg-gray-700 !border-gray-600 !text-white' : '!bg-gray-50 !border-gray-200 !text-gray-900'
+                  }`}
+                />
+              </div>
+
+              {/* Price breakdown */}
+              <div className={`!rounded-xl !p-4 !space-y-3 ${isDark ? '!bg-gray-700/50' : '!bg-gray-50'}`}>
+                <div className="!flex !justify-between !text-sm">
+                  <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Precio por tonelada</span>
+                  <span className={isDark ? '!text-gray-200' : '!text-gray-700'}>
+                    ${project.pricePerTonCLP.toLocaleString('es-CL')} CLP
+                  </span>
+                </div>
+                <div className="!flex !justify-between !text-sm">
+                  <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cantidad</span>
+                  <span className={isDark ? '!text-gray-200' : '!text-gray-700'}>{tons} tCO₂</span>
+                </div>
+                <div className={`!border-t !pt-3 !flex !justify-between !font-bold !text-lg ${isDark ? '!border-gray-600' : '!border-gray-200'}`}>
+                  <span className={isDark ? '!text-gray-200' : '!text-gray-800'}>Total</span>
+                  <span className="!text-green-600">${totalCLP.toLocaleString('es-CL')} CLP</span>
+                </div>
+              </div>
+
+              {error && (
+                <div className="!flex !items-center !gap-2 !p-3 !rounded-xl !bg-red-50 !text-red-700 !text-sm">
+                  <AlertCircle className="!w-4 !h-4 !flex-shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || tons <= 0}
+                className="!w-full !py-3.5 !rounded-xl !bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !font-semibold !text-base !border-0 !shadow-lg !shadow-green-500/30 hover:!shadow-green-500/50 !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+              >
+                {isSubmitting ? (
+                  <><Loader2 className="!w-5 !h-5 !animate-spin" /> Creando orden...</>
+                ) : (
+                  <><ShoppingCart className="!w-5 !h-5" /> Generar Orden de Compensación</>
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Success state with bank details */}
+              <div className="!text-center !py-2">
+                <CheckCircle2 className="!w-16 !h-16 !text-green-500 !mx-auto !mb-3" />
+                <p className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
+                  Orden #{orderCreated.id.slice(0, 8)}... creada
+                </p>
+                <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
+                  Realiza la transferencia bancaria para completar la compensación
+                </p>
+              </div>
+
+              {/* Amount to transfer */}
+              <div className={`!rounded-xl !p-4 !text-center ${isDark ? '!bg-green-900/30 !border !border-green-700/50' : '!bg-green-50 !border !border-green-200'}`}>
+                <p className={`!text-sm ${isDark ? '!text-green-400' : '!text-green-700'}`}>Monto a transferir</p>
+                <p className="!text-3xl !font-bold !text-green-600 !mt-1">
+                  ${orderCreated.amount.toLocaleString('es-CL')} CLP
+                </p>
+              </div>
+
+              {/* Bank details */}
+              {bankDetails && (
+                <div className={`!rounded-xl !p-4 !space-y-3 ${isDark ? '!bg-gray-700/50' : '!bg-gray-50'}`}>
+                  <h4 className={`!font-semibold !text-sm !mb-3 ${isDark ? '!text-gray-200' : '!text-gray-800'}`}>
+                    Datos para Transferencia
+                  </h4>
+                  {[
+                    { label: 'Banco', value: bankDetails.bankName },
+                    { label: 'Tipo Cuenta', value: bankDetails.accountType },
+                    { label: 'N° Cuenta', value: bankDetails.accountNumber },
+                    { label: 'Titular', value: bankDetails.accountHolder },
+                    { label: 'RUT', value: bankDetails.rut },
+                    { label: 'Email', value: bankDetails.email },
+                  ].filter(item => item.value).map((item, i) => (
+                    <div key={i} className="!flex !justify-between !items-center !text-sm">
+                      <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>{item.label}</span>
+                      <div className="!flex !items-center !gap-1">
+                        <span className={`!font-medium ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>{item.value}</span>
+                        <button
+                          onClick={() => copyToClipboard(item.value)}
+                          className={`!p-1 !rounded !border-0 !bg-transparent ${isDark ? '!text-gray-400 hover:!text-gray-200' : '!text-gray-400 hover:!text-gray-600'}`}
+                        >
+                          {copied ? <CheckCircle2 className="!w-3.5 !h-3.5 !text-green-500" /> : <Copy className="!w-3.5 !h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {bankDetails.message && (
+                    <p className={`!text-xs !mt-2 !pt-2 !border-t ${isDark ? '!border-gray-600 !text-yellow-400' : '!border-gray-200 !text-yellow-700'}`}>
+                      {bankDetails.message}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="!flex !gap-3">
+                <button
+                  onClick={onClose}
+                  className={`!flex-1 !py-3 !rounded-xl !font-medium !border-0 !transition-all ${
+                    isDark ? '!bg-gray-700 !text-gray-300 hover:!bg-gray-600' : '!bg-gray-100 !text-gray-700 hover:!bg-gray-200'
+                  }`}
+                >
+                  Cerrar
+                </button>
+                <button
+                  onClick={onSuccess}
+                  className="!flex-1 !py-3 !rounded-xl !bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !font-medium !border-0 !shadow-lg !transition-all"
+                >
+                  Ver Mis Órdenes
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// ===== MAIN VIEW =====
+
+interface ProjectsViewProps {
+  onNavigateToOrders?: () => void;
+}
+
+const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -37,18 +254,16 @@ const ProjectsView: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [checkoutProject, setCheckoutProject] = useState<Project | null>(null);
 
-  // Cargar proyectos al montar
   useEffect(() => {
     const loadProjects = async () => {
       setIsLoading(true);
       try {
-        // Cargar proyectos reales desde la API
         const realProjects = await getProjects({ type: filterType, status: filterStatus, search: searchQuery });
         setProjects(realProjects);
       } catch (error) {
         console.error('Error loading projects:', error);
-        // Fallback a mocks solo si falla la API
         setProjects(getMockProjects());
       } finally {
         setIsLoading(false);
@@ -116,11 +331,26 @@ const ProjectsView: React.FC = () => {
 
   return (
     <div className="!space-y-6">
+      {/* Checkout Modal */}
+      <AnimatePresence>
+        {checkoutProject && (
+          <CheckoutModal
+            project={checkoutProject}
+            isDark={isDark}
+            onClose={() => setCheckoutProject(null)}
+            onSuccess={() => {
+              setCheckoutProject(null);
+              onNavigateToOrders?.();
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
         <div>
           <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Proyectos</h1>
-          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Explora y gestiona tus proyectos de compensación</p>
+          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Explora proyectos y compensa tu huella de carbono</p>
         </div>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -328,19 +558,21 @@ const ProjectsView: React.FC = () => {
                     <p className="!text-lg !font-bold !text-green-600">{project.co2Offset} tCO₂</p>
                     <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Compensado</p>
                   </div>
+                  {project.pricePerTonCLP > 0 && (
+                    <div>
+                      <p className="!text-lg !font-bold !text-emerald-600">${project.pricePerTonCLP.toLocaleString('es-CL')}</p>
+                      <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>CLP/tCO₂</p>
+                    </div>
+                  )}
                   {project.treesPlanted && (
                     <div>
                       <p className="!text-lg !font-bold !text-teal-600">{project.treesPlanted}</p>
                       <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Árboles</p>
                     </div>
                   )}
-                  <div>
-                    <p className="!text-lg !font-bold !text-blue-600">${(project.contribution / 1000).toFixed(0)}K</p>
-                    <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Aporte</p>
-                  </div>
                 </div>
 
-                {/* SDGs */}
+                {/* SDGs + Actions */}
                 <div className="!flex !items-center !justify-between">
                   <div className="!flex !gap-1">
                     {project.sdgs.map(sdg => (
@@ -349,9 +581,18 @@ const ProjectsView: React.FC = () => {
                       </span>
                     ))}
                   </div>
-                  <button className="!flex !items-center !gap-1 !text-green-600 hover:!text-green-700 !text-sm !font-medium !bg-transparent !border-0">
-                    Ver detalles <ChevronRight className="!w-4 !h-4" />
-                  </button>
+                  {project.status === 'active' && project.pricePerTonCLP > 0 ? (
+                    <button
+                      onClick={() => setCheckoutProject(project)}
+                      className="!flex !items-center !gap-1.5 !px-4 !py-2 !rounded-xl !bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !text-sm !font-medium !border-0 !shadow-md !shadow-green-500/20 hover:!shadow-green-500/40 !transition-all"
+                    >
+                      <ShoppingCart className="!w-4 !h-4" /> Compensar
+                    </button>
+                  ) : (
+                    <button className="!flex !items-center !gap-1 !text-green-600 hover:!text-green-700 !text-sm !font-medium !bg-transparent !border-0">
+                      Ver detalles <ChevronRight className="!w-4 !h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

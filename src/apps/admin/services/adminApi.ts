@@ -878,3 +878,69 @@ export const approveProjectWithPricing = async (projectId: string, data: {
   const response = await api.put(`/admin/projects/${projectId}/approve`, data) as any;
   return response.data || response;
 };
+
+// ============================================
+// B2B ORDERS (COMPENSATION ORDERS)
+// ============================================
+
+export interface B2BOrder {
+  id: string;
+  tonsTco2: number;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'approved' | 'rejected';
+  company: {
+    id: string;
+    name: string;
+    rut: string;
+  } | null;
+  project: {
+    id: string;
+    name: string;
+    type: string;
+    country: string;
+  } | null;
+  platformFee: number;
+  payoutAmount: number;
+  createdAt: string;
+}
+
+export interface B2BOrdersListResponse {
+  orders: B2BOrder[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const getB2BOrders = async (params: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}): Promise<B2BOrdersListResponse> => {
+  const response = await api.get('/admin/orders', { params }) as any;
+  return {
+    orders: response.orders || [],
+    total: response.total || 0,
+    page: response.page || 1,
+    limit: response.limit || 50
+  };
+};
+
+export const approveB2BOrder = async (orderId: string): Promise<{
+  orderId: string;
+  status: string;
+  certificateNumber: string;
+  certificateId: string;
+}> => {
+  const response = await api.post(`/admin/orders/${orderId}/approve`) as any;
+  return response.data || response;
+};
+
+export const rejectB2BOrder = async (orderId: string, reason?: string): Promise<{
+  orderId: string;
+  status: string;
+  reason: string | null;
+}> => {
+  const response = await api.post(`/admin/orders/${orderId}/reject`, { reason }) as any;
+  return response.data || response;
+};

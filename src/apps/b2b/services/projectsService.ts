@@ -10,6 +10,7 @@ export interface Project {
   status: 'active' | 'completed' | 'pending';
   contribution: number;
   co2Offset: number;
+  pricePerTonCLP: number;
   treesPlanted?: number;
   startDate: string;
   endDate?: string;
@@ -60,8 +61,9 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
         country: p.country || 'Chile',
         type: mapProjectType(p.projectType),
         status: mapProjectStatus(p.status),
-        contribution: p.pricePerTon || 0,
+        contribution: p.pricePerTonCLP || p.pricePerTon || 0,
         co2Offset: p.capacitySold || 0,
+        pricePerTonCLP: p.pricePerTonCLP || 0,
         treesPlanted: undefined,
         startDate: p.createdAt,
         endDate: undefined,
@@ -196,6 +198,7 @@ export const getMockProjects = (): Project[] => {
       status: 'active',
       contribution: 15000,
       co2Offset: 45.2,
+      pricePerTonCLP: 15990,
       treesPlanted: 1200,
       startDate: '2024-03-15',
       image: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400',
@@ -212,6 +215,7 @@ export const getMockProjects = (): Project[] => {
       status: 'active',
       contribution: 8500,
       co2Offset: 28.7,
+      pricePerTonCLP: 12500,
       startDate: '2024-06-01',
       image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=400',
       description: 'Protección de uno de los últimos bosques templados lluviosos del planeta.',
@@ -227,6 +231,7 @@ export const getMockProjects = (): Project[] => {
       status: 'completed',
       contribution: 25000,
       co2Offset: 120.5,
+      pricePerTonCLP: 18000,
       startDate: '2023-01-10',
       endDate: '2024-01-10',
       image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
@@ -243,6 +248,7 @@ export const getMockProjects = (): Project[] => {
       status: 'pending',
       contribution: 5000,
       co2Offset: 15.3,
+      pricePerTonCLP: 14500,
       startDate: '2025-02-01',
       image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
       description: 'Conservación del ecosistema marino único del archipiélago Juan Fernández.',
@@ -258,6 +264,7 @@ export const getMockProjects = (): Project[] => {
       status: 'active',
       contribution: 12000,
       co2Offset: 35.8,
+      pricePerTonCLP: 13200,
       startDate: '2024-04-20',
       image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400',
       description: 'Rehabilitación del humedal costero y protección de aves migratorias.',
@@ -273,6 +280,7 @@ export const getMockProjects = (): Project[] => {
       status: 'active',
       contribution: 30000,
       co2Offset: 185.2,
+      pricePerTonCLP: 16500,
       startDate: '2024-01-15',
       image: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=400',
       description: 'Generación de energía eólica en el sur de Chile.',

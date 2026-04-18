@@ -58,6 +58,7 @@ const supplyEcosystemItems: NavItem[] = [
 // C. Ecosistema de Demanda
 const demandEcosystemItems: NavItem[] = [
   { path: '/admin/empresas', icon: Building2, label: 'Empresas B2B' },
+  { path: '/admin/ordenes-b2b', icon: Package, label: 'Órdenes B2B' },
   { path: '/admin/usuarios-b2c', icon: Users, label: 'Usuarios B2C' },
 ];
 
