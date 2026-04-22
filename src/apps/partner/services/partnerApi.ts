@@ -137,7 +137,22 @@ export const updatePartnerLogo = async (
   data: UpdateLogoRequest
 ): Promise<PartnerProfile | null> => {
   try {
-    const response = await api.put('/partner/profile/logo', data) as any;
+    let payload: any;
+    let config: any = {};
+
+    if (data.logo_file) {
+      const formData = new FormData();
+      formData.append('logo_file', data.logo_file);
+      if (data.logo_url) {
+        formData.append('logo_url', data.logo_url);
+      }
+      payload = formData;
+      config = { headers: { 'Content-Type': 'multipart/form-data' } };
+    } else {
+      payload = data;
+    }
+
+    const response = await api.put('/partner/profile/logo', payload, config) as any;
     if (response.success && response.data) {
       return response.data;
     }
@@ -181,7 +196,7 @@ export const getOnboardingStatus = async (): Promise<OnboardingStatus | null> =>
  */
 export const getBankDetails = async (): Promise<BankDetailsResponse | null> => {
   try {
-    const response = await api.get('/partner/bank-details') as any;
+    const response = await api.get('/partner/profile/bank-details') as any;
     if (response.success && response.data) {
       return response.data;
     }
@@ -203,7 +218,7 @@ export const updateBankDetails = async (
   data: UpdateBankDetailsRequest
 ): Promise<BankDetailsResponse | null> => {
   try {
-    const response = await api.put('/partner/bank-details', data) as any;
+    const response = await api.put('/partner/profile/bank-details', data) as any;
     if (response.success && response.data) {
       return response.data;
     }
@@ -225,7 +240,7 @@ export const changePassword = async (
   data: ChangePasswordRequest
 ): Promise<boolean> => {
   try {
-    const response = await api.put('/partner/profile/password', data) as any;
+    const response = await api.put('/partner/password', data) as any;
     return response.success || false;
   } catch (error) {
     console.error('Error changing password:', error);

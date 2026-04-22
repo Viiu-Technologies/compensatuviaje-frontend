@@ -114,6 +114,8 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
     website_url: ''
   });
   const [logoUrl, setLogoUrl] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoUploadType, setLogoUploadType] = useState<'url' | 'file'>('url');
 
   useEffect(() => {
     if (profile) {
@@ -122,8 +124,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
         contact_email: profile.contact_email,
         website_url: profile.website_url || ''
       });
-      setLogoUrl(profile.logo_url || '');
-    }
+      setLogoUrl(profile.logo_url || '');      setLogoUploadType(profile.logo_url ? 'url' : 'file');    }
   }, [profile]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -145,15 +146,20 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
   };
 
   const handleSaveLogo = async () => {
-    if (!logoUrl.trim()) return;
+    if (logoUploadType === 'url' && !logoUrl.trim()) return;
+    if (logoUploadType === 'file' && !logoFile) return;
     
     setError(null);
     setSuccess(null);
     setSaving(true);
 
     try {
-      await updatePartnerLogo({ logo_url: logoUrl });
+      await updatePartnerLogo({
+        logo_url: logoUploadType === 'url' ? logoUrl.trim() : undefined,
+        logo_file: logoUploadType === 'file' ? logoFile : undefined
+      });
       setSuccess('Logo actualizado correctamente');
+      setLogoFile(null); // Reset file after success
       onUpdate();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al actualizar el logo');
@@ -223,27 +229,54 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
             )}
           </div>
           <div className="!flex-1">
-            <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
-              URL del Logo
-            </label>
+            <div className="!flex !items-center !justify-between !mb-2">
+              <label className="!block !text-sm !font-medium !text-slate-700">
+                Logo de la Organización
+              </label>
+              <div className="!flex !gap-1 !bg-slate-100 !rounded-lg !p-1">
+                <button
+                  type="button"
+                  onClick={() => setLogoUploadType('url')}
+                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'url' ? '!bg-white !text-slate-800 !shadow-sm' : '!text-slate-500 hover:!text-slate-700'}`}
+                >
+                  Usar URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLogoUploadType('file')}
+                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'file' ? '!bg-white !text-slate-800 !shadow-sm' : '!text-slate-500 hover:!text-slate-700'}`}
+                >
+                  Subir Archivo
+                </button>
+              </div>
+            </div>
             <div className="!flex !gap-2">
-              <input
-                type="url"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://ejemplo.com/logo.png"
-                className="!flex-1 !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
-              />
+              {logoUploadType === 'url' ? (
+                <input
+                  type="url"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  placeholder="https://ejemplo.com/logo.png"
+                  className="!flex-1 !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                  onChange={(e) => { if (e.target.files && e.target.files[0]) setLogoFile(e.target.files[0]); }}
+                  className="!flex-1 !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800 file:!mr-4 file:!py-2 file:!px-4 file:!rounded-full file:!border-0 file:!text-sm file:!font-semibold file:!bg-emerald-50 file:!text-emerald-700 hover:file:!bg-emerald-100"
+                />
+              )}
               <button
                 onClick={handleSaveLogo}
-                disabled={saving || !logoUrl.trim()}
+                disabled={saving || (logoUploadType === 'url' ? !logoUrl.trim() : !logoFile)}
                 className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 disabled:!cursor-not-allowed !font-medium"
               >
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
             <p className="!text-sm !text-slate-500 !mt-1">
-              Ingresa la URL de tu logo (preferiblemente PNG o SVG)
+              {logoUploadType === 'url' ? 'Ingresa la URL de tu logo' : 'Sube un archivo de imagen (PNG, JPG)'}
             </p>
           </div>
         </div>
@@ -493,7 +526,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
               </div>
               <div>
                 <p className="!text-sm !text-slate-500">Número de Cuenta</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.account_number_masked}</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.account_number}</p>
               </div>
               <div>
                 <p className="!text-sm !text-slate-500">Titular</p>
@@ -501,7 +534,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
               </div>
               <div>
                 <p className="!text-sm !text-slate-500">RUT Titular</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.account_holder_rut_masked}</p>
+                <p className="!font-medium !text-slate-800">{bankDetails.account_holder_rut}</p>
               </div>
               <div>
                 <p className="!text-sm !text-slate-500">Moneda</p>
@@ -509,9 +542,9 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
               </div>
             </div>
 
-            {bankDetails.last_updated && (
+            {bankDetails.updated_at && (
               <p className="!text-sm !text-slate-500 !mt-6 !pt-4 !border-t">
-                Última actualización: {new Date(bankDetails.last_updated).toLocaleDateString('es-CL')}
+                Última actualización: {new Date(bankDetails.updated_at).toLocaleDateString('es-CL')}
               </p>
             )}
           </>
@@ -842,3 +875,7 @@ const PartnerProfilePage: React.FC = () => {
 };
 
 export default PartnerProfilePage;
+
+
+
+

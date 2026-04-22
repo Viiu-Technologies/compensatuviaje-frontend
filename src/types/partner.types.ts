@@ -55,7 +55,8 @@ export interface UpdatePartnerProfileRequest {
 }
 
 export interface UpdateLogoRequest {
-  logo_url: string;
+  logo_url?: string;
+  logo_file?: File | null;
 }
 
 // ============================================
@@ -73,12 +74,14 @@ export interface BankDetails {
 
 export interface BankDetailsResponse {
   bank_name: string;
+  bank_code: string | null;
   account_type: string;
-  account_number_masked: string;
+  account_number: string;
   account_holder_name: string;
-  account_holder_rut_masked: string;
+  account_holder_rut: string;
+  account_holder_id: string | null;
   currency: string;
-  last_updated?: string;
+  updated_at?: string;
 }
 
 export interface UpdateBankDetailsRequest {
