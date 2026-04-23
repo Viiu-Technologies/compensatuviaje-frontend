@@ -283,6 +283,11 @@ export interface PartnerStats {
     total_certificates: number;
     total_kg_co2: number;
     total_revenue_clp: number;
+    monthly_stock_approved_total: number;
+    monthly_stock_remaining_total: number;
+    total_capacity_total?: number;
+    total_capacity_sold?: number;
+    total_capacity_available?: number;
     message?: string;
   };
 }
