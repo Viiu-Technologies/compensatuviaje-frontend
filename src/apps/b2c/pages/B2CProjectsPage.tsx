@@ -196,8 +196,12 @@ const B2CProjectsPage: React.FC = () => {
         <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-3 xl:!grid-cols-4 !gap-4 sm:!gap-6">
           {filteredProjects.map((project, index) => {
             const tc = getTypeConfig(project.projectType);
-            const soldOut = project.isSoldOut ?? (project.capacityTotal > 0 && project.capacitySold >= project.capacityTotal);
-            const availableUnits = project.availableUnits ?? Math.max(project.capacityTotal - project.capacitySold, 0);
+            const soldOut = project.isSoldOut;
+            const availableUnits = project.availableUnits;
+            // Monthly progress bar: units sold this month vs monthly approved
+            const monthlyApproved = project.monthlyStockApproved || 0;
+            const monthlyRemaining = project.monthlyStockRemaining || 0;
+            const monthlyUnitsSold = Math.max(monthlyApproved - monthlyRemaining, 0);
             return (
               <motion.div
                 key={project.id}
@@ -243,8 +247,8 @@ const B2CProjectsPage: React.FC = () => {
                 {/* Stats */}
                 <div className="!space-y-2 !mb-4">
                   <div className="!flex !justify-between !text-sm">
-                    <span className="!text-gray-600">Capacidad:</span>
-                    <span className="!font-semibold !text-gray-800">{project.capacityTotal.toLocaleString()} t</span>
+                    <span className="!text-gray-600">Cupo mensual:</span>
+                    <span className="!font-semibold !text-gray-800">{monthlyApproved.toLocaleString()} t</span>
                   </div>
                   <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Disponible:</span>
@@ -265,10 +269,10 @@ const B2CProjectsPage: React.FC = () => {
                   })()}
                 </div>
 
-                {/* Progress */}
+                {/* Monthly Progress Bar */}
                 <div className="!mt-auto">
-                  <div className="!flex !justify-between !text-xs !text-gray-600 !mb-2">
-                    <span>Progreso</span>
+                  <div className="!flex !justify-between !text-xs !text-gray-600 !mb-1">
+                    <span>Progreso mensual</span>
                     <span className="!font-semibold">{project.progress}%</span>
                   </div>
                   <div className="!w-full !h-2 !bg-white/50 !rounded-full !overflow-hidden">
@@ -278,6 +282,10 @@ const B2CProjectsPage: React.FC = () => {
                       transition={{ duration: 1, ease: "easeOut" }}
                       className={`!h-2 !rounded-full ${soldOut ? '!bg-gray-400' : '!bg-green-500'}`}
                     />
+                  </div>
+                  <div className="!flex !justify-between !text-xs !text-gray-400 !mt-1">
+                    <span>{monthlyUnitsSold.toLocaleString()} t vendidas</span>
+                    <span>{monthlyApproved.toLocaleString()} t aprobadas</span>
                   </div>
                 </div>
 
@@ -303,8 +311,11 @@ const B2CProjectsPage: React.FC = () => {
         <AnimatePresence>
           {selectedProject && (() => {
             const tc = getTypeConfig(selectedProject.projectType);
-            const selectedProjectIsSoldOut = selectedProject.isSoldOut ?? (selectedProject.capacityTotal > 0 && selectedProject.capacitySold >= selectedProject.capacityTotal);
-            const selectedAvailableUnits = selectedProject.availableUnits ?? Math.max(selectedProject.capacityTotal - selectedProject.capacitySold, 0);
+            const selectedProjectIsSoldOut = selectedProject.isSoldOut;
+            const selectedAvailableUnits = selectedProject.availableUnits;
+            const selMonthlyApproved = selectedProject.monthlyStockApproved || 0;
+            const selMonthlyRemaining = selectedProject.monthlyStockRemaining || 0;
+            const selMonthlyUnitsSold = Math.max(selMonthlyApproved - selMonthlyRemaining, 0);
             return (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -377,7 +388,7 @@ const B2CProjectsPage: React.FC = () => {
                     {/* Progress */}
                     <div className="!bg-gradient-to-br !from-green-50 !to-white !rounded-xl !p-6 !mb-6">
                       <div className="!flex !items-center !justify-between !mb-3">
-                        <h3 className="!text-lg !font-bold !text-gray-900">Progreso del Proyecto</h3>
+                        <h3 className="!text-lg !font-bold !text-gray-900">Progreso Mensual del Proyecto</h3>
                         <span className={`!text-2xl !font-bold ${selectedProjectIsSoldOut ? '!text-gray-600' : '!text-green-600'}`}>{selectedProject.progress}%</span>
                       </div>
                       <div className="!w-full !h-4 !bg-white !rounded-full !overflow-hidden !shadow-inner">
@@ -389,8 +400,8 @@ const B2CProjectsPage: React.FC = () => {
                         />
                       </div>
                       <div className="!flex !justify-between !text-sm !text-gray-500 !mt-2">
-                        <span>{selectedProject.capacitySold.toLocaleString()} t vendidas</span>
-                        <span>{selectedAvailableUnits.toLocaleString()} t disponibles</span>
+                        <span>{selMonthlyUnitsSold.toLocaleString()} t vendidas</span>
+                        <span>{selMonthlyApproved.toLocaleString()} t aprobadas</span>
                       </div>
                     </div>
 

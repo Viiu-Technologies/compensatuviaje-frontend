@@ -11,6 +11,13 @@ export interface Project {
   contribution: number;
   co2Offset: number;
   pricePerTonCLP: number;
+  capacityTotal?: number;
+  capacitySold?: number;
+  monthlyStockApproved?: number;
+  monthlyStockRemaining?: number;
+  availableUnits?: number;
+  isSoldOut?: boolean;
+  progress?: number;
   treesPlanted?: number;
   startDate: string;
   endDate?: string;
@@ -64,6 +71,13 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
         contribution: p.pricePerTonCLP || p.pricePerTon || 0,
         co2Offset: p.capacitySold || 0,
         pricePerTonCLP: p.pricePerTonCLP || 0,
+        capacityTotal: p.capacityTotal || 0,
+        capacitySold: p.capacitySold || 0,
+        monthlyStockApproved: p.monthlyStockApproved || 0,
+        monthlyStockRemaining: p.monthlyStockRemaining || 0,
+        availableUnits: p.availableUnits || 0,
+        isSoldOut: Boolean(p.isSoldOut),
+        progress: p.progress || 0,
         treesPlanted: undefined,
         startDate: p.createdAt,
         endDate: undefined,

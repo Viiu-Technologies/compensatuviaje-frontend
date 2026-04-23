@@ -106,8 +106,10 @@ export interface B2CProject {
   pricePerTonCLP: number;
   capacityTotal: number;
   capacitySold: number;
-  availableUnits?: number;
-  isSoldOut?: boolean;
+  monthlyStockApproved: number;
+  monthlyStockRemaining: number;
+  availableUnits: number;
+  isSoldOut: boolean;
   progress: number;
   coBenefits: any;
   partner: { name: string; logoUrl: string | null } | null;

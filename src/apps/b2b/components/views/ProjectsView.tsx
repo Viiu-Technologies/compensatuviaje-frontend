@@ -51,6 +51,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
   const [copied, setCopied] = useState(false);
 
   const tons = parseFloat(tonsTco2) || 0;
+  const availableTons = project.availableUnits || 0;
+  const isOverLimit = project.availableUnits !== undefined && tons > availableTons;
   const totalCLP = tons > 0 ? Math.round(tons * project.pricePerTonCLP) : 0;
 
   useEffect(() => {
@@ -60,6 +62,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
   const handleSubmit = async () => {
     if (tons <= 0) {
       setError('Ingresa una cantidad válida de toneladas');
+      return;
+    }
+    if (isOverLimit) {
+      setError(`La cantidad excede el stock disponible (${availableTons.toLocaleString()} t)`);
       return;
     }
     setIsSubmitting(true);
@@ -107,19 +113,34 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
             <>
               {/* Tons input */}
               <div>
-                <label className={`!block !text-sm !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-                  Toneladas de CO₂ a compensar
-                </label>
+                <div className="!flex !justify-between !mb-2">
+                  <label className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
+                    Toneladas de CO₂ a compensar
+                  </label>
+                  {project.availableUnits !== undefined && (
+                    <span className="!text-sm !text-emerald-600 !font-medium">
+                      Stock mensual: {availableTons.toLocaleString()} t
+                    </span>
+                  )}
+                </div>
                 <input
                   type="number"
                   min="0.1"
                   step="0.1"
+                  max={project.availableUnits}
                   value={tonsTco2}
                   onChange={(e) => { setTonsTco2(e.target.value); setError(null); }}
                   className={`!w-full !px-4 !py-3 !rounded-xl !border !text-lg !font-semibold !outline-none focus:!ring-2 focus:!ring-green-500 ${
-                    isDark ? '!bg-gray-700 !border-gray-600 !text-white' : '!bg-gray-50 !border-gray-200 !text-gray-900'
+                    isOverLimit 
+                      ? '!border-red-500 !bg-red-50 !text-red-900' 
+                      : (isDark ? '!bg-gray-700 !border-gray-600 !text-white' : '!bg-gray-50 !border-gray-200 !text-gray-900')
                   }`}
                 />
+                {isOverLimit && (
+                  <p className="!text-xs !text-red-600 !mt-1">
+                    Cantidad no puede superar el stock mensual disponible ({availableTons.toLocaleString()} t)
+                  </p>
+                )}
               </div>
 
               {/* Price breakdown */}
@@ -149,7 +170,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
 
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || tons <= 0}
+                disabled={isSubmitting || tons <= 0 || isOverLimit}
                 className="!w-full !py-3.5 !rounded-xl !bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !font-semibold !text-base !border-0 !shadow-lg !shadow-green-500/30 hover:!shadow-green-500/50 !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
               >
                 {isSubmitting ? (
@@ -554,10 +575,17 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
 
                 {/* Stats */}
                 <div className="!flex !items-center !gap-4 !mb-4">
-                  <div>
-                    <p className="!text-lg !font-bold !text-green-600">{project.co2Offset} tCO₂</p>
-                    <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Compensado</p>
-                  </div>
+                  {project.availableUnits !== undefined ? (
+                    <div>
+                      <p className="!text-lg !font-bold !text-green-600">{project.availableUnits} tCO₂</p>
+                      <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Disponible mensual</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="!text-lg !font-bold !text-green-600">{project.co2Offset} tCO₂</p>
+                      <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Compensado</p>
+                    </div>
+                  )}
                   {project.pricePerTonCLP > 0 && (
                     <div>
                       <p className="!text-lg !font-bold !text-emerald-600">${project.pricePerTonCLP.toLocaleString('es-CL')}</p>
@@ -571,6 +599,21 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
                     </div>
                   )}
                 </div>
+
+                {project.progress !== undefined && project.progress >= 0 && (
+                  <div className="!mb-4">
+                    <div className="!flex !justify-between !text-xs !mb-1">
+                      <span className={isDark ? '!text-gray-400' : '!text-gray-600'}>Progreso mensual</span>
+                      <span className={`!font-medium ${isDark ? '!text-green-400' : '!text-green-600'}`}>{project.progress}%</span>
+                    </div>
+                    <div className={`!w-full !h-1.5 !rounded-full !overflow-hidden ${isDark ? '!bg-gray-700' : '!bg-gray-100'}`}>
+                      <div 
+                        className={`!h-full !rounded-full ${project.isSoldOut ? '!bg-gray-500' : '!bg-green-500'}`} 
+                        style={{ width: `${project.progress}%` }} 
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* SDGs + Actions */}
                 <div className="!flex !items-center !justify-between">
