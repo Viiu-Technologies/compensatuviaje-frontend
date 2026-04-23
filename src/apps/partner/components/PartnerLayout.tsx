@@ -12,6 +12,9 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { getPartnerProfile, getOnboardingStatus } from '../services/partnerApi';
+import kybApi from '../services/kybApi';
+import { getKybVisualStatus } from '../../../types/kyb.types';
+import type { KybStatusResponse } from '../../../types/kyb.types';
 import { PartnerProfile, OnboardingStatus } from '../../../types/partner.types';
 import {
   LayoutDashboard,
@@ -38,35 +41,57 @@ const PartnerLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<PartnerProfile | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
+  const [kybStatus, setKybStatus] = useState<KybStatusResponse | null>(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // DOBLE CANDADO: Verificar si el partner está en onboarding
-  const isOnboarding = profile?.status === 'onboarding';
-  const isKybRequired = isOnboarding;
+  // NIVEL 1: Perfil completo cuando el onboarding reporta todos los pasos finalizados
+  const isProfileComplete = onboarding?.completed === true;
+
+  // NIVEL 2: KYB verificado SOLO cuando el admin ha aprobado explícitamente (admin_decision === 'approved')
+  const isKybVerified = getKybVisualStatus(kybStatus?.latest_evaluation ?? null) === 'approved';
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // DOBLE CANDADO: Redirigir a KYB si intenta acceder a proyectos en estado onboarding
+  // TRIPLE CANDADO: Control estricto de flujo Onboarding
   useEffect(() => {
-    if (isKybRequired && location.pathname.includes('/partner/projects')) {
-      navigate('/partner/kyb', { replace: true });
+    // Esperar a que los datos carguen antes de redirigir
+    if (!isDataLoaded) return;
+
+    if (!isProfileComplete) {
+      // Bloquear KYB y Proyectos si falta completar perfil
+      if (
+        location.pathname.includes('/partner/kyb') ||
+        location.pathname.includes('/partner/projects')
+      ) {
+        navigate('/partner/profile', { replace: true });
+      }
+    } else if (!isKybVerified) {
+      // Bloquear Proyectos si KYB no ha sido aprobado por el admin
+      if (location.pathname.includes('/partner/projects')) {
+        navigate('/partner/kyb', { replace: true });
+      }
     }
-  }, [isKybRequired, location.pathname, navigate]);
+  }, [profile, onboarding, kybStatus, isProfileComplete, isKybVerified, location.pathname, navigate, isDataLoaded]);
 
   const loadData = async () => {
     try {
       const results = await Promise.allSettled([
         getPartnerProfile(),
-        getOnboardingStatus()
+        getOnboardingStatus(),
+        kybApi.getStatus()
       ]);
       if (results[0].status === 'fulfilled') setProfile(results[0].value);
       if (results[1].status === 'fulfilled') setOnboarding(results[1].value);
+      if (results[2].status === 'fulfilled') setKybStatus(results[2].value);
     } catch (error) {
       console.error('Error loading partner data:', error);
+    } finally {
+      setIsDataLoaded(true);
     }
   };
 
@@ -75,7 +100,7 @@ const PartnerLayout: React.FC = () => {
     navigate('/login');
   };
 
-  // DOBLE CANDADO: Configurar items de navegación con bloqueo condicional
+  // TRIPLE CANDADO: Configurar items de navegación con bloqueo condicional
   const navItems = [
     { 
       path: '/partner', 
@@ -86,29 +111,32 @@ const PartnerLayout: React.FC = () => {
       locked: false // Dashboard siempre accesible
     },
     { 
-      path: '/partner/projects', 
-      icon: FolderKanban, 
-      label: 'Mis Proyectos', 
+      path: '/partner/profile', 
+      icon: UserCircle, 
+      label: 'Mi Perfil', 
       exact: false, 
-      needsAttention: false,
-      locked: isKybRequired, // BLOQUEADO si está en onboarding
-      lockedMessage: 'Complete la verificación KYB para acceder'
+      needsAttention: !isProfileComplete,
+      locked: false // Perfil siempre accesible
     },
     { 
       path: '/partner/kyb', 
       icon: Shield, 
       label: 'Verificación KYB', 
       exact: false, 
-      needsAttention: isOnboarding, // Alerta si está en onboarding
-      locked: false
+      needsAttention: isProfileComplete && !isKybVerified, // Alerta si Perfil está listo pero KYB no aprobado
+      locked: !isProfileComplete, // Bloqueado solo si falta completar perfil
+      lockedMessage: 'Complete Mi Perfil para habilitar la Verificación KYB'
     },
     { 
-      path: '/partner/profile', 
-      icon: UserCircle, 
-      label: 'Mi Perfil', 
+      path: '/partner/projects', 
+      icon: FolderKanban, 
+      label: 'Mis Proyectos', 
       exact: false, 
-      needsAttention: onboarding ? !onboarding.completed : false,
-      locked: false
+      needsAttention: false,
+      locked: !isKybVerified, // Bloqueado hasta que el admin apruebe el KYB
+      lockedMessage: !isProfileComplete
+        ? 'Complete Mi Perfil y la Verificación KYB para acceder'
+        : 'Verificación KYB debe ser aprobada por un administrador'
     },
   ];
 
@@ -202,10 +230,10 @@ const PartnerLayout: React.FC = () => {
             )
           ))}
 
-          {/* New Project Button - También bloqueado si está en onboarding */}
+          {/* New Project Button - Bloqueado hasta que el admin apruebe KYB */}
           {!sidebarCollapsed && (
             <div className="!pt-4 !mt-4 !border-t !border-white/10">
-              {isKybRequired ? (
+              {!isKybVerified ? (
                 <div 
                   className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-slate-700/50 !text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60"
                   title="Complete la verificación KYB para crear proyectos"
@@ -226,7 +254,7 @@ const PartnerLayout: React.FC = () => {
           )}
           {sidebarCollapsed && (
             <div className="!pt-4 !mt-4 !border-t !border-white/10 !flex !justify-center">
-              {isKybRequired ? (
+              {!isKybVerified ? (
                 <div 
                   className="!p-3 !bg-slate-700/50 !text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60"
                   title="Complete la verificación KYB para crear proyectos"
@@ -334,7 +362,7 @@ const PartnerLayout: React.FC = () => {
                 )
               ))}
               <div className="!pt-4 !mt-4 !border-t !border-white/10">
-                {isKybRequired ? (
+                {!isKybVerified ? (
                   <div className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-slate-700/50 !text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60">
                     <Lock className="!w-4 !h-4" />
                     <span className="!line-through">Nuevo Proyecto</span>
@@ -421,8 +449,8 @@ const PartnerLayout: React.FC = () => {
 
         {/* Page Content */}
         <div className="!max-w-7xl !mx-auto !px-6 !py-8">
-          {/* KYB Required Banner */}
-          {isKybRequired && (
+          {/* KYB Required Banner - mostrar solo si el perfil está listo pero KYB aún no aprobado */}
+          {isProfileComplete && !isKybVerified && (
             <div className="!mb-6 !p-4 !bg-amber-50 dark:!bg-amber-900/20 !border !border-amber-200 dark:!border-amber-800 !rounded-xl">
               <div className="!flex !items-start !gap-3">
                 <AlertCircle className="!w-5 !h-5 !text-amber-600 dark:!text-amber-400 !flex-shrink-0 !mt-0.5" />

@@ -15,6 +15,7 @@ import {
 } from '../../../types/partner.types';
 import type { KybStatusResponse } from '../../../types/kyb.types';
 import { getKybVisualStatus, KYB_TIER_LABELS, KYB_TIER_ICONS } from '../../../types/kyb.types';
+import { Lock } from 'lucide-react';
 import {
   getPartnerProfile,
   getPartnerStats,
@@ -366,7 +367,11 @@ const KybStatusCard: React.FC<KybStatusCardProps> = ({ kybStatus, loading }) => 
 // QUICK ACTIONS COMPONENT
 // ============================================
 
-const QuickActions: React.FC = () => {
+interface QuickActionsProps {
+  isKybVerified: boolean;
+}
+
+const QuickActions: React.FC<QuickActionsProps> = ({ isKybVerified }) => {
   const actions = [
     {
       title: 'Crear Proyecto',
@@ -377,7 +382,8 @@ const QuickActions: React.FC = () => {
         </svg>
       ),
       link: '/partner/projects/create',
-      color: 'bg-emerald-500 hover:bg-emerald-600'
+      color: 'bg-emerald-500 hover:bg-emerald-600',
+      locked: !isKybVerified
     },
     {
       title: 'Ver Proyectos',
@@ -393,7 +399,8 @@ const QuickActions: React.FC = () => {
         </svg>
       ),
       link: '/partner/projects',
-      color: 'bg-blue-500 hover:bg-blue-600'
+      color: 'bg-blue-500 hover:bg-blue-600',
+      locked: !isKybVerified
     },
     {
       title: 'Mi Perfil',
@@ -409,7 +416,8 @@ const QuickActions: React.FC = () => {
         </svg>
       ),
       link: '/partner/profile',
-      color: 'bg-purple-500 hover:bg-purple-600'
+      color: 'bg-purple-500 hover:bg-purple-600',
+      locked: false
     }
   ];
 
@@ -418,19 +426,35 @@ const QuickActions: React.FC = () => {
       <h3 className="!text-lg !font-semibold !text-gray-800 !mb-4">Acciones Rápidas</h3>
       <div className="!space-y-3">
         {actions.map((action, index) => (
-          <Link
-            key={index}
-            to={action.link}
-            className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:!bg-gray-50 !transition-colors !group"
-          >
-            <div className={`!w-12 !h-12 ${action.color} !rounded-lg !flex !items-center !justify-center !text-white !transition-colors`}>
-              {action.icon}
+          action.locked ? (
+            <div
+              key={index}
+              className="!flex !items-center !gap-4 !p-3 !rounded-lg !bg-gray-50 !opacity-60 !cursor-not-allowed !transition-all"
+              title="Completa tu perfil para desbloquear"
+            >
+              <div className={`!w-12 !h-12 !bg-gray-300 !rounded-lg !flex !items-center !justify-center !text-white`}>
+                <Lock className="!w-6 !h-6" />
+              </div>
+              <div>
+                <p className="!font-medium !text-slate-800">{action.title}</p>
+                <p className="!text-sm !text-slate-500">{action.description}</p>
+              </div>
             </div>
-            <div>
-              <p className="!font-medium !text-slate-800 group-hover:!text-emerald-600">{action.title}</p>
-              <p className="!text-sm !text-slate-500">{action.description}</p>
-            </div>
-          </Link>
+          ) : (
+            <Link
+              key={index}
+              to={action.link}
+              className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:!bg-gray-50 hover:!scale-[1.02] active:!scale-[0.98] !transition-all !group"
+            >
+              <div className={`!w-12 !h-12 ${action.color} !rounded-lg !flex !items-center !justify-center !text-white !transition-colors`}>
+                {action.icon}
+              </div>
+              <div>
+                <p className="!font-medium !text-slate-800 group-hover:!text-emerald-600">{action.title}</p>
+                <p className="!text-sm !text-slate-500">{action.description}</p>
+              </div>
+            </Link>
+          )
         ))}
       </div>
     </div>
@@ -509,57 +533,61 @@ const PartnerDashboard: React.FC = () => {
     }).format(num);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-2" />
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl" />
-              ))}
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 h-80 bg-gray-200 rounded-xl" />
-              <div className="h-80 bg-gray-200 rounded-xl" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isProfileComplete = onboarding?.completed === true;
+  const isKybVerified = getKybVisualStatus(kybStatus?.latest_evaluation ?? null) === 'approved';
 
   return (
     <div className="!space-y-6">
       {/* Welcome Header */}
       <div className="!bg-gradient-to-r !from-emerald-600 !to-teal-600 !rounded-2xl !p-8 !text-white !shadow-lg !shadow-emerald-500/20">
-        <div className="!flex !items-center !justify-between">
+        <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-6">
           <div>
-            <h1 className="!text-2xl !font-bold !text-white">
-              ¡Bienvenido, {profile?.name || 'Partner'}!
-            </h1>
-            <p className="!text-emerald-100 !mt-1">
-              Panel de control de tu organización ESG
-            </p>
+            {loading ? (
+              <>
+                <div className="!h-8 !bg-emerald-500/50 !rounded !w-64 !mb-3 !animate-pulse" />
+                <div className="!h-5 !bg-emerald-500/30 !rounded !w-80 !animate-pulse" />
+              </>
+            ) : (
+              <>
+                <h1 className="!text-2xl !font-bold !text-white">
+                  ¡Bienvenido, {profile?.name || 'Partner'}!
+                </h1>
+                <p className="!text-emerald-100 !mt-1">
+                  {stats?.projects.total === 0 
+                    ? '¡Completa tu KyB y publica tu primer proyecto para empezar!' 
+                    : 'Panel de control de tu organización ESG'}
+                </p>
+              </>
+            )}
           </div>
-          <Link
-            to="/partner/projects/create"
-            className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-white !text-emerald-700 !rounded-xl hover:!bg-emerald-50 !transition-colors !font-semibold !shadow-lg !no-underline"
-          >
-            <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Nuevo Proyecto
-          </Link>
+          {isKybVerified ? (
+            <Link
+              to="/partner/projects/create"
+              className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-white !text-emerald-700 !rounded-xl hover:!bg-emerald-50 !transition-colors !font-semibold !shadow-lg !no-underline"
+            >
+              <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Nuevo Proyecto
+            </Link>
+          ) : (
+            <div
+              className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-emerald-600/50 !text-emerald-100 !rounded-xl !font-semibold !shadow-lg !cursor-not-allowed"
+              title="Verificación KYB debe ser aprobada para crear proyectos"
+            >
+              <Lock className="!w-5 !h-5" />
+              Nuevo Proyecto
+            </div>
+          )}
         </div>
       </div>
 
       {/* Content */}
       <div className="!space-y-6">
         {/* Onboarding Progress */}
-        {onboarding && !onboarding.completed && (
+        {loading && !onboarding ? (
+          <div className="!h-36 !bg-blue-100 !rounded-xl !animate-pulse !mb-6" />
+        ) : onboarding && !onboarding.completed && (
           <OnboardingProgress status={onboarding} />
         )}
 
@@ -567,9 +595,16 @@ const PartnerDashboard: React.FC = () => {
         <KybStatusCard kybStatus={kybStatus} loading={kybLoading} />
 
         {/* Stats Grid */}
-        <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">
-          <StatCard
-            title="Total Proyectos"
+        {loading ? (
+          <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="!h-32 !bg-gray-100 !rounded-xl !border-2 !border-gray-200 !animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">
+            <StatCard
+              title="Total Proyectos"
             value={stats?.projects.total || 0}
             subtitle={`${stats?.projects.active || 0} activos`}
             color="green"
@@ -632,7 +667,8 @@ const PartnerDashboard: React.FC = () => {
               </svg>
             }
           />
-        </div>
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-6">
@@ -643,7 +679,7 @@ const PartnerDashboard: React.FC = () => {
 
           {/* Quick Actions */}
           <div>
-            <QuickActions />
+            <QuickActions isKybVerified={isKybVerified} />
           </div>
         </div>
       </div>
