@@ -637,12 +637,11 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                   </label>
                   <select
                     value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'CLP' | 'USD' })}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'CLP' })}
                     required
                     className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
                   >
                     <option value="CLP">Peso Chileno (CLP)</option>
-                    <option value="USD">Dólar Estadounidense (USD)</option>
                   </select>
                 </div>
               </div>

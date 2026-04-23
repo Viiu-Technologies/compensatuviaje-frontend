@@ -184,8 +184,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
 
               {/* Quick facts row */}
               <div className="!flex !flex-wrap !gap-x-4 !gap-y-1 !text-xs !text-slate-500 dark:!text-slate-400 !mt-3">
-                {project.base_price_usd_per_ton !== undefined && project.base_price_usd_per_ton > 0 && (
-                  <span>Precio: <strong className="!text-slate-700 dark:!text-slate-200">US${project.base_price_usd_per_ton}/ton</strong></span>
+                {project.provider_cost_unit_clp !== undefined && project.provider_cost_unit_clp > 0 && (
+                  <span>Costo: <strong className="!text-slate-700 dark:!text-slate-200">${formatNumber(project.provider_cost_unit_clp)} CLP/{unitLabel}</strong></span>
                 )}
                 {project.certification && (
                   <span>Certificación: <strong className="!text-slate-700 dark:!text-slate-200">{project.certification}</strong></span>

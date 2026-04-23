@@ -470,14 +470,6 @@ const ProjectDetail: React.FC = () => {
                   </dd>
                 </div>
               )}
-              {project.base_price_usd_per_ton !== undefined && project.base_price_usd_per_ton > 0 && (
-                <div>
-                  <dt className="text-sm text-slate-500 dark:text-slate-400">Precio Base (USD / ton CO₂)</dt>
-                  <dd className="font-medium text-slate-800 dark:text-slate-100">
-                    US$ {formatNumber(project.base_price_usd_per_ton)}
-                  </dd>
-                </div>
-              )}
               {project.provider_cost_unit_clp !== undefined && (
                 <div>
                   <dt className="text-sm text-slate-500 dark:text-slate-400">

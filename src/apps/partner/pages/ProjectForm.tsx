@@ -4,7 +4,7 @@
 // 
 // ARQUITECTURA DOBLE CANDADO:
 // - Partner solo ingresa datos operativos (costos locales, capacidad)
-// - Admin define campos financieros (precio USD, captura CO2) en aprobación
+// - Admin define campos financieros (precio CLP, captura CO2) en aprobación
 // ============================================
 
 import React, { useState, useEffect } from 'react';
@@ -497,7 +497,7 @@ const ProjectForm: React.FC = () => {
           <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
             <h2 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-2">Datos Operativos</h2>
             <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-6">
-              Ingresa los costos y capacidad en tu moneda local. El precio final en USD será calculado por nuestro equipo durante la revisión.
+              Ingresa los costos y capacidad en pesos chilenos (CLP). El precio final por tonelada será calculado por nuestro equipo durante la revisión.
             </p>
             
             <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
@@ -582,7 +582,7 @@ const ProjectForm: React.FC = () => {
                 <div>
                   <h4 className="!text-sm !font-medium !text-blue-800 dark:!text-blue-300">Precio y Captura de CO₂</h4>
                   <p className="!text-sm !text-blue-600 dark:!text-blue-400 !mt-1">
-                    El precio en USD/Tonelada y la captura de CO₂ por unidad serán definidos por nuestro equipo 
+                    El precio por tonelada (CLP) y la captura de CO₂ por unidad serán definidos por nuestro equipo
                     durante el proceso de revisión, basándose en el dossier técnico y la documentación del proyecto.
                   </p>
                 </div>
