@@ -86,6 +86,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
   const canDelete = project.status === 'draft';
   const canEdit = ['draft', 'rejected'].includes(project.status);
 
+  const formatNumber = (n: number | undefined | null): string => {
+    if (n === null || n === undefined || isNaN(n)) return '0';
+    return new Intl.NumberFormat('es-CL').format(n);
+  };
+
+  const capacityTotal = project.capacity_total || 0;
+  const capacitySold = project.capacity_sold || 0;
+  const capacityAvailable = project.capacity_available ?? Math.max(0, capacityTotal - capacitySold);
+  const soldPct = capacityTotal > 0 ? Math.min(100, Math.round((capacitySold / capacityTotal) * 100)) : 0;
+  const monthlyApproved = project.monthly_stock_approved || 0;
+  const monthlyRemaining = project.monthly_stock_remaining || 0;
+  const monthlyPct = monthlyApproved > 0 ? Math.min(100, Math.round((monthlyRemaining / monthlyApproved) * 100)) : 0;
+  const unitLabel = project.impact_unit_type || project.impact_unit || 'u';
+
   return (
     <>
       <div className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-xl !border !shadow-sm hover:!shadow-md !transition-shadow !overflow-hidden">
@@ -109,12 +123,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
                   <h3 className="!font-semibold !text-slate-800 dark:!text-slate-100 !truncate">{project.name}</h3>
                 </div>
               </div>
-              
+
               <p className="!text-sm !text-slate-500 dark:!text-slate-400 !line-clamp-2 !mb-4">
                 {project.description || 'Sin descripción'}
               </p>
 
-              <div className="!flex !flex-wrap !items-center !gap-2 !text-sm">
+              <div className="!flex !flex-wrap !items-center !gap-2 !text-sm !mb-4">
                 <span className={`!px-2.5 !py-1 !text-xs !font-medium !rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>
                   {PROJECT_STATUS_LABELS[project.status]}
                 </span>
@@ -127,6 +141,61 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
                   {project.location_country}
                   {project.location_region && `, ${project.location_region}`}
                 </span>
+              </div>
+
+              {/* Capacity progress */}
+              {capacityTotal > 0 && (
+                <div className="!mb-3">
+                  <div className="!flex !items-center !justify-between !text-xs !mb-1">
+                    <span className="!text-slate-500 dark:!text-slate-400">Capacidad total</span>
+                    <span className="!font-medium !text-slate-700 dark:!text-slate-200">
+                      {formatNumber(capacityAvailable)} / {formatNumber(capacityTotal)} {unitLabel} disponibles
+                    </span>
+                  </div>
+                  <div className="!w-full !bg-slate-100 dark:!bg-slate-700 !rounded-full !h-2 !overflow-hidden">
+                    <div
+                      className="!h-2 !bg-gradient-to-r !from-emerald-500 !to-teal-500 !transition-all"
+                      style={{ width: `${soldPct}%` }}
+                    />
+                  </div>
+                  <p className="!text-[11px] !text-slate-400 dark:!text-slate-500 !mt-1">
+                    {formatNumber(capacitySold)} {unitLabel} vendidas ({soldPct}%)
+                  </p>
+                </div>
+              )}
+
+              {/* Monthly stock progress */}
+              {monthlyApproved > 0 && (
+                <div className="!mb-1">
+                  <div className="!flex !items-center !justify-between !text-xs !mb-1">
+                    <span className="!text-slate-500 dark:!text-slate-400">Stock mensual</span>
+                    <span className="!font-medium !text-slate-700 dark:!text-slate-200">
+                      {formatNumber(monthlyRemaining)} / {formatNumber(monthlyApproved)} {unitLabel}
+                    </span>
+                  </div>
+                  <div className="!w-full !bg-slate-100 dark:!bg-slate-700 !rounded-full !h-2 !overflow-hidden">
+                    <div
+                      className="!h-2 !bg-gradient-to-r !from-sky-500 !to-blue-500 !transition-all"
+                      style={{ width: `${monthlyPct}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Quick facts row */}
+              <div className="!flex !flex-wrap !gap-x-4 !gap-y-1 !text-xs !text-slate-500 dark:!text-slate-400 !mt-3">
+                {project.base_price_usd_per_ton !== undefined && project.base_price_usd_per_ton > 0 && (
+                  <span>Precio: <strong className="!text-slate-700 dark:!text-slate-200">US${project.base_price_usd_per_ton}/ton</strong></span>
+                )}
+                {project.certification && (
+                  <span>Certificación: <strong className="!text-slate-700 dark:!text-slate-200">{project.certification}</strong></span>
+                )}
+                {(project.documents_count ?? 0) > 0 && (
+                  <span>Documentos: <strong className="!text-slate-700 dark:!text-slate-200">{project.documents_count}</strong></span>
+                )}
+                {(project.evidence_count ?? 0) > 0 && (
+                  <span>Evidencias: <strong className="!text-slate-700 dark:!text-slate-200">{project.evidence_count}</strong></span>
+                )}
               </div>
             </div>
           </div>

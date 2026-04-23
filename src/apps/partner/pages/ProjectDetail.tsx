@@ -408,6 +408,30 @@ const ProjectDetail: React.FC = () => {
                   {project.location_region && `, ${project.location_region}`}
                 </dd>
               </div>
+              {project.provider_organization && (
+                <div>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Organización Proveedora</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">{project.provider_organization}</dd>
+                </div>
+              )}
+              {project.certification && (
+                <div>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Certificación</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">{project.certification}</dd>
+                </div>
+              )}
+              {Array.isArray(project.co_benefits) && project.co_benefits.length > 0 && (
+                <div>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Co-Beneficios</dt>
+                  <dd className="flex flex-wrap gap-1.5 mt-1">
+                    {project.co_benefits.map((cb, idx) => (
+                      <span key={idx} className="px-2 py-0.5 text-xs rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {cb}
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt className="text-sm text-slate-500 dark:text-slate-400">Descripción</dt>
                 <dd className="text-slate-700 dark:text-slate-200">
@@ -435,11 +459,30 @@ const ProjectDetail: React.FC = () => {
             </dl>
           </InfoCard>
 
-          <InfoCard title="Datos Técnicos">
+          <InfoCard title="Datos Técnicos y Comerciales">
             <dl className="space-y-4">
+              {(project.impact_unit_type || project.impact_unit_spec) && (
+                <div>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Unidad de Impacto</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
+                    {project.impact_unit_type || project.impact_unit || 'unidad'}
+                    {project.impact_unit_spec && ` · ${project.impact_unit_spec}`}
+                  </dd>
+                </div>
+              )}
+              {project.base_price_usd_per_ton !== undefined && project.base_price_usd_per_ton > 0 && (
+                <div>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Precio Base (USD / ton CO₂)</dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
+                    US$ {formatNumber(project.base_price_usd_per_ton)}
+                  </dd>
+                </div>
+              )}
               {project.provider_cost_unit_clp !== undefined && (
                 <div>
-                  <dt className="text-sm text-slate-500 dark:text-slate-400">Costo por Unidad (CLP)</dt>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    Costo por {project.impact_unit_type || 'Unidad'} (CLP)
+                  </dt>
                   <dd className="font-medium text-slate-800 dark:text-slate-100">
                     {formatCurrency(project.provider_cost_unit_clp)}
                   </dd>
@@ -447,9 +490,21 @@ const ProjectDetail: React.FC = () => {
               )}
               {project.carbon_capture_per_unit !== undefined && (
                 <div>
-                  <dt className="text-sm text-slate-500 dark:text-slate-400">Captura CO₂ por Unidad</dt>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    Captura CO₂ por {project.impact_unit_type || 'Unidad'}
+                  </dt>
                   <dd className="font-medium text-slate-800 dark:text-slate-100">
                     {formatNumber(project.carbon_capture_per_unit)} kg
+                  </dd>
+                </div>
+              )}
+              {project.impact_ratio_per_ton != null && (
+                <div>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    {project.impact_unit_type || 'Unidades'} por ton CO₂
+                  </dt>
+                  <dd className="font-medium text-slate-800 dark:text-slate-100">
+                    {formatNumber(project.impact_ratio_per_ton)}
                   </dd>
                 </div>
               )}
@@ -457,7 +512,7 @@ const ProjectDetail: React.FC = () => {
                 <div>
                   <dt className="text-sm text-slate-500 dark:text-slate-400">Capacidad Total</dt>
                   <dd className="font-medium text-slate-800 dark:text-slate-100">
-                    {formatNumber(project.capacity_total)} unidades
+                    {formatNumber(project.capacity_total)} {project.impact_unit_type || 'unidades'}
                   </dd>
                 </div>
               )}
@@ -465,7 +520,7 @@ const ProjectDetail: React.FC = () => {
                 <div>
                   <dt className="text-sm text-slate-500 dark:text-slate-400">Capacidad Vendida</dt>
                   <dd className="font-medium text-slate-800 dark:text-slate-100">
-                    {formatNumber(project.capacity_sold)} unidades
+                    {formatNumber(project.capacity_sold)} {project.impact_unit_type || 'unidades'}
                     {project.capacity_total && project.capacity_total > 0 && (
                       <span className="text-slate-500 dark:text-slate-400 ml-2">
                         ({((project.capacity_sold / project.capacity_total) * 100).toFixed(1)}%)
@@ -497,6 +552,48 @@ const ProjectDetail: React.FC = () => {
             </dl>
           </InfoCard>
         </div>
+
+        {/* Stock Mensual */}
+        {((project.monthly_stock_approved ?? 0) > 0 || project.stock_period_start) && (
+          <InfoCard title="Stock Mensual">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <StatItem
+                label="Aprobado (este ciclo)"
+                value={`${formatNumber(project.monthly_stock_approved || 0)} ${project.impact_unit_type || 'u'}`}
+                color="blue"
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+              />
+              <StatItem
+                label="Disponible"
+                value={`${formatNumber(project.monthly_stock_remaining || 0)} ${project.impact_unit_type || 'u'}`}
+                color="green"
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-3l-2 3h-6l-2-3H4" />
+                  </svg>
+                }
+              />
+              <StatItem
+                label="Período"
+                value={
+                  project.stock_period_start
+                    ? `${new Date(project.stock_period_start).toLocaleDateString('es-CL', { month: 'short', day: 'numeric' })} → ${project.stock_period_end ? new Date(project.stock_period_end).toLocaleDateString('es-CL', { month: 'short', day: 'numeric' }) : '—'}`
+                    : '—'
+                }
+                color="purple"
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                }
+              />
+            </div>
+          </InfoCard>
+        )}
 
         {/* ====== Mis Archivos Subidos ====== */}
         {!evidenceLoading && (evidencePhotos.length > 0 || evidenceDocs.length > 0) && (
