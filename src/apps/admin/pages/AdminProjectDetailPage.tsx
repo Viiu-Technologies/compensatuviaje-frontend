@@ -39,6 +39,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { formatCLP } from '../../../utils/currency';
 import {
   getProjectDetail,
   ProjectDetailData,
@@ -84,10 +85,6 @@ const projectTypeConfig: Record<string, { label: string; vertical: string; color
 function formatNumber(n?: number | null): string {
   if (n == null) return '-';
   return n.toLocaleString('es-CL');
-}
-function formatClp(n?: number | null): string {
-  if (n == null) return '-';
-  return `$${Math.round(n).toLocaleString('es-CL')} CLP`;
 }
 function formatDate(d?: string | null): string {
   if (!d) return '-';
@@ -379,7 +376,7 @@ export default function AdminProjectDetailPage() {
       <div className="!grid !grid-cols-2 lg:!grid-cols-4 !gap-4">
         <StatCard
           label="Precio CLP/ton"
-          value={formatClp(project.currentPricing?.finalPriceClpPerTon || project.currentBasePriceClpPerTon)}
+          value={formatCLP(project.currentPricing?.finalPriceClpPerTon || project.currentBasePriceClpPerTon)}
           sub={project.currentPricing?.marginPercent ? `Margen: ${project.currentPricing.marginPercent}%` : undefined}
           icon={DollarSign}
           color="emerald"
@@ -400,7 +397,7 @@ export default function AdminProjectDetailPage() {
         />
         <StatCard
           label="Revenue Total"
-          value={formatClp(project.stats.totalRevenueClp)}
+          value={formatCLP(project.stats.totalRevenueClp)}
           sub={`${project.stats.evidenceCount} entregas de evidencia`}
           icon={TrendingUp}
           color="amber"
@@ -545,7 +542,7 @@ export default function AdminProjectDetailPage() {
                         <div className="!grid !grid-cols-3 !gap-4 !text-center">
                           <div>
                             <p className="!text-xs !text-slate-500 dark:!text-slate-400">Base CLP/ton</p>
-                            <p className="!text-sm !font-bold !text-slate-700 dark:!text-slate-200">{formatClp(pv.basePriceClpPerTon)}</p>
+                            <p className="!text-sm !font-bold !text-slate-700 dark:!text-slate-200">{formatCLP(pv.basePriceClpPerTon)}</p>
                           </div>
                           <div>
                             <p className="!text-xs !text-slate-500 dark:!text-slate-400">Margen</p>
@@ -553,7 +550,7 @@ export default function AdminProjectDetailPage() {
                           </div>
                           <div>
                             <p className="!text-xs !text-slate-500 dark:!text-slate-400">Final CLP/ton</p>
-                            <p className="!text-sm !font-bold !text-emerald-600 dark:!text-emerald-400">{formatClp(pv.finalPriceClpPerTon)}</p>
+                            <p className="!text-sm !font-bold !text-emerald-600 dark:!text-emerald-400">{formatCLP(pv.finalPriceClpPerTon)}</p>
                           </div>
                         </div>
                         {pv.reason && (
@@ -590,7 +587,7 @@ export default function AdminProjectDetailPage() {
                             <tr key={cert.id} className="!border-b !border-slate-100 dark:!border-slate-700/50">
                               <td className="!py-2 !px-2 !font-mono !text-slate-700 dark:!text-slate-300">{cert.number}</td>
                               <td className="!py-2 !px-2 !text-right !text-slate-700 dark:!text-slate-300">{formatNumber(cert.tonsCompensated)}</td>
-                              <td className="!py-2 !px-2 !text-right !text-slate-700 dark:!text-slate-300">{formatClp(cert.amountClp)}</td>
+                              <td className="!py-2 !px-2 !text-right !text-slate-700 dark:!text-slate-300">{formatCLP(cert.amountClp)}</td>
                               <td className="!py-2 !px-2 !text-slate-600 dark:!text-slate-400 !text-xs">
                                 {cert.purchaser
                                   ? cert.purchaser.type === 'b2b'
@@ -640,14 +637,14 @@ export default function AdminProjectDetailPage() {
           {/* Double-Lock Pricing */}
           <InfoCard title="Doble Candado" icon={DollarSign}>
             <div className="!space-y-0">
-              <DataRow label="Costo Proveedor (CLP)" value={project.provider_cost_unit_clp ? `$${formatNumber(project.provider_cost_unit_clp)} CLP` : '-'} />
+              <DataRow label="Costo Proveedor" value={project.provider_cost_unit_clp ? formatCLP(project.provider_cost_unit_clp) : '-'} />
 
               <DataRow label="CO2/unidad" value={project.carbon_capture_per_unit ? `${project.carbon_capture_per_unit} kg` : '-'} />
               <DataRow label="Unidad de Impacto" value={project.impact_unit || '-'} />
               <DataRow label="Margen Compensa" value={project.currentPricing?.marginPercent != null ? `${project.currentPricing.marginPercent}%` : '-'} />
               <DataRow label="Precio Final" value={
                 <span className="!text-emerald-600 dark:!text-emerald-400 !font-bold">
-                  {formatClp(project.currentPricing?.finalPriceClpPerTon || project.currentBasePriceClpPerTon)} /ton
+                  {formatCLP(project.currentPricing?.finalPriceClpPerTon || project.currentBasePriceClpPerTon)} /ton
                 </span>
               } />
             </div>

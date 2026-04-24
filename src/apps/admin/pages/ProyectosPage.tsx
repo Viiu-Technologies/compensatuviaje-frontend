@@ -11,6 +11,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { formatCLP } from '../../../utils/currency';
 import {
   Search,
   ChevronLeft,
@@ -170,7 +171,6 @@ export default function ProyectosPage() {
 
   // ====== HELPERS ======
   const formatNumber = (n?: number | null) => n != null ? n.toLocaleString('es-CL') : '—';
-  const formatClp = (n?: number | null) => n != null ? `$${Math.round(n).toLocaleString('es-CL')} CLP` : '—';
 
   const getStockPercent = (project: Project) => {
     const total = project.monthly_stock_approved || 0;
@@ -234,7 +234,7 @@ export default function ProyectosPage() {
             </div>
             <p className="!text-slate-500 dark:!text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Revenue Total</p>
             <h3 className="!text-3xl !font-black !text-slate-900 dark:!text-white !mt-1">
-              {formatClp(stats?.inventory?.totalRevenueClp)}
+              {formatCLP(stats?.inventory?.totalRevenueClp)}
             </h3>
           </div>
         </div>
@@ -411,7 +411,7 @@ export default function ProyectosPage() {
                       <td className="!px-6 !py-5">
                         <div className="!flex !flex-col">
                           <span className="!font-bold !text-slate-900 dark:!text-white">
-                            {formatClp(priceClp)}
+                            {formatCLP(priceClp)}
                           </span>
                           {project.currentPrice?.marginPercent && (
                             <span className="!text-xs !text-slate-400">

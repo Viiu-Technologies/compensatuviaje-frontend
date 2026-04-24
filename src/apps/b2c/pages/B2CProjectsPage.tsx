@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
+import { formatCLP, formatCLPPerTon } from '../../../utils/currency';
 import {
   FaGlobeAmericas,
   FaTree,
@@ -256,14 +257,14 @@ const B2CProjectsPage: React.FC = () => {
                   </div>
                   <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Precio:</span>
-                    <span className="!font-semibold !text-gray-800">${project.pricePerTonCLP.toLocaleString()}/t</span>
+                    <span className="!font-semibold !text-gray-800">{formatCLPPerTon(project.pricePerTonCLP)}</span>
                   </div>
                   {hasCalculation && (() => {
                     const total = getProjectTotalCLP(project);
                     return total ? (
                       <div className="!flex !justify-between !text-sm !pt-1 !border-t !border-gray-200/50">
                         <span className="!text-emerald-700 !font-medium">Tu compensación:</span>
-                        <span className="!font-bold !text-emerald-700">${total.toLocaleString()} CLP</span>
+                        <span className="!font-bold !text-emerald-700">{formatCLP(total)}</span>
                       </div>
                     ) : null;
                   })()}
@@ -373,7 +374,7 @@ const B2CProjectsPage: React.FC = () => {
                       </div>
                       <div className="!bg-gray-50 !rounded-xl !p-4">
                         <div className="!text-sm !text-gray-600 !mb-1">Precio por Tonelada</div>
-                        <div className="!text-xl !font-bold !text-gray-900">${selectedProject.pricePerTonCLP.toLocaleString()} CLP</div>
+                        <div className="!text-xl !font-bold !text-gray-900">{formatCLP(selectedProject.pricePerTonCLP)} / ton</div>
                       </div>
                       {selectedProject.certification && (
                         <div className="!bg-gray-50 !rounded-xl !p-4">
@@ -411,9 +412,9 @@ const B2CProjectsPage: React.FC = () => {
                       return total ? (
                         <div className="!bg-emerald-50 !rounded-xl !p-5 !mb-6 !text-center !border !border-emerald-200">
                           <div className="!text-sm !text-emerald-600 !font-medium !mb-1">Total a pagar por tu compensación</div>
-                          <div className="!text-3xl !font-bold !text-emerald-700">${total.toLocaleString()} CLP</div>
+                          <div className="!text-3xl !font-bold !text-emerald-700">{formatCLP(total)}</div>
                           <div className="!text-xs !text-emerald-500 !mt-1">
-                            {tonsParam ? `${parseFloat(tonsParam).toFixed(4)}` : (emissionsKg! / 1000).toFixed(4)} ton CO₂ × ${selectedProject.pricePerTonCLP.toLocaleString()} CLP/ton
+                            {tonsParam ? `${parseFloat(tonsParam).toFixed(4)}` : (emissionsKg! / 1000).toFixed(4)} ton CO₂ × {formatCLP(selectedProject.pricePerTonCLP)} / ton
                           </div>
                         </div>
                       ) : null;
