@@ -170,7 +170,7 @@ export default function ProyectosPage() {
 
   // ====== HELPERS ======
   const formatNumber = (n?: number | null) => n != null ? n.toLocaleString('es-CL') : '—';
-  const formatUsd = (n?: number | null) => n != null ? `$${Number(n).toFixed(2)}` : '—';
+  const formatClp = (n?: number | null) => n != null ? `$${Math.round(n).toLocaleString('es-CL')} CLP` : '—';
 
   const getStockPercent = (project: Project) => {
     const total = project.monthly_stock_approved || 0;
@@ -234,7 +234,7 @@ export default function ProyectosPage() {
             </div>
             <p className="!text-slate-500 dark:!text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Revenue Total</p>
             <h3 className="!text-3xl !font-black !text-slate-900 dark:!text-white !mt-1">
-              {formatUsd(stats?.inventory?.totalRevenueUsd)}
+              {formatClp(stats?.inventory?.totalRevenueClp)}
             </h3>
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function ProyectosPage() {
                 <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Proyecto</th>
                 <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Tipo</th>
                 <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Stock Mensual</th>
-                <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Precio USD/ton</th>
+                <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Precio CLP/ton</th>
                 <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Estado</th>
                 <th className="!px-6 !py-4 !text-slate-500 dark:!text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">Acciones</th>
               </tr>
@@ -347,7 +347,7 @@ export default function ProyectosPage() {
               ) : (
                 projects.map((project) => {
                   const stockPct = getStockPercent(project);
-                  const priceUsd = project.currentPrice?.pricePerTonUsd;
+                  const priceClp = project.currentPrice?.pricePerTonClp;
                   const typeInfo = projectTypeConfig[project.projectType];
 
                   return (
@@ -407,11 +407,11 @@ export default function ProyectosPage() {
                         )}
                       </td>
 
-                      {/* Precio USD/ton */}
+                      {/* Precio CLP/ton */}
                       <td className="!px-6 !py-5">
                         <div className="!flex !flex-col">
                           <span className="!font-bold !text-slate-900 dark:!text-white">
-                            {formatUsd(priceUsd)}
+                            {formatClp(priceClp)}
                           </span>
                           {project.currentPrice?.marginPercent && (
                             <span className="!text-xs !text-slate-400">

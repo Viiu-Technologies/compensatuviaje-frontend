@@ -44,9 +44,7 @@ export interface EmissionsData {
 export interface PricingData {
   currency: string;
   totalPriceCLP: number;
-  totalPriceUSD: number;
   pricePerTonCLP: number;
-  exchangeRateUsed: number;
 }
 
 export interface Equivalencies {
@@ -151,10 +149,9 @@ class CalculatorService {
     cabinCode: CabinClass, 
     passengers: number = 1, 
     roundTrip: boolean = false
-  ): { kgCO2: number; tonCO2: number; priceCLP: number; priceUSD: number } {
+  ): { kgCO2: number; tonCO2: number; priceCLP: number } {
     const distance = roundTrip ? distanceKm * 2 : distanceKm;
     
-    // Determinar tipo de vuelo
     let haulType: HaulType;
     if (distanceKm <= 500) {
       haulType = 'Domestic';
@@ -169,12 +166,9 @@ class CalculatorService {
     const tonCO2 = kgCO2 / 1000;
     
     const PRECIO_TONELADA_CLP = 15990;
-    const USD_CLP_RATE = 980;
-    
     const priceCLP = Math.round(tonCO2 * PRECIO_TONELADA_CLP);
-    const priceUSD = Number((priceCLP / USD_CLP_RATE).toFixed(2));
 
-    return { kgCO2, tonCO2, priceCLP, priceUSD };
+    return { kgCO2, tonCO2, priceCLP };
   }
 
   /**
@@ -195,16 +189,6 @@ class CalculatorService {
       style: 'currency',
       currency: 'CLP',
       minimumFractionDigits: 0
-    }).format(amount);
-  }
-
-  /**
-   * Formatear precio en USD
-   */
-  formatPriceUSD(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
     }).format(amount);
   }
 }

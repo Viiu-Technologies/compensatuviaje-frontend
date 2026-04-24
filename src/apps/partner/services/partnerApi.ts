@@ -64,11 +64,11 @@ const normalizeProject = (raw: any): EsgProject => {
     capacity_total: parseNumber(raw.capacity_total),
     capacity_sold: parseNumber(raw.capacity_sold),
     capacity_available: parseNumber(raw.capacity_available),
-    base_price_usd_per_ton: parseNumber(
-      raw.base_price_usd_per_ton ?? raw.currentBasePriceUsdPerTon ?? raw.current_base_price_usd_per_ton
+    base_price_clp_per_ton: parseNumber(
+      raw.base_price_clp_per_ton ?? raw.currentBasePriceClpPerTon ?? raw.current_base_price_clp_per_ton
     ),
-    currentBasePriceUsdPerTon: parseNumber(
-      raw.currentBasePriceUsdPerTon ?? raw.current_base_price_usd_per_ton ?? raw.base_price_usd_per_ton
+    currentBasePriceClpPerTon: parseNumber(
+      raw.currentBasePriceClpPerTon ?? raw.current_base_price_clp_per_ton ?? raw.base_price_clp_per_ton
     ),
     impact_ratio_per_ton: parseNumber(raw.impact_ratio_per_ton),
     // Additional fields
@@ -381,7 +381,7 @@ export const deleteProject = async (projectId: string): Promise<boolean> => {
  * Enviar proyecto a revisión
  * 
  * DOUBLE-LOCK: El precio lo calcula el Admin durante la aprobación,
- * por lo que no se requiere currentBasePriceUsdPerTon aquí.
+ * por lo que no se requiere currentBasePriceClpPerTon aquí.
  */
 export const submitProjectForReview = async (
   projectId: string

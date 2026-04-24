@@ -370,8 +370,8 @@ export default function ReportesPage() {
                       <div className="!w-12 !h-12 !bg-blue-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
                         <Globe className="!w-6 !h-6 !text-blue-600" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Ingresos USD</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">${formatNumber(reportData.totals.totalRevenueUSD)}</h3>
+                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
+                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">${formatNumber(reportData.totals.totalRevenueCLP)}</h3>
                     </div>
                   </div>
                   <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">

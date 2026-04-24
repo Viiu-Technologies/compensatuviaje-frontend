@@ -57,7 +57,7 @@ interface PendingProject {
   type: string;
   country: string;
   region?: string;
-  price_per_ton_usd?: number;
+  price_per_ton_clp?: number;
   // Partner-submitted operational data (Double-Lock)
   provider_cost_unit_clp?: number;
   monthly_stock_approved?: number;
@@ -222,10 +222,8 @@ export default function ProjectsReviewPage() {
       return;
     }
     
-    const fxRate = platformSettings.clp_usd_rate;
-    const costUsd = godModeForm.cost_clp / fxRate;
     const marginMultiplier = 1 + (godModeForm.margin_percent / 100);
-    const pricePerKg = (costUsd * marginMultiplier) / godModeForm.carbon_capture_per_unit;
+    const pricePerKg = (godModeForm.cost_clp * marginMultiplier) / godModeForm.carbon_capture_per_unit;
     const pricePerTon = pricePerKg * 1000;
     
     setCalculatedPrice(pricePerTon);
@@ -235,17 +233,17 @@ export default function ProjectsReviewPage() {
     if (!selectedProject || !calculatedPrice) return;
     
     if (platformSettings) {
-      if (calculatedPrice < platformSettings.min_price_usd_per_ton) {
-        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es menor al mínimo permitido ($${platformSettings.min_price_usd_per_ton})`);
+      if (calculatedPrice < platformSettings.min_price_clp_per_ton) {
+        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es menor al mínimo permitido ($${platformSettings.min_price_clp_per_ton})`);
         return;
       }
-      if (calculatedPrice > platformSettings.max_price_usd_per_ton) {
-        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es mayor al máximo permitido ($${platformSettings.max_price_usd_per_ton})`);
+      if (calculatedPrice > platformSettings.max_price_clp_per_ton) {
+        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es mayor al máximo permitido ($${platformSettings.max_price_clp_per_ton})`);
         return;
       }
     }
 
-    if (!confirm(`¿Estás seguro de aprobar este proyecto con un precio final de $${calculatedPrice.toFixed(2)} USD/ton?`)) {
+    if (!confirm(`¿Estás seguro de aprobar este proyecto con un precio final de $${Math.round(calculatedPrice).toLocaleString('es-CL')} CLP/ton?`)) {
       return;
     }
 
@@ -658,15 +656,15 @@ export default function ProjectsReviewPage() {
                       <span className="!font-mono !font-medium">{godModeForm.margin_percent}%</span>
                     </div>
                     <div className="!flex !justify-between">
-                      <span className="!text-slate-400">FX Rate Config:</span>
-                      <span className="!font-mono !font-medium">{platformSettings?.clp_usd_rate || '---'} CLP/USD</span>
+                      <span className="!text-slate-400">Fórmula:</span>
+                      <span className="!font-mono !font-medium !text-xs">costo × (1+margen) / kg</span>
                     </div>
                   </div>
 
                   <div className="!text-center">
                     <span className="!text-sm !text-slate-400">Precio Final</span>
                     <div className="!text-4xl !font-bold !text-emerald-400 !mt-1">
-                      ${calculatedPrice ? calculatedPrice.toFixed(2) : '0.00'} <span className="!text-lg">USD/Ton</span>
+                      ${calculatedPrice ? Math.round(calculatedPrice).toLocaleString('es-CL') : '0'} <span className="!text-lg">CLP/Ton</span>
                     </div>
                   </div>
                 </div>
@@ -883,10 +881,10 @@ export default function ProjectsReviewPage() {
                       <MapPin className="!w-4 !h-4 !text-slate-400" />
                       {project.country}{project.region ? `, ${project.region}` : ''}
                     </div>
-                    {project.price_per_ton_usd && (
+                    {project.price_per_ton_clp && (
                       <div className="!flex !items-center !gap-1.5 !text-slate-600 dark:!text-slate-400">
                         <DollarSign className="!w-4 !h-4 !text-slate-400" />
-                        ${project.price_per_ton_usd} USD/ton
+                        ${Math.round(project.price_per_ton_clp).toLocaleString('es-CL')} CLP/ton
                       </div>
                     )}
                   </div>

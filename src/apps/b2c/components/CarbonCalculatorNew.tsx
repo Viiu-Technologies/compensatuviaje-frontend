@@ -54,7 +54,7 @@ const CarbonCalculatorNew = ({ isOpen, onClose }) => {
       // Divide by passengers
       emissions = emissions / formData.passengers;
       
-      const cost = emissions * 0.025; // $25 USD per ton CO2
+      const cost = Math.round(emissions * 15990); // ~$15,990 CLP per ton CO2
       const trees = Math.round(emissions / 0.022); // 22kg CO2 per tree/year
       
       const comparison = transports.map(t => ({
@@ -448,9 +448,9 @@ const CarbonCalculatorNew = ({ isOpen, onClose }) => {
                     <div className="card-glass p-6 text-center gradient-primary text-white">
                       <div className="text-sm mb-2 opacity-90">Costo de compensación</div>
                       <div className="text-4xl font-bold mb-1">
-                        ${result.cost}
+                        ${result.cost.toLocaleString('es-CL')}
                       </div>
-                      <p className="text-sm opacity-90">USD</p>
+                      <p className="text-sm opacity-90">CLP</p>
                     </div>
                   </div>
 

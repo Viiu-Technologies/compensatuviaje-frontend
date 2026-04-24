@@ -83,9 +83,8 @@ export interface MetricsData {
     trend: string;
   };
   revenue: {
-    series: Array<{ date: string; valueCLP: number; valueUSD: number }>;
+    series: Array<{ date: string; valueCLP: number }>;
     totalCLP: number;
-    totalUSD: number;
     trend: string;
   };
   newCompanies: {
@@ -308,8 +307,8 @@ export interface Project {
   certification?: string;
   // Pricing (from active pricing version or fallback)
   currentPrice?: {
-    pricePerTonUsd?: number;
-    basePriceUsd?: number;
+    pricePerTonClp?: number;
+    basePriceClp?: number;
     marginPercent?: number;
   };
   // Double-Lock fields
@@ -333,7 +332,6 @@ export interface Project {
   // Legacy compat (kept for type safety)
   imageUrl?: string;
   pricePerTonCLP?: number;
-  pricePerTonUSD?: number;
   availableCredits?: number;
   totalCredits?: number;
 }
@@ -342,9 +340,9 @@ export interface Project {
 export interface ProjectDetailPricing {
   id: string;
   version: string;
-  basePriceUsdPerTon: number;
+  basePriceClpPerTon: number;
   marginPercent: number;
-  finalPriceUsdPerTon: number;
+  finalPriceClpPerTon: number;
   effectiveFrom: string;
   effectiveTo?: string | null;
   status: string;
@@ -370,8 +368,8 @@ export interface ProjectDetailCertificate {
   id: string;
   number: string;
   tonsCompensated: number;
-  priceUsdPerTon: number;
-  amountUsd: number;
+  priceClpPerTon: number;
+  amountClp: number;
   status: string;
   issuedAt: string;
   purchaser: { type: 'b2b' | 'b2c'; id: string; [key: string]: any } | null;
@@ -407,7 +405,6 @@ export interface ProjectDetailData {
   updatedAt: string;
   // Double-Lock
   provider_cost_unit_clp?: number | null;
-  provider_cost_unit_usd?: number | null;
   carbon_capture_per_unit?: number | null;
   impact_unit?: string | null;
   // Stock
@@ -427,7 +424,7 @@ export interface ProjectDetailData {
   } | null;
   // Pricing
   currentPricing: ProjectDetailPricing | null;
-  currentBasePriceUsdPerTon?: number | null;
+  currentBasePriceClpPerTon?: number | null;
   pricingHistory: ProjectDetailPricing[];
   // Evidence files (pre-processed)
   photos: ProjectDetailFile[];
@@ -450,7 +447,7 @@ export interface ProjectDetailData {
   stats: {
     totalCertificates: number;
     totalTonsAllocated: number;
-    totalRevenueUsd: number;
+    totalRevenueClp: number;
     evidenceCount: number;
   };
 }
@@ -532,7 +529,6 @@ export const deleteProjectEvidence = async (projectId: string, evidenceId: strin
 
 export const addProjectPricing = async (projectId: string, data: {
   pricePerTonCLP?: number;
-  pricePerTonUSD?: number;
   effectiveFrom?: string;
   reason?: string;
 }) => {
@@ -809,10 +805,9 @@ export const getProjectsPendingReview = async (params?: {
 
 export interface PlatformSettings {
   id: string;
-  clp_usd_rate: number;
   default_margin_percent: number;
-  min_price_usd_per_ton: number;
-  max_price_usd_per_ton: number;
+  min_price_clp_per_ton: number;
+  max_price_clp_per_ton: number;
   updated_at: string;
   updated_by?: string;
 }
@@ -855,10 +850,8 @@ export const previewProjectPrice = async (projectId: string, params: {
   capacity_kg_co2: number;
   margin_percent?: number;
 }): Promise<{
-  precio_usd_ton: number;
-  fx_rate: number;
+  precio_clp_ton: number;
   margin_applied: number;
-  cost_usd: number;
 }> => {
   const response = await api.post(`/admin/projects/${projectId}/preview-price`, params) as any;
   return response.data || response;

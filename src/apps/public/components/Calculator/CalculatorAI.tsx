@@ -61,7 +61,6 @@ interface CalculationResult {
   pricing: {
     currency: string;
     totalPriceCLP: number;
-    totalPriceUSD: number;
     pricePerTonCLP: number;
   };
   equivalencies: {
@@ -499,7 +498,6 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onCompensate, onNewCalc
             <span className="amount">{pricing.totalPriceCLP.toLocaleString()}</span>
             <span className="currency-code">CLP</span>
           </div>
-          <span className="price-usd">≈ ${pricing.totalPriceUSD} USD</span>
         </div>
       </div>
 

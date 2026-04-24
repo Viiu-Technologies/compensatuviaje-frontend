@@ -85,9 +85,9 @@ function formatNumber(n?: number | null): string {
   if (n == null) return '-';
   return n.toLocaleString('es-CL');
 }
-function formatUsd(n?: number | null): string {
+function formatClp(n?: number | null): string {
   if (n == null) return '-';
-  return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `$${Math.round(n).toLocaleString('es-CL')} CLP`;
 }
 function formatDate(d?: string | null): string {
   if (!d) return '-';
@@ -378,8 +378,8 @@ export default function AdminProjectDetailPage() {
       {/* ── Stats Row ────────────────────────────────────────── */}
       <div className="!grid !grid-cols-2 lg:!grid-cols-4 !gap-4">
         <StatCard
-          label="Precio USD/ton"
-          value={formatUsd(project.currentPricing?.finalPriceUsdPerTon || project.currentBasePriceUsdPerTon)}
+          label="Precio CLP/ton"
+          value={formatClp(project.currentPricing?.finalPriceClpPerTon || project.currentBasePriceClpPerTon)}
           sub={project.currentPricing?.marginPercent ? `Margen: ${project.currentPricing.marginPercent}%` : undefined}
           icon={DollarSign}
           color="emerald"
@@ -400,7 +400,7 @@ export default function AdminProjectDetailPage() {
         />
         <StatCard
           label="Revenue Total"
-          value={formatUsd(project.stats.totalRevenueUsd)}
+          value={formatClp(project.stats.totalRevenueClp)}
           sub={`${project.stats.evidenceCount} entregas de evidencia`}
           icon={TrendingUp}
           color="amber"
@@ -544,16 +544,16 @@ export default function AdminProjectDetailPage() {
                         </div>
                         <div className="!grid !grid-cols-3 !gap-4 !text-center">
                           <div>
-                            <p className="!text-xs !text-slate-500 dark:!text-slate-400">Base USD/ton</p>
-                            <p className="!text-sm !font-bold !text-slate-700 dark:!text-slate-200">{formatUsd(pv.basePriceUsdPerTon)}</p>
+                            <p className="!text-xs !text-slate-500 dark:!text-slate-400">Base CLP/ton</p>
+                            <p className="!text-sm !font-bold !text-slate-700 dark:!text-slate-200">{formatClp(pv.basePriceClpPerTon)}</p>
                           </div>
                           <div>
                             <p className="!text-xs !text-slate-500 dark:!text-slate-400">Margen</p>
                             <p className="!text-sm !font-bold !text-slate-700 dark:!text-slate-200">{pv.marginPercent}%</p>
                           </div>
                           <div>
-                            <p className="!text-xs !text-slate-500 dark:!text-slate-400">Final USD/ton</p>
-                            <p className="!text-sm !font-bold !text-emerald-600 dark:!text-emerald-400">{formatUsd(pv.finalPriceUsdPerTon)}</p>
+                            <p className="!text-xs !text-slate-500 dark:!text-slate-400">Final CLP/ton</p>
+                            <p className="!text-sm !font-bold !text-emerald-600 dark:!text-emerald-400">{formatClp(pv.finalPriceClpPerTon)}</p>
                           </div>
                         </div>
                         {pv.reason && (
@@ -580,7 +580,7 @@ export default function AdminProjectDetailPage() {
                           <tr className="!border-b !border-slate-200 dark:!border-slate-700">
                             <th className="!text-left !py-2 !px-2 !text-xs !font-medium !text-slate-500 dark:!text-slate-400">N Certificado</th>
                             <th className="!text-right !py-2 !px-2 !text-xs !font-medium !text-slate-500 dark:!text-slate-400">tCO2e</th>
-                            <th className="!text-right !py-2 !px-2 !text-xs !font-medium !text-slate-500 dark:!text-slate-400">USD</th>
+                            <th className="!text-right !py-2 !px-2 !text-xs !font-medium !text-slate-500 dark:!text-slate-400">CLP</th>
                             <th className="!text-left !py-2 !px-2 !text-xs !font-medium !text-slate-500 dark:!text-slate-400">Comprador</th>
                             <th className="!text-left !py-2 !px-2 !text-xs !font-medium !text-slate-500 dark:!text-slate-400">Fecha</th>
                           </tr>
@@ -590,7 +590,7 @@ export default function AdminProjectDetailPage() {
                             <tr key={cert.id} className="!border-b !border-slate-100 dark:!border-slate-700/50">
                               <td className="!py-2 !px-2 !font-mono !text-slate-700 dark:!text-slate-300">{cert.number}</td>
                               <td className="!py-2 !px-2 !text-right !text-slate-700 dark:!text-slate-300">{formatNumber(cert.tonsCompensated)}</td>
-                              <td className="!py-2 !px-2 !text-right !text-slate-700 dark:!text-slate-300">{formatUsd(cert.amountUsd)}</td>
+                              <td className="!py-2 !px-2 !text-right !text-slate-700 dark:!text-slate-300">{formatClp(cert.amountClp)}</td>
                               <td className="!py-2 !px-2 !text-slate-600 dark:!text-slate-400 !text-xs">
                                 {cert.purchaser
                                   ? cert.purchaser.type === 'b2b'
@@ -641,13 +641,13 @@ export default function AdminProjectDetailPage() {
           <InfoCard title="Doble Candado" icon={DollarSign}>
             <div className="!space-y-0">
               <DataRow label="Costo Proveedor (CLP)" value={project.provider_cost_unit_clp ? `$${formatNumber(project.provider_cost_unit_clp)} CLP` : '-'} />
-              <DataRow label="Costo Proveedor (USD)" value={project.provider_cost_unit_usd ? formatUsd(project.provider_cost_unit_usd) : '-'} />
+
               <DataRow label="CO2/unidad" value={project.carbon_capture_per_unit ? `${project.carbon_capture_per_unit} kg` : '-'} />
               <DataRow label="Unidad de Impacto" value={project.impact_unit || '-'} />
               <DataRow label="Margen Compensa" value={project.currentPricing?.marginPercent != null ? `${project.currentPricing.marginPercent}%` : '-'} />
               <DataRow label="Precio Final" value={
                 <span className="!text-emerald-600 dark:!text-emerald-400 !font-bold">
-                  {formatUsd(project.currentPricing?.finalPriceUsdPerTon || project.currentBasePriceUsdPerTon)} /ton
+                  {formatClp(project.currentPricing?.finalPriceClpPerTon || project.currentBasePriceClpPerTon)} /ton
                 </span>
               } />
             </div>

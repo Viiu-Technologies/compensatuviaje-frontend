@@ -85,10 +85,6 @@ export const ProjectStep: React.FC<ProjectStepProps> = ({ formData, setValue, on
               <p className="!text-2xl !font-bold !text-orange-600">{formatPrice(calculationResult.pricing.totalPriceCLP)}</p>
               <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Compensación</p>
             </div>
-            <div className="!text-center">
-              <p className="!text-2xl !font-bold !text-purple-600">${calculationResult.pricing.totalPriceUSD}</p>
-              <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>USD</p>
-            </div>
           </div>
         </div>
       )}

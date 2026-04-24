@@ -35,7 +35,6 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
   };
 
   const priceCLP = calculationResult?.pricing?.totalPriceCLP || 12500;
-  const priceUSD = calculationResult?.pricing?.totalPriceUSD || 12.50;
   const kgCO2 = calculationResult?.emissions?.kgCO2e || 400;
   const tonCO2 = calculationResult?.emissions?.tonCO2e || 0.4;
 
@@ -212,8 +211,7 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ formData, onComplete, 
         <div className="!flex !justify-between !items-start !mb-6">
           <div>
             <p className="!text-gray-400 !text-sm !mb-1">Total a pagar</p>
-            <h3 className="!text-3xl !font-bold">${priceUSD} USD</h3>
-            <p className="!text-sm !text-gray-400 !mt-1">{formatPriceCLP(priceCLP)} CLP</p>
+            <h3 className="!text-3xl !font-bold">{formatPriceCLP(priceCLP)}</h3>
           </div>
           <CreditCard className="!text-white/80 !w-8 !h-8" />
         </div>

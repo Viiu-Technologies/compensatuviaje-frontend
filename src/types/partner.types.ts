@@ -1,8 +1,4 @@
 // ============================================
-// PARTNER TYPES - CompensaTuViaje
-// ============================================
-
-// ============================================
 // PARTNER PROFILE & ONBOARDING
 // ============================================
 
@@ -69,7 +65,7 @@ export interface BankDetails {
   account_number: string;
   account_holder_name: string;
   account_holder_rut: string;
-  currency: 'CLP' | 'USD';
+  currency: 'CLP';
 }
 
 export interface BankDetailsResponse {
@@ -90,7 +86,7 @@ export interface UpdateBankDetailsRequest {
   account_number: string;
   account_holder_name: string;
   account_holder_rut: string;
-  currency: 'CLP' | 'USD';
+  currency: 'CLP';
 }
 
 // ============================================
@@ -129,8 +125,8 @@ export interface EsgProject {
   capacity_total?: number;
   capacity_sold?: number;
   capacity_available?: number;
-  base_price_usd_per_ton?: number;
-  currentBasePriceUsdPerTon?: number;
+  base_price_clp_per_ton?: number;
+  currentBasePriceClpPerTon?: number;
   // Additional fields
   certification?: string | null;
   co_benefits?: string[] | null;
@@ -224,7 +220,7 @@ export interface ProjectMetrics {
  * 
  * ARQUITECTURA DOBLE CANDADO:
  * - Partner solo envía datos operativos
- * - currentBasePriceUsdPerTon y carbon_capture_per_unit son definidos por Admin
+ * - currentBasePriceClpPerTon y carbon_capture_per_unit son definidos por Admin
  */
 export interface CreateProjectRequest {
   name: string;
@@ -242,7 +238,7 @@ export interface CreateProjectRequest {
   impact_unit_type?: string;
   impact_unit_spec?: string;
   monthly_stock?: number;
-  // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
+  // NOTA: currentBasePriceClpPerTon y carbon_capture_per_unit 
   // NO se incluyen - son definidos por Admin en aprobación
 }
 
@@ -262,7 +258,7 @@ export interface UpdateProjectRequest {
   // Datos operativos editables por Partner
   provider_cost_unit_clp?: number;
   capacity_total?: number;
-  // NOTA: currentBasePriceUsdPerTon y carbon_capture_per_unit 
+  // NOTA: currentBasePriceClpPerTon y carbon_capture_per_unit 
   // NO se incluyen - solo Admin puede modificarlos
 }
 
