@@ -342,6 +342,9 @@ export interface AdminPartnerDetail extends Partner {
   projects: EsgProject[];
   total_projects: number;
   total_active_projects: number;
+  bank_details?: BankDetailsResponse | null;
+  bank_details_configured?: boolean;
+  recent_projects?: EsgProject[];
 }
 
 export interface CreatePartnerRequest {

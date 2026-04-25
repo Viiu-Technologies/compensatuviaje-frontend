@@ -357,7 +357,50 @@ export default function PartnerDetailPage() {
               <CreditCard className="!w-5 !h-5 !text-indigo-600" />
               Datos Bancarios
             </h3>
-            {partner.bank_details_configured ? (
+            {partner.bank_details ? (
+              <div className="!space-y-4">
+                <dl className="!grid !grid-cols-2 !gap-x-4 !gap-y-3">
+                  <div>
+                    <dt className="!text-sm !text-slate-500">Banco</dt>
+                    <dd className="!font-medium !text-slate-800">{partner.bank_details.bank_name}</dd>
+                  </div>
+                  <div>
+                    <dt className="!text-sm !text-slate-500">Tipo de Cuenta</dt>
+                    <dd className="!font-medium !text-slate-800">
+                      {partner.bank_details.account_type === 'checking' ? 'Cuenta Corriente' : 'Cuenta de Ahorro'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="!text-sm !text-slate-500">Número de Cuenta</dt>
+                    <dd className="!font-medium !text-slate-800">{partner.bank_details.account_number}</dd>
+                  </div>
+                  <div>
+                    <dt className="!text-sm !text-slate-500">Moneda</dt>
+                    <dd className="!font-medium !text-slate-800">{partner.bank_details.currency}</dd>
+                  </div>
+                  <div className="!col-span-2">
+                    <dt className="!text-sm !text-slate-500">Titular</dt>
+                    <dd className="!font-medium !text-slate-800">{partner.bank_details.account_holder_name}</dd>
+                  </div>
+                  <div className="!col-span-2">
+                    <dt className="!text-sm !text-slate-500">RUT Titular</dt>
+                    <dd className="!font-medium !text-slate-800">{partner.bank_details.account_holder_rut}</dd>
+                  </div>
+                  {partner.bank_details.updated_at && (
+                    <div className="!col-span-2">
+                      <dt className="!text-sm !text-slate-500">Última actualización</dt>
+                      <dd className="!text-sm !text-slate-600">
+                        {new Date(partner.bank_details.updated_at).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+                <div className="!bg-emerald-50 !rounded-xl !p-3 !flex !items-center !gap-2 !text-emerald-700">
+                  <CheckCircle className="!w-4 !h-4" />
+                  <span className="!text-sm !font-medium">Datos validados y guardados</span>
+                </div>
+              </div>
+            ) : partner.bank_details_configured ? (
               <div className="!bg-emerald-50 !rounded-xl !p-4">
                 <div className="!flex !items-center !gap-2 !text-emerald-700">
                   <CheckCircle className="!w-5 !h-5" />
