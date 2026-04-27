@@ -25,6 +25,9 @@ interface CertificatePDFData {
   carKmAvoided: number;
   waterLiters: number;
   nftTxHash?: string | null;
+  // Doble métrica (Enfoque B): leídos de la BD, NO recalculados
+  unitsFinanced?: number | null;  // Ej: 50 (árboles)
+  impactUnit?: string | null;     // Ej: "árboles"
 }
 
 // ── Styles ──
@@ -349,10 +352,23 @@ const CertificateDocument: React.FC<{ data: CertificatePDFData }> = ({ data }) =
             </Text>
           )}
 
-          {/* CO2 Amount */}
+          {/* CO2 Amount - Doble métrica */}
           <View style={s.co2Box}>
-            <Text style={s.co2Amount}>{data.co2Kg.toLocaleString()} kg</Text>
-            <Text style={s.co2Label}>de CO2 compensado ({data.co2Tons.toFixed(2)} toneladas)</Text>
+            {data.unitsFinanced && data.impactUnit ? (
+              <>
+                <Text style={s.co2Amount}>
+                  {data.unitsFinanced.toLocaleString()} {data.impactUnit}
+                </Text>
+                <Text style={s.co2Label}>
+                  financiados · equivalen a {data.co2Kg.toLocaleString()} kg de CO₂ ({data.co2Tons.toFixed(2)} t)
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={s.co2Amount}>{data.co2Kg.toLocaleString()} kg</Text>
+                <Text style={s.co2Label}>de CO2 compensado ({data.co2Tons.toFixed(2)} toneladas)</Text>
+              </>
+            )}
           </View>
 
           {/* Equivalencies */}

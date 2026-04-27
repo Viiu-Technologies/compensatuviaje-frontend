@@ -653,10 +653,10 @@ export default function AdminProjectDetailPage() {
           {/* Stock & Capacity */}
           <InfoCard title="Stock y Capacidad" icon={Package}>
             <div className="!space-y-0">
-              <DataRow label="Capacidad Total" value={project.capacity_total ? `${formatNumber(project.capacity_total)} tCO2e` : '-'} />
-              <DataRow label="Vendido" value={project.capacity_sold ? `${formatNumber(project.capacity_sold)} tCO2e` : '-'} />
-              <DataRow label="Stock Mensual Aprobado" value={project.monthly_stock_approved ? `${formatNumber(project.monthly_stock_approved)} tCO2e` : '-'} />
-              <DataRow label="Stock Mensual Restante" value={project.monthly_stock_remaining != null ? `${formatNumber(project.monthly_stock_remaining)} tCO2e` : '-'} />
+              <DataRow label="Capacidad Total" value={project.capacity_total ? `${formatNumber(project.capacity_total)} ${project.impact_unit || 'uds'}` : '-'} />
+              <DataRow label="Vendido" value={project.capacity_sold ? `${formatNumber(project.capacity_sold)} ${project.impact_unit || 'uds'}` : '-'} />
+              <DataRow label="Stock Mensual Aprobado" value={project.monthly_stock_approved ? `${formatNumber(project.monthly_stock_approved)} ${project.impact_unit || 'uds'}` : '-'} />
+              <DataRow label="Stock Mensual Restante" value={project.monthly_stock_remaining != null ? `${formatNumber(project.monthly_stock_remaining)} ${project.impact_unit || 'uds'}` : '-'} />
             </div>
             {project.monthly_stock_approved != null && project.monthly_stock_approved > 0 && (
               <div className="!mt-3 !pt-3 !border-t !border-slate-100 dark:!border-slate-700">

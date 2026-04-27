@@ -34,6 +34,7 @@ import {
   type Project 
 } from '../../services/projectsService';
 import { createOrder, getBankDetails, type BankDetails } from '../../services/ordersService';
+import { calculateUnitsFromTons, calculateTonsFromUnits } from '../../../../utils/carbon';
 
 interface CheckoutModalProps {
   project: Project;
@@ -51,8 +52,15 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
   const [copied, setCopied] = useState(false);
 
   const tons = parseFloat(tonsTco2) || 0;
-  const availableTons = project.availableUnits || 0;
-  const isOverLimit = project.availableUnits !== undefined && tons > availableTons;
+  // Unidades físicas que se reservarán (Enfoque B)
+  const physicalUnits = project.carbon_capture_per_unit
+    ? calculateUnitsFromTons(tons, project.carbon_capture_per_unit)
+    : null;
+  // Stock disponible en toneladas equivalentes para validar el límite
+  const availableTons = project.carbon_capture_per_unit && project.availableUnits
+    ? calculateTonsFromUnits(project.availableUnits, project.carbon_capture_per_unit)
+    : (project.availableUnits || 0);
+  const isOverLimit = tons > 0 && tons > availableTons;
   const totalCLP = tons > 0 ? Math.round(tons * project.pricePerTonCLP) : 0;
 
   useEffect(() => {
@@ -71,7 +79,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
     setIsSubmitting(true);
     setError(null);
     try {
-      const response = await createOrder({ projectId: project.id, tonsTco2: tons });
+      const response = await createOrder({
+        projectId: project.id,
+        tonsTco2: tons,
+        // Enfoque B: enviar unidades físicas y kg congelados al backend
+        ...(physicalUnits !== null && { physicalUnits }),
+        co2KgToFreeze: tons * 1000,
+      });
       setOrderCreated({ id: response.order.id, amount: response.order.amount });
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Error al crear la orden');
@@ -119,7 +133,12 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
                   </label>
                   {project.availableUnits !== undefined && (
                     <span className="!text-sm !text-emerald-600 !font-medium">
-                      Stock mensual: {availableTons.toLocaleString()} t
+                      Disponible: {availableTons.toLocaleString()} t
+                      {project.impact_unit && project.availableUnits > 0 && (
+                        <span className="!text-gray-400 !font-normal !ml-1">
+                          ({project.availableUnits.toLocaleString()} {project.impact_unit})
+                        </span>
+                      )}
                     </span>
                   )}
                 </div>
@@ -144,22 +163,30 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
               </div>
 
               {/* Price breakdown */}
-              <div className={`!rounded-xl !p-4 !space-y-3 ${isDark ? '!bg-gray-700/50' : '!bg-gray-50'}`}>
-                <div className="!flex !justify-between !text-sm">
-                  <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Precio por tonelada</span>
-                  <span className={isDark ? '!text-gray-200' : '!text-gray-700'}>
-                    ${project.pricePerTonCLP.toLocaleString('es-CL')} CLP
-                  </span>
+                <div className={`!rounded-xl !p-4 !space-y-3 ${isDark ? '!bg-gray-700/50' : '!bg-gray-50'}`}>
+                  <div className="!flex !justify-between !text-sm">
+                    <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Precio por tonelada</span>
+                    <span className={isDark ? '!text-gray-200' : '!text-gray-700'}>
+                      ${project.pricePerTonCLP.toLocaleString('es-CL')} CLP
+                    </span>
+                  </div>
+                  <div className="!flex !justify-between !text-sm">
+                    <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cantidad</span>
+                    <span className={isDark ? '!text-gray-200' : '!text-gray-700'}>{tons} tCO₂</span>
+                  </div>
+                  {physicalUnits !== null && project.impact_unit && (
+                    <div className="!flex !justify-between !text-sm">
+                      <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Unidades a reservar</span>
+                      <span className="!font-medium !text-emerald-600">
+                        {physicalUnits.toLocaleString()} {project.impact_unit}
+                      </span>
+                    </div>
+                  )}
+                  <div className={`!border-t !pt-3 !flex !justify-between !font-bold !text-lg ${isDark ? '!border-gray-600' : '!border-gray-200'}`}>
+                    <span className={isDark ? '!text-gray-200' : '!text-gray-800'}>Total</span>
+                    <span className="!text-green-600">${totalCLP.toLocaleString('es-CL')} CLP</span>
+                  </div>
                 </div>
-                <div className="!flex !justify-between !text-sm">
-                  <span className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cantidad</span>
-                  <span className={isDark ? '!text-gray-200' : '!text-gray-700'}>{tons} tCO₂</span>
-                </div>
-                <div className={`!border-t !pt-3 !flex !justify-between !font-bold !text-lg ${isDark ? '!border-gray-600' : '!border-gray-200'}`}>
-                  <span className={isDark ? '!text-gray-200' : '!text-gray-800'}>Total</span>
-                  <span className="!text-green-600">${totalCLP.toLocaleString('es-CL')} CLP</span>
-                </div>
-              </div>
 
               {error && (
                 <div className="!flex !items-center !gap-2 !p-3 !rounded-xl !bg-red-50 !text-red-700 !text-sm">

@@ -23,6 +23,9 @@ export interface B2BOrder {
 export interface CreateOrderRequest {
   projectId: string;
   tonsTco2: number;
+  // Enfoque B: unidades físicas y kg a congelar en la BD
+  physicalUnits?: number;   // Unidades calculadas con calculateUnitsFromTons
+  co2KgToFreeze?: number;   // kg CO2 = tonsTco2 * 1000 (congelado en la orden)
 }
 
 export interface CreateOrderResponse {

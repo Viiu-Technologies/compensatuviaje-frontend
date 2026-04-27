@@ -643,7 +643,15 @@ export interface PartnerDetail extends Partner {
     type: string;
     created_at: string;
   }>;
-  bank_details_configured: boolean;
+  bank_details?: {
+    bank_name: string;
+    account_type: 'checking' | 'savings';
+    account_number: string;
+    currency: string;
+    account_holder_name: string;
+    account_holder_rut: string;
+    updated_at?: string;
+  } | null;
 }
 
 export interface PartnersListResponse {

@@ -79,7 +79,9 @@ export interface B2CCertificate {
   id: string;
   certificateNumber: string;
   date: string;
-  co2Compensated: number;
+  co2Compensated: number;      // kg CO2 congelados al momento de la compra (= co2_kg_compensated en BD)
+  unitsFinanced?: number;      // Unidades físicas congeladas (Ej: 50 árboles)
+  impactUnit?: string | null;  // Nombre de la unidad (Ej: "árboles")
   project: string;
   flightRoute?: string | null;
   status: 'verified' | 'pending' | string;
@@ -112,6 +114,9 @@ export interface B2CProject {
   isSoldOut: boolean;
   progress: number;
   coBenefits: any;
+  // Unidades físicas (Enfoque B)
+  impact_unit: string | null;          // Ej: "árboles", "paneles", "m3"
+  carbon_capture_per_unit: number | null; // kg de CO2 capturado por unidad
   partner: { name: string; logoUrl: string | null } | null;
   metrics: { name: string; value: number; date: string }[];
   transparencyUrl: string | null;

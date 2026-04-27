@@ -19,6 +19,9 @@ export interface Project {
   isSoldOut?: boolean;
   progress?: number;
   treesPlanted?: number;
+  // Unidades físicas (Enfoque B)
+  impact_unit?: string | null;           // Ej: "árboles", "paneles", "m3"
+  carbon_capture_per_unit?: number | null; // kg CO2 capturado por unidad
   startDate: string;
   endDate?: string;
   image: string;
@@ -79,6 +82,8 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
         isSoldOut: Boolean(p.isSoldOut),
         progress: p.progress || 0,
         treesPlanted: undefined,
+        impact_unit: p.impact_unit || null,
+        carbon_capture_per_unit: p.carbon_capture_per_unit || null,
         startDate: p.createdAt,
         endDate: undefined,
         image: getProjectImage(p.projectType),

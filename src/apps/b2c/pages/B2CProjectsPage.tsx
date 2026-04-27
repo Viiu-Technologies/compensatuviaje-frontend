@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { formatCLP, formatCLPPerTon } from '../../../utils/currency';
+import { calculateTonsFromUnits } from '../../../utils/carbon';
 import {
   FaGlobeAmericas,
   FaTree,
@@ -249,11 +250,18 @@ const B2CProjectsPage: React.FC = () => {
                 <div className="!space-y-2 !mb-4">
                   <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Cupo mensual:</span>
-                    <span className="!font-semibold !text-gray-800">{monthlyApproved.toLocaleString()} t</span>
+                    <span className="!font-semibold !text-gray-800">{monthlyApproved.toLocaleString()} {project.impact_unit || 'uds'}</span>
                   </div>
                   <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Disponible:</span>
-                    <span className="!font-semibold !text-gray-800">{availableUnits.toLocaleString()} t</span>
+                    <span className="!font-semibold !text-gray-800">
+                      {availableUnits.toLocaleString()} {project.impact_unit || 'uds'}
+                      {project.carbon_capture_per_unit && availableUnits > 0 && (
+                        <span className="!text-gray-400 !font-normal !ml-1">
+                          ({calculateTonsFromUnits(availableUnits, project.carbon_capture_per_unit)} t CO₂)
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="!flex !justify-between !text-sm">
                     <span className="!text-gray-600">Precio:</span>
@@ -366,11 +374,11 @@ const B2CProjectsPage: React.FC = () => {
                     <div className="!grid !grid-cols-2 !gap-4 !mb-6">
                       <div className="!bg-gray-50 !rounded-xl !p-4">
                         <div className="!text-sm !text-gray-600 !mb-1">Capacidad Total</div>
-                        <div className="!text-xl !font-bold !text-gray-900">{selectedProject.capacityTotal.toLocaleString()} t</div>
+                        <div className="!text-xl !font-bold !text-gray-900">{selectedProject.capacityTotal.toLocaleString()} {selectedProject.impact_unit || 'uds'}</div>
                       </div>
                       <div className="!bg-gray-50 !rounded-xl !p-4">
                         <div className="!text-sm !text-gray-600 !mb-1">Capacidad Vendida</div>
-                        <div className="!text-xl !font-bold !text-gray-900">{selectedProject.capacitySold.toLocaleString()} t</div>
+                        <div className="!text-xl !font-bold !text-gray-900">{selectedProject.capacitySold.toLocaleString()} {selectedProject.impact_unit || 'uds'}</div>
                       </div>
                       <div className="!bg-gray-50 !rounded-xl !p-4">
                         <div className="!text-sm !text-gray-600 !mb-1">Precio por Tonelada</div>

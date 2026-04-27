@@ -66,6 +66,9 @@ const B2CCertificatesPage: React.FC = () => {
       carKmAvoided: Math.round(cert.co2Compensated * 4000),
       waterLiters,
       nftTxHash: cert.nftTxHash,
+      // Doble métrica: leídas de la BD, sin recalcular
+      unitsFinanced: cert.unitsFinanced ?? null,
+      impactUnit: cert.impactUnit ?? null,
     });
   };
 
