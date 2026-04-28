@@ -604,7 +604,9 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
                 <div className="!flex !items-center !gap-4 !mb-4">
                   {project.availableUnits !== undefined ? (
                     <div>
-                      <p className="!text-lg !font-bold !text-green-600">{project.availableUnits} tCO₂</p>
+                      <p className="!text-lg !font-bold !text-green-600">
+                        {project.availableUnits.toLocaleString()} {project.impact_unit || 'uds'}
+                      </p>
                       <p className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Disponible mensual</p>
                     </div>
                   ) : (

@@ -246,6 +246,8 @@ export async function getPaymentHistory(): Promise<any[]> {
 export async function createPaymentTransaction(params: {
   calculationId: string;
   projectId: string;
+  physicalUnits?: number;
+  co2KgToFreeze?: number;
 }): Promise<{
   success: boolean;
   url: string;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { formatCLP, formatCLPPerTon } from '../../../utils/currency';
-import { calculateTonsFromUnits } from '../../../utils/carbon';
+import { calculateTonsFromUnits, calculateUnitsFromKg } from '../../../utils/carbon';
 import {
   FaGlobeAmericas,
   FaTree,
@@ -80,9 +80,16 @@ const B2CProjectsPage: React.FC = () => {
     setPayingProjectId(project.id);
     setError(null);
     try {
+      const physicalUnits =
+        project.carbon_capture_per_unit && emissionsKg
+          ? calculateUnitsFromKg(emissionsKg, project.carbon_capture_per_unit)
+          : undefined;
+
       const data = await createPaymentTransaction({
         calculationId: calcId,
         projectId: project.id,
+        physicalUnits,
+        co2KgToFreeze: emissionsKg ?? undefined,
       });
 
       if (data.success && data.url && data.token) {
@@ -293,8 +300,8 @@ const B2CProjectsPage: React.FC = () => {
                     />
                   </div>
                   <div className="!flex !justify-between !text-xs !text-gray-400 !mt-1">
-                    <span>{monthlyUnitsSold.toLocaleString()} t vendidas</span>
-                    <span>{monthlyApproved.toLocaleString()} t aprobadas</span>
+                    <span>{monthlyUnitsSold.toLocaleString()} {project.impact_unit || 'uds'} vendidas</span>
+                    <span>{monthlyApproved.toLocaleString()} {project.impact_unit || 'uds'} aprobadas</span>
                   </div>
                 </div>
 
@@ -409,8 +416,8 @@ const B2CProjectsPage: React.FC = () => {
                         />
                       </div>
                       <div className="!flex !justify-between !text-sm !text-gray-500 !mt-2">
-                        <span>{selMonthlyUnitsSold.toLocaleString()} t vendidas</span>
-                        <span>{selMonthlyApproved.toLocaleString()} t aprobadas</span>
+                        <span>{selMonthlyUnitsSold.toLocaleString()} {selectedProject.impact_unit || 'uds'} vendidas</span>
+                        <span>{selMonthlyApproved.toLocaleString()} {selectedProject.impact_unit || 'uds'} aprobadas</span>
                       </div>
                     </div>
 
