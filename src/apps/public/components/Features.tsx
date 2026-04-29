@@ -22,11 +22,11 @@ const Features = () => {
   }, []);
 
   const paymentMethods = [
-    { name: 'Visa', logo: '/images/payment-logos/visa.png' },
-    { name: 'Webpay', logo: '/images/payment-logos/stripe.png' },
-    { name: 'Google Pay', logo: '/images/payment-logos/google-pay.png' },
-    { name: 'Apple Pay', logo: '/images/payment-logos/apple-pay.png' },
-    { name: 'PayPal', logo: '/images/payment-logos/paypal-logo.png' }
+    { name: 'Visa', logo: '/images/payment-logos/visa.svg' },
+    { name: 'Stripe', logo: '/images/payment-logos/stripe.svg' },
+    { name: 'Google Pay', logo: '/images/payment-logos/google-pay.svg' },
+    { name: 'Apple Pay', logo: '/images/payment-logos/apple-pay.svg' },
+    { name: 'PayPal', logo: '/images/payment-logos/paypal-logo.svg' }
   ];
 
   const benefits = [

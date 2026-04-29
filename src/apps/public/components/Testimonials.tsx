@@ -5,84 +5,61 @@ import { HiSparkles } from 'react-icons/hi';
 import ScrollReveal from '../../../shared/components/ScrollReveal';
 import './Testimonials.css';
 
+const STATIC_TESTIMONIALS = [
+  {
+    id: 1,
+    name: "Laura Sánchez",
+    role: "Ecologista y viajera consciente",
+    company: "Fundación Verde Chile",
+    message: "Compensa tu Viaje me ayudó a entender mi huella de carbono, ¡ahora puedo compensar mi impacto en el mundo! La plataforma es súper intuitiva.",
+    rating: 5,
+    avatar: "👩‍🔬",
+    color: "primary"
+  },
+  {
+    id: 2,
+    name: "Carlos Mendoza", 
+    role: "Aventurero y defensor del medio ambiente",
+    company: "EcoAventura Chile",
+    message: "La calculadora es muy intuitiva y me ofreció resultados detallados sobre mis hábitos. ¡Una herramienta imprescindible para cualquier viajero!",
+    rating: 5,
+    avatar: "👨‍🌾",
+    color: "secondary"
+  },
+  {
+    id: 3,
+    name: "Ana López",
+    role: "Bloguera sobre sostenibilidad y viajes", 
+    company: "Viajes Conscientes",
+    message: "Gracias a Compensa tu Viaje, he aprendido cómo mis decisiones afectan el planeta. ¡Definitivamente lo recomendaré a mis amigos!",
+    rating: 5,
+    avatar: "👩‍💼",
+    color: "accent"
+  },
+  {
+    id: 4,
+    name: "Diego Rojas",
+    role: "Director de Sostenibilidad",
+    company: "LATAM Airlines",
+    message: "Implementamos esta plataforma para nuestros pasajeros frecuentes. Los resultados han sido excelentes y el feedback muy positivo.",
+    rating: 5,
+    avatar: "👨‍💼",
+    color: "success"
+  }
+];
+
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [testimonials, setTestimonials] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchTestimonials();
-  }, []);
-
-  const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  const testimonials = STATIC_TESTIMONIALS;
 
   // Auto-rotate testimonials
   useEffect(() => {
-    if (testimonials.length === 0) return;
-    
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 5000);
 
     return () => clearInterval(interval);
   }, [testimonials.length]);
-
-  const fetchTestimonials = async () => {
-    try {
-      const response = await fetch(`${API_URL}/testimonials`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setTestimonials(data.data);
-      }
-    } catch (error) {
-      // Fallback testimonials
-      setTestimonials([
-        {
-          id: 1,
-          name: "Laura Sánchez",
-          role: "Ecologista y viajera consciente",
-          company: "Fundación Verde Chile",
-          message: "Compensa tu Viaje me ayudó a entender mi huella de carbono, ¡ahora puedo compensar mi impacto en el mundo! La plataforma es súper intuitiva.",
-          rating: 5,
-          avatar: "👩‍🔬",
-          color: "primary"
-        },
-        {
-          id: 2,
-          name: "Carlos Mendoza", 
-          role: "Aventurero y defensor del medio ambiente",
-          company: "EcoAventura Chile",
-          message: "La calculadora es muy intuitiva y me ofreció resultados detallados sobre mis hábitos. ¡Una herramienta imprescindible para cualquier viajero!",
-          rating: 5,
-          avatar: "👨‍🌾",
-          color: "secondary"
-        },
-        {
-          id: 3,
-          name: "Ana López",
-          role: "Bloguera sobre sostenibilidad y viajes", 
-          company: "Viajes Conscientes",
-          message: "Gracias a Compensa tu Viaje, he aprendido cómo mis decisiones afectan el planeta. ¡Definitivamente lo recomendaré a mis amigos!",
-          rating: 5,
-          avatar: "👩‍💼",
-          color: "accent"
-        },
-        {
-          id: 4,
-          name: "Diego Rojas",
-          role: "Director de Sostenibilidad",
-          company: "LATAM Airlines",
-          message: "Implementamos esta plataforma para nuestros pasajeros frecuentes. Los resultados han sido excelentes y el feedback muy positivo.",
-          rating: 5,
-          avatar: "👨‍💼",
-          color: "success"
-        }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -97,18 +74,6 @@ const Testimonials = () => {
       <FaStar key={i} className="text-amber-400" />
     ));
   };
-
-  if (loading) {
-    return (
-      <section className="section bg-white">
-        <div className="container-custom">
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   const currentTestimonial = testimonials[currentIndex];
 
