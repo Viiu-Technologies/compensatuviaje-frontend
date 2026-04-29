@@ -75,10 +75,6 @@ const Testimonials = () => {
     ));
   };
 
-  if (loading) {
-    return null;
-  }
-
   const currentTestimonial = testimonials[currentIndex];
 
   return (
