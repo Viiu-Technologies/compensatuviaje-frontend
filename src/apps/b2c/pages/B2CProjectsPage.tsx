@@ -337,6 +337,14 @@ const B2CProjectsPage: React.FC = () => {
               ? `${veritas.level}${veritas.finalScore !== null ? ` · ${veritas.finalScore}/100` : ''}`
               : null;
 
+            // Stock validation (Solución 2)
+            const neededUnits = hasCalculation && emissionsKg && selectedProject.carbon_capture_per_unit
+              ? calculateUnitsFromKg(emissionsKg, selectedProject.carbon_capture_per_unit)
+              : null;
+            const availableStock = selectedProject.monthlyStockRemaining ?? 0;
+            const hasInsufficientStock = neededUnits !== null && neededUnits > availableStock;
+            const isCtaDisabled = selectedProjectIsSoldOut || hasInsufficientStock || payingProjectId === selectedProject.id;
+
             // Co-benefits: support array of strings OR object { key: true }
             const coBenefitsRaw = selectedProject.coBenefits;
             let coBenefitChips: string[] = [];
@@ -488,25 +496,49 @@ const B2CProjectsPage: React.FC = () => {
                     {/* Pricing block */}
                     {hasCalculation && (() => {
                       const total = getProjectTotalCLP(selectedProject);
+                      const tons = tonsParam ? parseFloat(tonsParam) : (emissionsKg! / 1000);
                       return total ? (
-                        <div className="!bg-emerald-50 !rounded-xl !p-4 !text-center !border !border-emerald-200">
-                          <div className="!text-xs !text-emerald-600 !font-medium !mb-0.5">Total a pagar por tu compensación</div>
-                          <div className="!text-3xl !font-bold !text-emerald-700">{formatCLP(total)}</div>
-                          <div className="!text-xs !text-emerald-500 !mt-1">
-                            {tonsParam ? parseFloat(tonsParam).toFixed(4) : (emissionsKg! / 1000).toFixed(4)} ton CO₂ × {formatCLP(selectedProject.pricePerTonCLP)} / ton
+                        <div className="!bg-emerald-50 !rounded-xl !p-4 !border !border-emerald-200">
+                          <div className="!text-xs !text-emerald-600 !font-medium !mb-2">Total a compensar</div>
+                          <div className="!flex !items-center !gap-2 !text-sm !text-emerald-700 !mb-1">
+                            <span>☁️</span>
+                            <span className="!font-semibold">{tons.toFixed(4)} ton CO₂</span>
+                          </div>
+                          {neededUnits !== null && selectedProject.impact_unit && (
+                            <div className="!flex !items-center !gap-2 !text-sm !text-emerald-700 !mb-3">
+                              <span>🌱</span>
+                              <span>Tu impacto: <span className="!font-bold">{neededUnits.toLocaleString()} {selectedProject.impact_unit}</span></span>
+                            </div>
+                          )}
+                          <div className="!border-t !border-emerald-200 !pt-2 !mt-1">
+                            <div className="!text-xs !text-emerald-500 !mb-0.5">Total a pagar</div>
+                            <div className="!text-3xl !font-bold !text-emerald-700">{formatCLP(total)}</div>
                           </div>
                         </div>
                       ) : null;
                     })()}
 
+                    {/* Insufficient stock alert (Solución 2) */}
+                    {hasInsufficientStock && neededUnits !== null && (
+                      <div className="!bg-orange-50 !border !border-orange-200 !rounded-xl !px-4 !py-3 !flex !items-start !gap-2">
+                        <span className="!text-orange-500 !flex-shrink-0">⚠️</span>
+                        <p className="!text-sm !text-orange-700 !m-0">
+                          <span className="!font-semibold">Stock insuficiente.</span> Necesitas{' '}
+                          <span className="!font-bold">{neededUnits.toLocaleString()} {selectedProject.impact_unit || 'unidades'}</span> para tu huella,
+                          pero este proyecto solo tiene{' '}
+                          <span className="!font-bold">{availableStock.toLocaleString()} disponibles</span> este mes.
+                        </p>
+                      </div>
+                    )}
+
                     {/* CTA button */}
                     <motion.button
-                      whileHover={selectedProjectIsSoldOut ? undefined : { scale: 1.02 }}
-                      whileTap={selectedProjectIsSoldOut ? undefined : { scale: 0.98 }}
-                      className={`!w-full !px-6 !py-4 !text-white !rounded-xl !font-bold !shadow-lg !transition !border-0 !flex !items-center !justify-center !gap-2 !text-base ${selectedProjectIsSoldOut ? '!bg-gray-400 !cursor-not-allowed !shadow-none' : '!bg-gradient-to-r !from-green-600 !to-emerald-600 hover:!shadow-xl !cursor-pointer'}`}
-                      disabled={selectedProjectIsSoldOut || payingProjectId === selectedProject.id}
+                      whileHover={isCtaDisabled ? undefined : { scale: 1.02 }}
+                      whileTap={isCtaDisabled ? undefined : { scale: 0.98 }}
+                      className={`!w-full !px-6 !py-4 !text-white !rounded-xl !font-bold !shadow-lg !transition !border-0 !flex !items-center !justify-center !gap-2 !text-base ${isCtaDisabled ? '!bg-gray-400 !cursor-not-allowed !shadow-none' : '!bg-gradient-to-r !from-green-600 !to-emerald-600 hover:!shadow-xl !cursor-pointer'}`}
+                      disabled={isCtaDisabled}
                       onClick={() => {
-                        if (selectedProjectIsSoldOut) return;
+                        if (isCtaDisabled) return;
                         if (hasCalculation) {
                           handlePayProject(selectedProject);
                         } else {
@@ -519,6 +551,8 @@ const B2CProjectsPage: React.FC = () => {
                         <><FaSpinner className="!animate-spin" /> Procesando pago...</>
                       ) : selectedProjectIsSoldOut ? (
                         <>Meta Completada</>
+                      ) : hasInsufficientStock ? (
+                        <>Stock insuficiente este mes</>
                       ) : hasCalculation ? (
                         <><FaCreditCard /> Compensar con Este Proyecto</>
                       ) : (
