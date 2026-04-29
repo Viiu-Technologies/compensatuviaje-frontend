@@ -209,7 +209,7 @@ const Hero = () => {
             })}
 
             {/* Card Empresa */}
-            <div className="group relative overflow-hidden rounded-3xl hover:!-translate-y-1 hover:!scale-[1.02] !transition-all !duration-300 !ease-out">
+            <div className="group relative overflow-hidden rounded-2xl xl:rounded-3xl hover:!-translate-y-1 hover:!scale-[1.02] !transition-all !duration-300 !ease-out">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
               <div className="absolute inset-0 bg-white/5" />
               
@@ -218,11 +218,11 @@ const Hero = () => {
                   <FaBuilding className="text-3xl text-white" />
                 </div>
                 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0">
                   <h3 className="text-xl font-bold text-white mb-0.5">
                     ¿Eres Empresa?
                   </h3>
-                  <p className="text-white/80 text-base mb-2 leading-snug">
+                  <p className="text-white/80 text-sm xl:text-base mb-2 leading-snug">
                     Certifica tus operaciones y lidera el cambio sostenible.
                   </p>
                   <button className="group/btn inline-flex items-center gap-2 text-emerald-300 hover:text-white font-semibold text-sm transition-colors duration-200">
