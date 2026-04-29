@@ -42,7 +42,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-[100svh] lg:min-h-screen lg:flex lg:items-center overflow-hidden" id="inicio">
+    <section className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden" id="inicio">
       {/* Background con overlay premium */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -67,16 +67,28 @@ const Hero = () => {
       </div>
 
       {/* Contenido Principal */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 !pt-28 !pb-16 sm:!pt-32 lg:!pt-36 lg:!pb-24" style={{ maxWidth: '1280px' }}>
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div
+        className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full"
+        style={{
+          maxWidth: '1280px',
+          /* clamp(min, preferred, max) — padding fluido con el viewport height */
+          paddingTop: 'clamp(5.5rem, 12vh, 9rem)',
+          paddingBottom: 'clamp(2rem, 6vh, 5rem)',
+        }}
+      >
+        <div className="grid lg:grid-cols-2 xl:grid-cols-[1fr_460px] gap-8 lg:gap-12 xl:gap-16 items-center">
           
           {/* Columna Izquierda */}
           <div className="flex flex-col items-start">
 
             {/* Título Principal */}
-            <h1 
-              className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
-              style={{ textShadow: '0 4px 30px rgba(0,0,0,0.4)' }}
+            <h1
+              className="font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
+              style={{
+                /* Fluid typography: escala suavemente de 32px (375px) a 72px (1440px+) */
+                fontSize: 'clamp(2rem, 5vw, 4.5rem)',
+                textShadow: '0 4px 30px rgba(0,0,0,0.4)',
+              }}
             >
               <span className="text-white">Compensa</span>
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
@@ -88,9 +100,13 @@ const Hero = () => {
             </h1>
 
             {/* Subtítulo — alineado a la izquierda igual que el título */}
-            <p 
-              className="text-base sm:text-lg lg:text-xl text-white/85 leading-relaxed max-w-md !mb-8 lg:!mb-10"
-              style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}
+            <p
+              className="text-white/85 leading-relaxed max-w-md !mb-8 lg:!mb-10"
+              style={{
+                /* Fluid: 14px en móvil → 20px en desktop */
+                fontSize: 'clamp(0.875rem, 2vw, 1.25rem)',
+                textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+              }}
             >
               La forma más <span className="text-white font-bold">transparente</span> y{' '}
               <span className="text-white font-bold">efectiva</span> de neutralizar el impacto 
@@ -137,7 +153,7 @@ const Hero = () => {
 
           {/* Columna Derecha - Cards (solo desktop) */}
           <div
-            className="hidden lg:flex flex-col gap-4 w-full max-w-[420px] lg:ml-auto"
+            className="hidden lg:flex flex-col gap-3 xl:gap-4 w-full"
           >
             {/* Stats Cards */}
             {stats.map((stat, index) => {
@@ -149,9 +165,9 @@ const Hero = () => {
                   className={`
                     group relative overflow-hidden
                     bg-white/10 backdrop-blur-2xl 
-                    rounded-3xl 
-                    !px-10 py-6
-                    flex items-center gap-5
+                    rounded-2xl xl:rounded-3xl 
+                    px-6 xl:px-10 py-4 xl:py-6
+                    flex items-center gap-4 xl:gap-5
                     border border-white/20 hover:border-white/40
                     shadow-2xl ${stat.glow}
                     hover:!-translate-y-1 hover:!scale-[1.02]
@@ -173,12 +189,18 @@ const Hero = () => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-white tracking-tight">
+                      <span
+                        className="font-black text-white tracking-tight"
+                        style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)' }}
+                      >
                         {stat.value.toLocaleString()}
                       </span>
-                      <span className="text-2xl font-bold text-white/80">{stat.suffix}</span>
+                      <span
+                        className="font-bold text-white/80"
+                        style={{ fontSize: 'clamp(1rem, 1.5vw, 1.5rem)' }}
+                      >{stat.suffix}</span>
                     </div>
-                    <p className="text-white/60 font-medium text-base mt-1 truncate">
+                    <p className="text-white/60 font-medium text-sm xl:text-base mt-1 truncate">
                       {stat.label}
                     </p>
                   </div>
@@ -191,7 +213,7 @@ const Hero = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
               <div className="absolute inset-0 bg-white/5" />
               
-              <div className="relative !px-10 py-6 flex items-center gap-5">
+              <div className="relative px-6 xl:px-10 py-4 xl:py-6 flex items-center gap-4 xl:gap-5">
                 <div className="flex-shrink-0 p-3.5 rounded-2xl bg-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <FaBuilding className="text-3xl text-white" />
                 </div>
