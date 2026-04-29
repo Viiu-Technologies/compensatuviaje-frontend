@@ -166,8 +166,8 @@ const Hero = () => {
                     group relative overflow-hidden
                     bg-white/10 backdrop-blur-2xl 
                     rounded-2xl xl:rounded-3xl 
-                    px-6 xl:px-10 py-4 xl:py-6
-                    flex items-center gap-4 xl:gap-5
+                    py-5 xl:py-6
+                    flex items-center justify-center gap-5 xl:gap-6
                     border border-white/20 hover:border-white/40
                     shadow-2xl ${stat.glow}
                     hover:!-translate-y-1 hover:!scale-[1.02]
@@ -187,11 +187,11 @@ const Hero = () => {
                     <Icon className="text-3xl text-white drop-shadow-md" />
                   </div>
                   
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0">
                     <div className="flex items-baseline gap-1">
                       <span
                         className="font-black text-white tracking-tight"
-                        style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)' }}
+                        style={{ fontSize: 'clamp(1.75rem, 2.5vw, 2.5rem)' }}
                       >
                         {stat.value.toLocaleString()}
                       </span>
@@ -200,7 +200,7 @@ const Hero = () => {
                         style={{ fontSize: 'clamp(1rem, 1.5vw, 1.5rem)' }}
                       >{stat.suffix}</span>
                     </div>
-                    <p className="text-white/60 font-medium text-sm xl:text-base mt-1 truncate">
+                    <p className="text-white/60 font-medium text-sm xl:text-base mt-0.5">
                       {stat.label}
                     </p>
                   </div>
@@ -213,7 +213,7 @@ const Hero = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
               <div className="absolute inset-0 bg-white/5" />
               
-              <div className="relative px-6 xl:px-10 py-4 xl:py-6 flex items-center gap-4 xl:gap-5">
+              <div className="relative py-5 xl:py-6 flex items-center justify-center gap-5 xl:gap-6">
                 <div className="flex-shrink-0 p-3.5 rounded-2xl bg-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <FaBuilding className="text-3xl text-white" />
                 </div>

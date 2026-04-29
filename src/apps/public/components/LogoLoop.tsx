@@ -103,7 +103,7 @@ const NativeLogoLoop: React.FC<Props> = ({ logos, logoHeight = 88, gap = 120, sp
       >
         {items.map((l, i) => (
           <div className="native-loop-item" key={i}>
-            <img src={l.src} alt={l.alt || `logo-${i}`} width={Math.round(logoHeight * 2)} height={logoHeight} style={{ height: logoHeight }} loading="lazy" />
+            <img src={l.src} alt={l.alt || `logo-${i}`} width={Math.round(logoHeight * 2)} height={logoHeight} style={{ height: logoHeight }} />
           </div>
         ))}
       </div>
