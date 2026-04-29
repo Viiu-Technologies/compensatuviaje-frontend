@@ -121,6 +121,13 @@ export interface B2CProject {
   metrics: { name: string; value: number; date: string }[];
   transparencyUrl: string | null;
   createdAt: string;
+  // Evidence & AI evaluation
+  photos: { url: string; thumbnailUrl: string | null }[];
+  veritasAI: {
+    finalScore: number | null;
+    level: string | null;
+    reportMarkdown: string | null;
+  } | null;
 }
 
 export interface DashboardData {

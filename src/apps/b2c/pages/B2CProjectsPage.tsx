@@ -328,118 +328,182 @@ const B2CProjectsPage: React.FC = () => {
           {selectedProject && (() => {
             const tc = getTypeConfig(selectedProject.projectType);
             const selectedProjectIsSoldOut = selectedProject.isSoldOut;
-            const selectedAvailableUnits = selectedProject.availableUnits;
             const selMonthlyApproved = selectedProject.monthlyStockApproved || 0;
             const selMonthlyRemaining = selectedProject.monthlyStockRemaining || 0;
             const selMonthlyUnitsSold = Math.max(selMonthlyApproved - selMonthlyRemaining, 0);
+            const heroPhoto = selectedProject.photos?.[0]?.url ?? null;
+            const veritas = selectedProject.veritasAI;
+            const veritasLabel = veritas?.level
+              ? `${veritas.level}${veritas.finalScore !== null ? ` · ${veritas.finalScore}/100` : ''}`
+              : null;
+
+            // Co-benefits: support array of strings OR object { key: true }
+            const coBenefitsRaw = selectedProject.coBenefits;
+            let coBenefitChips: string[] = [];
+            if (Array.isArray(coBenefitsRaw)) {
+              coBenefitChips = coBenefitsRaw.map(String);
+            } else if (coBenefitsRaw && typeof coBenefitsRaw === 'object') {
+              coBenefitChips = Object.entries(coBenefitsRaw)
+                .filter(([, v]) => v)
+                .map(([k]) => k);
+            }
+
             return (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setSelectedProject(null)}
-                className="!fixed !inset-0 !bg-black/50 !backdrop-blur-sm !z-50 !flex !items-center !justify-center !p-4"
+                className="!fixed !inset-0 !bg-black/60 !backdrop-blur-sm !z-50 !flex !items-center !justify-center !p-4"
               >
                 <motion.div
-                  initial={{ scale: 0.9, y: 20 }}
+                  initial={{ scale: 0.92, y: 24 }}
                   animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.9, y: 20 }}
+                  exit={{ scale: 0.92, y: 24 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 28 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="!bg-white !rounded-3xl !max-w-2xl !w-full !max-h-[90vh] !overflow-y-auto !shadow-2xl"
+                  className="!bg-white !rounded-3xl !max-w-lg !w-full !max-h-[92vh] !overflow-y-auto !shadow-2xl"
                 >
-                  {/* Modal Header */}
-                  <div className={`!bg-gradient-to-br ${tc.colorFrom} ${tc.colorTo} !p-8 !relative`}>
+                  {/* ── Hero image / gradient header ─────────────────── */}
+                  <div className="!relative !overflow-hidden !rounded-t-3xl">
+                    {heroPhoto ? (
+                      <img
+                        src={heroPhoto}
+                        alt={selectedProject.name}
+                        className="!w-full !h-52 !object-cover"
+                      />
+                    ) : (
+                      <div className={`!w-full !h-52 !bg-gradient-to-br ${tc.colorFrom} ${tc.colorTo} !flex !items-center !justify-center`}>
+                        <span className="!text-8xl !opacity-60">{tc.emoji}</span>
+                      </div>
+                    )}
+
+                    {/* Overlay gradient at bottom for text readability */}
+                    <div className="!absolute !inset-0 !bg-gradient-to-t !from-black/60 !via-transparent !to-transparent" />
+
+                    {/* Close button */}
                     <button
                       onClick={() => setSelectedProject(null)}
-                      className="!absolute !top-4 !right-4 !w-10 !h-10 !bg-white/90 !rounded-full !flex !items-center !justify-center !text-gray-600 hover:!bg-white !transition !border-0 !cursor-pointer"
+                      className="!absolute !top-3 !right-3 !w-9 !h-9 !bg-black/40 hover:!bg-black/60 !backdrop-blur-sm !rounded-full !flex !items-center !justify-center !text-white !transition !border-0 !cursor-pointer"
                     >
-                      <FaTimes />
+                      <FaTimes className="!text-sm" />
                     </button>
-                    
-                    <div className="!text-6xl !mb-4">{tc.emoji}</div>
-                    <h2 className="!text-3xl !font-bold !text-gray-900 !mb-2">{selectedProject.name}</h2>
-                    <div className="!flex !items-center !gap-2 !text-gray-700">
-                      <FaMapMarkerAlt />
-                      <span>{selectedProject.region && `${selectedProject.region}, `}{selectedProject.country}</span>
+
+                    {/* Type badge on the image */}
+                    <span className={`!absolute !top-3 !left-3 !px-2.5 !py-1 !rounded-full !text-xs !font-semibold !backdrop-blur-sm !bg-white/80 !text-gray-700`}>
+                      {tc.emoji} {tc.label}
+                    </span>
+
+                    {/* Title & location over the image */}
+                    <div className="!absolute !bottom-0 !left-0 !right-0 !p-5">
+                      {selectedProjectIsSoldOut && (
+                        <span className="!inline-flex !items-center !gap-1 !px-2 !py-0.5 !rounded-full !bg-gray-800/80 !text-white !text-xs !font-semibold !mb-2">
+                          Meta Completada 🎯
+                        </span>
+                      )}
+                      <h2 className="!text-2xl !font-bold !text-white !leading-tight !mb-1">
+                        {selectedProject.name}
+                      </h2>
+                      <div className="!flex !items-center !gap-1.5 !text-white/80 !text-sm">
+                        <FaMapMarkerAlt className="!text-xs !flex-shrink-0" />
+                        <span>{selectedProject.region && `${selectedProject.region}, `}{selectedProject.country}</span>
+                        {selectedProject.partner?.name && (
+                          <span className="!text-white/60 !ml-1">· {selectedProject.partner.name}</span>
+                        )}
+                      </div>
                     </div>
-                    {selectedProject.partner?.name && (
-                      <div className="!text-sm !text-gray-600 !mt-2">Desarrollado por: <span className="!font-semibold">{selectedProject.partner.name}</span></div>
-                    )}
                   </div>
 
-                  {/* Modal Content */}
-                  <div className="!p-8">
-                    {/* Description */}
-                    {selectedProject.description && (
-                      <div className="!mb-6">
-                        <h3 className="!text-lg !font-bold !text-gray-900 !mb-3">Sobre el Proyecto</h3>
-                        <p className="!text-gray-700 !leading-relaxed">{selectedProject.description}</p>
+                  {/* ── Modal body ───────────────────────────────────── */}
+                  <div className="!p-6 !space-y-5">
+
+                    {/* Trust badge — Veritas AI */}
+                    {veritasLabel && (
+                      <div className="!flex !items-center !gap-2 !bg-emerald-50 !border !border-emerald-200 !rounded-xl !px-4 !py-2.5">
+                        <span className="!text-emerald-600 !text-base">🛡️</span>
+                        <div>
+                          <span className="!text-xs !text-emerald-500 !font-medium !block !leading-none !mb-0.5">Auditado por Veritas AI</span>
+                          <span className="!text-sm !font-bold !text-emerald-700">{veritasLabel}</span>
+                        </div>
+                        {selectedProject.certification && (
+                          <div className="!ml-auto !flex !items-center !gap-1 !text-xs !text-gray-500 !font-medium">
+                            <FaCertificate className="!text-green-500" />
+                            {selectedProject.certification}
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Stats Grid */}
-                    <div className="!grid !grid-cols-2 !gap-4 !mb-6">
-                      <div className="!bg-gray-50 !rounded-xl !p-4">
-                        <div className="!text-sm !text-gray-600 !mb-1">Capacidad Total</div>
-                        <div className="!text-xl !font-bold !text-gray-900">{selectedProject.capacityTotal.toLocaleString()} {selectedProject.impact_unit || 'uds'}</div>
+                    {/* Certification alone (if no Veritas AI) */}
+                    {!veritasLabel && selectedProject.certification && (
+                      <div className="!flex !items-center !gap-2 !bg-gray-50 !border !border-gray-200 !rounded-xl !px-4 !py-2.5">
+                        <FaCertificate className="!text-green-500" />
+                        <span className="!text-sm !font-medium !text-gray-700">{selectedProject.certification}</span>
                       </div>
-                      <div className="!bg-gray-50 !rounded-xl !p-4">
-                        <div className="!text-sm !text-gray-600 !mb-1">Capacidad Vendida</div>
-                        <div className="!text-xl !font-bold !text-gray-900">{selectedProject.capacitySold.toLocaleString()} {selectedProject.impact_unit || 'uds'}</div>
-                      </div>
-                      <div className="!bg-gray-50 !rounded-xl !p-4">
-                        <div className="!text-sm !text-gray-600 !mb-1">Precio por Tonelada</div>
-                        <div className="!text-xl !font-bold !text-gray-900">{formatCLP(selectedProject.pricePerTonCLP)} / ton</div>
-                      </div>
-                      {selectedProject.certification && (
-                        <div className="!bg-gray-50 !rounded-xl !p-4">
-                          <div className="!text-sm !text-gray-600 !mb-1">Certificación</div>
-                          <div className="!text-xl !font-bold !text-green-700 !flex !items-center !gap-2">
-                            <FaCertificate className="!text-green-500" /> {selectedProject.certification}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    )}
 
-                    {/* Progress */}
-                    <div className="!bg-gradient-to-br !from-green-50 !to-white !rounded-xl !p-6 !mb-6">
-                      <div className="!flex !items-center !justify-between !mb-3">
-                        <h3 className="!text-lg !font-bold !text-gray-900">Progreso Mensual del Proyecto</h3>
-                        <span className={`!text-2xl !font-bold ${selectedProjectIsSoldOut ? '!text-gray-600' : '!text-green-600'}`}>{selectedProject.progress}%</span>
+                    {/* Description — 3 lines max */}
+                    {selectedProject.description && (
+                      <p className="!text-gray-600 !text-sm !leading-relaxed !line-clamp-3 !m-0">
+                        {selectedProject.description}
+                      </p>
+                    )}
+
+                    {/* Co-benefits chips */}
+                    {coBenefitChips.length > 0 && (
+                      <div className="!flex !flex-wrap !gap-2">
+                        {coBenefitChips.map((chip) => (
+                          <span
+                            key={chip}
+                            className="!px-2.5 !py-1 !bg-green-50 !border !border-green-200 !text-green-700 !text-xs !font-medium !rounded-full"
+                          >
+                            🌿 {chip}
+                          </span>
+                        ))}
                       </div>
-                      <div className="!w-full !h-4 !bg-white !rounded-full !overflow-hidden !shadow-inner">
+                    )}
+
+                    {/* FOMO — Monthly progress bar */}
+                    <div className="!bg-gray-50 !rounded-xl !p-4">
+                      <div className="!flex !items-center !justify-between !mb-2">
+                        <span className="!text-sm !font-semibold !text-gray-700">Disponibilidad mensual</span>
+                        <span className={`!text-sm !font-bold ${selectedProjectIsSoldOut ? '!text-gray-500' : '!text-green-600'}`}>
+                          {selectedProject.progress}%
+                        </span>
+                      </div>
+                      <div className="!w-full !h-3 !bg-white !rounded-full !overflow-hidden !shadow-inner">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${selectedProject.progress}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                          className={`!h-4 !rounded-full ${selectedProjectIsSoldOut ? '!bg-gradient-to-r !from-gray-400 !to-gray-500' : '!bg-gradient-to-r !from-green-500 !to-green-600'}`}
+                          transition={{ duration: 0.9, ease: 'easeOut' }}
+                          className={`!h-3 !rounded-full ${selectedProjectIsSoldOut ? '!bg-gradient-to-r !from-gray-400 !to-gray-500' : '!bg-gradient-to-r !from-green-500 !to-emerald-500'}`}
                         />
                       </div>
-                      <div className="!flex !justify-between !text-sm !text-gray-500 !mt-2">
+                      <div className="!flex !justify-between !text-xs !text-gray-400 !mt-1.5">
                         <span>{selMonthlyUnitsSold.toLocaleString()} {selectedProject.impact_unit || 'uds'} vendidas</span>
                         <span>{selMonthlyApproved.toLocaleString()} {selectedProject.impact_unit || 'uds'} aprobadas</span>
                       </div>
                     </div>
 
-                    {/* Per-project total for user's emissions */}
+                    {/* Pricing block */}
                     {hasCalculation && (() => {
                       const total = getProjectTotalCLP(selectedProject);
                       return total ? (
-                        <div className="!bg-emerald-50 !rounded-xl !p-5 !mb-6 !text-center !border !border-emerald-200">
-                          <div className="!text-sm !text-emerald-600 !font-medium !mb-1">Total a pagar por tu compensación</div>
+                        <div className="!bg-emerald-50 !rounded-xl !p-4 !text-center !border !border-emerald-200">
+                          <div className="!text-xs !text-emerald-600 !font-medium !mb-0.5">Total a pagar por tu compensación</div>
                           <div className="!text-3xl !font-bold !text-emerald-700">{formatCLP(total)}</div>
                           <div className="!text-xs !text-emerald-500 !mt-1">
-                            {tonsParam ? `${parseFloat(tonsParam).toFixed(4)}` : (emissionsKg! / 1000).toFixed(4)} ton CO₂ × {formatCLP(selectedProject.pricePerTonCLP)} / ton
+                            {tonsParam ? parseFloat(tonsParam).toFixed(4) : (emissionsKg! / 1000).toFixed(4)} ton CO₂ × {formatCLP(selectedProject.pricePerTonCLP)} / ton
                           </div>
                         </div>
                       ) : null;
                     })()}
 
-                    {/* CTA */}
+                    {/* CTA button */}
                     <motion.button
                       whileHover={selectedProjectIsSoldOut ? undefined : { scale: 1.02 }}
                       whileTap={selectedProjectIsSoldOut ? undefined : { scale: 0.98 }}
-                      className={`!w-full !px-6 !py-4 !text-white !rounded-xl !font-bold !shadow-lg !transition !border-0 !flex !items-center !justify-center !gap-2 ${selectedProjectIsSoldOut ? '!bg-gray-400 !cursor-not-allowed !shadow-none' : '!bg-gradient-to-r !from-green-600 !to-green-700 hover:!shadow-xl !cursor-pointer'}`}
+                      className={`!w-full !px-6 !py-4 !text-white !rounded-xl !font-bold !shadow-lg !transition !border-0 !flex !items-center !justify-center !gap-2 !text-base ${selectedProjectIsSoldOut ? '!bg-gray-400 !cursor-not-allowed !shadow-none' : '!bg-gradient-to-r !from-green-600 !to-emerald-600 hover:!shadow-xl !cursor-pointer'}`}
                       disabled={selectedProjectIsSoldOut || payingProjectId === selectedProject.id}
                       onClick={() => {
                         if (selectedProjectIsSoldOut) return;
@@ -452,21 +516,35 @@ const B2CProjectsPage: React.FC = () => {
                       }}
                     >
                       {payingProjectId === selectedProject.id ? (
-                        <>
-                          <FaSpinner className="!animate-spin" /> Procesando pago...
-                        </>
+                        <><FaSpinner className="!animate-spin" /> Procesando pago...</>
                       ) : selectedProjectIsSoldOut ? (
                         <>Meta Completada</>
                       ) : hasCalculation ? (
-                        <>
-                          <FaCreditCard /> Compensar con Este Proyecto
-                        </>
+                        <><FaCreditCard /> Compensar con Este Proyecto</>
                       ) : (
-                        <>
-                          <FaLeaf /> Calcular mi Huella Primero
-                        </>
+                        <><FaLeaf /> Calcular mi Huella Primero</>
                       )}
                     </motion.button>
+
+                    {/* Exit link — transparency page */}
+                    <div className="!text-center">
+                      {selectedProject.transparencyUrl ? (
+                        <a
+                          href={selectedProject.transparencyUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="!text-xs !text-gray-400 hover:!text-gray-600 !transition !inline-flex !items-center !gap-1.5 !no-underline"
+                        >
+                          📄 Ver evidencia, certificados y auditoría completa
+                          <span>↗</span>
+                        </a>
+                      ) : (
+                        <span className="!text-xs !text-gray-300 !inline-flex !items-center !gap-1.5 !cursor-default">
+                          📄 Página de transparencia próximamente
+                        </span>
+                      )}
+                    </div>
+
                   </div>
                 </motion.div>
               </motion.div>
