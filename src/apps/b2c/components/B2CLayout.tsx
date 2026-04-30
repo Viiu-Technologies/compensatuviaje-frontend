@@ -18,6 +18,7 @@ import {
 import { HiSparkles } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import b2cApi from '../services/b2cApi';
+import { MiniBadgesPanel } from './badges/MiniBadgesPanel';
 
 interface B2CLayoutProps {
   children: React.ReactNode;
@@ -117,6 +118,9 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
           </div>
         </div>
 
+        {/* Mini Badges Teaser */}
+        <MiniBadgesPanel totalCompensatedKg={sidebarStats.totalCompensatedTons * 1000} />
+
         {/* Footer Sidebar */}
         <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0">
           <Link 
@@ -193,6 +197,9 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
                   {sidebarStats.compensationRate}% compensado · {sidebarStats.certificatesCount} certificado{sidebarStats.certificatesCount !== 1 ? 's' : ''}
                 </div>
               </div>
+
+              {/* Mini Badges Teaser (mobile) */}
+              <MiniBadgesPanel totalCompensatedKg={sidebarStats.totalCompensatedTons * 1000} />
 
               <div className="!px-4 !pb-6 !space-y-1">
                 <Link 

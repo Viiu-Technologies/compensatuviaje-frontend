@@ -13,6 +13,7 @@ import {
 import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from './B2CLayout';
 import b2cApi, { type DashboardData } from '../services/b2cApi';
+import { TrophyRoomPanel } from './badges/TrophyRoomPanel';
 
 const emptyDashboard: DashboardData = {
   user: { nombre: '', email: '', avatarUrl: null, memberSince: new Date().toISOString() },
@@ -248,6 +249,16 @@ const B2CDashboard = () => {
               </motion.div>
             ))}
           </div>
+        </motion.section>
+
+        {/* TROPHY ROOM */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="!w-full"
+        >
+          <TrophyRoomPanel totalCompensatedKg={stats.totalCompensatedKg} />
         </motion.section>
 
         {/* VUELOS RECIENTES */}
