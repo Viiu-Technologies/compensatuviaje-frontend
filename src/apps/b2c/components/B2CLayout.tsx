@@ -13,7 +13,8 @@ import {
   FaBars,
   FaUser,
   FaCalculator,
-  FaCubes
+  FaCubes,
+  FaTrophy
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
@@ -71,6 +72,7 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
     { id: 'certificates', label: 'Certificados', icon: FaCertificate, path: '/b2c/certificates' },
     { id: 'nft-certificates', label: 'Mis NFTs', icon: FaCubes, path: '/b2c/nft-certificates' },
     { id: 'calculator', label: 'Calcular CO₂', icon: HiSparkles, path: '/b2c/calculator' },
+    { id: 'achievements', label: 'Mis Logros', icon: FaTrophy, path: '/b2c/achievements' },
   ];
 
   const isActive = (path: string) => {

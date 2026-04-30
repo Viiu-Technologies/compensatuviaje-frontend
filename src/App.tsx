@@ -42,6 +42,7 @@ const B2CProjectsPage = lazy(() => import('./apps/b2c/pages/B2CProjectsPage'));
 const B2CCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CCertificatesPage'));
 const B2CCalculatorPage = lazy(() => import('./apps/b2c/pages/B2CCalculatorPage'));
 const B2CNFTCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CNFTCertificatesPage'));
+const B2CAchievementsPage = lazy(() => import('./apps/b2c/pages/B2CAchievementsPage'));
 const PaymentResultPage = lazy(() => import('./apps/b2c/pages/PaymentResultPage'));
 
 const CertificateVerificationPage = lazy(() => import('./shared/components/blockchain').then(m => ({ default: m.CertificateVerificationPage })));
@@ -269,6 +270,14 @@ function App() {
                   <B2CNFTCertificatesPage />
                 </B2CProtectedRoute>
               } 
+            />
+            <Route
+              path="/b2c/achievements"
+              element={
+                <B2CProtectedRoute>
+                  <B2CAchievementsPage />
+                </B2CProtectedRoute>
+              }
             />
             {/* Redirect legacy calculator route */}
             <Route 
