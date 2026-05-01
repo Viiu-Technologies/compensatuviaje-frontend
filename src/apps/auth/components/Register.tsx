@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useRef, ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
@@ -15,9 +15,9 @@ const Register: React.FC = () => {
   const { register, error: authError, clearError } = useAuth();
   const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
   
-  // Paso 0: selecciÃ³n de tipo de cuenta, Pasos 1-4: formulario B2B
+  // Paso 0: selección de tipo de cuenta, Pasos 1-4: formulario B2B
   const [accountType, setAccountType] = useState<'none' | 'b2b' | 'b2c'>('none');
-  const [currentStep, setCurrentStep] = useState(0); // 0 = selecciÃ³n de cuenta
+  const [currentStep, setCurrentStep] = useState(0); // 0 = selección de cuenta
   const totalSteps = 2;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -36,14 +36,14 @@ const Register: React.FC = () => {
     confirmPassword: '',
     acceptTerms: false,
     
-    // Paso 2: InformaciÃ³n de la Empresa
+    // Paso 2: Información de la Empresa
     companyName: '',
     rut: '',
     businessType: '',
     tradeName: '',
     website: '',
     
-    // Paso 3: InformaciÃ³n de Contacto
+    // Paso 3: Información de Contacto
     legalRepName: '',
     legalRepRut: '',
     contactEmail: '',
@@ -52,7 +52,7 @@ const Register: React.FC = () => {
     city: '',
     address: '',
     
-    // Paso 4: InformaciÃ³n Operacional
+    // Paso 4: Información Operacional
     industry: '',
     employeeCount: '',
     annualRevenue: '',
@@ -61,12 +61,12 @@ const Register: React.FC = () => {
   });
 
   // Opciones
-  const businessTypes = ['Sociedad AnÃ³nima (S.A.)', 'Sociedad de Responsabilidad Limitada (Ltda.)', 'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)', 'Sociedad por Acciones (SpA)', 'Otro'];
-  const industries = ['Agricultura y ganaderÃ­a', 'MinerÃ­a', 'Manufactura', 'ConstrucciÃ³n', 'Comercio', 'Transporte y logÃ­stica', 'Servicios financieros', 'TecnologÃ­a y telecomunicaciones', 'Turismo y hotelerÃ­a', 'Salud', 'EducaciÃ³n', 'EnergÃ­a', 'Otro'];
-  const employeeRanges = ['1-10 empleados (Microempresa)', '11-50 empleados (PequeÃ±a)', '51-200 empleados (Mediana)', '201-1000 empleados (Grande)', 'MÃ¡s de 1000 empleados (CorporaciÃ³n)'];
-  const revenueRanges = ['Menos de 2.400 UF', '2.400 - 25.000 UF', '25.000 - 100.000 UF', '100.000 - 600.000 UF', 'MÃ¡s de 600.000 UF'];
-  const chileanRegions = ['RegiÃ³n de Arica y Parinacota', 'RegiÃ³n de TarapacÃ¡', 'RegiÃ³n de Antofagasta', 'RegiÃ³n de Atacama', 'RegiÃ³n de Coquimbo', 'RegiÃ³n de ValparaÃ­so', 'RegiÃ³n Metropolitana de Santiago', 'RegiÃ³n del Libertador General Bernardo O\'Higgins', 'RegiÃ³n del Maule', 'RegiÃ³n de Ã‘uble', 'RegiÃ³n del BiobÃ­o', 'RegiÃ³n de La AraucanÃ­a', 'RegiÃ³n de Los RÃ­os', 'RegiÃ³n de Los Lagos', 'RegiÃ³n de AysÃ©n del General Carlos IbÃ¡Ã±ez del Campo', 'RegiÃ³n de Magallanes y de la AntÃ¡rtica Chilena'];
-  const interestOptions = ['Viajes corporativos', 'Transporte de mercancÃ­as', 'Consumo energÃ©tico de oficinas', 'Eventos empresariales', 'ProducciÃ³n/manufactura', 'Otros'];
+  const businessTypes = ['Sociedad Anónima (S.A.)', 'Sociedad de Responsabilidad Limitada (Ltda.)', 'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)', 'Sociedad por Acciones (SpA)', 'Otro'];
+  const industries = ['Agricultura y ganadería', 'Minería', 'Manufactura', 'Construcción', 'Comercio', 'Transporte y logística', 'Servicios financieros', 'Tecnología y telecomunicaciones', 'Turismo y hotelería', 'Salud', 'Educación', 'Energía', 'Otro'];
+  const employeeRanges = ['1-10 empleados (Microempresa)', '11-50 empleados (Pequeña)', '51-200 empleados (Mediana)', '201-1000 empleados (Grande)', 'Más de 1000 empleados (Corporación)'];
+  const revenueRanges = ['Menos de 2.400 UF', '2.400 - 25.000 UF', '25.000 - 100.000 UF', '100.000 - 600.000 UF', 'Más de 600.000 UF'];
+  const chileanRegions = ['Región de Arica y Parinacota', 'Región de Tarapacá', 'Región de Antofagasta', 'Región de Atacama', 'Región de Coquimbo', 'Región de Valparaíso', 'Región Metropolitana de Santiago', 'Región del Libertador General Bernardo O\'Higgins', 'Región del Maule', 'Región de Ñuble', 'Región del Biobío', 'Región de La Araucanía', 'Región de Los Ríos', 'Región de Los Lagos', 'Región de Aysén del General Carlos Ibáñez del Campo', 'Región de Magallanes y de la Antártica Chilena'];
+  const interestOptions = ['Viajes corporativos', 'Transporte de mercancías', 'Consumo energético de oficinas', 'Eventos empresariales', 'Producción/manufactura', 'Otros'];
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -115,14 +115,14 @@ const Register: React.FC = () => {
       if (!formData.firstName.trim()) errors.firstName = 'El nombre es requerido';
       if (!formData.lastName.trim()) errors.lastName = 'El apellido es requerido';
       if (!formData.email.trim()) errors.email = 'El email es requerido';
-      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email invÃ¡lido';
-      if (!formData.password) errors.password = 'La contraseÃ±a es requerida';
-      else if (formData.password.length < 6) errors.password = 'MÃ­nimo 6 caracteres';
-      if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseÃ±as no coinciden';
-      if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los tÃ©rminos';
+      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email inválido';
+      if (!formData.password) errors.password = 'La contraseña es requerida';
+      else if (formData.password.length < 6) errors.password = 'Mínimo 6 caracteres';
+      if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
+      if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los términos';
     }
 
-    // Paso 2: documento opcional â€” sin validaciones obligatorias
+    // Paso 2: documento opcional — sin validaciones obligatorias
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -130,7 +130,7 @@ const Register: React.FC = () => {
 
   const handleNext = () => {
     if (currentStep === 0) {
-      // Si eligiÃ³ B2B, avanza al paso 1 del formulario
+      // Si eligió B2B, avanza al paso 1 del formulario
       if (accountType === 'b2b') {
         setCurrentStep(1);
       }
@@ -154,7 +154,7 @@ const Register: React.FC = () => {
   const handleSelectAccountType = (type: 'b2b' | 'b2c') => {
     setAccountType(type);
     if (type === 'b2c') {
-      // Para B2C mostramos directamente la opciÃ³n de Google
+      // Para B2C mostramos directamente la opción de Google
       setCurrentStep(0);
     } else if (type === 'b2b') {
       // Para B2B avanzamos directamente al paso 1 del formulario
@@ -174,7 +174,7 @@ const Register: React.FC = () => {
     const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
     const ext = (file.name.split('.').pop() || '').toLowerCase();
     if (!allowed.includes(ext)) {
-      setApiError('Solo se permiten PDF, imÃ¡genes o documentos Word');
+      setApiError('Solo se permiten PDF, imágenes o documentos Word');
       return;
     }
     if (file.size > 15 * 1024 * 1024) {
@@ -300,7 +300,7 @@ const Register: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Ãšnete a Nosotros
+            Únete a Nosotros
           </motion.h2>
           <motion.p 
             className="!text-xl !text-emerald-800/80 !mb-8"
@@ -308,7 +308,7 @@ const Register: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Comienza tu viaje hacia un futuro mÃ¡s sostenible hoy mismo.
+            Comienza tu viaje hacia un futuro más sostenible hoy mismo.
           </motion.p>
         </div>
 
@@ -345,11 +345,11 @@ const Register: React.FC = () => {
               <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
             </Link>
             
-            {/* Header dinÃ¡mico segÃºn el paso */}
+            {/* Header dinámico según el paso */}
             {currentStep === 0 && accountType === 'none' && (
               <>
-                <h1 className="!text-3xl !font-bold !text-white !mb-2">Â¿QuÃ© tipo de cuenta necesitas?</h1>
-                <p className="!text-emerald-200/80">Elige la opciÃ³n que mejor se adapte a ti</p>
+                <h1 className="!text-3xl !font-bold !text-white !mb-2">¿Qué tipo de cuenta necesitas?</h1>
+                <p className="!text-emerald-200/80">Elige la opción que mejor se adapte a ti</p>
               </>
             )}
             {currentStep === 0 && accountType === 'b2c' && (
@@ -366,7 +366,7 @@ const Register: React.FC = () => {
                   </div>
                 </div>
                 <h1 className="!text-3xl !font-bold !text-white !text-center !mb-2">Crear Cuenta Personal</h1>
-                <p className="!text-emerald-200/80 !text-center">RegÃ­strate con tu cuenta de Google</p>
+                <p className="!text-emerald-200/80 !text-center">Regístrate con tu cuenta de Google</p>
               </>
             )}
             {currentStep >= 1 && (
@@ -402,10 +402,10 @@ const Register: React.FC = () => {
               <div
                 className={currentStep === 0 ? '' : '!grid !grid-cols-1 md:!grid-cols-2 !gap-6'}
               >
-                {/* Paso 0: SelecciÃ³n de tipo de cuenta */}
+                {/* Paso 0: Selección de tipo de cuenta */}
                 {currentStep === 0 && accountType === 'none' && (
                   <div className="!space-y-4">
-                    {/* OpciÃ³n Empresarial */}
+                    {/* Opción Empresarial */}
                     <button
                       type="button"
                       onClick={() => handleSelectAccountType('b2b')}
@@ -426,7 +426,7 @@ const Register: React.FC = () => {
                               <Check className="!w-4 !h-4" /> Reportes avanzados
                             </div>
                             <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
-                              <Check className="!w-4 !h-4" /> MÃºltiples usuarios
+                              <Check className="!w-4 !h-4" /> Múltiples usuarios
                             </div>
                           </div>
                         </div>
@@ -434,7 +434,7 @@ const Register: React.FC = () => {
                       </div>
                     </button>
 
-                    {/* OpciÃ³n Personal */}
+                    {/* Opción Personal */}
                     <button
                       type="button"
                       onClick={() => handleSelectAccountType('b2c')}
@@ -449,7 +449,7 @@ const Register: React.FC = () => {
                           <p className="!text-emerald-200/70 !text-sm !mb-3">Para viajeros individuales que quieren compensar sus emisiones personales.</p>
                           <div className="!space-y-1">
                             <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
-                              <Check className="!w-4 !h-4" /> Registro rÃ¡pido con Google
+                              <Check className="!w-4 !h-4" /> Registro rápido con Google
                             </div>
                             <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
                               <Check className="!w-4 !h-4" /> Calculadora personal
@@ -465,7 +465,7 @@ const Register: React.FC = () => {
                   </div>
                 )}
 
-                {/* Paso 0 con B2C seleccionado: Mostrar botÃ³n de Google */}
+                {/* Paso 0 con B2C seleccionado: Mostrar botón de Google */}
                 {currentStep === 0 && accountType === 'b2c' && (
                   <div className="!space-y-6">
                     <button
@@ -504,18 +504,18 @@ const Register: React.FC = () => {
                 {currentStep === 1 && (
                   <>
                     {renderInput('Nombre', 'firstName', 'text', 'Juan', <User className="!w-5 !h-5" />)}
-                    {renderInput('Apellido', 'lastName', 'text', 'PÃ©rez', <User className="!w-5 !h-5" />)}
-                    {renderInput('Correo ElectrÃ³nico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
+                    {renderInput('Apellido', 'lastName', 'text', 'Pérez', <User className="!w-5 !h-5" />)}
+                    {renderInput('Correo Electrónico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
                     
                     <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">ContraseÃ±a</label>
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
                           name="password"
                           value={formData.password}
                           onChange={handleChange}
-                          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                          placeholder="••••••••"
                           className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
@@ -527,14 +527,14 @@ const Register: React.FC = () => {
                     </div>
 
                     <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar ContraseÃ±a</label>
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar Contraseña</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
-                          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                          placeholder="••••••••"
                           className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
@@ -555,7 +555,7 @@ const Register: React.FC = () => {
                           <Check className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
                         </div>
                         <span className="!text-emerald-200 group-hover:!text-white !transition-colors !text-sm">
-                          Acepto los <Link to="/terms" className="!text-emerald-400 hover:!underline">tÃ©rminos y condiciones</Link>
+                          Acepto los <Link to="/terms" className="!text-emerald-400 hover:!underline">términos y condiciones</Link>
                         </span>
                       </label>
                       {validationErrors.acceptTerms && <span className="!text-xs !text-red-300 !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}
@@ -568,17 +568,17 @@ const Register: React.FC = () => {
                     <div>
                       <p className="!text-sm !text-emerald-200/80 !mb-1">
                         Sube un documento con los datos de tu empresa (RUT, escritura, representante).
-                        <strong className="!text-emerald-300"> Este paso es opcional</strong> â€” puedes continuar
-                        sin Ã©l y adjuntarlo mÃ¡s adelante.
+                        <strong className="!text-emerald-300"> Este paso es opcional</strong> — puedes
+                        continuar sin él y adjuntarlo más adelante desde tu panel.
                       </p>
-                      <p className="!text-xs !text-emerald-400/70">PDF Â· JPG Â· PNG Â· DOCX â€” mÃ¡x. 15 MB</p>
+                      <p className="!text-xs !text-emerald-400/70">PDF · JPG · PNG · DOCX — máx. 15 MB</p>
                     </div>
 
                     {/* Dropzone */}
                     <div
-                      className={`!border-2 !border-dashed !rounded-2xl !p-8 !text-center !transition-all !cursor-pointer
+                      className={`!border-2 !border-dashed !rounded-2xl !p-8 !text-center !transition-all
                         ${isDragging ? '!border-emerald-300 !bg-emerald-700/30' : '!border-emerald-600 !bg-emerald-800/30'}
-                        ${docFile ? '!border-solid !border-emerald-400 !bg-emerald-800/50 !cursor-default' : 'hover:!border-emerald-400 hover:!bg-emerald-800/40'}`}
+                        ${docFile ? '!border-solid !border-emerald-400 !bg-emerald-800/50 !cursor-default' : '!cursor-pointer hover:!border-emerald-400 hover:!bg-emerald-800/40'}`}
                       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                       onDragLeave={() => setIsDragging(false)}
                       onDrop={(e) => {
@@ -607,7 +607,7 @@ const Register: React.FC = () => {
                           <div className="!w-12 !h-12 !mx-auto !bg-emerald-700/50 !rounded-full !flex !items-center !justify-center">
                             <Briefcase className="!w-6 !h-6 !text-emerald-400" />
                           </div>
-                          <p className="!font-semibold !text-white">Arrastra tu documento aquÃ­</p>
+                          <p className="!font-semibold !text-white">Arrastra tu documento aquí</p>
                           <p className="!text-sm !text-emerald-400">
                             o <span className="!underline">haz clic para seleccionar</span>
                           </p>
@@ -626,13 +626,13 @@ const Register: React.FC = () => {
                     </div>
 
                     {apiError && (
-                      <p className="!text-xs !text-red-300 !mt-1">{apiError}</p>
+                      <p className="!text-xs !text-red-300">{apiError}</p>
                     )}
 
                     <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !border !border-emerald-700/50 !rounded-xl">
                       <AlertCircle className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
                       <p className="!text-sm !text-emerald-200/80">
-                        Nuestro equipo revisarÃ¡ tu solicitud en 1â€“2 dÃ­as hÃ¡biles y te notificarÃ¡
+                        Nuestro equipo revisará tu solicitud en 1–2 días hábiles y te notificará
                         por correo al activar tu cuenta.
                       </p>
                     </div>
@@ -640,7 +640,7 @@ const Register: React.FC = () => {
                 )}
               </div>
 
-            {/* Botones de navegaciÃ³n solo para pasos B2B */}
+            {/* Botones de navegación solo para pasos B2B */}
             {currentStep >= 1 && (
               <div className="!flex !gap-4 !pt-6">
                 {currentStep >= 1 && (
@@ -649,7 +649,7 @@ const Register: React.FC = () => {
                     onClick={handlePrevious}
                     className="!flex-1 !py-4 !px-6 !bg-emerald-800 !text-emerald-200 !font-bold !rounded-full hover:!bg-emerald-700 !transition-all"
                   >
-                    AtrÃ¡s
+                    Atrás
                   </button>
                 )}
                 
@@ -675,9 +675,9 @@ const Register: React.FC = () => {
           </form>
 
           <div className="!mt-8 !text-center">
-            <span className="!text-emerald-200/80">Â¿Ya tienes cuenta? </span>
+            <span className="!text-emerald-200/80">¿Ya tienes cuenta? </span>
             <Link to="/login" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
-              Iniciar sesiÃ³n
+              Iniciar sesión
             </Link>
           </div>
         </motion.div>
