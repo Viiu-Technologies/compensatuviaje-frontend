@@ -245,10 +245,18 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
               <div className="!text-center !py-2">
                 <CheckCircle2 className="!w-16 !h-16 !text-green-500 !mx-auto !mb-3" />
                 <p className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
-                  Orden #{orderCreated.id.slice(0, 8)}... creada
+                  ¡Orden creada exitosamente!
                 </p>
                 <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                  Realiza la transferencia bancaria para completar la compensación
+                  Ref: <strong>#{orderCreated.id.slice(0, 8).toUpperCase()}</strong>
+                </p>
+              </div>
+
+              {/* Email notice */}
+              <div className={`!flex !items-start !gap-3 !rounded-xl !p-3.5 ${isDark ? '!bg-blue-900/30 !border !border-blue-700/50' : '!bg-blue-50 !border !border-blue-200'}`}>
+                <span className="!text-xl !flex-shrink-0">📧</span>
+                <p className={`!text-sm !leading-relaxed ${isDark ? '!text-blue-300' : '!text-blue-700'}`}>
+                  <strong>Revisa tu correo.</strong> Te enviamos las instrucciones de pago con los datos bancarios para completar la transferencia.
                 </p>
               </div>
 
