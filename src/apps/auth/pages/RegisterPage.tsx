@@ -1,8 +1,8 @@
 import React from 'react';
-import Register from '../components/Register';
+import RegisterWizard from '../components/RegisterWizard';
 
 const RegisterPage = () => {
-  return <Register />;
+  return <RegisterWizard />;
 };
 
 export default RegisterPage;
