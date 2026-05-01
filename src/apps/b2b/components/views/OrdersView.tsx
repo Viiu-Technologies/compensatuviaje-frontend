@@ -11,7 +11,8 @@ import {
   Building2,
   Copy,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 import { useTheme } from '../../../../shared/context/ThemeContext';
 import { getMyOrders, getBankDetails, type B2BOrder, type BankDetails } from '../../services/ordersService';
@@ -59,6 +60,8 @@ const OrdersView: React.FC = () => {
         return { label: 'Aprobada', icon: CheckCircle2, color: 'green', bg: '!bg-green-100 !text-green-700', dot: '!bg-green-500' };
       case 'rejected':
         return { label: 'Rechazada', icon: XCircle, color: 'red', bg: '!bg-red-100 !text-red-700', dot: '!bg-red-500' };
+      case 'expired':
+        return { label: 'Expirada', icon: AlertCircle, color: 'gray', bg: '!bg-gray-100 !text-gray-500', dot: '!bg-gray-400' };
       default:
         return { label: status, icon: Package, color: 'gray', bg: '!bg-gray-100 !text-gray-700', dot: '!bg-gray-500' };
     }
@@ -255,6 +258,20 @@ const OrdersView: React.FC = () => {
                           <p className={`!text-sm !font-medium ${isDark ? '!text-green-400' : '!text-green-700'}`}>
                             Transferencia verificada. Certificado emitido.
                           </p>
+                          {order.invoicePdfUrl && (
+                            <a
+                              href={order.invoicePdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`!inline-flex !items-center !gap-2 !mt-3 !px-4 !py-2 !rounded-xl !text-sm !font-semibold !transition-all !no-underline ${
+                                isDark
+                                  ? '!bg-green-700/40 !text-green-300 hover:!bg-green-700/60'
+                                  : '!bg-green-600 !text-white hover:!bg-green-700'
+                              }`}
+                            >
+                              <Download className="!w-4 !h-4" /> Descargar Factura
+                            </a>
+                          )}
                         </div>
                       )}
                     </motion.div>

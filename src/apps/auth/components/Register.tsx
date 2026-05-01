@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useRef, ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
@@ -18,10 +18,14 @@ const Register: React.FC = () => {
   // Paso 0: selección de tipo de cuenta, Pasos 1-4: formulario B2B
   const [accountType, setAccountType] = useState<'none' | 'b2b' | 'b2c'>('none');
   const [currentStep, setCurrentStep] = useState(0); // 0 = selección de cuenta
-  const totalSteps = 4;
+  const totalSteps = 2;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     // Paso 1: Datos personales
@@ -118,30 +122,7 @@ const Register: React.FC = () => {
       if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los términos';
     }
 
-    if (step === 2) {
-      if (!formData.companyName.trim()) errors.companyName = 'Razón social requerida';
-      if (!formData.rut.trim()) errors.rut = 'RUT requerido';
-      if (!formData.businessType) errors.businessType = 'Tipo de empresa requerido';
-    }
-
-    if (step === 3) {
-      if (!formData.legalRepName.trim()) errors.legalRepName = 'Nombre del representante requerido';
-      if (!formData.legalRepRut.trim()) errors.legalRepRut = 'RUT del representante requerido';
-      if (!formData.contactEmail.trim()) errors.contactEmail = 'Email de contacto requerido';
-      else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) errors.contactEmail = 'Email inválido';
-      if (!formData.phone.trim()) errors.phone = 'Teléfono requerido';
-      if (!formData.region) errors.region = 'Región requerida';
-      if (!formData.city.trim()) errors.city = 'Ciudad requerida';
-      if (!formData.address.trim()) errors.address = 'Dirección requerida';
-    }
-
-    if (step === 4) {
-      if (!formData.industry) errors.industry = 'Sector económico requerido';
-      if (!formData.employeeCount) errors.employeeCount = 'Número de empleados requerido';
-      if (!formData.annualRevenue) errors.annualRevenue = 'Facturación requerida';
-      if (!formData.description.trim()) errors.description = 'Descripción requerida';
-      if (formData.interests.length === 0) errors.interests = 'Selecciona al menos un interés';
-    }
+    // Paso 2: documento opcional — sin validaciones obligatorias
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -189,51 +170,49 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleFileSelect = (file: File) => {
+    const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (!allowed.includes(ext)) {
+      setApiError('Solo se permiten PDF, imágenes o documentos Word');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setApiError('El archivo no puede superar 15 MB');
+      return;
+    }
+    setDocFile(file);
+    setApiError('');
+  };
+
+  const API_URL = (import.meta as any).env?.VITE_APP_API_URL
+    || (import.meta as any).env?.VITE_API_URL
+    || 'http://localhost:3001/api';
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
+    setApiError('');
     try {
-      const userData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      };
-      
-      await register(userData);
-      
-      const onboardingData = {
-        companyInfo: {
-          companyName: formData.companyName,
-          rut: formData.rut,
-          businessType: formData.businessType,
-          tradeName: formData.tradeName,
-          website: formData.website,
-        },
-        contactInfo: {
-          legalRepName: formData.legalRepName,
-          legalRepRut: formData.legalRepRut,
-          email: formData.contactEmail,
-          phone: formData.phone,
-          region: formData.region,
-          city: formData.city,
-          address: formData.address,
-        },
-        operationalInfo: {
-          industry: formData.industry,
-          employeeCount: formData.employeeCount,
-          annualRevenue: formData.annualRevenue,
-          description: formData.description,
-          interests: formData.interests,
-        }
-      };
-      
-      localStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Error en registro:', err);
+      const body = new FormData();
+      body.append('firstName', formData.firstName.trim());
+      body.append('lastName',  formData.lastName.trim());
+      body.append('email',     formData.email.trim().toLowerCase());
+      body.append('password',  formData.password);
+      if (docFile) body.append('document', docFile);
+
+      const res = await fetch(`${API_URL}/public/companies/register-simple`, {
+        method: 'POST',
+        body,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al crear la cuenta');
+
+      navigate('/auth/login');
+    } catch (err: any) {
+      setApiError(err.message || 'Error al crear la cuenta');
     } finally {
       setIsLoading(false);
     }
@@ -585,69 +564,79 @@ const Register: React.FC = () => {
                 )}
 
                 {currentStep === 2 && (
-                  <>
-                    {renderInput('Razón Social', 'companyName', 'text', 'Mi Empresa SpA', <Building className="!w-5 !h-5" />, true)}
-                    {renderInput('RUT Empresa', 'rut', 'text', '76.123.456-7', <FileText className="!w-5 !h-5" />)}
-                    {renderSelect('Tipo de Empresa', 'businessType', businessTypes)}
-                    {renderInput('Nombre de Fantasía', 'tradeName', 'text', 'Mi Marca', <Building className="!w-5 !h-5" />)}
-                    {renderInput('Sitio Web', 'website', 'url', 'https://...', <Building className="!w-5 !h-5" />)}
-                  </>
-                )}
+                  <div className="!col-span-2 !space-y-4">
+                    <div>
+                      <p className="!text-sm !text-emerald-200/80 !mb-1">
+                        Sube un documento con los datos de tu empresa (RUT, escritura, representante).
+                        <strong className="!text-emerald-300"> Este paso es opcional</strong> — puedes
+                        continuar sin él y adjuntarlo más adelante desde tu panel.
+                      </p>
+                      <p className="!text-xs !text-emerald-400/70">PDF · JPG · PNG · DOCX — máx. 15 MB</p>
+                    </div>
 
-                {currentStep === 3 && (
-                  <>
-                    {renderInput('Nombre Representante', 'legalRepName', 'text', 'Juan Pérez', <User className="!w-5 !h-5" />, true)}
-                    {renderInput('RUT Representante', 'legalRepRut', 'text', '12.345.678-9', <FileText className="!w-5 !h-5" />)}
-                    {renderInput('Email Contacto', 'contactEmail', 'email', 'contacto@empresa.com', <Mail className="!w-5 !h-5" />)}
-                    {renderInput('Teléfono', 'phone', 'tel', '+56 9 1234 5678', <Phone className="!w-5 !h-5" />)}
-                    {renderSelect('Región', 'region', chileanRegions)}
-                    {renderInput('Ciudad', 'city', 'text', 'Santiago', <MapPin className="!w-5 !h-5" />)}
-                    {renderInput('Dirección', 'address', 'text', 'Av. Siempre Viva 123', <MapPin className="!w-5 !h-5" />, true)}
-                  </>
-                )}
-
-                {currentStep === 4 && (
-                  <>
-                    {renderSelect('Sector Económico', 'industry', industries)}
-                    {renderSelect('Número de Empleados', 'employeeCount', employeeRanges)}
-                    {renderSelect('Facturación Anual', 'annualRevenue', revenueRanges)}
-                    
-                    <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Descripción de la Empresa</label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        rows={3}
-                        className={`!w-full !px-6 !py-4 !rounded-2xl !bg-emerald-800/50 !border ${validationErrors.description ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none`}
-                        placeholder="Breve descripción de lo que hace tu empresa..."
+                    {/* Dropzone */}
+                    <div
+                      className={`!border-2 !border-dashed !rounded-2xl !p-8 !text-center !transition-all
+                        ${isDragging ? '!border-emerald-300 !bg-emerald-700/30' : '!border-emerald-600 !bg-emerald-800/30'}
+                        ${docFile ? '!border-solid !border-emerald-400 !bg-emerald-800/50 !cursor-default' : '!cursor-pointer hover:!border-emerald-400 hover:!bg-emerald-800/40'}`}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault(); setIsDragging(false);
+                        const f = e.dataTransfer.files[0]; if (f) handleFileSelect(f);
+                      }}
+                      onClick={() => !docFile && fileInputRef.current?.click()}
+                    >
+                      {docFile ? (
+                        <div className="!flex !items-center !justify-center !gap-4">
+                          <FileText className="!w-8 !h-8 !text-emerald-400 !flex-shrink-0" />
+                          <div className="!text-left">
+                            <p className="!font-semibold !text-emerald-300">{docFile.name}</p>
+                            <p className="!text-xs !text-emerald-500">{(docFile.size / 1024).toFixed(1)} KB</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setDocFile(null); }}
+                            className="!ml-auto !text-red-400 hover:!text-red-300 !text-sm !bg-red-900/30 !px-3 !py-1 !rounded-full !transition-colors"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="!space-y-2">
+                          <div className="!w-12 !h-12 !mx-auto !bg-emerald-700/50 !rounded-full !flex !items-center !justify-center">
+                            <Briefcase className="!w-6 !h-6 !text-emerald-400" />
+                          </div>
+                          <p className="!font-semibold !text-white">Arrastra tu documento aquí</p>
+                          <p className="!text-sm !text-emerald-400">
+                            o <span className="!underline">haz clic para seleccionar</span>
+                          </p>
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        className="!hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0]; if (f) handleFileSelect(f);
+                          e.target.value = '';
+                        }}
                       />
-                      {validationErrors.description && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.description}</span>}
                     </div>
 
-                    <div className="!col-span-2 !space-y-3">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Intereses (Selecciona al menos uno)</label>
-                      <div className="!grid !grid-cols-1 sm:!grid-cols-2 !gap-3">
-                        {interestOptions.map(interest => (
-                          <label key={interest} className="!flex !items-center !gap-3 !p-3 !rounded-xl !bg-emerald-800/30 !border !border-emerald-700/50 !cursor-pointer hover:!bg-emerald-800/50 !transition-all">
-                            <div className="!relative !flex !items-center">
-                              <input
-                                type="checkbox"
-                                name="interests"
-                                value={interest}
-                                checked={formData.interests.includes(interest)}
-                                onChange={handleChange}
-                                className="!peer !appearance-none !w-4 !h-4 !border-2 !border-emerald-500 !rounded !bg-transparent checked:!bg-emerald-500"
-                              />
-                              <Check className="!absolute !w-3 !h-3 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
-                            </div>
-                            <span className="!text-sm !text-emerald-100">{interest}</span>
-                          </label>
-                        ))}
-                      </div>
-                      {validationErrors.interests && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.interests}</span>}
+                    {apiError && (
+                      <p className="!text-xs !text-red-300">{apiError}</p>
+                    )}
+
+                    <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !border !border-emerald-700/50 !rounded-xl">
+                      <AlertCircle className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
+                      <p className="!text-sm !text-emerald-200/80">
+                        Nuestro equipo revisará tu solicitud en 1–2 días hábiles y te notificará
+                        por correo al activar tu cuenta.
+                      </p>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
 

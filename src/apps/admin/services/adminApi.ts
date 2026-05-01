@@ -889,7 +889,7 @@ export interface B2BOrder {
   tonsTco2: number;
   amount: number;
   currency: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'expired';
   company: {
     id: string;
     name: string;
@@ -903,6 +903,7 @@ export interface B2BOrder {
   } | null;
   platformFee: number;
   payoutAmount: number;
+  invoicePdfUrl?: string | null;
   createdAt: string;
 }
 
@@ -943,5 +944,16 @@ export const rejectB2BOrder = async (orderId: string, reason?: string): Promise<
   reason: string | null;
 }> => {
   const response = await api.post(`/admin/orders/${orderId}/reject`, { reason }) as any;
+  return response.data || response;
+};
+
+export const uploadB2BInvoice = async (orderId: string, file: File): Promise<{
+  invoicePdfUrl: string;
+}> => {
+  const formData = new FormData();
+  formData.append('invoice', file);
+  const response = await api.post(`/admin/orders/${orderId}/invoice`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }) as any;
   return response.data || response;
 };

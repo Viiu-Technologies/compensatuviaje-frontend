@@ -7,25 +7,25 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Award,
-  ShoppingBag,
+  ShieldCheck,
+  Package,
   Calculator,
   Bot,
   FileText,
-  Package
+  FileUp,
 } from 'lucide-react';
 
 // Import Views
 import ProfileView from './views/ProfileView';
 import DashboardPanelView from './views/DashboardPanelView';
 import ProjectsView from './views/ProjectsView';
-import ImpactStoreView from './views/ImpactStoreView';
-import BadgesView from './views/BadgesView';
 import SettingsView from './views/SettingsView';
 import CalculatorView from './views/CalculatorView';
 import AssistantView from './views/AssistantView';
 import DocumentsView from './views/DocumentsView';
 import OrdersView from './views/OrdersView';
+import ManifestView from './views/ManifestView';
+import CertificatesView from './views/CertificatesView';
 
 const B2BDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -40,9 +40,10 @@ const B2BDashboard: React.FC = () => {
     { id: 'documentos', label: 'Documentos', icon: FileText },
     { id: 'proyectos', label: 'Proyectos', icon: Trees },
     { id: 'ordenes', label: 'Mis Órdenes', icon: Package },
-    { id: 'tienda', label: 'Tienda de Impacto', icon: ShoppingBag },
-    { id: 'insignias', label: 'Insignias', icon: Award },
+    { id: 'certificados', label: 'Bóveda de Certificados', icon: ShieldCheck },
+    { id: 'manifiestos', label: 'Manifiestos', icon: FileUp },
     { id: 'calculadora', label: 'Calculadora', icon: Calculator },
+    // V2: tienda, insignias, rankings (gamificación pospuesta)
     { id: 'asistente', label: 'Asistente IA', icon: Bot },
     { id: 'cuenta', label: 'Cuenta', icon: Settings },
   ];
@@ -60,10 +61,11 @@ const B2BDashboard: React.FC = () => {
         return <ProjectsView onNavigateToOrders={() => setActiveTab('ordenes')} />;
       case 'ordenes':
         return <OrdersView />;
-      case 'tienda':
-        return <ImpactStoreView />;
-      case 'insignias':
-        return <BadgesView />;
+      case 'certificados':
+        return <CertificatesView />;
+      case 'manifiestos':
+        return <ManifestView />;
+      // V2: tienda, insignias (gamificación pospuesta)
       case 'calculadora':
         return <CalculatorView />;
       case 'asistente':

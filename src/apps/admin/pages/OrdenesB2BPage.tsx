@@ -14,12 +14,15 @@ import {
   ChevronRight,
   AlertTriangle,
   DollarSign,
-  Filter
+  Filter,
+  Upload,
+  FileText
 } from 'lucide-react';
 import {
   getB2BOrders,
   approveB2BOrder,
   rejectB2BOrder,
+  uploadB2BInvoice,
   type B2BOrder
 } from '../services/adminApi';
 
@@ -40,6 +43,9 @@ export default function OrdenesB2BPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionResult, setActionResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Invoice upload state
+  const [uploadingInvoiceId, setUploadingInvoiceId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     setIsLoading(true);
@@ -97,6 +103,18 @@ export default function OrdenesB2BPage() {
     setActionModal(null);
     setRejectReason('');
     setActionResult(null);
+  };
+
+  const handleInvoiceUpload = async (orderId: string, file: File) => {
+    setUploadingInvoiceId(orderId);
+    try {
+      await uploadB2BInvoice(orderId, file);
+      loadOrders();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Error al subir la factura');
+    } finally {
+      setUploadingInvoiceId(null);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -270,6 +288,38 @@ export default function OrdenesB2BPage() {
                           >
                             Rechazar
                           </button>
+                        </div>
+                      ) : order.status === 'approved' ? (
+                        <div className="!flex !flex-col !items-center !gap-1.5">
+                          {order.invoicePdfUrl ? (
+                            <a
+                              href={order.invoicePdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="!inline-flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg !bg-indigo-50 !text-indigo-700 !text-xs !font-semibold !border !border-indigo-200 hover:!bg-indigo-100 !transition-colors !no-underline"
+                            >
+                              <FileText className="!w-3.5 !h-3.5" /> Ver Factura
+                            </a>
+                          ) : null}
+                          <label className="!inline-flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg !bg-blue-50 !text-blue-700 !text-xs !font-semibold !border !border-blue-200 hover:!bg-blue-100 !transition-colors !cursor-pointer">
+                            {uploadingInvoiceId === order.id ? (
+                              <Loader2 className="!w-3.5 !h-3.5 !animate-spin" />
+                            ) : (
+                              <Upload className="!w-3.5 !h-3.5" />
+                            )}
+                            {order.invoicePdfUrl ? 'Reemplazar' : 'Subir Factura'}
+                            <input
+                              type="file"
+                              accept="application/pdf,.pdf"
+                              className="!hidden"
+                              disabled={uploadingInvoiceId === order.id}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleInvoiceUpload(order.id, file);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
                         </div>
                       ) : (
                         <span className="!text-xs !text-slate-400">—</span>

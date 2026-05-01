@@ -33,7 +33,7 @@ import {
   filterMockProjects,
   type Project 
 } from '../../services/projectsService';
-import { createOrder, getBankDetails, type BankDetails } from '../../services/ordersService';
+import { createOrder, getBankDetails, getEmissionDebt, type BankDetails, type EmissionDebt } from '../../services/ordersService';
 import { calculateUnitsFromTons, calculateTonsFromUnits } from '../../../../utils/carbon';
 
 interface CheckoutModalProps {
@@ -44,14 +44,15 @@ interface CheckoutModalProps {
 }
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose, onSuccess }) => {
-  const [tonsTco2, setTonsTco2] = useState<string>('1');
+  const [tonsTco2, setTonsTco2] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderCreated, setOrderCreated] = useState<{ id: string; amount: number } | null>(null);
   const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
   const [copied, setCopied] = useState(false);
+  const [debt, setDebt] = useState<EmissionDebt | null>(null);
 
-  const tons = parseFloat(tonsTco2) || 0;
+  const tons = tonsTco2;
   // Unidades físicas que se reservarán (Enfoque B)
   const physicalUnits = project.carbon_capture_per_unit
     ? calculateUnitsFromTons(tons, project.carbon_capture_per_unit)
@@ -60,16 +61,31 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
   const availableTons = project.carbon_capture_per_unit && project.availableUnits
     ? calculateTonsFromUnits(project.availableUnits, project.carbon_capture_per_unit)
     : (project.availableUnits || 0);
+
+  // Slider max: minimum of available stock and emission debt (if known), at least 1
+  const debtMax = debt && debt.tonsPending > 0 ? debt.tonsPending : null;
+  const sliderMax = Math.max(
+    debtMax ? Math.min(availableTons, debtMax) : availableTons,
+    1
+  );
+  const sliderMin = 0.1;
   const isOverLimit = tons > 0 && tons > availableTons;
   const totalCLP = tons > 0 ? Math.round(tons * project.pricePerTonCLP) : 0;
 
   useEffect(() => {
     getBankDetails().then(setBankDetails).catch(() => {});
-  }, []);
+    getEmissionDebt().then((d) => {
+      setDebt(d);
+      // Set initial slider value to pending debt (capped by stock)
+      if (d.tonsPending > 0) {
+        setTonsTco2(parseFloat(Math.min(d.tonsPending, availableTons).toFixed(1)));
+      }
+    }).catch(() => {});
+  }, [availableTons]);
 
   const handleSubmit = async () => {
     if (tons <= 0) {
-      setError('Ingresa una cantidad válida de toneladas');
+      setError('Selecciona una cantidad válida de toneladas');
       return;
     }
     if (isOverLimit) {
@@ -81,6 +97,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
     try {
       const response = await createOrder({
         projectId: project.id,
+        tons_to_compensate: tons,
         tonsTco2: tons,
         // Enfoque B: enviar unidades físicas y kg congelados al backend
         ...(physicalUnits !== null && { physicalUnits }),
@@ -125,36 +142,51 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
         <div className="!p-6 !space-y-5">
           {!orderCreated ? (
             <>
-              {/* Tons input */}
+              {/* Debt CTA + Slider */}
               <div>
-                <div className="!flex !justify-between !mb-2">
-                  <label className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-                    Toneladas de CO₂ a compensar
-                  </label>
-                  {project.availableUnits !== undefined && (
-                    <span className="!text-sm !text-emerald-600 !font-medium">
-                      Disponible: {availableTons.toLocaleString()} t
-                      {project.impact_unit && project.availableUnits > 0 && (
-                        <span className="!text-gray-400 !font-normal !ml-1">
-                          ({project.availableUnits.toLocaleString()} {project.impact_unit})
-                        </span>
-                      )}
-                    </span>
+                {/* Contextual headline */}
+                <div className={`!rounded-xl !p-4 !mb-4 ${isDark ? '!bg-emerald-900/30 !border !border-emerald-700/40' : '!bg-emerald-50 !border !border-emerald-200'}`}>
+                  {debt && debt.tonsPending > 0 ? (
+                    <p className={`!text-sm !font-medium ${isDark ? '!text-emerald-200' : '!text-emerald-800'}`}>
+                      Tu empresa tiene <span className="!font-bold !text-emerald-500">{debt.tonsPending.toLocaleString('es-CL', { maximumFractionDigits: 1 })} t CO₂</span> pendientes de compensar.
+                      <span className={`!font-normal !ml-1 ${isDark ? '!text-emerald-400' : '!text-emerald-700'}`}>
+                        ¿Cuánto quieres compensar hoy?
+                      </span>
+                    </p>
+                  ) : (
+                    <p className={`!text-sm !font-medium ${isDark ? '!text-emerald-200' : '!text-emerald-800'}`}>
+                      ¿Cuántas toneladas quieres compensar hoy?
+                    </p>
                   )}
                 </div>
-                <input
-                  type="number"
-                  min="0.1"
-                  step="0.1"
-                  max={project.availableUnits}
-                  value={tonsTco2}
-                  onChange={(e) => { setTonsTco2(e.target.value); setError(null); }}
-                  className={`!w-full !px-4 !py-3 !rounded-xl !border !text-lg !font-semibold !outline-none focus:!ring-2 focus:!ring-green-500 ${
-                    isOverLimit 
-                      ? '!border-red-500 !bg-red-50 !text-red-900' 
-                      : (isDark ? '!bg-gray-700 !border-gray-600 !text-white' : '!bg-gray-50 !border-gray-200 !text-gray-900')
-                  }`}
-                />
+
+                {/* Slider + value display */}
+                <div className="!space-y-3">
+                  <div className="!flex !justify-between !items-baseline">
+                    <span className={`!text-3xl !font-bold !text-emerald-500`}>
+                      {tons.toLocaleString('es-CL', { maximumFractionDigits: 1 })} t CO₂
+                    </span>
+                    {availableTons > 0 && (
+                      <span className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
+                        máx. {availableTons.toLocaleString('es-CL', { maximumFractionDigits: 0 })} t disponibles
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="range"
+                    min={sliderMin}
+                    max={sliderMax}
+                    step={sliderMax >= 10 ? 0.5 : 0.1}
+                    value={tons}
+                    onChange={(e) => { setTonsTco2(parseFloat(e.target.value)); setError(null); }}
+                    className="!w-full !h-2 !rounded-full !appearance-none !cursor-pointer !accent-emerald-500"
+                    style={{ background: `linear-gradient(to right, #10b981 ${((tons - sliderMin) / (sliderMax - sliderMin)) * 100}%, ${isDark ? '#374151' : '#e5e7eb'} 0%)` }}
+                  />
+                  <div className="!flex !justify-between !text-xs" style={{ color: isDark ? '#6b7280' : '#9ca3af' }}>
+                    <span>{sliderMin} t</span>
+                    <span>{sliderMax.toLocaleString('es-CL', { maximumFractionDigits: 0 })} t</span>
+                  </div>
+                </div>
                 {isOverLimit && (
                   <p className="!text-xs !text-red-600 !mt-1">
                     Cantidad no puede superar el stock mensual disponible ({availableTons.toLocaleString()} t)
@@ -213,10 +245,18 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ project, isDark, onClose,
               <div className="!text-center !py-2">
                 <CheckCircle2 className="!w-16 !h-16 !text-green-500 !mx-auto !mb-3" />
                 <p className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
-                  Orden #{orderCreated.id.slice(0, 8)}... creada
+                  ¡Orden creada exitosamente!
                 </p>
                 <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                  Realiza la transferencia bancaria para completar la compensación
+                  Ref: <strong>#{orderCreated.id.slice(0, 8).toUpperCase()}</strong>
+                </p>
+              </div>
+
+              {/* Email notice */}
+              <div className={`!flex !items-start !gap-3 !rounded-xl !p-3.5 ${isDark ? '!bg-blue-900/30 !border !border-blue-700/50' : '!bg-blue-50 !border !border-blue-200'}`}>
+                <span className="!text-xl !flex-shrink-0">📧</span>
+                <p className={`!text-sm !leading-relaxed ${isDark ? '!text-blue-300' : '!text-blue-700'}`}>
+                  <strong>Revisa tu correo.</strong> Te enviamos las instrucciones de pago con los datos bancarios para completar la transferencia.
                 </p>
               </div>
 
