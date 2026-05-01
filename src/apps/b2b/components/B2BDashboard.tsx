@@ -7,22 +7,18 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Award,
-  ShoppingBag,
+  ShieldCheck,
+  Package,
   Calculator,
   Bot,
   FileText,
-  Package,
   FileUp,
-  ShieldCheck
 } from 'lucide-react';
 
 // Import Views
 import ProfileView from './views/ProfileView';
 import DashboardPanelView from './views/DashboardPanelView';
 import ProjectsView from './views/ProjectsView';
-import ImpactStoreView from './views/ImpactStoreView';
-import BadgesView from './views/BadgesView';
 import SettingsView from './views/SettingsView';
 import CalculatorView from './views/CalculatorView';
 import AssistantView from './views/AssistantView';
@@ -46,9 +42,8 @@ const B2BDashboard: React.FC = () => {
     { id: 'ordenes', label: 'Mis Órdenes', icon: Package },
     { id: 'certificados', label: 'Bóveda de Certificados', icon: ShieldCheck },
     { id: 'manifiestos', label: 'Manifiestos', icon: FileUp },
-    { id: 'tienda', label: 'Tienda de Impacto', icon: ShoppingBag },
-    { id: 'insignias', label: 'Insignias', icon: Award },
     { id: 'calculadora', label: 'Calculadora', icon: Calculator },
+    // V2: tienda, insignias, rankings (gamificación pospuesta)
     { id: 'asistente', label: 'Asistente IA', icon: Bot },
     { id: 'cuenta', label: 'Cuenta', icon: Settings },
   ];
@@ -70,10 +65,7 @@ const B2BDashboard: React.FC = () => {
         return <CertificatesView />;
       case 'manifiestos':
         return <ManifestView />;
-      case 'tienda':
-        return <ImpactStoreView />;
-      case 'insignias':
-        return <BadgesView />;
+      // V2: tienda, insignias (gamificación pospuesta)
       case 'calculadora':
         return <CalculatorView />;
       case 'asistente':
