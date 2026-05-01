@@ -13,7 +13,8 @@ import {
   Bot,
   FileText,
   Package,
-  FileUp
+  FileUp,
+  ShieldCheck
 } from 'lucide-react';
 
 // Import Views
@@ -28,6 +29,7 @@ import AssistantView from './views/AssistantView';
 import DocumentsView from './views/DocumentsView';
 import OrdersView from './views/OrdersView';
 import ManifestView from './views/ManifestView';
+import CertificatesView from './views/CertificatesView';
 
 const B2BDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -42,6 +44,7 @@ const B2BDashboard: React.FC = () => {
     { id: 'documentos', label: 'Documentos', icon: FileText },
     { id: 'proyectos', label: 'Proyectos', icon: Trees },
     { id: 'ordenes', label: 'Mis Órdenes', icon: Package },
+    { id: 'certificados', label: 'Bóveda de Certificados', icon: ShieldCheck },
     { id: 'manifiestos', label: 'Manifiestos', icon: FileUp },
     { id: 'tienda', label: 'Tienda de Impacto', icon: ShoppingBag },
     { id: 'insignias', label: 'Insignias', icon: Award },
@@ -63,6 +66,8 @@ const B2BDashboard: React.FC = () => {
         return <ProjectsView onNavigateToOrders={() => setActiveTab('ordenes')} />;
       case 'ordenes':
         return <OrdersView />;
+      case 'certificados':
+        return <CertificatesView />;
       case 'manifiestos':
         return <ManifestView />;
       case 'tienda':
