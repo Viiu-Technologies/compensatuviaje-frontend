@@ -22,10 +22,17 @@ export interface B2BOrder {
 
 export interface CreateOrderRequest {
   projectId: string;
-  tonsTco2: number;
+  tonsTco2?: number;
+  tons_to_compensate?: number;
   // Enfoque B: unidades físicas y kg a congelar en la BD
   physicalUnits?: number;   // Unidades calculadas con calculateUnitsFromTons
   co2KgToFreeze?: number;   // kg CO2 = tonsTco2 * 1000 (congelado en la orden)
+}
+
+export interface EmissionDebt {
+  totalEmitted: number;
+  totalCompensated: number;
+  tonsPending: number;
 }
 
 export interface CreateOrderResponse {
@@ -76,6 +83,14 @@ export const getMyOrders = async (): Promise<{ orders: B2BOrder[]; total: number
 export const getOrderDetail = async (orderId: string): Promise<B2BOrder> => {
   const response = await api.get(`/b2b/orders/${orderId}`) as any;
   return response.order;
+};
+
+/**
+ * Get company emission debt (total emitted - total compensated)
+ */
+export const getEmissionDebt = async (): Promise<EmissionDebt> => {
+  const response = await api.get('/b2b/orders/emission-debt') as any;
+  return response.debt;
 };
 
 /**
