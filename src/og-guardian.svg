@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" role="img"><title>Premium Eco Tree Badge</title><defs><style>
+.c1{animation:breathe 5s ease-in-out infinite;transform-origin:44px 56px}
+.c2{animation:breathe 6s ease-in-out infinite .6s;transform-origin:76px 52px}
+.c3{animation:breathe 7s ease-in-out infinite 1.2s;transform-origin:60px 42px}
+.f1{animation:drift 4.5s ease-in-out infinite}
+.f2{animation:drift 5.5s ease-in-out infinite .9s}
+.f3{animation:drift 4s ease-in-out infinite 1.5s}
+.f4{animation:drift 6s ease-in-out infinite .3s}
+.p1{animation:pulse 5s ease-in-out infinite;transform-origin:center}
+.p2{animation:pulse 6s ease-in-out infinite 1.5s;transform-origin:center}
+.p3{animation:pulse 4.5s ease-in-out infinite .8s;transform-origin:center}
+.arc{animation:arcfade 6s ease-in-out infinite;transform-origin:60px 60px}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:.9;transform:scale(1.1)}}
+@keyframes arcfade{0%,100%{opacity:.25}50%{opacity:.6}}
+</style></defs>
+
+<g id="background">
+  <circle cx="60" cy="60" r="60" fill="#FFF3E0"/>
+  <circle cx="60" cy="60" r="56" fill="#FFE0B2"/>
+</g>
+
+<g id="decorative_ring">
+  <circle cx="60" cy="60" r="54" fill="none" stroke="#FFCC80" stroke-width="1.5"/>
+  <circle cx="60" cy="60" r="50" fill="none" stroke="#FFB74D" stroke-width=".5" stroke-dasharray="3 5"/>
+</g>
+
+<g id="accent_elements">
+  <path class="arc" d="M22 66 Q60 20 98 66 Q78 24 60 18 Q42 24 22 66Z" fill="#FFCC80"/>
+  <path class="arc" d="M30 72 Q60 32 90 72 Q72 36 60 30 Q48 36 30 72Z" fill="#FFE0B2" style="animation-delay:.8s"/>
+  <circle class="p1" cx="22" cy="36" r="2.2" fill="#81C784"/>
+  <circle class="p2" cx="97" cy="42" r="2.8" fill="#FFB74D"/>
+  <circle class="p3" cx="83" cy="18" r="1.8" fill="#4CAF50"/>
+  <circle class="p1" cx="34" cy="84" r="2" fill="#FFB74D" style="animation-delay:1s"/>
+  <circle class="p2" cx="91" cy="76" r="1.6" fill="#81C784" style="animation-delay:.4s"/>
+  <circle class="p3" cx="46" cy="21" r="2" fill="#FFCC80" style="animation-delay:1.8s"/>
+  <circle class="p1" cx="16" cy="60" r="1.4" fill="#4CAF50" style="animation-delay:.6s"/>
+  <circle class="p2" cx="104" cy="60" r="1.4" fill="#FFB74D" style="animation-delay:1.3s"/>
+</g>
+
+<g id="tree">
+  <g id="ground">
+    <ellipse cx="60" cy="93" rx="14" ry="2.5" fill="#FFCC80"/>
+    <ellipse cx="60" cy="93" rx="9" ry="1.5" fill="#FFB74D"/>
+  </g>
+  <g id="trunk">
+    <path d="M57 91 C57 94.5 63 94.5 63 91 L61 51 Q60 49.5 59 51 Z" fill="#795548"/>
+    <path d="M60 49.5 Q60.8 50 61 51 L63 91 C63 94.5 60 94.5 60 94.5 Z" fill="#5D4037"/>
+    <path d="M57.5 62 Q54 64 52 68" fill="none" stroke="#6D4C41" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M62 58 Q66 60 68 65" fill="none" stroke="#6D4C41" stroke-width="1" stroke-linecap="round"/>
+  </g>
+  <g id="canopy">
+    <circle class="c1" cx="44" cy="56" r="17" fill="#1B5E20"/>
+    <circle class="c2" cx="76" cy="52" r="16" fill="#2E7D32"/>
+    <circle class="c3" cx="60" cy="42" r="23" fill="#388E3C"/>
+    <circle cx="56" cy="35" r="5" fill="#43A047"/>
+    <circle cx="72" cy="40" r="4" fill="#2E7D32"/>
+    <circle cx="46" cy="46" r="4.5" fill="#1B5E20"/>
+  </g>
+</g>
+
+<g id="floating_leaves">
+  <!-- Hoja 1: arriba izquierda, inclinada -40° -->
+  <g class="f1">
+    <g transform="translate(30,39) rotate(-40)">
+      <path d="M0,8 C-6,4 -5,-5 0,-11 C5,-5 6,4 0,8Z" fill="#66BB6A"/>
+      <path d="M0,8 C-1,1 -0.5,-5 0,-11" fill="none" stroke="#388E3C" stroke-width="0.8" stroke-linecap="round"/>
+    </g>
+  </g>
+  <!-- Hoja 2: arriba derecha, inclinada +35° -->
+  <g class="f2">
+    <g transform="translate(89,31) rotate(35)">
+      <path d="M0,9 C-5,4 -4,-6 0,-12 C4,-6 5,4 0,9Z" fill="#4CAF50"/>
+      <path d="M0,9 C0.5,2 0.3,-5 0,-12" fill="none" stroke="#2E7D32" stroke-width="0.8" stroke-linecap="round"/>
+    </g>
+  </g>
+  <!-- Hoja 3: izquierda, pequeña, inclinada -55° -->
+  <g class="f3">
+    <g transform="translate(23,56) rotate(-55)">
+      <path d="M0,6 C-3.5,2.5 -3,-4 0,-8 C3,-4 3.5,2.5 0,6Z" fill="#388E3C"/>
+      <path d="M0,6 C-0.3,1 -0.2,-3 0,-8" fill="none" stroke="#1B5E20" stroke-width="0.7" stroke-linecap="round"/>
+    </g>
+  </g>
+  <!-- Hoja 4: derecha, inclinada +45° -->
+  <g class="f4">
+    <g transform="translate(95,53) rotate(45)">
+      <path d="M0,7 C-4,3 -3.5,-4 0,-9 C3.5,-4 4,3 0,7Z" fill="#81C784"/>
+      <path d="M0,7 C0.4,1.5 0.2,-3 0,-9" fill="none" stroke="#4CAF50" stroke-width="0.7" stroke-linecap="round"/>
+    </g>
+  </g>
+</g>
+
+</svg>

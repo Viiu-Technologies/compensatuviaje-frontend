@@ -1,0 +1,445 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="300" height="300" role="img" overflow="visible">
+<title>Elite Premium Eco Globe Badge</title>
+<defs>
+
+  <!-- ═══ FILTROS ═══ -->
+  <filter id="f-shadow" x="-60%" y="-60%" width="220%" height="220%">
+    <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.18"/>
+  </filter>
+  <filter id="f-shadow-sm" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.22"/>
+  </filter>
+
+  <filter id="f-glow-green" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="2.5" result="blur"/>
+    <feColorMatrix in="blur" type="matrix"
+      values="0 0 0 0 0.2
+              0 0 0 0 1
+              0 0 0 0 0.4
+              0 0 0 2 0" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="f-glow-cyan" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="2" result="blur"/>
+    <feColorMatrix in="blur" type="matrix"
+      values="0 0 0 0 0
+              0 0 0 0 0.9
+              0 0 0 0 1
+              0 0 0 2 0" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="f-glow-white" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="1.5" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="f-atmosphere" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="3" result="blur"/>
+    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+  </filter>
+
+  <!-- ═══ GRADIENTES ═══ -->
+
+  <!-- Aura de Fondo Orgánica -->
+  <radialGradient id="g-aura" cx="42%" cy="38%" r="58%">
+    <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="1.0"/>
+    <stop offset="40%"  stop-color="#E8F5E9" stop-opacity="0.95"/>
+    <stop offset="75%"  stop-color="#C8E6C9" stop-opacity="0.7"/>
+    <stop offset="100%" stop-color="#A5D6A7" stop-opacity="0.3"/>
+  </radialGradient>
+
+  <!-- Océano: azul profundo con luminosidad superior -->
+  <radialGradient id="g-ocean" cx="38%" cy="32%" r="72%">
+    <stop offset="0%"   stop-color="#4FC3F7"/>
+    <stop offset="35%"  stop-color="#0288D1"/>
+    <stop offset="70%"  stop-color="#01579B"/>
+    <stop offset="100%" stop-color="#013A6B"/>
+  </radialGradient>
+
+  <!-- Tierra animada con el globo -->
+  <linearGradient id="g-land" x1="30" y1="25" x2="90" y2="95" gradientUnits="userSpaceOnUse">
+    <stop offset="0%"   stop-color="#E6FF99"/>
+    <stop offset="30%"  stop-color="#69F07A"/>
+    <stop offset="65%"  stop-color="#2E7D32"/>
+    <stop offset="100%" stop-color="#1B3A20"/>
+  </linearGradient>
+
+  <!-- Shading 3D Esfera: iluminación de alto espectro -->
+  <radialGradient id="g-globe-vol" cx="33%" cy="28%" r="75%">
+    <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.80"/>
+    <stop offset="18%"  stop-color="#FFFFFF" stop-opacity="0.30"/>
+    <stop offset="40%"  stop-color="#FFFFFF" stop-opacity="0.00"/>
+    <stop offset="65%"  stop-color="#000B20" stop-opacity="0.10"/>
+    <stop offset="85%"  stop-color="#000B20" stop-opacity="0.38"/>
+    <stop offset="100%" stop-color="#000B20" stop-opacity="0.72"/>
+  </radialGradient>
+
+  <!-- Reflejo especular pequeño (highlight) -->
+  <radialGradient id="g-specular" cx="30%" cy="25%" r="25%">
+    <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.90"/>
+    <stop offset="60%"  stop-color="#FFFFFF" stop-opacity="0.20"/>
+    <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.00"/>
+  </radialGradient>
+
+  <!-- Atmósfera borde del globo -->
+  <radialGradient id="g-atmos" cx="50%" cy="50%" r="50%">
+    <stop offset="88%"  stop-color="#4FC3F7" stop-opacity="0.00"/>
+    <stop offset="94%"  stop-color="#80DEEA" stop-opacity="0.45"/>
+    <stop offset="100%" stop-color="#B2EBF2" stop-opacity="0.00"/>
+  </radialGradient>
+
+  <!-- Hojas con degradado rico -->
+  <linearGradient id="g-leaf-a-light" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%"   stop-color="#388E3C"/>
+    <stop offset="50%"  stop-color="#66BB6A"/>
+    <stop offset="100%" stop-color="#CCFF90"/>
+  </linearGradient>
+  <linearGradient id="g-leaf-a-dark" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%"   stop-color="#1B5E20"/>
+    <stop offset="100%" stop-color="#4CAF50"/>
+  </linearGradient>
+  <linearGradient id="g-leaf-b-light" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%"   stop-color="#2E7D32"/>
+    <stop offset="50%"  stop-color="#43A047"/>
+    <stop offset="100%" stop-color="#B9F6CA"/>
+  </linearGradient>
+  <linearGradient id="g-leaf-b-dark" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%"   stop-color="#0A2E0C"/>
+    <stop offset="100%" stop-color="#2E7D32"/>
+  </linearGradient>
+
+  <!-- Anillo Orbital Glassmorphism -->
+  <linearGradient id="g-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%"   stop-color="#80CBC4" stop-opacity="0.8"/>
+    <stop offset="30%"  stop-color="#B2DFDB" stop-opacity="0.15"/>
+    <stop offset="60%"  stop-color="#4DB6AC" stop-opacity="0.05"/>
+    <stop offset="100%" stop-color="#00796B" stop-opacity="0.75"/>
+  </linearGradient>
+
+  <!-- Neon orbital interno -->
+  <linearGradient id="g-neon-orbit" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%"   stop-color="#00E5FF" stop-opacity="0.9"/>
+    <stop offset="50%"  stop-color="#69F0AE" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#00E5FF" stop-opacity="0.9"/>
+  </linearGradient>
+
+  <!-- Partícula bokeh de fondo -->
+  <radialGradient id="g-bokeh" cx="50%" cy="50%" r="50%">
+    <stop offset="0%"   stop-color="#A5F3B4" stop-opacity="0.8"/>
+    <stop offset="100%" stop-color="#A5F3B4" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- ═══ CLIP PATHS ═══ -->
+  <clipPath id="cp-globe"><circle cx="60" cy="60" r="29.8"/></clipPath>
+  <clipPath id="cp-outer"><circle cx="60" cy="60" r="56"/></clipPath>
+
+  <!-- ═══ MARCADORES ═══ -->
+  <marker id="mk-arrow" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+    <path d="M0 0 L4 2 L0 4 Z" fill="#69F0AE" opacity="0.8"/>
+  </marker>
+
+  <!-- ═══ ANIMACIONES ═══ -->
+  <style>
+    .a-float       { animation: kf-float 7s ease-in-out infinite; transform-origin: 60px 60px; }
+    .a-blob        { animation: kf-blob 28s linear infinite; transform-origin: 60px 60px; }
+    .a-globe-land  { animation: kf-land 12s linear infinite; }
+    .a-leaf-1      { animation: kf-leaf 8s ease-in-out infinite; transform-origin: 42px 84px; }
+    .a-leaf-2      { animation: kf-leaf 8s ease-in-out infinite 0.5s; transform-origin: 34px 90px; }
+    .a-orbit       { animation: kf-orbit 16s ease-in-out infinite; transform-origin: 60px 60px; }
+    .a-orbit-sh    { animation: kf-orbit-sh 16s ease-in-out infinite; transform-origin: 60px 60px; }
+    .a-ring-outer  { animation: kf-ring 35s linear infinite; transform-origin: 60px 60px; }
+    .a-ring-inner  { animation: kf-ring 20s linear infinite reverse; transform-origin: 60px 60px; }
+    .a-dot-1       { animation: kf-dot 5s ease-in-out infinite; }
+    .a-dot-2       { animation: kf-dot 5s ease-in-out infinite 0.9s; }
+    .a-dot-3       { animation: kf-dot 5s ease-in-out infinite 1.8s; }
+    .a-dot-4       { animation: kf-dot 5s ease-in-out infinite 0.4s; }
+    .a-dot-5       { animation: kf-dot 5s ease-in-out infinite 1.3s; }
+    .a-bokeh-1     { animation: kf-bokeh 9s ease-in-out infinite; }
+    .a-bokeh-2     { animation: kf-bokeh 11s ease-in-out infinite 3s; }
+    .a-bokeh-3     { animation: kf-bokeh 7s ease-in-out infinite 1.5s; }
+    .a-shimmer     { animation: kf-shimmer 4s ease-in-out infinite; }
+    .a-pulse-atmos { animation: kf-pulse-atmos 5s ease-in-out infinite; }
+
+    @keyframes kf-float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-6px); }
+    }
+    @keyframes kf-blob {
+      0%   { transform: rotate(0deg) scale(1); }
+      50%  { transform: rotate(180deg) scale(1.015); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    @keyframes kf-land {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-64px); }
+    }
+    @keyframes kf-leaf {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      30%       { transform: rotate(-5deg) scale(1.02); }
+      70%       { transform: rotate(2deg) scale(0.99); }
+    }
+    @keyframes kf-orbit {
+      0%, 100% { transform: rotate(-10deg) scaleY(0.42); }
+      50%       { transform: rotate(-18deg) scaleY(0.40); }
+    }
+    @keyframes kf-orbit-sh {
+      0%, 100% { transform: rotate(-10deg); }
+      50%       { transform: rotate(-18deg); }
+    }
+    @keyframes kf-ring {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes kf-dot {
+      0%, 100% { transform: translate(0, 0) scale(0.8); opacity: 0.45; }
+      50%       { transform: translate(0, -9px) scale(1.2); opacity: 1; }
+    }
+    @keyframes kf-bokeh {
+      0%, 100% { opacity: 0.12; transform: scale(1); }
+      50%       { opacity: 0.35; transform: scale(1.15); }
+    }
+    @keyframes kf-shimmer {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 0.7; }
+    }
+    @keyframes kf-pulse-atmos {
+      0%, 100% { opacity: 0.5; r: 30.5; }
+      50%       { opacity: 0.9; r: 31.5; }
+    }
+  </style>
+</defs>
+
+<!-- ═══════════════════════════════════════════════════
+     GRUPO PRINCIPAL FLOTANTE
+════════════════════════════════════════════════════ -->
+<g class="a-float">
+
+  <!-- ── Bokeh ambiental de fondo ── -->
+  <circle class="a-bokeh-1" cx="90" cy="18" r="16" fill="url(#g-bokeh)" opacity="0.18"/>
+  <circle class="a-bokeh-2" cx="18" cy="82" r="12" fill="url(#g-bokeh)" opacity="0.18"/>
+  <circle class="a-bokeh-3" cx="96" cy="86" r="10" fill="url(#g-bokeh)" opacity="0.14"/>
+
+  <!-- ── Aura blob orgánica ── -->
+  <g filter="url(#f-shadow)">
+    <path class="a-blob"
+      d="M60 7
+         C72 4 88 8 98 18
+         C110 30 115 46 114 60
+         C113 76 105 92 92 102
+         C79 112 63 116 48 112
+         C33 108 18 98 11 84
+         C4 70 5 52 12 38
+         C20 23 35 10 50 7.5
+         C53.3 7 56.6 7.3 60 7Z"
+      fill="url(#g-aura)"/>
+  </g>
+
+  <!-- ── Anillos orbitales externos ── -->
+  <g class="a-ring-outer" clip-path="url(#cp-outer)">
+    <ellipse cx="60" cy="60" rx="52" ry="52" fill="none"
+      stroke="url(#g-ring)" stroke-width="1.1"/>
+    <ellipse cx="60" cy="60" rx="47" ry="47" fill="none"
+      stroke="url(#g-ring)" stroke-width="0.55" stroke-dasharray="3 7" opacity="0.7"/>
+  </g>
+  <g class="a-ring-inner" clip-path="url(#cp-outer)">
+    <ellipse cx="60" cy="60" rx="55" ry="55" fill="none"
+      stroke="url(#g-ring)" stroke-width="0.4" stroke-dasharray="1 10" opacity="0.5"/>
+  </g>
+
+  <!-- ── Órbita elíptica neon (atrás del globo) ── -->
+  <g class="a-orbit">
+    <ellipse cx="60" cy="60" rx="42" ry="17"
+      fill="none" stroke="url(#g-neon-orbit)" stroke-width="1.0"
+      stroke-dasharray="5 4" filter="url(#f-glow-cyan)" opacity="0.85"/>
+  </g>
+
+  <!-- ── Planeta menor trasero (atrás del globo) ── -->
+  <g class="a-orbit-sh">
+    <!-- Sombra del planeta -->
+    <circle cx="60" cy="15" r="4.2" fill="#0F2040" opacity="0.3" cy="17"/>
+    <!-- Cuerpo del planeta -->
+    <circle cx="60" cy="15" r="3.8" fill="#B3E5FC"/>
+    <!-- Sombreado 3D del planeta -->
+    <circle cx="60" cy="15" r="3.8" fill="none" stroke="#0277BD" stroke-width="0.5" opacity="0.6"/>
+    <circle cx="58.8" cy="14" r="1.2" fill="#FFFFFF" opacity="0.55" filter="url(#f-glow-white)"/>
+    <!-- Detalle polar sutil -->
+    <path d="M57.5 15.5 Q60 17.5 62.5 15.5" fill="none" stroke="#4FC3F7" stroke-width="0.4" opacity="0.7"/>
+  </g>
+
+  <!-- ══════════════════════════════════
+       GLOBO TERRESTRE
+  ══════════════════════════════════ -->
+  <g>
+    <!-- Base oceánica -->
+    <circle cx="60" cy="60" r="30" fill="url(#g-ocean)"/>
+
+    <!-- Masas de tierra animadas -->
+    <g clip-path="url(#cp-globe)">
+      <g class="a-globe-land" fill="url(#g-land)">
+        <!-- América del Norte -->
+        <path d="M25 38 C28 30 38 26 46 30 C50 33 49 40 44 46 C40 51 33 52 28 48 C23 44 22 42 25 38Z"/>
+        <!-- América Central -->
+        <path d="M36 53 C38 51 42 52 43 55 C44 58 41 60 38 59 C35 57 34 55 36 53Z"/>
+        <!-- América del Sur -->
+        <path d="M33 62 C37 58 44 60 47 66 C50 73 47 82 42 85 C37 87 31 82 29 76 C27 70 28 66 33 62Z"/>
+        <!-- Europa/África (bloque 1) -->
+        <path d="M62 32 C66 28 74 28 77 33 C80 38 78 46 73 49 C68 51 62 48 60 43 C58 38 59 36 62 32Z"/>
+        <!-- Africa Central -->
+        <path d="M63 52 C67 50 72 52 73 58 C74 64 70 70 65 71 C60 71 57 66 58 60 C59 55 61 53 63 52Z"/>
+        <!-- África Sur -->
+        <path d="M62 73 C65 71 69 73 70 77 C71 82 68 86 64 86 C60 86 58 82 59 77 C60 74 60 73 62 73Z"/>
+        <!-- Asia Central -->
+        <path d="M82 36 C88 32 96 34 99 40 C102 46 99 53 93 55 C87 57 81 52 80 46 C79 41 80 38 82 36Z"/>
+        <!-- Asia Sureste -->
+        <path d="M90 58 C94 56 98 58 100 63 C101 67 98 72 93 72 C88 72 85 68 86 63 C87 60 88 58 90 58Z"/>
+        <!-- Duplicados para el scroll infinito -->
+        <path d="M89 38 C92 30 102 26 110 30 C114 33 113 40 108 46 C104 51 97 52 92 48 C87 44 86 42 89 38Z"/>
+        <path d="M126 32 C130 28 138 28 141 33 C144 38 142 46 137 49 C132 51 126 48 124 43 C122 38 123 36 126 32Z"/>
+        <path d="M127 52 C131 50 136 52 137 58 C138 64 134 70 129 71 C124 71 121 66 122 60 C123 55 125 53 127 52Z"/>
+        <path d="M146 36 C152 32 160 34 163 40 C166 46 163 53 157 55 C151 57 145 52 144 46 C143 41 144 38 146 36Z"/>
+      </g>
+
+      <!-- Líneas de latitud curvas (curvatura del globo) -->
+      <g fill="none" stroke="#FFFFFF" stroke-width="0.65" opacity="0.35">
+        <path d="M 33 47 Q 60 58 87 47"/>
+        <path d="M 30 60 Q 60 73 90 60"/>
+        <path d="M 33 73 Q 60 83 87 73"/>
+        <!-- Líneas de longitud sutiles -->
+        <path d="M 60 30 Q 63 60 60 90" opacity="0.5"/>
+        <path d="M 48 31 Q 44 60 48 89" opacity="0.3"/>
+        <path d="M 72 31 Q 76 60 72 89" opacity="0.3"/>
+      </g>
+
+      <!-- Efecto de nubes sutiles encima -->
+      <g fill="#FFFFFF" opacity="0.18">
+        <ellipse cx="40" cy="42" rx="9" ry="3.5" transform="rotate(-8 40 42)"/>
+        <ellipse cx="72" cy="48" rx="7" ry="2.5" transform="rotate(5 72 48)"/>
+        <ellipse cx="55" cy="35" rx="6" ry="2" transform="rotate(-3 55 35)"/>
+        <ellipse cx="70" cy="70" rx="8" ry="2.8" transform="rotate(4 70 70)"/>
+      </g>
+    </g>
+
+    <!-- Shading volumétrico 3D -->
+    <circle cx="60" cy="60" r="30" fill="url(#g-globe-vol)"/>
+
+    <!-- Atmósfera borde -->
+    <circle cx="60" cy="60" r="30" fill="url(#g-atmos)"/>
+
+    <!-- Reflejo especular -->
+    <ellipse cx="51" cy="48" rx="8" ry="6" fill="url(#g-specular)" transform="rotate(-20 51 48)"/>
+
+    <!-- Halo atmosférico (pulsante) -->
+    <circle cx="60" cy="60" r="31" fill="none"
+      stroke="#80DEEA" stroke-width="2.5" opacity="0.28"
+      class="a-pulse-atmos" filter="url(#f-atmosphere)"/>
+
+    <!-- Borde limbo del globo -->
+    <circle cx="60" cy="60" r="29.7" fill="none"
+      stroke="rgba(255,255,255,0.42)" stroke-width="1.0"/>
+  </g>
+
+  <!-- ── Órbita elíptica neon (delante del globo) ── -->
+  <g class="a-orbit">
+    <ellipse cx="60" cy="60" rx="42" ry="17"
+      fill="none" stroke="url(#g-neon-orbit)" stroke-width="0.7"
+      stroke-dasharray="3 6" opacity="0.55"/>
+  </g>
+
+  <!-- ── Planeta menor frontal ── -->
+  <g class="a-orbit-sh">
+    <circle cx="60" cy="105" r="5.5" fill="#C8E6C9" filter="url(#f-shadow-sm)"/>
+    <circle cx="60" cy="105" r="5.5" fill="none" stroke="#2E7D32" stroke-width="0.7" opacity="0.8"/>
+    <!-- Detalle de superficie -->
+    <circle cx="58.5" cy="103.5" r="1.1" fill="none" stroke="#388E3C" stroke-width="0.5" opacity="0.7"/>
+    <circle cx="61.5" cy="106.5" r="0.7" fill="none" stroke="#388E3C" stroke-width="0.4" opacity="0.5"/>
+    <!-- Reflejo -->
+    <circle cx="58.8" cy="103.2" r="1.6" fill="#FFFFFF" opacity="0.60" filter="url(#f-glow-white)"/>
+    <!-- Sombra -->
+    <ellipse cx="60" cy="110.5" rx="4" ry="1.2" fill="#0F172A" opacity="0.15"/>
+  </g>
+
+  <!-- ══════════════════════════════════
+       HOJAS ORGÁNICAS
+  ══════════════════════════════════ -->
+  <g filter="url(#f-shadow)">
+    <!-- Hoja A -->
+    <g class="a-leaf-1">
+      <!-- Cara iluminada -->
+      <path d="M42 84 Q28 76 20 58 Q26 48 38 46 Q46 54 42 84Z" fill="url(#g-leaf-a-light)"/>
+      <!-- Cara sombreada -->
+      <path d="M42 84 Q34 68 26 52 Q32 48 38 46 Q42 58 42 84Z" fill="url(#g-leaf-a-dark)"/>
+      <!-- Nervadura central -->
+      <path d="M38 46 Q39 62 42 84" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.7"/>
+      <!-- Nervaduras secundarias -->
+      <path d="M38 54 Q33 58 28 56" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.5"/>
+      <path d="M39.5 64 Q34 66 30 63" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.5"/>
+      <path d="M40.5 74 Q36 75 32 73" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.4"/>
+    </g>
+
+    <!-- Hoja B -->
+    <g class="a-leaf-2">
+      <!-- Cara iluminada -->
+      <path d="M34 90 Q18 84 12 68 Q16 56 26 54 Q32 64 34 90Z" fill="url(#g-leaf-b-light)"/>
+      <!-- Cara sombreada -->
+      <path d="M34 90 Q26 76 18 62 Q22 56 26 54 Q30 66 34 90Z" fill="url(#g-leaf-b-dark)"/>
+      <!-- Nervadura central -->
+      <path d="M26 54 Q29 70 34 90" fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="0.7"/>
+      <!-- Nervaduras secundarias -->
+      <path d="M27 62 Q22 65 19 63" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="0.4"/>
+      <path d="M29 72 Q24 74 21 72" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="0.4"/>
+    </g>
+  </g>
+
+  <!-- ══════════════════════════════════
+       PARTÍCULAS DE ENERGÍA
+  ══════════════════════════════════ -->
+
+  <!-- Partícula 1: Lima neón -->
+  <g class="a-dot-1" filter="url(#f-glow-green)">
+    <circle cx="94" cy="22" r="2.8" fill="#C6FF00"/>
+    <circle cx="94" cy="22" r="1.2" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+
+  <!-- Partícula 2: Cyan agua -->
+  <g class="a-dot-2" filter="url(#f-glow-cyan)">
+    <circle cx="108" cy="70" r="2.0" fill="#18FFFF"/>
+    <circle cx="108" cy="70" r="0.8" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+
+  <!-- Partícula 3: Verde menta -->
+  <g class="a-dot-3" filter="url(#f-glow-green)">
+    <circle cx="18" cy="28" r="2.2" fill="#69F0AE"/>
+    <circle cx="18" cy="28" r="0.9" fill="#FFFFFF" opacity="0.8"/>
+  </g>
+
+  <!-- Partícula 4: Amarillo energía -->
+  <g class="a-dot-4">
+    <circle cx="15" cy="78" r="1.7" fill="#FFFF00" filter="url(#f-glow-green)"/>
+    <circle cx="15" cy="78" r="0.7" fill="#FFFFFF" opacity="0.75"/>
+  </g>
+
+  <!-- Partícula 5: Verde esmeralda -->
+  <g class="a-dot-5" filter="url(#f-glow-green)">
+    <circle cx="97" cy="48" r="1.6" fill="#00E676"/>
+    <circle cx="97" cy="48" r="0.6" fill="#FFFFFF" opacity="0.8"/>
+  </g>
+
+  <!-- Partícula 6: Azul hielo (nueva) -->
+  <g class="a-dot-1" filter="url(#f-glow-cyan)" style="animation-delay: 2.2s">
+    <circle cx="32" cy="100" r="1.5" fill="#40C4FF"/>
+    <circle cx="32" cy="100" r="0.6" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+
+  <!-- Destellos shimmer sutiles en el fondo -->
+  <g class="a-shimmer" opacity="0.5">
+    <path d="M88 14 L89.5 16 L88 18 L86.5 16 Z" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+  <g class="a-shimmer" style="animation-delay: 2s" opacity="0.4">
+    <path d="M26 42 L27 44 L26 46 L25 44 Z" fill="#FFFFFF" opacity="0.5"/>
+  </g>
+
+</g><!-- fin a-float -->
+
+</svg>

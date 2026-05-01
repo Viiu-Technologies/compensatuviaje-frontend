@@ -43,6 +43,7 @@ const B2CCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CCertificatesP
 const B2CCalculatorPage = lazy(() => import('./apps/b2c/pages/B2CCalculatorPage'));
 const B2CNFTCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CNFTCertificatesPage'));
 const B2CAchievementsPage = lazy(() => import('./apps/b2c/pages/B2CAchievementsPage'));
+const PublicImpactProfile  = lazy(() => import('./apps/b2c/pages/PublicImpactProfile'));
 const PaymentResultPage = lazy(() => import('./apps/b2c/pages/PaymentResultPage'));
 
 const CertificateVerificationPage = lazy(() => import('./shared/components/blockchain').then(m => ({ default: m.CertificateVerificationPage })));
@@ -278,6 +279,11 @@ function App() {
                   <B2CAchievementsPage />
                 </B2CProtectedRoute>
               }
+            />
+            {/* Public profile page — no auth required, linked from social share */}
+            <Route
+              path="/impacto/:userId"
+              element={<PublicImpactProfile />}
             />
             {/* Redirect legacy calculator route */}
             <Route 

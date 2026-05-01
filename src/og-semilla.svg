@@ -1,0 +1,354 @@
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" role="img">
+<title>Animated Sprout Badge - Enhanced</title>
+<defs>
+  <!-- ═══════════════ GRADIENTS ═══════════════ -->
+  <!-- Background radial gradient - warm golden center fading to amber -->
+  <radialGradient id="bgGrad" cx="50%" cy="45%" r="55%">
+    <stop offset="0%" stop-color="#FFFDE7"/>
+    <stop offset="50%" stop-color="#FFF8D6"/>
+    <stop offset="100%" stop-color="#FFE9A0"/>
+  </radialGradient>
+
+  <!-- Outer glow gradient -->
+  <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+    <stop offset="60%" stop-color="#66BB6A" stop-opacity="0.15"/>
+    <stop offset="85%" stop-color="#A5D6A7" stop-opacity="0.08"/>
+    <stop offset="100%" stop-color="#C8E6C9" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- Stem gradient for 3D look -->
+  <linearGradient id="stemGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#66BB6A"/>
+    <stop offset="40%" stop-color="#4CAF50"/>
+    <stop offset="100%" stop-color="#2E7D32"/>
+  </linearGradient>
+
+  <!-- Seed gradient for richness -->
+  <linearGradient id="seedGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#6D4C41"/>
+    <stop offset="50%" stop-color="#4E342E"/>
+    <stop offset="100%" stop-color="#3E2723"/>
+  </linearGradient>
+  <linearGradient id="seedHighlight" x1="0.3" y1="0" x2="0.7" y2="1">
+    <stop offset="0%" stop-color="#8D6E63" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="#4E342E" stop-opacity="0"/>
+  </linearGradient>
+
+  <!-- Leaf gradients -->
+  <linearGradient id="leafL" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#81C784"/>
+    <stop offset="100%" stop-color="#43A047"/>
+  </linearGradient>
+  <linearGradient id="leafR" x1="1" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#4CAF50"/>
+    <stop offset="100%" stop-color="#2E7D32"/>
+  </linearGradient>
+
+  <!-- Golden ring gradient -->
+  <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#FFD54F"/>
+    <stop offset="25%" stop-color="#FFCA28"/>
+    <stop offset="50%" stop-color="#FFC107"/>
+    <stop offset="75%" stop-color="#FFB300"/>
+    <stop offset="100%" stop-color="#FFD54F"/>
+  </linearGradient>
+
+  <!-- Sparkle gradient -->
+  <radialGradient id="sparkle">
+    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/>
+    <stop offset="50%" stop-color="#FFFDE7" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- Shine sweep gradient -->
+  <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="white" stop-opacity="0"/>
+    <stop offset="40%" stop-color="white" stop-opacity="0"/>
+    <stop offset="50%" stop-color="white" stop-opacity="0.25"/>
+    <stop offset="60%" stop-color="white" stop-opacity="0"/>
+    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+  </linearGradient>
+
+  <!-- ═══════════════ FILTERS ═══════════════ -->
+  <!-- Drop shadow for main circle -->
+  <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#5D4037" flood-opacity="0.18"/>
+  </filter>
+
+  <!-- Glow filter for leaves -->
+  <filter id="leafGlow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+    <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.4  0 0 0 0 0.8  0 0 0 0 0.4  0 0 0 0.3 0" result="glow"/>
+    <feMerge>
+      <feMergeNode in="glow"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+
+  <!-- Soft inner shadow for depth -->
+  <filter id="innerDepth" x="-5%" y="-5%" width="110%" height="110%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+    <feOffset dx="0" dy="1.5"/>
+    <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.36  0 0 0 0 0.25  0 0 0 0 0.14  0 0 0 0.12 0"/>
+    <feBlend in2="SourceGraphic" mode="normal"/>
+  </filter>
+
+  <!-- Sparkle glow -->
+  <filter id="sparkGlow">
+    <feGaussianBlur stdDeviation="0.8"/>
+  </filter>
+
+  <!-- Clip for shine effect -->
+  <clipPath id="badgeClip">
+    <circle cx="60" cy="60" r="56"/>
+  </clipPath>
+
+  <!-- ═══════════════ STYLES ═══════════════ -->
+  <style>
+    /* Growth animation */
+    .st{animation:gr 6s cubic-bezier(.4,0,.2,1) infinite;transform-origin:60px 85px}
+    .lv{animation:bl 6s cubic-bezier(.4,0,.2,1) infinite;transform-origin:60px 50px}
+    .ll{animation:swl 6s ease-in-out infinite;transform-origin:60px 50px}
+    .lr{animation:swr 6s ease-in-out infinite;transform-origin:60px 50px}
+    .sd{animation:sd 6s ease-in-out infinite;transform-origin:60px 85px}
+
+    /* Particle animations with staggered delays */
+    .d1{animation:p 6s ease-in-out infinite .2s}
+    .d2{animation:p 6s ease-in-out infinite .4s}
+    .d3{animation:p 6s ease-in-out infinite .6s}
+    .d4{animation:p 6s ease-in-out infinite .8s}
+    .d5{animation:p 6s ease-in-out infinite 1s}
+    .d6{animation:p 6s ease-in-out infinite 1.2s}
+
+    /* Sparkle animations */
+    .sp1{animation:sparkPulse 3s ease-in-out infinite 0s}
+    .sp2{animation:sparkPulse 3s ease-in-out infinite 0.5s}
+    .sp3{animation:sparkPulse 3s ease-in-out infinite 1s}
+    .sp4{animation:sparkPulse 3s ease-in-out infinite 1.5s}
+    .sp5{animation:sparkPulse 3s ease-in-out infinite 2s}
+    .sp6{animation:sparkPulse 3s ease-in-out infinite 2.5s}
+
+    /* Ring rotation */
+    .ring-rotate{animation:ringRotate 20s linear infinite;transform-origin:60px 60px}
+
+    /* Outer glow pulse */
+    .outer-glow{animation:glowPulse 4s ease-in-out infinite;transform-origin:60px 60px}
+
+    /* Shine sweep */
+    .shine{animation:shineSweep 6s ease-in-out infinite 2s}
+
+    /* Float animation for accent elements */
+    .float1{animation:float 4s ease-in-out infinite 0s}
+    .float2{animation:float 4s ease-in-out infinite 0.7s}
+    .float3{animation:float 4s ease-in-out infinite 1.4s}
+
+    /* Seed crack highlight */
+    .seed-shine{animation:seedShine 6s ease-in-out infinite}
+
+    @keyframes gr{
+      0%,10%{transform:scaleY(0)}
+      35%,80%{transform:scaleY(1)}
+      95%,100%{transform:scaleY(0)}
+    }
+    @keyframes bl{
+      0%,28%{transform:translate(0,35px) scale(0);opacity:0}
+      45%,80%{transform:translate(0,0) scale(1);opacity:1}
+      95%,100%{transform:translate(0,35px) scale(0);opacity:0}
+    }
+    @keyframes swl{
+      0%,40%{transform:rotate(0deg)}
+      50%{transform:rotate(-8deg)}
+      60%{transform:rotate(-5deg)}
+      70%{transform:rotate(-7deg)}
+      80%,100%{transform:rotate(0deg)}
+    }
+    @keyframes swr{
+      0%,40%{transform:rotate(0deg)}
+      50%{transform:rotate(8deg)}
+      60%{transform:rotate(5deg)}
+      70%{transform:rotate(7deg)}
+      80%,100%{transform:rotate(0deg)}
+    }
+    @keyframes sd{
+      0%,10%{transform:scale(.6);opacity:.5}
+      35%,80%{transform:scale(1);opacity:1}
+      95%,100%{transform:scale(.6);opacity:.5}
+    }
+    @keyframes p{
+      0%,20%{opacity:0;transform:translateY(4px) scale(0.5)}
+      45%,75%{opacity:1;transform:translateY(0) scale(1)}
+      90%,100%{opacity:0;transform:translateY(-6px) scale(0.5)}
+    }
+    @keyframes sparkPulse{
+      0%,100%{opacity:0;transform:scale(0)}
+      30%{opacity:1;transform:scale(1.2)}
+      50%{opacity:0.8;transform:scale(0.9)}
+      70%{opacity:1;transform:scale(1.1)}
+      90%{opacity:0;transform:scale(0)}
+    }
+    @keyframes ringRotate{
+      0%{transform:rotate(0deg)}
+      100%{transform:rotate(360deg)}
+    }
+    @keyframes glowPulse{
+      0%,100%{transform:scale(1);opacity:0.6}
+      50%{transform:scale(1.06);opacity:1}
+    }
+    @keyframes shineSweep{
+      0%,30%{transform:translateX(-120px)}
+      50%,60%{transform:translateX(120px)}
+      100%{transform:translateX(120px)}
+    }
+    @keyframes float{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-3px)}
+    }
+    @keyframes seedShine{
+      0%,10%{opacity:0}
+      40%,75%{opacity:1}
+      90%,100%{opacity:0}
+    }
+  </style>
+</defs>
+
+<!-- ═══════════════ OUTER GLOW ═══════════════ -->
+<g id="outer_glow" class="outer-glow">
+  <circle cx="60" cy="60" r="59" fill="url(#glowGrad)"/>
+</g>
+
+<!-- ═══════════════ MAIN BACKGROUND ═══════════════ -->
+<g id="background" filter="url(#shadow)">
+  <circle cx="60" cy="60" r="56" fill="url(#bgGrad)"/>
+</g>
+
+<!-- ═══════════════ DECORATIVE GOLDEN RING ═══════════════ -->
+<g id="decorative_ring">
+  <!-- Outer ring with golden gradient -->
+  <path fill-rule="evenodd" d="M60 7A53 53 0 1060 113A53 53 0 1060 7ZM60 9A51 51 0 1160 111A51 51 0 1160 9Z" fill="url(#ringGrad)" opacity="0.7"/>
+  <!-- Inner ring -->
+  <path fill-rule="evenodd" d="M60 11.5A48.5 48.5 0 1060 108.5A48.5 48.5 0 1060 11.5ZM60 12.3A47.7 47.7 0 1160 107.7A47.7 47.7 0 1160 12.3Z" fill="url(#ringGrad)" opacity="0.45"/>
+
+  <!-- Small decorative dots on the ring that rotate -->
+  <g class="ring-rotate" opacity="0.5">
+    <circle cx="60" cy="8.5" r="1.8" fill="#FFD54F"/>
+    <circle cx="60" cy="111.5" r="1.8" fill="#FFD54F"/>
+    <circle cx="8.5" cy="60" r="1.8" fill="#FFD54F"/>
+    <circle cx="111.5" cy="60" r="1.8" fill="#FFD54F"/>
+    <circle cx="23" cy="23" r="1.2" fill="#FFCA28"/>
+    <circle cx="97" cy="23" r="1.2" fill="#FFCA28"/>
+    <circle cx="23" cy="97" r="1.2" fill="#FFCA28"/>
+    <circle cx="97" cy="97" r="1.2" fill="#FFCA28"/>
+  </g>
+</g>
+
+<!-- ═══════════════ ACCENT PARTICLES ═══════════════ -->
+<g id="accent_elements">
+  <!-- Leaf-shaped particles floating -->
+  <g class="d2 float1">
+    <ellipse cx="28" cy="54" rx="2.5" ry="1.5" fill="#A5D6A7" transform="rotate(-20 28 54)"/>
+  </g>
+  <g class="d4 float2">
+    <ellipse cx="92" cy="54" rx="2.5" ry="1.5" fill="#A5D6A7" transform="rotate(20 92 54)"/>
+  </g>
+  <g class="d6 float3">
+    <circle cx="60" cy="21" r="2" fill="#FFCA28"/>
+  </g>
+  <g class="d1 float2">
+    <ellipse cx="79" cy="29" rx="2" ry="1.2" fill="#81C784" transform="rotate(30 79 29)"/>
+  </g>
+  <g class="d3 float1">
+    <ellipse cx="41" cy="29" rx="2" ry="1.2" fill="#C8E6C9" transform="rotate(-30 41 29)"/>
+  </g>
+  <g class="d5 float3">
+    <circle cx="23" cy="42" r="1.6" fill="#FFCA28"/>
+  </g>
+  <g class="d1 float1">
+    <circle cx="97" cy="42" r="1.6" fill="#81C784"/>
+  </g>
+  <!-- Extra particles for richness -->
+  <g class="d3 float2">
+    <circle cx="35" cy="70" r="1.2" fill="#C8E6C9" opacity="0.7"/>
+  </g>
+  <g class="d5 float1">
+    <circle cx="85" cy="70" r="1.2" fill="#A5D6A7" opacity="0.7"/>
+  </g>
+  <g class="d2 float3">
+    <circle cx="45" cy="20" r="1" fill="#FFE082" opacity="0.8"/>
+  </g>
+  <g class="d4 float2">
+    <circle cx="75" cy="20" r="1" fill="#FFE082" opacity="0.8"/>
+  </g>
+</g>
+
+<!-- ═══════════════ SPARKLES ═══════════════ -->
+<g id="sparkles">
+  <g class="sp1" style="transform-origin:25px 35px">
+    <path d="M25 33 L25.5 35 L27 35.5 L25.5 36 L25 38 L24.5 36 L23 35.5 L24.5 35Z" fill="#FFD54F" filter="url(#sparkGlow)"/>
+  </g>
+  <g class="sp2" style="transform-origin:95px 50px">
+    <path d="M95 48 L95.4 50 L97 50.4 L95.4 50.8 L95 53 L94.6 50.8 L93 50.4 L94.6 50Z" fill="#FFD54F" filter="url(#sparkGlow)"/>
+  </g>
+  <g class="sp3" style="transform-origin:72px 22px">
+    <path d="M72 20.5 L72.3 22 L74 22.3 L72.3 22.6 L72 24.5 L71.7 22.6 L70 22.3 L71.7 22Z" fill="#FFFFFF" filter="url(#sparkGlow)"/>
+  </g>
+  <g class="sp4" style="transform-origin:18px 60px">
+    <path d="M18 58.5 L18.3 60 L20 60.3 L18.3 60.6 L18 62.5 L17.7 60.6 L16 60.3 L17.7 60Z" fill="#FFE082" filter="url(#sparkGlow)"/>
+  </g>
+  <g class="sp5" style="transform-origin:48px 15px">
+    <path d="M48 13.5 L48.3 15 L50 15.3 L48.3 15.6 L48 17.5 L47.7 15.6 L46 15.3 L47.7 15Z" fill="#FFD54F" filter="url(#sparkGlow)"/>
+  </g>
+  <g class="sp6" style="transform-origin:100px 70px">
+    <path d="M100 68.5 L100.3 70 L102 70.3 L100.3 70.6 L100 72.5 L99.7 70.6 L98 70.3 L99.7 70Z" fill="#FFFFFF" filter="url(#sparkGlow)"/>
+  </g>
+</g>
+
+<!-- ═══════════════ STEM ═══════════════ -->
+<g id="stem">
+  <g class="st">
+    <rect x="57" y="50" width="6" height="35" rx="3" fill="url(#stemGrad)"/>
+    <!-- Stem highlight -->
+    <rect x="58" y="50" width="2" height="35" rx="1" fill="#81C784" opacity="0.4"/>
+  </g>
+</g>
+
+<!-- ═══════════════ SEED ═══════════════ -->
+<g id="seed" class="sd">
+  <path d="M44 85a16 16 0 0032 0z" fill="url(#seedGrad)"/>
+  <!-- Seed highlight for 3D effect -->
+  <path d="M48 85a12 10 0 0024 0z" fill="url(#seedHighlight)" class="seed-shine"/>
+  <!-- Seed dark side -->
+  <path d="M60 85v14a16 16 0 0016-14z" fill="#3E2723" opacity="0.5"/>
+  <!-- Seed crack detail -->
+  <line x1="60" y1="85" x2="60" y2="96" stroke="#5D4037" stroke-width="0.6" opacity="0.5"/>
+</g>
+
+<!-- ═══════════════ LEAVES ═══════════════ -->
+<g id="leaves" class="lv" filter="url(#leafGlow)">
+  <!-- Left leaf -->
+  <g class="ll">
+    <path d="M60 50Q34 44 31 25Q40 32 60 50Z" fill="url(#leafL)"/>
+    <path d="M60 50Q34 44 31 25Q36 24 60 50Z" fill="#4CAF50" opacity="0.8"/>
+    <!-- Leaf vein -->
+    <line x1="58" y1="49" x2="38" y2="32" stroke="#2E7D32" stroke-width="0.4" opacity="0.5"/>
+  </g>
+  <!-- Right leaf -->
+  <g class="lr">
+    <path d="M60 50Q86 44 89 25Q80 32 60 50Z" fill="url(#leafR)"/>
+    <path d="M60 50Q86 44 89 25Q84 24 60 50Z" fill="#2E7D32" opacity="0.8"/>
+    <!-- Leaf vein -->
+    <line x1="62" y1="49" x2="82" y2="32" stroke="#1B5E20" stroke-width="0.4" opacity="0.5"/>
+  </g>
+  <!-- Center bud with gradient -->
+  <ellipse cx="60" cy="48" rx="4.5" ry="5.5" fill="#66BB6A"/>
+  <ellipse cx="61" cy="48" rx="3" ry="5" fill="#4CAF50"/>
+  <!-- Bud highlight -->
+  <ellipse cx="59" cy="46" rx="1.5" ry="2" fill="#A5D6A7" opacity="0.5"/>
+</g>
+
+<!-- ═══════════════ SHINE SWEEP ═══════════════ -->
+<g clip-path="url(#badgeClip)">
+  <rect class="shine" x="-10" y="-10" width="60" height="140" fill="url(#shineGrad)" transform="rotate(25)"/>
+</g>
+
+</svg>
