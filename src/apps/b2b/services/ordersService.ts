@@ -7,7 +7,7 @@ export interface B2BOrder {
   tonsTco2: number;
   amount: number;
   currency: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'expired';
   project: {
     id: string;
     name: string;
@@ -17,6 +17,7 @@ export interface B2BOrder {
   } | null;
   platformFee?: number;
   payoutAmount?: number;
+  invoicePdfUrl?: string | null;
   createdAt: string;
 }
 
