@@ -29,68 +29,6 @@ const RegisterWizard = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const totalSteps = 2;
-    'Otro'
-  ];
-
-  const industries = [
-    'Agricultura y ganadería',
-    'Minería',
-    'Manufactura',
-    'Construcción',
-    'Comercio',
-    'Transporte y logística',
-    'Servicios financieros',
-    'Tecnología y telecomunicaciones',
-    'Turismo y hotelería',
-    'Salud',
-    'Educación',
-    'Energía',
-    'Otro'
-  ];
-
-  const employeeRanges = [
-    '1-10 empleados (Microempresa)',
-    '11-50 empleados (Pequeña)',
-    '51-200 empleados (Mediana)',
-    '201-1000 empleados (Grande)',
-    'Más de 1000 empleados (Corporación)'
-  ];
-
-  const revenueRanges = [
-    'Menos de 2.400 UF',
-    '2.400 - 25.000 UF',
-    '25.000 - 100.000 UF',
-    '100.000 - 600.000 UF',
-    'Más de 600.000 UF'
-  ];
-
-  const chileanRegions = [
-    'Región de Arica y Parinacota',
-    'Región de Tarapacá',
-    'Región de Antofagasta',
-    'Región de Atacama',
-    'Región de Coquimbo',
-    'Región de Valparaíso',
-    'Región Metropolitana de Santiago',
-    'Región del Libertador General Bernardo O\'Higgins',
-    'Región del Maule',
-    'Región de Ñuble',
-    'Región del Biobío',
-    'Región de La Araucanía',
-    'Región de Los Ríos',
-    'Región de Los Lagos',
-    'Región de Aysén del General Carlos Ibáñez del Campo',
-    'Región de Magallanes y de la Antártica Chilena'
-  ];
-
-  const interestOptions = [
-    'Viajes corporativos',
-    'Transporte de mercancías',
-    'Consumo energético de oficinas',
-    'Eventos empresariales',
-    'Producción/manufactura',
-    'Otros'
-  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
