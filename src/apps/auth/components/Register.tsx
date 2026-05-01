@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+﻿import React, { useState, useRef, ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
@@ -15,13 +15,17 @@ const Register: React.FC = () => {
   const { register, error: authError, clearError } = useAuth();
   const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
   
-  // Paso 0: selección de tipo de cuenta, Pasos 1-4: formulario B2B
+  // Paso 0: selecciÃ³n de tipo de cuenta, Pasos 1-4: formulario B2B
   const [accountType, setAccountType] = useState<'none' | 'b2b' | 'b2c'>('none');
-  const [currentStep, setCurrentStep] = useState(0); // 0 = selección de cuenta
-  const totalSteps = 4;
+  const [currentStep, setCurrentStep] = useState(0); // 0 = selecciÃ³n de cuenta
+  const totalSteps = 2;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     // Paso 1: Datos personales
@@ -32,14 +36,14 @@ const Register: React.FC = () => {
     confirmPassword: '',
     acceptTerms: false,
     
-    // Paso 2: Información de la Empresa
+    // Paso 2: InformaciÃ³n de la Empresa
     companyName: '',
     rut: '',
     businessType: '',
     tradeName: '',
     website: '',
     
-    // Paso 3: Información de Contacto
+    // Paso 3: InformaciÃ³n de Contacto
     legalRepName: '',
     legalRepRut: '',
     contactEmail: '',
@@ -48,7 +52,7 @@ const Register: React.FC = () => {
     city: '',
     address: '',
     
-    // Paso 4: Información Operacional
+    // Paso 4: InformaciÃ³n Operacional
     industry: '',
     employeeCount: '',
     annualRevenue: '',
@@ -57,12 +61,12 @@ const Register: React.FC = () => {
   });
 
   // Opciones
-  const businessTypes = ['Sociedad Anónima (S.A.)', 'Sociedad de Responsabilidad Limitada (Ltda.)', 'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)', 'Sociedad por Acciones (SpA)', 'Otro'];
-  const industries = ['Agricultura y ganadería', 'Minería', 'Manufactura', 'Construcción', 'Comercio', 'Transporte y logística', 'Servicios financieros', 'Tecnología y telecomunicaciones', 'Turismo y hotelería', 'Salud', 'Educación', 'Energía', 'Otro'];
-  const employeeRanges = ['1-10 empleados (Microempresa)', '11-50 empleados (Pequeña)', '51-200 empleados (Mediana)', '201-1000 empleados (Grande)', 'Más de 1000 empleados (Corporación)'];
-  const revenueRanges = ['Menos de 2.400 UF', '2.400 - 25.000 UF', '25.000 - 100.000 UF', '100.000 - 600.000 UF', 'Más de 600.000 UF'];
-  const chileanRegions = ['Región de Arica y Parinacota', 'Región de Tarapacá', 'Región de Antofagasta', 'Región de Atacama', 'Región de Coquimbo', 'Región de Valparaíso', 'Región Metropolitana de Santiago', 'Región del Libertador General Bernardo O\'Higgins', 'Región del Maule', 'Región de Ñuble', 'Región del Biobío', 'Región de La Araucanía', 'Región de Los Ríos', 'Región de Los Lagos', 'Región de Aysén del General Carlos Ibáñez del Campo', 'Región de Magallanes y de la Antártica Chilena'];
-  const interestOptions = ['Viajes corporativos', 'Transporte de mercancías', 'Consumo energético de oficinas', 'Eventos empresariales', 'Producción/manufactura', 'Otros'];
+  const businessTypes = ['Sociedad AnÃ³nima (S.A.)', 'Sociedad de Responsabilidad Limitada (Ltda.)', 'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)', 'Sociedad por Acciones (SpA)', 'Otro'];
+  const industries = ['Agricultura y ganaderÃ­a', 'MinerÃ­a', 'Manufactura', 'ConstrucciÃ³n', 'Comercio', 'Transporte y logÃ­stica', 'Servicios financieros', 'TecnologÃ­a y telecomunicaciones', 'Turismo y hotelerÃ­a', 'Salud', 'EducaciÃ³n', 'EnergÃ­a', 'Otro'];
+  const employeeRanges = ['1-10 empleados (Microempresa)', '11-50 empleados (PequeÃ±a)', '51-200 empleados (Mediana)', '201-1000 empleados (Grande)', 'MÃ¡s de 1000 empleados (CorporaciÃ³n)'];
+  const revenueRanges = ['Menos de 2.400 UF', '2.400 - 25.000 UF', '25.000 - 100.000 UF', '100.000 - 600.000 UF', 'MÃ¡s de 600.000 UF'];
+  const chileanRegions = ['RegiÃ³n de Arica y Parinacota', 'RegiÃ³n de TarapacÃ¡', 'RegiÃ³n de Antofagasta', 'RegiÃ³n de Atacama', 'RegiÃ³n de Coquimbo', 'RegiÃ³n de ValparaÃ­so', 'RegiÃ³n Metropolitana de Santiago', 'RegiÃ³n del Libertador General Bernardo O\'Higgins', 'RegiÃ³n del Maule', 'RegiÃ³n de Ã‘uble', 'RegiÃ³n del BiobÃ­o', 'RegiÃ³n de La AraucanÃ­a', 'RegiÃ³n de Los RÃ­os', 'RegiÃ³n de Los Lagos', 'RegiÃ³n de AysÃ©n del General Carlos IbÃ¡Ã±ez del Campo', 'RegiÃ³n de Magallanes y de la AntÃ¡rtica Chilena'];
+  const interestOptions = ['Viajes corporativos', 'Transporte de mercancÃ­as', 'Consumo energÃ©tico de oficinas', 'Eventos empresariales', 'ProducciÃ³n/manufactura', 'Otros'];
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -111,37 +115,14 @@ const Register: React.FC = () => {
       if (!formData.firstName.trim()) errors.firstName = 'El nombre es requerido';
       if (!formData.lastName.trim()) errors.lastName = 'El apellido es requerido';
       if (!formData.email.trim()) errors.email = 'El email es requerido';
-      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email inválido';
-      if (!formData.password) errors.password = 'La contraseña es requerida';
-      else if (formData.password.length < 6) errors.password = 'Mínimo 6 caracteres';
-      if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
-      if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los términos';
+      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email invÃ¡lido';
+      if (!formData.password) errors.password = 'La contraseÃ±a es requerida';
+      else if (formData.password.length < 6) errors.password = 'MÃ­nimo 6 caracteres';
+      if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseÃ±as no coinciden';
+      if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los tÃ©rminos';
     }
 
-    if (step === 2) {
-      if (!formData.companyName.trim()) errors.companyName = 'Razón social requerida';
-      if (!formData.rut.trim()) errors.rut = 'RUT requerido';
-      if (!formData.businessType) errors.businessType = 'Tipo de empresa requerido';
-    }
-
-    if (step === 3) {
-      if (!formData.legalRepName.trim()) errors.legalRepName = 'Nombre del representante requerido';
-      if (!formData.legalRepRut.trim()) errors.legalRepRut = 'RUT del representante requerido';
-      if (!formData.contactEmail.trim()) errors.contactEmail = 'Email de contacto requerido';
-      else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) errors.contactEmail = 'Email inválido';
-      if (!formData.phone.trim()) errors.phone = 'Teléfono requerido';
-      if (!formData.region) errors.region = 'Región requerida';
-      if (!formData.city.trim()) errors.city = 'Ciudad requerida';
-      if (!formData.address.trim()) errors.address = 'Dirección requerida';
-    }
-
-    if (step === 4) {
-      if (!formData.industry) errors.industry = 'Sector económico requerido';
-      if (!formData.employeeCount) errors.employeeCount = 'Número de empleados requerido';
-      if (!formData.annualRevenue) errors.annualRevenue = 'Facturación requerida';
-      if (!formData.description.trim()) errors.description = 'Descripción requerida';
-      if (formData.interests.length === 0) errors.interests = 'Selecciona al menos un interés';
-    }
+    // Paso 2: documento opcional â€” sin validaciones obligatorias
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -149,7 +130,7 @@ const Register: React.FC = () => {
 
   const handleNext = () => {
     if (currentStep === 0) {
-      // Si eligió B2B, avanza al paso 1 del formulario
+      // Si eligiÃ³ B2B, avanza al paso 1 del formulario
       if (accountType === 'b2b') {
         setCurrentStep(1);
       }
@@ -173,7 +154,7 @@ const Register: React.FC = () => {
   const handleSelectAccountType = (type: 'b2b' | 'b2c') => {
     setAccountType(type);
     if (type === 'b2c') {
-      // Para B2C mostramos directamente la opción de Google
+      // Para B2C mostramos directamente la opciÃ³n de Google
       setCurrentStep(0);
     } else if (type === 'b2b') {
       // Para B2B avanzamos directamente al paso 1 del formulario
@@ -189,51 +170,49 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleFileSelect = (file: File) => {
+    const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (!allowed.includes(ext)) {
+      setApiError('Solo se permiten PDF, imÃ¡genes o documentos Word');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setApiError('El archivo no puede superar 15 MB');
+      return;
+    }
+    setDocFile(file);
+    setApiError('');
+  };
+
+  const API_URL = (import.meta as any).env?.VITE_APP_API_URL
+    || (import.meta as any).env?.VITE_API_URL
+    || 'http://localhost:3001/api';
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
+    setApiError('');
     try {
-      const userData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      };
-      
-      await register(userData);
-      
-      const onboardingData = {
-        companyInfo: {
-          companyName: formData.companyName,
-          rut: formData.rut,
-          businessType: formData.businessType,
-          tradeName: formData.tradeName,
-          website: formData.website,
-        },
-        contactInfo: {
-          legalRepName: formData.legalRepName,
-          legalRepRut: formData.legalRepRut,
-          email: formData.contactEmail,
-          phone: formData.phone,
-          region: formData.region,
-          city: formData.city,
-          address: formData.address,
-        },
-        operationalInfo: {
-          industry: formData.industry,
-          employeeCount: formData.employeeCount,
-          annualRevenue: formData.annualRevenue,
-          description: formData.description,
-          interests: formData.interests,
-        }
-      };
-      
-      localStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Error en registro:', err);
+      const body = new FormData();
+      body.append('firstName', formData.firstName.trim());
+      body.append('lastName',  formData.lastName.trim());
+      body.append('email',     formData.email.trim().toLowerCase());
+      body.append('password',  formData.password);
+      if (docFile) body.append('document', docFile);
+
+      const res = await fetch(`${API_URL}/public/companies/register-simple`, {
+        method: 'POST',
+        body,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al crear la cuenta');
+
+      navigate('/auth/login');
+    } catch (err: any) {
+      setApiError(err.message || 'Error al crear la cuenta');
     } finally {
       setIsLoading(false);
     }
@@ -321,7 +300,7 @@ const Register: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Únete a Nosotros
+            Ãšnete a Nosotros
           </motion.h2>
           <motion.p 
             className="!text-xl !text-emerald-800/80 !mb-8"
@@ -329,7 +308,7 @@ const Register: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Comienza tu viaje hacia un futuro más sostenible hoy mismo.
+            Comienza tu viaje hacia un futuro mÃ¡s sostenible hoy mismo.
           </motion.p>
         </div>
 
@@ -366,11 +345,11 @@ const Register: React.FC = () => {
               <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
             </Link>
             
-            {/* Header dinámico según el paso */}
+            {/* Header dinÃ¡mico segÃºn el paso */}
             {currentStep === 0 && accountType === 'none' && (
               <>
-                <h1 className="!text-3xl !font-bold !text-white !mb-2">¿Qué tipo de cuenta necesitas?</h1>
-                <p className="!text-emerald-200/80">Elige la opción que mejor se adapte a ti</p>
+                <h1 className="!text-3xl !font-bold !text-white !mb-2">Â¿QuÃ© tipo de cuenta necesitas?</h1>
+                <p className="!text-emerald-200/80">Elige la opciÃ³n que mejor se adapte a ti</p>
               </>
             )}
             {currentStep === 0 && accountType === 'b2c' && (
@@ -387,7 +366,7 @@ const Register: React.FC = () => {
                   </div>
                 </div>
                 <h1 className="!text-3xl !font-bold !text-white !text-center !mb-2">Crear Cuenta Personal</h1>
-                <p className="!text-emerald-200/80 !text-center">Regístrate con tu cuenta de Google</p>
+                <p className="!text-emerald-200/80 !text-center">RegÃ­strate con tu cuenta de Google</p>
               </>
             )}
             {currentStep >= 1 && (
@@ -423,10 +402,10 @@ const Register: React.FC = () => {
               <div
                 className={currentStep === 0 ? '' : '!grid !grid-cols-1 md:!grid-cols-2 !gap-6'}
               >
-                {/* Paso 0: Selección de tipo de cuenta */}
+                {/* Paso 0: SelecciÃ³n de tipo de cuenta */}
                 {currentStep === 0 && accountType === 'none' && (
                   <div className="!space-y-4">
-                    {/* Opción Empresarial */}
+                    {/* OpciÃ³n Empresarial */}
                     <button
                       type="button"
                       onClick={() => handleSelectAccountType('b2b')}
@@ -447,7 +426,7 @@ const Register: React.FC = () => {
                               <Check className="!w-4 !h-4" /> Reportes avanzados
                             </div>
                             <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
-                              <Check className="!w-4 !h-4" /> Múltiples usuarios
+                              <Check className="!w-4 !h-4" /> MÃºltiples usuarios
                             </div>
                           </div>
                         </div>
@@ -455,7 +434,7 @@ const Register: React.FC = () => {
                       </div>
                     </button>
 
-                    {/* Opción Personal */}
+                    {/* OpciÃ³n Personal */}
                     <button
                       type="button"
                       onClick={() => handleSelectAccountType('b2c')}
@@ -470,7 +449,7 @@ const Register: React.FC = () => {
                           <p className="!text-emerald-200/70 !text-sm !mb-3">Para viajeros individuales que quieren compensar sus emisiones personales.</p>
                           <div className="!space-y-1">
                             <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
-                              <Check className="!w-4 !h-4" /> Registro rápido con Google
+                              <Check className="!w-4 !h-4" /> Registro rÃ¡pido con Google
                             </div>
                             <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
                               <Check className="!w-4 !h-4" /> Calculadora personal
@@ -486,7 +465,7 @@ const Register: React.FC = () => {
                   </div>
                 )}
 
-                {/* Paso 0 con B2C seleccionado: Mostrar botón de Google */}
+                {/* Paso 0 con B2C seleccionado: Mostrar botÃ³n de Google */}
                 {currentStep === 0 && accountType === 'b2c' && (
                   <div className="!space-y-6">
                     <button
@@ -525,18 +504,18 @@ const Register: React.FC = () => {
                 {currentStep === 1 && (
                   <>
                     {renderInput('Nombre', 'firstName', 'text', 'Juan', <User className="!w-5 !h-5" />)}
-                    {renderInput('Apellido', 'lastName', 'text', 'Pérez', <User className="!w-5 !h-5" />)}
-                    {renderInput('Correo Electrónico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
+                    {renderInput('Apellido', 'lastName', 'text', 'PÃ©rez', <User className="!w-5 !h-5" />)}
+                    {renderInput('Correo ElectrÃ³nico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
                     
                     <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">ContraseÃ±a</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
                           name="password"
                           value={formData.password}
                           onChange={handleChange}
-                          placeholder="••••••••"
+                          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                           className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
@@ -548,14 +527,14 @@ const Register: React.FC = () => {
                     </div>
 
                     <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar Contraseña</label>
+                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar ContraseÃ±a</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
-                          placeholder="••••••••"
+                          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                           className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
@@ -576,7 +555,7 @@ const Register: React.FC = () => {
                           <Check className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
                         </div>
                         <span className="!text-emerald-200 group-hover:!text-white !transition-colors !text-sm">
-                          Acepto los <Link to="/terms" className="!text-emerald-400 hover:!underline">términos y condiciones</Link>
+                          Acepto los <Link to="/terms" className="!text-emerald-400 hover:!underline">tÃ©rminos y condiciones</Link>
                         </span>
                       </label>
                       {validationErrors.acceptTerms && <span className="!text-xs !text-red-300 !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}
@@ -585,73 +564,83 @@ const Register: React.FC = () => {
                 )}
 
                 {currentStep === 2 && (
-                  <>
-                    {renderInput('Razón Social', 'companyName', 'text', 'Mi Empresa SpA', <Building className="!w-5 !h-5" />, true)}
-                    {renderInput('RUT Empresa', 'rut', 'text', '76.123.456-7', <FileText className="!w-5 !h-5" />)}
-                    {renderSelect('Tipo de Empresa', 'businessType', businessTypes)}
-                    {renderInput('Nombre de Fantasía', 'tradeName', 'text', 'Mi Marca', <Building className="!w-5 !h-5" />)}
-                    {renderInput('Sitio Web', 'website', 'url', 'https://...', <Building className="!w-5 !h-5" />)}
-                  </>
-                )}
+                  <div className="!col-span-2 !space-y-4">
+                    <div>
+                      <p className="!text-sm !text-emerald-200/80 !mb-1">
+                        Sube un documento con los datos de tu empresa (RUT, escritura, representante).
+                        <strong className="!text-emerald-300"> Este paso es opcional</strong> â€” puedes continuar
+                        sin Ã©l y adjuntarlo mÃ¡s adelante.
+                      </p>
+                      <p className="!text-xs !text-emerald-400/70">PDF Â· JPG Â· PNG Â· DOCX â€” mÃ¡x. 15 MB</p>
+                    </div>
 
-                {currentStep === 3 && (
-                  <>
-                    {renderInput('Nombre Representante', 'legalRepName', 'text', 'Juan Pérez', <User className="!w-5 !h-5" />, true)}
-                    {renderInput('RUT Representante', 'legalRepRut', 'text', '12.345.678-9', <FileText className="!w-5 !h-5" />)}
-                    {renderInput('Email Contacto', 'contactEmail', 'email', 'contacto@empresa.com', <Mail className="!w-5 !h-5" />)}
-                    {renderInput('Teléfono', 'phone', 'tel', '+56 9 1234 5678', <Phone className="!w-5 !h-5" />)}
-                    {renderSelect('Región', 'region', chileanRegions)}
-                    {renderInput('Ciudad', 'city', 'text', 'Santiago', <MapPin className="!w-5 !h-5" />)}
-                    {renderInput('Dirección', 'address', 'text', 'Av. Siempre Viva 123', <MapPin className="!w-5 !h-5" />, true)}
-                  </>
-                )}
-
-                {currentStep === 4 && (
-                  <>
-                    {renderSelect('Sector Económico', 'industry', industries)}
-                    {renderSelect('Número de Empleados', 'employeeCount', employeeRanges)}
-                    {renderSelect('Facturación Anual', 'annualRevenue', revenueRanges)}
-                    
-                    <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Descripción de la Empresa</label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        rows={3}
-                        className={`!w-full !px-6 !py-4 !rounded-2xl !bg-emerald-800/50 !border ${validationErrors.description ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none`}
-                        placeholder="Breve descripción de lo que hace tu empresa..."
+                    {/* Dropzone */}
+                    <div
+                      className={`!border-2 !border-dashed !rounded-2xl !p-8 !text-center !transition-all !cursor-pointer
+                        ${isDragging ? '!border-emerald-300 !bg-emerald-700/30' : '!border-emerald-600 !bg-emerald-800/30'}
+                        ${docFile ? '!border-solid !border-emerald-400 !bg-emerald-800/50 !cursor-default' : 'hover:!border-emerald-400 hover:!bg-emerald-800/40'}`}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault(); setIsDragging(false);
+                        const f = e.dataTransfer.files[0]; if (f) handleFileSelect(f);
+                      }}
+                      onClick={() => !docFile && fileInputRef.current?.click()}
+                    >
+                      {docFile ? (
+                        <div className="!flex !items-center !justify-center !gap-4">
+                          <FileText className="!w-8 !h-8 !text-emerald-400 !flex-shrink-0" />
+                          <div className="!text-left">
+                            <p className="!font-semibold !text-emerald-300">{docFile.name}</p>
+                            <p className="!text-xs !text-emerald-500">{(docFile.size / 1024).toFixed(1)} KB</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setDocFile(null); }}
+                            className="!ml-auto !text-red-400 hover:!text-red-300 !text-sm !bg-red-900/30 !px-3 !py-1 !rounded-full !transition-colors"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="!space-y-2">
+                          <div className="!w-12 !h-12 !mx-auto !bg-emerald-700/50 !rounded-full !flex !items-center !justify-center">
+                            <Briefcase className="!w-6 !h-6 !text-emerald-400" />
+                          </div>
+                          <p className="!font-semibold !text-white">Arrastra tu documento aquÃ­</p>
+                          <p className="!text-sm !text-emerald-400">
+                            o <span className="!underline">haz clic para seleccionar</span>
+                          </p>
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        className="!hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0]; if (f) handleFileSelect(f);
+                          e.target.value = '';
+                        }}
                       />
-                      {validationErrors.description && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.description}</span>}
                     </div>
 
-                    <div className="!col-span-2 !space-y-3">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Intereses (Selecciona al menos uno)</label>
-                      <div className="!grid !grid-cols-1 sm:!grid-cols-2 !gap-3">
-                        {interestOptions.map(interest => (
-                          <label key={interest} className="!flex !items-center !gap-3 !p-3 !rounded-xl !bg-emerald-800/30 !border !border-emerald-700/50 !cursor-pointer hover:!bg-emerald-800/50 !transition-all">
-                            <div className="!relative !flex !items-center">
-                              <input
-                                type="checkbox"
-                                name="interests"
-                                value={interest}
-                                checked={formData.interests.includes(interest)}
-                                onChange={handleChange}
-                                className="!peer !appearance-none !w-4 !h-4 !border-2 !border-emerald-500 !rounded !bg-transparent checked:!bg-emerald-500"
-                              />
-                              <Check className="!absolute !w-3 !h-3 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
-                            </div>
-                            <span className="!text-sm !text-emerald-100">{interest}</span>
-                          </label>
-                        ))}
-                      </div>
-                      {validationErrors.interests && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.interests}</span>}
+                    {apiError && (
+                      <p className="!text-xs !text-red-300 !mt-1">{apiError}</p>
+                    )}
+
+                    <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !border !border-emerald-700/50 !rounded-xl">
+                      <AlertCircle className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
+                      <p className="!text-sm !text-emerald-200/80">
+                        Nuestro equipo revisarÃ¡ tu solicitud en 1â€“2 dÃ­as hÃ¡biles y te notificarÃ¡
+                        por correo al activar tu cuenta.
+                      </p>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
 
-            {/* Botones de navegación solo para pasos B2B */}
+            {/* Botones de navegaciÃ³n solo para pasos B2B */}
             {currentStep >= 1 && (
               <div className="!flex !gap-4 !pt-6">
                 {currentStep >= 1 && (
@@ -660,7 +649,7 @@ const Register: React.FC = () => {
                     onClick={handlePrevious}
                     className="!flex-1 !py-4 !px-6 !bg-emerald-800 !text-emerald-200 !font-bold !rounded-full hover:!bg-emerald-700 !transition-all"
                   >
-                    Atrás
+                    AtrÃ¡s
                   </button>
                 )}
                 
@@ -686,9 +675,9 @@ const Register: React.FC = () => {
           </form>
 
           <div className="!mt-8 !text-center">
-            <span className="!text-emerald-200/80">¿Ya tienes cuenta? </span>
+            <span className="!text-emerald-200/80">Â¿Ya tienes cuenta? </span>
             <Link to="/login" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
-              Iniciar sesión
+              Iniciar sesiÃ³n
             </Link>
           </div>
         </motion.div>
