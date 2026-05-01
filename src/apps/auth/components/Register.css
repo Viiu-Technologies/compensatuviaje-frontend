@@ -549,3 +549,145 @@
     display: none;
   }
 }
+
+/* ── Dropzone (paso 2) ──────────────────────────────────────────────────────── */
+.dropzone {
+  border: 2px dashed #22C55E;
+  border-radius: 0.75rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dropzone:hover {
+  background: #f0fdf4;
+}
+
+.dropzone--active {
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+
+.dropzone--has-file {
+  cursor: default;
+  background: #f0fdf4;
+  border-style: solid;
+}
+
+.dropzone__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dropzone__placeholder svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  stroke: #22C55E;
+  margin-bottom: 0.25rem;
+}
+
+.dropzone__title {
+  font-weight: 600;
+  color: #111;
+  margin: 0;
+}
+
+.dropzone__subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.dropzone__subtitle span {
+  color: #16a34a;
+  text-decoration: underline;
+}
+
+.dropzone__hint {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.dropzone__file {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.dropzone__file svg {
+  width: 2rem;
+  height: 2rem;
+  stroke: #16a34a;
+  flex-shrink: 0;
+}
+
+.dropzone__filename {
+  font-weight: 600;
+  color: #16a34a;
+  margin: 0;
+  word-break: break-all;
+}
+
+.dropzone__filesize {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.dropzone__remove {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #fca5a5;
+  color: #ef4444;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.dropzone__remove:hover {
+  background: #fee2e2;
+}
+
+/* ── Step 2 hint ──────────────────────────────────────────────────────────── */
+.step2-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding: 0.875rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 0.5rem;
+}
+
+.step2-hint svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.step2-hint p {
+  font-size: 0.85rem;
+  color: #78350f;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Step description ─────────────────────────────────────────────────────── */
+.step-description {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
