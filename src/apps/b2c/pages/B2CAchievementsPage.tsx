@@ -73,21 +73,22 @@ function ShareCard({ userId, totalKg }: ShareCardProps) {
     'http://localhost:3001/api';
   const shareUrl = `${API_BASE}/public/share/profile/${userId}`;
   const badgeTitle = getBadgeTitle(totalKg);
-  const shareText = `Acabo de neutralizar mi huella de carbono y gané mi insignia oficial en Compensatuviaje. 🌱🌍 ¡Mide tu huella y únete a mí aquí! ${shareUrl}`;
+  const baseText = `Acabo de neutralizar mi huella de carbono y gané mi insignia oficial en Compensatuviaje. 🌱🌍 ¡Mide tu huella y únete a mí aquí!`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Mi insignia: ${badgeTitle}`,
-          text: shareText,
+          text: baseText, // solo texto, sin URL — la API nativa la añade por su cuenta
           url: shareUrl,
         });
       } catch {
         // user cancelled — do nothing
       }
     } else {
-      await navigator.clipboard.writeText(shareText);
+      // Fallback para navegadores sin navigator.share: copiar texto completo con URL
+      await navigator.clipboard.writeText(`${baseText} ${shareUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
