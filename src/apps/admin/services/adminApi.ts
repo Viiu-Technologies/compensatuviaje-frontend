@@ -97,6 +97,11 @@ export interface MetricsData {
     total: number;
     trend: string;
   };
+  newPartners: {
+    series: Array<{ date: string; count: number }>;
+    total: number;
+    trend: string;
+  };
 }
 
 export const getMetrics = async (period: string = '30d'): Promise<MetricsData> => {

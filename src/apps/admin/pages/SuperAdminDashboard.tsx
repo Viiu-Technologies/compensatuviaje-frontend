@@ -139,21 +139,22 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  // Build chart data from metrics API (newCompanies + newB2CUsers series)
+  // Build chart data from metrics API (newCompanies + newB2CUsers + newPartners series)
   const chartData = useMemo(() => {
-    if (!metrics?.newCompanies?.series?.length && !metrics?.newB2CUsers?.series?.length) return [];
+    if (!metrics?.newCompanies?.series?.length && !metrics?.newB2CUsers?.series?.length && !metrics?.newPartners?.series?.length) return [];
 
     const companiesSeries = metrics?.newCompanies?.series || [];
     const b2cSeries = metrics?.newB2CUsers?.series || [];
+    const partnersSeries = metrics?.newPartners?.series || [];
 
     // Aggregate daily series into monthly buckets
-    const monthlyMap = new Map<string, { b2b: number; b2c: number }>();
+    const monthlyMap = new Map<string, { b2b: number; b2c: number; partners: number }>();
     const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
     companiesSeries.forEach((item) => {
       const d = new Date(item.date);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
-      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0 };
+      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0, partners: 0 };
       existing.b2b += item.count || 0;
       monthlyMap.set(key, existing);
     });
@@ -161,8 +162,16 @@ export default function SuperAdminDashboard() {
     b2cSeries.forEach((item) => {
       const d = new Date(item.date);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
-      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0 };
+      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0, partners: 0 };
       existing.b2c += item.count || 0;
+      monthlyMap.set(key, existing);
+    });
+
+    partnersSeries.forEach((item) => {
+      const d = new Date(item.date);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0, partners: 0 };
+      existing.partners += item.count || 0;
       monthlyMap.set(key, existing);
     });
 
@@ -171,7 +180,7 @@ export default function SuperAdminDashboard() {
     return sortedKeys.map(key => {
       const [, monthIdx] = key.split('-');
       const vals = monthlyMap.get(key)!;
-      return { name: monthNames[parseInt(monthIdx)], b2b: vals.b2b, b2c: vals.b2c };
+      return { name: monthNames[parseInt(monthIdx)], b2b: vals.b2b, b2c: vals.b2c, partners: vals.partners };
     });
   }, [metrics]);
 
@@ -272,7 +281,7 @@ export default function SuperAdminDashboard() {
           <div className="!flex !items-center !justify-between !mb-8">
             <div>
               <h3 className="!text-xl !font-bold !text-slate-900">Crecimiento de Registros</h3>
-              <p className="!text-sm !text-slate-500">Nuevas empresas B2B y usuarios B2C por período</p>
+              <p className="!text-sm !text-slate-500">Empresas B2B, usuarios B2C y partners por período</p>
             </div>
           </div>
           {chartData.length > 0 ? (
@@ -287,6 +296,10 @@ export default function SuperAdminDashboard() {
                     <linearGradient id="colorB2C" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#ec4899" stopOpacity={0.1}/>
                       <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorPartners" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.15}/>
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -304,10 +317,14 @@ export default function SuperAdminDashboard() {
                   />
                   <Tooltip 
                     contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}}
-                    formatter={(value: number, name: string) => [value, name === 'b2b' ? 'Empresas B2B' : 'Usuarios B2C']}
+                    formatter={(value: number, name: string) => [
+                      value,
+                      name === 'b2b' ? 'Empresas B2B' : name === 'b2c' ? 'Usuarios B2C' : 'Partners'
+                    ]}
                   />
                   <Area type="monotone" dataKey="b2b" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorB2B)" name="b2b" />
                   <Area type="monotone" dataKey="b2c" stroke="#ec4899" strokeWidth={3} fillOpacity={1} fill="url(#colorB2C)" name="b2c" />
+                  <Area type="monotone" dataKey="partners" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorPartners)" name="partners" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
