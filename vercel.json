@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/share/profile/:userId",
-      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/public/share/:userId"
+      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/public/share/profile/:userId"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
