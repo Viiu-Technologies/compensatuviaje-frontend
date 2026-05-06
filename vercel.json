@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    {
+      "source": "/share/profile/:userId",
+      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/public/share/:userId"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

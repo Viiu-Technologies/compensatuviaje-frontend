@@ -71,7 +71,7 @@ function ShareCard({ userId, totalKg }: ShareCardProps) {
     import.meta.env.VITE_API_URL ||
     import.meta.env.VITE_APP_API_URL ||
     'http://localhost:3001/api';
-  const shareUrl = `${API_BASE}/public/share/profile/${userId}`;
+  const shareUrl = `${window.location.origin}/share/profile/${userId}`;
   const badgeTitle = getBadgeTitle(totalKg);
   const baseText = `Acabo de neutralizar mi huella de carbono y gané mi insignia oficial en Compensatuviaje. 🌱🌍 ¡Mide tu huella y únete a mí aquí!`;
 
