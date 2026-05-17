@@ -1,36 +1,40 @@
-import React from 'react';
-import { FaLeaf, FaPlane, FaChartLine, FaUsers, FaBuilding } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { FaLeaf, FaPlane, FaUsers, FaChartLine, FaBuilding } from 'react-icons/fa';
 import { HiArrowRight } from 'react-icons/hi';
 import './Hero.css';
 
 const Hero = () => {
+  // Estado para prevenir desajustes de formato de números en Server-Side Rendering (SSR)
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const stats = [
     { 
       icon: FaLeaf, 
       value: 15420, 
       label: 'Toneladas CO₂ Compensadas', 
       suffix: '+', 
-      gradient: 'from-emerald-400 to-green-500',
-      iconBg: 'bg-gradient-to-br from-emerald-400 to-green-600',
-      glow: 'shadow-emerald-500/40'
+      iconBg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      lineColor: 'bg-emerald-500'
     },
     { 
       icon: FaPlane, 
       value: 8234, 
       label: 'Vuelos Compensados', 
       suffix: '+', 
-      gradient: 'from-blue-400 to-cyan-500',
-      iconBg: 'bg-gradient-to-br from-blue-400 to-cyan-600',
-      glow: 'shadow-blue-500/40'
+      iconBg: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      lineColor: 'bg-blue-500'
     },
     { 
       icon: FaUsers, 
       value: 3567, 
       label: 'Empresas Certificadas', 
       suffix: '+', 
-      gradient: 'from-amber-400 to-orange-500',
-      iconBg: 'bg-gradient-to-br from-amber-400 to-orange-600',
-      glow: 'shadow-amber-500/40'
+      iconBg: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+      lineColor: 'bg-amber-500'
     },
   ];
 
@@ -42,236 +46,187 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden" id="inicio">
-      {/* Background con overlay premium */}
+    <section className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden bg-slate-950" id="inicio">
+      
+      {/* Background con overlay gradiente premium */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{ backgroundImage: 'url(/images/hero-background.webp)' }}
       >
-        <div 
-          className="absolute inset-0"
-          style={{ 
-            background: `
-              linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%),
-              linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 58, 138, 0.55) 50%, rgba(15, 23, 42, 0.7) 100%)
-            `
-          }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-900/60 to-slate-950" />
       </div>
 
-      {/* Blobs decorativos sutiles - CSS animations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow" />
-        <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow-reverse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] will-change-transform animate-blob-slow-mid" />
+      {/* Blobs de luz decorativos de fondo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[130px] animate-blob-slow" />
+        <div className="absolute -bottom-40 -right-40 w-[700px] h-[700px] bg-blue-500/10 rounded-full blur-[130px] animate-blob-slow-reverse" />
       </div>
 
       {/* Contenido Principal */}
-      <div
-        className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full"
-        style={{
-          maxWidth: '1280px',
-          /* clamp(min, preferred, max) — padding fluido con el viewport height */
-          paddingTop: 'clamp(5.5rem, 12vh, 9rem)',
-          paddingBottom: 'clamp(2rem, 6vh, 5rem)',
-        }}
-      >
-        <div className="grid lg:grid-cols-2 xl:grid-cols-[1fr_460px] gap-8 lg:gap-12 xl:gap-16 items-center">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full max-w-7xl pt-[clamp(6rem,14vh,10rem)] pb-[clamp(3rem,8vh,6rem)]">
+        <div className="grid lg:grid-cols-2 gap-12 xl:gap-16 items-center">
           
-          {/* Columna Izquierda */}
-          <div className="flex flex-col items-start">
-
-            {/* Título Principal */}
-            <h1
-              className="font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
-              style={{
-                /* Fluid typography: escala suavemente de 32px (375px) a 72px (1440px+) */
-                fontSize: 'clamp(2rem, 5vw, 4.5rem)',
-                textShadow: '0 4px 30px rgba(0,0,0,0.4)',
-              }}
-            >
-              <span className="text-white">Compensa</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
-                tu Viaje
-              </span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
-                Sostenible
+          {/* Columna Izquierda: Mensaje de Valor */}
+          <div className="flex flex-col items-start text-left">
+            <h1 className="font-black leading-[1.1] tracking-tight mb-6 text-[clamp(2.25rem,5.5vw,4.25rem)] text-white drop-shadow-lg">
+              Compensa <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
+                tu Viaje Sostenible
               </span>
             </h1>
 
-            {/* Subtítulo — máximo 2 líneas, line-height 1.5 para legibilidad */}
-            <p
-              className="text-white/85 max-w-md !mb-10 lg:!mb-14"
-              style={{
-                /* Fluid: 14px en móvil → 18px en desktop */
-                fontSize: 'clamp(0.875rem, 1.8vw, 1.125rem)',
-                textShadow: '0 2px 20px rgba(0,0,0,0.5)',
-                lineHeight: '1.5',
-              }}
-            >
-              Neutraliza el impacto ambiental de tus viajes con proyectos verificados y certificados.
+            <p className="text-slate-300 max-w-lg mb-10 text-[clamp(1rem,1.8vw,1.125rem)] leading-relaxed">
+              Neutraliza el impacto ambiental de tus viajes con proyectos verificados y certificados de forma totalmente transparente.
             </p>
 
-            {/* Botones CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full sm:w-auto !mb-8 lg:!mb-12">
+            {/* Botones de Acción */}
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-12">
               <button
                 onClick={scrollToCalculator}
-                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 hover:from-emerald-300 hover:via-green-400 hover:to-teal-400 text-slate-900 font-black text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl shadow-2xl shadow-emerald-500/50 hover:shadow-emerald-400/60 active:shadow-emerald-500/30 !transition-all !duration-300 overflow-hidden"
+                className="group relative inline-flex justify-center items-center gap-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-bold text-base px-8 py-4 rounded-xl shadow-xl shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all duration-300 overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <FaChartLine className="text-lg sm:text-xl group-hover:scale-110 transition-transform relative z-10" />
-                <span className="relative z-10">Calcula tu Huella</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <FaChartLine className="text-lg group-hover:scale-110 transition-transform" />
+                <span>Calcula tu Huella</span>
               </button>
               
               <button
-                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl text-white/90 hover:text-white font-semibold text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl border-2 border-white/30 hover:border-white/50 shadow-lg shadow-black/20 !transition-all !duration-300"
+                className="group inline-flex justify-center items-center gap-3 bg-white/5 hover:bg-white/10 backdrop-blur-md text-white font-medium text-base px-8 py-4 rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300"
               >
                 <span>Cómo Funciona</span>
-                <HiArrowRight className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform" />
+                <HiArrowRight className="text-lg group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-nowrap gap-x-3 sm:gap-x-5">
+            {/* Indicadores de Confianza */}
+            <div className="flex flex-wrap gap-y-3 gap-x-6 border-t border-white/10 pt-6 w-full lg:w-auto">
               {[
-                { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
-                { color: 'bg-blue-400', glow: 'shadow-blue-400/80', text: 'Certificación ISO' },
-                { color: 'bg-amber-400', glow: 'shadow-amber-400/80', text: 'Transparencia Total' },
+                { color: 'bg-emerald-400', text: '100% Verificado' },
+                { color: 'bg-blue-400', text: 'Certificación ISO' },
+                { color: 'bg-amber-400', text: 'Transparencia Total' },
               ].map((item, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-center gap-1.5 sm:gap-2 text-white/90 text-[11px] sm:text-sm font-medium"
-                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
-                >
-                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
+                <div key={i} className="flex items-center gap-2 text-slate-400 text-xs sm:text-sm font-medium">
+                  <span className={`w-2 h-2 ${item.color} rounded-full`} />
                   <span>{item.text}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Columna Derecha - Cards (solo desktop) */}
-          <div
-            className="hidden lg:flex flex-col gap-3 xl:gap-4 w-full"
-          >
-            {/* Stats Cards */}
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              
-              return (
-                <div
-                  key={index}
-                  className={`
-                    group relative overflow-hidden
-                    bg-white/10 backdrop-blur-2xl 
-                    rounded-2xl xl:rounded-3xl 
-                    py-5 xl:py-6
-                    flex items-center justify-center gap-5 xl:gap-6
-                    border border-white/20 hover:border-white/40
-                    shadow-2xl ${stat.glow}
-                    hover:!-translate-y-1 hover:!scale-[1.02]
-                    !transition-all !duration-300 !ease-out
-                  `}
-                >
-                  <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${stat.gradient} blur-3xl -z-10`} />
-                  
-                  <div className={`
-                    relative flex-shrink-0
-                    p-3.5 rounded-2xl 
-                    ${stat.iconBg}
-                    shadow-lg ${stat.glow}
-                    group-hover:scale-110 group-hover:rotate-3
-                    transition-all duration-300
-                  `}>
-                    <Icon className="text-3xl text-white drop-shadow-md" />
-                  </div>
-                  
-                  <div className="min-w-0">
-                    <div className="flex items-baseline gap-1">
-                      <span
-                        className="font-black text-white tracking-tight"
-                        style={{ fontSize: 'clamp(1.75rem, 2.5vw, 2.5rem)' }}
-                      >
-                        {stat.value.toLocaleString()}
-                      </span>
-                      <span
-                        className="font-bold text-white/80"
-                        style={{ fontSize: 'clamp(1rem, 1.5vw, 1.5rem)' }}
-                      >{stat.suffix}</span>
-                    </div>
-                    <p className="text-white/60 font-medium text-sm xl:text-base mt-0.5">
-                      {stat.label}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+          {/* Columna Derecha: Dashboard de Stats y CTAs (Alineación Perfecta) */}
+          <div className="hidden lg:flex flex-col gap-4 w-full max-w-[460px] justify-self-end">
+            
+            {/* Contenedor tipo Dashboard para agrupar los stats de forma limpia */}
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col gap-4 shadow-2xl">
+              <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Impacto Global de la Plataforma</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
 
-            {/* Card Empresa */}
-            <div className="group relative overflow-hidden rounded-2xl xl:rounded-3xl hover:!-translate-y-1 hover:!scale-[1.02] !transition-all !duration-300 !ease-out">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700" />
-              <div className="absolute inset-0 bg-white/5" />
-              
-              <div className="relative py-5 xl:py-6 flex items-center justify-center gap-5 xl:gap-6">
-                <div className="flex-shrink-0 p-3.5 rounded-2xl bg-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <FaBuilding className="text-3xl text-white" />
+              {stats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className={`p-3 rounded-xl border ${stat.iconBg} flex-shrink-0`}>
+                        <Icon className="text-xl" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-slate-400 text-xs font-medium truncate">{stat.label}</p>
+                        <div className="flex items-baseline gap-0.5 text-white font-black tracking-tight text-xl xl:text-2xl mt-0.5">
+                          <span>{isMounted ? stat.value.toLocaleString() : stat.value}</span>
+                          <span className="text-slate-400 font-bold text-sm">{stat.suffix}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Detalle visual: Micro-gráfico de barra simulado */}
+                    <div className="w-16 bg-white/5 h-1.5 rounded-full overflow-hidden hidden xl:block">
+                      <div className={`h-full ${stat.lineColor} w-3/4 rounded-full opacity-60`} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Card Empresa: Rediseñada y perfectamente alineada con la misma estructura */}
+            <div className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-r from-emerald-950/40 to-slate-900/40 border border-emerald-500/20 hover:border-emerald-500/40 shadow-xl shadow-emerald-950/10 transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex gap-4 items-start">
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
+                  <FaBuilding className="text-xl" />
                 </div>
-                
-                <div className="min-w-0">
-                  <h3 className="text-xl font-bold text-white mb-0.5">
-                    ¿Eres Empresa?
-                  </h3>
-                  <p className="text-white/80 text-sm xl:text-base mb-2 leading-snug">
-                    Certifica tus operaciones y lidera el cambio sostenible.
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-white mb-1">¿Eres Empresa?</h3>
+                  <p className="text-slate-400 text-xs mb-4 leading-relaxed">
+                    Certifica el impacto ambiental de tus operaciones corporativas y lidera el cambio sostenible.
                   </p>
-                  <button className="group/btn inline-flex items-center gap-2 text-emerald-300 hover:text-white font-semibold text-sm transition-colors duration-200">
-                    Registro Empresarial
-                    <HiArrowRight className="text-lg group-hover/btn:translate-x-1 transition-transform" />
+                  <button className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-xs font-bold transition-colors">
+                    <span>Solicitar Registro Empresarial</span>
+                    <HiArrowRight className="text-sm group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </div>
               </div>
             </div>
+
+          </div>
+
+        </div>
+
+        {/* Layout Adaptado para Móviles (lg:hidden) */}
+        <div className="flex flex-col gap-4 mt-12 lg:hidden">
+          <div className="grid grid-cols-3 gap-2.5">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="bg-slate-900/60 backdrop-blur-md rounded-xl p-3 text-center border border-white/5">
+                  <Icon className="text-base mx-auto mb-1 text-emerald-400" />
+                  <div className="text-base sm:text-lg font-black text-white leading-none">
+                    {isMounted ? stat.value.toLocaleString() : stat.value}
+                    <span className="text-xs font-bold text-slate-400">{stat.suffix}</span>
+                  </div>
+                  <p className="text-slate-400 text-[10px] font-medium mt-1 leading-tight truncate">
+                    {stat.label.split(' ')[0]} {stat.label.split(' ')[1] || ''}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Card Empresa Móvil */}
+          <div className="bg-gradient-to-r from-slate-900/80 to-emerald-950/30 rounded-xl p-4 border border-emerald-500/10 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/10 flex-shrink-0">
+                <FaBuilding className="text-base" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-white text-xs font-bold">¿Eres Empresa?</h4>
+                <p className="text-slate-400 text-[10px] truncate">Certifica el impacto de tu organización.</p>
+              </div>
+            </div>
+            <button className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex-shrink-0">
+              Unirse
+            </button>
           </div>
         </div>
 
-        {/* Stats compactos para móvil */}
-        <div className="grid grid-cols-3 gap-3 mt-8 lg:hidden">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={index}
-                className="bg-white/10 backdrop-blur-xl rounded-xl !p-3 text-center border border-white/15"
-              >
-                <Icon className={`text-lg mx-auto mb-1 text-emerald-400`} />
-                <div className="text-xl sm:text-2xl font-black text-white leading-none">
-                  {stat.value.toLocaleString()}
-                  <span className="text-sm font-bold text-white/70">{stat.suffix}</span>
-                </div>
-                <p className="text-white/50 text-[10px] sm:text-xs font-medium mt-1 leading-tight">
-                  {stat.label}
-                </p>
-              </div>
-            );
-          })}
+      </div>
+
+      {/* Indicador de Scroll Inferior */}
+      <div
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-1.5 cursor-pointer group z-10"
+        onClick={scrollToCalculator}
+      >
+        <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 group-hover:text-slate-300 transition-colors">
+          Descubre más
+        </span>
+        <div className="w-5 h-8 rounded-full border border-slate-800 group-hover:border-slate-600 flex justify-center pt-1.5 transition-colors">
+          <div className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce" />
         </div>
       </div>
 
-      {/* Scroll Indicator — CSS only */}
-      <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 cursor-pointer group"
-        onClick={() => {
-          const element = document.getElementById('calculadora');
-          if (element) element.scrollIntoView({ behavior: 'smooth' });
-        }}
-      >
-        <span className="text-xs uppercase tracking-[0.25em] text-white/50 font-semibold group-hover:text-white/80 transition-colors animate-pulse-slow">
-          Descubre más
-        </span>
-        <div className="w-6 h-10 rounded-full border-2 border-white/25 group-hover:border-white/50 flex justify-center pt-2 transition-colors">
-          <div className="w-1.5 h-2.5 bg-white/50 group-hover:bg-white/80 rounded-full animate-scroll-dot transition-colors" />
-        </div>
-      </div>
     </section>
   );
 };
