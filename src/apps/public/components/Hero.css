@@ -1,12 +1,13 @@
 /* ==========================================================================
-   Hero.css - Optimizado para trabajar en armonía con Tailwind
+   Hero.css — Animaciones originales + Bento Grid Stats
    ========================================================================== */
 
-/* Lógica de Fallback Premium para carga de imágenes */
+/* --------------------------------------------------------------------------
+   Fallback de imagen
+   -------------------------------------------------------------------------- */
 .hero-bg-fallback {
   position: relative;
 }
-
 .hero-bg-fallback::before {
   content: '';
   position: absolute;
@@ -14,76 +15,342 @@
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #064e3b 100%);
   opacity: 0;
   transition: opacity 0.4s ease-in-out;
-  z-index: 1; /* Controlado dentro del contenedor de background */
+  z-index: 1;
 }
-
-/* Si la imagen falla o no ha cargado, se activa el gradiente */
 .hero-bg-fallback[data-loaded="false"]::before {
   opacity: 1;
 }
 
-/* ==========================================================================
-   Animaciones Custom para Blobs y Micro-interacciones
-   ========================================================================== */
+/* --------------------------------------------------------------------------
+   Blobs
+   -------------------------------------------------------------------------- */
 @keyframes blob-slow {
-  0%, 100% { transform: scale(1) translate(0px, 0px); opacity: 0.15; }
-  33% { transform: scale(1.08) translate(20px, -30px); opacity: 0.22; }
-  66% { transform: scale(0.95) translate(-10px, 15px); opacity: 0.18; }
+  0%, 100% { transform: scale(1) translate(0px, 0px);    opacity: 0.15; }
+  33%       { transform: scale(1.08) translate(20px, -30px); opacity: 0.22; }
+  66%       { transform: scale(0.95) translate(-10px, 15px); opacity: 0.18; }
 }
-
 @keyframes blob-slow-reverse {
-  0%, 100% { transform: scale(1) translate(0px, 0px); opacity: 0.15; }
-  50% { transform: scale(1.12) translate(-30px, 20px); opacity: 0.25; }
+  0%, 100% { transform: scale(1) translate(0px, 0px);     opacity: 0.15; }
+  50%       { transform: scale(1.12) translate(-30px, 20px); opacity: 0.25; }
 }
-
 @keyframes blob-slow-mid {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.08; }
-  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.15; }
+  0%, 100% { transform: translate(-50%, -50%) scale(1);    opacity: 0.08; }
+  50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 0.15; }
 }
+.animate-blob-slow        { animation: blob-slow         14s ease-in-out infinite; }
+.animate-blob-slow-reverse{ animation: blob-slow-reverse 16s ease-in-out infinite; }
+.animate-blob-slow-mid    { animation: blob-slow-mid     12s ease-in-out infinite; }
 
-.animate-blob-slow {
-  animation: blob-slow 14s ease-in-out infinite;
-}
-
-.animate-blob-slow-reverse {
-  animation: blob-slow-reverse 16s ease-in-out infinite;
-}
-
-.animate-blob-slow-mid {
-  animation: blob-slow-mid 12s ease-in-out infinite;
-}
-
-/* Animaciones del Scroll Indicator */
-.animate-pulse-slow {
-  animation: pulseSlow 2.5s ease-in-out infinite;
-}
-
-.animate-scroll-dot {
-  animation: scrollDot 1.8s ease-in-out infinite;
-}
-
+/* --------------------------------------------------------------------------
+   Scroll indicator
+   -------------------------------------------------------------------------- */
 @keyframes pulseSlow {
   0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+  50%       { opacity: 0.9; }
 }
-
 @keyframes scrollDot {
-  0%, 100% { transform: translateY(0); opacity: 1; }
-  50% { transform: translateY(6px); opacity: 0.3; }
+  0%, 100% { transform: translateY(0);   opacity: 1;   }
+  50%       { transform: translateY(6px); opacity: 0.3; }
 }
+.animate-pulse-slow { animation: pulseSlow  2.5s ease-in-out infinite; }
+.animate-scroll-dot { animation: scrollDot  1.8s ease-in-out infinite; }
 
-/* Animación suave de entrada para el contenido dinámico de los tabs */
+/* --------------------------------------------------------------------------
+   Fade-in genérico
+   -------------------------------------------------------------------------- */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* ==========================================================================
+   BENTO GRID — Stats Panel
+   ========================================================================== */
+
+/* Paleta interna (tokens) */
+:root {
+  --bento-green:        #34d399;
+  --bento-green-bg:     rgba(52, 211, 153, 0.12);
+  --bento-green-border: rgba(52, 211, 153, 0.22);
+  --bento-green-hover:  rgba(52, 211, 153, 0.42);
+  --bento-green-sub:    rgba(52, 211, 153, 0.55);
+
+  --bento-blue:         #60a5fa;
+  --bento-blue-bg:      rgba(96, 165, 250, 0.10);
+  --bento-blue-border:  rgba(96, 165, 250, 0.18);
+  --bento-blue-hover:   rgba(96, 165, 250, 0.38);
+  --bento-blue-sub:     rgba(96, 165, 250, 0.60);
+
+  --bento-amber:        #fbbf24;
+  --bento-amber-bg:     rgba(251, 191, 36, 0.10);
+  --bento-amber-border: rgba(251, 191, 36, 0.18);
+  --bento-amber-hover:  rgba(251, 191, 36, 0.38);
+  --bento-amber-sub:    rgba(251, 191, 36, 0.60);
+
+  --bento-card-bg:      rgba(255, 255, 255, 0.045);
+  --bento-card-border:  rgba(255, 255, 255, 0.10);
+  --bento-radius:       16px;
+  --bento-gap:          10px;
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Grid contenedor */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bento-gap);
+  width: 100%;
 }
+
+/* --------------------------------------------------------------------------
+   Card base
+   -------------------------------------------------------------------------- */
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--bento-card-bg);
+  border: 0.5px solid var(--bento-card-border);
+  border-radius: var(--bento-radius);
+  padding: 20px 22px;
+  transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+  cursor: default;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.bento-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: var(--bento-radius);
+}
+.bento-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Span completo */
+.bento-card--full {
+  grid-column: 1 / 3;
+}
+
+/* ---- Variantes de color ---- */
+.bento-card--co2 {
+  background: linear-gradient(
+    135deg,
+    rgba(52, 211, 153, 0.10) 0%,
+    rgba(15, 31, 46, 0.55) 100%
+  );
+  border-color: var(--bento-green-border);
+}
+.bento-card--co2:hover { border-color: var(--bento-green-hover); }
+
+.bento-card--flights { border-color: var(--bento-blue-border); }
+.bento-card--flights:hover { border-color: var(--bento-blue-hover); }
+
+.bento-card--companies { border-color: var(--bento-amber-border); }
+.bento-card--companies:hover { border-color: var(--bento-amber-hover); }
+
+.bento-card--empresa {
+  background: rgba(52, 211, 153, 0.055);
+  border-color: var(--bento-green-border);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+}
+.bento-card--empresa:hover { border-color: var(--bento-green-hover); }
+
+/* --------------------------------------------------------------------------
+   Chip "En tiempo real"
+   -------------------------------------------------------------------------- */
+.bento-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(52, 211, 153, 0.85);
+  background: rgba(52, 211, 153, 0.10);
+  border: 0.5px solid rgba(52, 211, 153, 0.28);
+  border-radius: 100px;
+  padding: 3px 10px 3px 8px;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+
+/* Dot pulsante */
+.bento-chip__dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bento-green);
+  position: relative;
+  flex-shrink: 0;
+}
+.bento-chip__dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(52, 211, 153, 0.50);
+  animation: bentoRing 2s ease-out infinite;
+}
+@keyframes bentoRing {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.9); opacity: 0;   }
+}
+
+/* --------------------------------------------------------------------------
+   Iconos
+   -------------------------------------------------------------------------- */
+.bento-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  margin-bottom: 13px;
+  transition: transform 0.2s ease;
+}
+.bento-card:hover .bento-icon { transform: scale(1.08); }
+
+.bento-icon--green {
+  background: var(--bento-green-bg);
+  border: 0.5px solid var(--bento-green-border);
+  color: var(--bento-green);
+}
+.bento-icon--blue {
+  background: var(--bento-blue-bg);
+  border: 0.5px solid var(--bento-blue-border);
+  color: var(--bento-blue);
+}
+.bento-icon--amber {
+  background: var(--bento-amber-bg);
+  border: 0.5px solid var(--bento-amber-border);
+  color: var(--bento-amber);
+}
+
+/* --------------------------------------------------------------------------
+   Tipografía de stats
+   -------------------------------------------------------------------------- */
+.bento-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0 0 7px;
+  line-height: 1;
+}
+
+.bento-number {
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  font-size: 36px;
+  letter-spacing: -0.02em;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+/* Número grande para CO₂ con gradiente */
+.bento-number--hero {
+  font-size: clamp(40px, 5vw, 52px);
+  background: linear-gradient(90deg, #34d399 0%, #6ee7b7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bento-suffix {
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.28);
+  /* Resetear gradiente heredado del padre */
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.28);
+  background-clip: unset;
+  margin-left: 1px;
+}
+
+.bento-sublabel {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 7px 0 0;
+  line-height: 1.45;
+  font-weight: 400;
+}
+.bento-sublabel--blue  { color: var(--bento-blue-sub);  }
+.bento-sublabel--amber { color: var(--bento-amber-sub); }
+
+/* --------------------------------------------------------------------------
+   Card ¿Eres Empresa?
+   -------------------------------------------------------------------------- */
+.bento-empresa-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--bento-green-bg);
+  border: 0.5px solid var(--bento-green-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  color: var(--bento-green);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.bento-card--empresa:hover .bento-empresa-icon { transform: scale(1.07); }
+
+.bento-empresa-body { flex: 1; }
+
+.bento-empresa-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 3px;
+  line-height: 1.2;
+}
+
+.bento-empresa-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.42);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.bento-empresa-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bento-green);
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 7px;
+  cursor: pointer;
+  transition: gap 0.15s ease, color 0.15s ease;
+  letter-spacing: 0.01em;
+}
+.bento-empresa-cta:hover {
+  gap: 8px;
+  color: #6ee7b7;
+}
+.bento-empresa-cta svg {
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+.bento-empresa-cta:hover svg { transform: translateX(1px); }

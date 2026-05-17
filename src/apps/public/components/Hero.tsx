@@ -11,29 +11,28 @@ const Hero = () => {
   }, []);
 
   const stats = [
-    { 
-      icon: FaLeaf, 
-      value: 15420, 
-      label: 'Toneladas CO₂ Compensadas', 
-      suffix: '+', 
-      glowClass: 'hover:shadow-emerald-500/20 hover:border-emerald-500/30',
-      iconColor: 'text-emerald-400'
+    {
+      icon: FaLeaf,
+      value: 15420,
+      label: 'Toneladas CO₂ Compensadas',
+      suffix: '+',
+      iconColorClass: 'bento-icon bento-icon--green',
     },
-    { 
-      icon: FaPlane, 
-      value: 8234, 
-      label: 'Vuelos Compensados', 
-      suffix: '+', 
-      glowClass: 'hover:shadow-blue-500/20 hover:border-blue-500/30',
-      iconColor: 'text-blue-400'
+    {
+      icon: FaPlane,
+      value: 8234,
+      label: 'Vuelos Compensados',
+      sublabel: 'Compensados',
+      suffix: '+',
+      iconColorClass: 'bento-icon bento-icon--blue',
     },
-    { 
-      icon: FaUsers, 
-      value: 3567, 
-      label: 'Empresas Certificadas', 
-      suffix: '+', 
-      glowClass: 'hover:shadow-amber-500/20 hover:border-amber-500/30',
-      iconColor: 'text-amber-400'
+    {
+      icon: FaUsers,
+      value: 3567,
+      label: 'Empresas Certificadas',
+      sublabel: 'Certificadas',
+      suffix: '+',
+      iconColorClass: 'bento-icon bento-icon--amber',
     },
   ];
 
@@ -46,24 +45,24 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden" id="inicio">
-      
-      {/* Fondo Original con Gradientes */}
-      <div 
+
+      {/* Fondo con Gradientes */}
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: 'url(/images/hero-background.webp)' }}
       >
-        <div 
+        <div
           className="absolute inset-0"
-          style={{ 
+          style={{
             background: `
               linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%),
               linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 58, 138, 0.55) 50%, rgba(15, 23, 42, 0.7) 100%)
-            `
+            `,
           }}
         />
       </div>
 
-      {/* Blobs Animados del CSS */}
+      {/* Blobs Animados */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow" />
         <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow-reverse" />
@@ -80,8 +79,8 @@ const Hero = () => {
         }}
       >
         <div className="grid lg:grid-cols-2 xl:grid-cols-[1fr_460px] gap-12 xl:gap-16 items-center">
-          
-          {/* Columna Izquierda: Tu diseño original */}
+
+          {/* ── Columna Izquierda ── */}
           <div className="flex flex-col items-start">
             <h1
               className="font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
@@ -119,10 +118,8 @@ const Hero = () => {
                 <FaChartLine className="text-lg sm:text-xl group-hover:scale-110 transition-transform relative z-10" />
                 <span className="relative z-10">Calcula tu Huella</span>
               </button>
-              
-              <button
-                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl text-white/90 hover:text-white font-semibold text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl border-2 border-white/30 hover:border-white/50 shadow-lg shadow-black/20 !transition-all !duration-300"
-              >
+
+              <button className="group inline-flex justify-center items-center !gap-3 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl text-white/90 hover:text-white font-semibold text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl border-2 border-white/30 hover:border-white/50 shadow-lg shadow-black/20 !transition-all !duration-300">
                 <span>Cómo Funciona</span>
                 <HiArrowRight className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform" />
               </button>
@@ -131,10 +128,14 @@ const Hero = () => {
             <div className="flex flex-nowrap gap-x-3 sm:gap-x-5">
               {[
                 { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
-                { color: 'bg-blue-400', glow: 'shadow-blue-400/80', text: 'Certificación ISO' },
-                { color: 'bg-amber-400', glow: 'shadow-amber-400/80', text: 'Transparencia Total' },
+                { color: 'bg-blue-400',    glow: 'shadow-blue-400/80',    text: 'Certificación ISO' },
+                { color: 'bg-amber-400',   glow: 'shadow-amber-400/80',   text: 'Transparencia Total' },
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-white/90 text-[11px] sm:text-sm font-medium" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                <div
+                  key={i}
+                  className="flex items-center gap-1.5 sm:gap-2 text-white/90 text-[11px] sm:text-sm font-medium"
+                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+                >
                   <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
                   <span>{item.text}</span>
                 </div>
@@ -142,75 +143,84 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Columna Derecha: El Nuevo Set de Glassmorphic Interactive Cards */}
-          <div className="hidden lg:flex flex-col gap-4 w-full">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div
-                  key={index}
-                  className={`
-                    group relative overflow-hidden
-                    bg-slate-900/30 backdrop-blur-xl 
-                    border border-white/10 ${stat.glowClass}
-                    rounded-2xl p-5
-                    grid grid-cols-[auto_1fr] gap-5 items-center
-                    transition-all duration-300 hover:-translate-y-1 shadow-xl
-                  `}
-                >
-                  {/* Capa de luz interna sutil (Efecto Tarjeta Premium) */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent pointer-events-none" />
+          {/* ── Columna Derecha: Bento Grid ── */}
+          <div className="hidden lg:block w-full">
+            <div className="bento-grid">
 
-                  {/* Icono con contenedor estructurado */}
-                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:bg-white/10">
-                    <Icon className={`${stat.iconColor} transition-transform`} />
-                  </div>
-
-                  {/* Textos alineados milimétricamente en la parte derecha */}
-                  <div className="flex flex-col text-left">
-                    <div className="flex items-baseline gap-0.5 text-white font-black tracking-tight text-2xl xl:text-3xl leading-none">
-                      <span>{isMounted ? stat.value.toLocaleString() : stat.value}</span>
-                      <span className="text-white/60 font-bold text-base">{stat.suffix}</span>
-                    </div>
-                    <p className="text-white/50 text-xs xl:text-sm font-medium mt-1">
-                      {stat.label}
-                    </p>
-                  </div>
+              {/* Card CO₂ — span completo */}
+              <div className="bento-card bento-card--co2 bento-card--full">
+                {/* Chip live */}
+                <div className="bento-chip">
+                  <span className="bento-chip__dot" />
+                  En tiempo real
                 </div>
-              );
-            })}
 
-            {/* CARD EMPRESA: Estilizada con Borde de Brillo Activo */}
-            <div className="group relative overflow-hidden rounded-2xl p-5 bg-gradient-to-r from-emerald-500/10 via-slate-900/40 to-slate-900/40 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1 shadow-xl shadow-emerald-950/5">
-              <div className="grid grid-cols-[auto_1fr] gap-5 items-center">
-                
-                {/* Icono alineado exactamente en la misma cuadrícula */}
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl text-emerald-400 group-hover:scale-110 transition-transform">
+                {/* Icono */}
+                <div className="bento-icon bento-icon--green">
+                  <FaLeaf />
+                </div>
+
+                <p className="bento-label">Toneladas CO₂ Compensadas</p>
+
+                <div className="bento-number bento-number--hero">
+                  {isMounted ? (15420).toLocaleString() : '15,420'}
+                  <span className="bento-suffix">+</span>
+                </div>
+
+                <p className="bento-sublabel">
+                  Toneladas equivalentes neutralizadas con proyectos verificados
+                </p>
+              </div>
+
+              {/* Card Vuelos */}
+              <div className="bento-card bento-card--flights">
+                <div className="bento-icon bento-icon--blue">
+                  <FaPlane />
+                </div>
+                <p className="bento-label">Vuelos</p>
+                <div className="bento-number">
+                  {isMounted ? (8234).toLocaleString() : '8,234'}
+                  <span className="bento-suffix">+</span>
+                </div>
+                <p className="bento-sublabel bento-sublabel--blue">Compensados</p>
+              </div>
+
+              {/* Card Empresas */}
+              <div className="bento-card bento-card--companies">
+                <div className="bento-icon bento-icon--amber">
+                  <FaUsers />
+                </div>
+                <p className="bento-label">Empresas</p>
+                <div className="bento-number">
+                  {isMounted ? (3567).toLocaleString() : '3,567'}
+                  <span className="bento-suffix">+</span>
+                </div>
+                <p className="bento-sublabel bento-sublabel--amber">Certificadas</p>
+              </div>
+
+              {/* Card ¿Eres Empresa? — span completo */}
+              <div className="bento-card bento-card--empresa bento-card--full">
+                <div className="bento-empresa-icon">
                   <FaBuilding />
                 </div>
-
-                {/* Contenido alineado */}
-                <div className="flex flex-col text-left">
-                  <h3 className="text-sm xl:text-base font-bold text-white leading-tight">
-                    ¿Eres Empresa?
-                  </h3>
-                  <p className="text-white/60 text-xs mt-0.5 leading-normal">
+                <div className="bento-empresa-body">
+                  <h3 className="bento-empresa-title">¿Eres Empresa?</h3>
+                  <p className="bento-empresa-desc">
                     Certifica el impacto de tus operaciones corporativas y reduce emisiones.
                   </p>
-                  <button className="group/btn inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 text-xs font-bold mt-2 transition-colors w-max">
-                    <span>Solicitar Registro</span>
-                    <HiArrowRight className="text-sm group-hover/btn:translate-x-0.5 transition-transform" />
+                  <button className="bento-empresa-cta">
+                    Solicitar registro
+                    <HiArrowRight />
                   </button>
                 </div>
-
               </div>
-            </div>
 
+            </div>
           </div>
 
         </div>
 
-        {/* Layout móvil sin cambios para mantener consistencia */}
+        {/* Stats móvil */}
         <div className="grid grid-cols-3 gap-3 mt-8 lg:hidden">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
@@ -229,8 +239,11 @@ const Hero = () => {
 
       </div>
 
-      {/* Scroll Arrow original */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 cursor-pointer group" onClick={scrollToCalculator}>
+      {/* Scroll Arrow */}
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 cursor-pointer group"
+        onClick={scrollToCalculator}
+      >
         <span className="text-xs uppercase tracking-[0.25em] text-white/50 font-semibold group-hover:text-white/80 transition-colors animate-pulse-slow">
           Descubre más
         </span>
