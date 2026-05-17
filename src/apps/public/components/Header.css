@@ -1,220 +1,423 @@
-/* Header slide-in animation */
-.header-slide-in {
-  animation: headerSlideIn 0.5s ease-out both;
-}
-@keyframes headerSlideIn {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
+/* ==========================================================================
+   Header.css — CompensaTuViaje
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  --header-h:           72px;
+  --header-green:       #34d399;
+  --header-green-dark:  #10b981;
+  --header-amber:       #f59e0b;
+  --header-amber-dark:  #d97706;
+  --header-bg-scroll:   rgba(10, 20, 35, 0.88);
+  --header-border:      rgba(255, 255, 255, 0.08);
+  --header-radius:      12px;
+  --header-transition:  0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.header {
-  background: #1e293b;
-  padding: 15px 0;
+/* --------------------------------------------------------------------------
+   Base header
+   -------------------------------------------------------------------------- */
+.ctv-header {
   position: fixed;
   top: 0;
-  width: 100%;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  height: var(--header-h);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background var(--header-transition),
+    border-color var(--header-transition),
+    box-shadow var(--header-transition);
+  animation: headerSlideIn 0.5s ease-out both;
 }
 
-.header-content {
+/* Scrolled state — glassmorphism oscuro */
+.ctv-header--scrolled {
+  background: var(--header-bg-scroll);
+  border-bottom-color: var(--header-border);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@keyframes headerSlideIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* Inner layout */
+.ctv-header__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  gap: 1.5rem;
 }
 
-.logo {
+@media (min-width: 1024px) {
+  .ctv-header__inner { padding: 0 2rem; }
+}
+
+/* --------------------------------------------------------------------------
+   Logo
+   -------------------------------------------------------------------------- */
+.ctv-header__logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  flex-shrink: 0;
+  text-decoration: none;
 }
 
-.logo-image {
-  height: 65px;
+.ctv-header__logo img {
+  height: 44px;
   width: auto;
-  object-fit: contain;
-  transition: opacity 0.3s ease;
-  filter: contrast(1.1) brightness(1.05);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
 }
-
-.logo-image:hover {
+.ctv-header__logo:hover img {
+  transform: scale(1.03);
   opacity: 0.9;
-  transform: scale(1.02);
 }
 
-/* Respaldo para el logo icon anterior */
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  background: #22c55e;
+/* --------------------------------------------------------------------------
+   Desktop nav
+   -------------------------------------------------------------------------- */
+.ctv-header__nav {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 0.25rem;
+}
+
+@media (min-width: 1024px) {
+  .ctv-header__nav { display: flex; }
+}
+
+.ctv-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.80);
+  text-decoration: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  transition:
+    color var(--header-transition),
+    background var(--header-transition);
+}
+.ctv-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Underline animado */
+.ctv-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 1rem;
+  right: 1rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--header-green);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ctv-nav-link:hover::after,
+.ctv-nav-link--active::after {
+  transform: scaleX(1);
+}
+.ctv-nav-link--active {
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Desktop auth buttons
+   -------------------------------------------------------------------------- */
+.ctv-header__actions {
+  display: none;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .ctv-header__actions { display: flex; }
+}
+
+/* --------------------------------------------------------------------------
+   Botones base
+   -------------------------------------------------------------------------- */
+.ctv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.375rem;
+  border-radius: var(--header-radius);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition:
+    background var(--header-transition),
+    border-color var(--header-transition),
+    transform 0.15s ease,
+    box-shadow var(--header-transition);
+}
+.ctv-btn:hover  { transform: scale(1.025); }
+.ctv-btn:active { transform: scale(0.975); }
+
+/* Ghost */
+.ctv-btn--ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.80);
+  border: 1.5px solid transparent;
+}
+.ctv-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+}
+
+/* Outline */
+.ctv-btn--outline {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.90);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+.ctv-btn--outline:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.70);
+  color: #ffffff;
+}
+
+/* Primary — gradiente ámbar (igual que la captura original) */
+.ctv-btn--primary {
+  background: linear-gradient(135deg, var(--header-amber) 0%, var(--header-amber-dark) 100%);
+  color: #1a1a1a;
+  border: none;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.30);
+}
+.ctv-btn--primary:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, var(--header-amber) 100%);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+}
+
+/* Full-width (mobile) */
+.ctv-btn--full { width: 100%; }
+
+/* --------------------------------------------------------------------------
+   User chip
+   -------------------------------------------------------------------------- */
+.ctv-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem 0.375rem 0.5rem;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.ctv-user-chip__avatar {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  background: linear-gradient(135deg, var(--header-green) 0%, var(--header-green-dark) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 12px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.ctv-user-chip__avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+.ctv-user-chip__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.90);
 }
 
-.nav-list {
+/* --------------------------------------------------------------------------
+   Hamburger (mobile only)
+   -------------------------------------------------------------------------- */
+.ctv-hamburger {
   display: flex;
-  list-style: none;
-  gap: 30px;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-link {
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
-  position: relative;
+  font-size: 22px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+.ctv-hamburger:hover  { background: rgba(255, 255, 255, 0.18); }
+.ctv-hamburger:active { transform: scale(0.92); }
+
+@media (min-width: 1024px) {
+  .ctv-hamburger { display: none; }
 }
 
-.nav-link:hover {
-  color: #f59e0b;
+/* --------------------------------------------------------------------------
+   Mobile drawer
+   -------------------------------------------------------------------------- */
+.ctv-drawer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8999;
+  pointer-events: none;
+}
+.ctv-drawer--open {
+  display: block;
+  pointer-events: auto;
 }
 
-.nav-link::after {
-  content: '';
+/* Overlay oscuro */
+.ctv-drawer__overlay {
   position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: #f59e0b;
-  transition: width 0.3s ease;
+  inset: 0;
+  background: rgba(5, 12, 24, 0.70);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeOverlay 0.25s ease both;
+}
+@keyframes fadeOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.nav-link:hover::after {
+/* Panel lateral derecho */
+.ctv-drawer__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(85vw, 340px);
+  background: linear-gradient(160deg, #0a1626 0%, #0f1f38 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--header-h);
+  animation: slidePanel 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+  overflow-y: auto;
+}
+@keyframes slidePanel {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Nav links del drawer */
+.ctv-drawer__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1rem 0;
+  gap: 0.25rem;
+}
+
+.ctv-drawer__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--header-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.70);
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   width: 100%;
 }
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.user-menu {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.user-greeting {
+.ctv-drawer__link:hover {
   color: #ffffff;
-  font-weight: 500;
-  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateX(3px);
+}
+.ctv-drawer__link--active {
+  color: var(--header-green);
+  background: rgba(52, 211, 153, 0.08);
+}
+.ctv-drawer__link--active:hover {
+  color: var(--header-green);
+  background: rgba(52, 211, 153, 0.12);
 }
 
-.btn-login {
-  padding: 8px 20px;
-  font-size: 0.95rem;
-  white-space: nowrap;
+/* Arrow icon push al final */
+.ctv-drawer__link-arrow {
+  margin-left: auto;
+  font-size: 16px;
+  opacity: 0.4;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.ctv-drawer__link:hover .ctv-drawer__link-arrow {
+  opacity: 0.8;
+  transform: translateX(2px);
 }
 
-.btn-logout {
-  padding: 8px 20px;
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-
-.cta-button {
-  margin-left: 0;
-}
-
-/* Mobile menu toggle */
-.mobile-menu-toggle {
-  display: none;
+/* Footer de drawer con botones */
+.ctv-drawer__footer {
+  margin-top: auto;
+  padding: 1.25rem 1rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
   flex-direction: column;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
+  gap: 0.625rem;
 }
 
-.mobile-menu-toggle span {
-  width: 25px;
-  height: 3px;
-  background: #ffffff;
-  margin: 3px 0;
-  transition: 0.3s;
-  border-radius: 2px;
+/* User info móvil */
+.ctv-drawer__user {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--header-radius);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.25rem;
+}
+.ctv-drawer__user-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  margin: 0;
+}
+.ctv-drawer__user-role {
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.40);
+  margin: 0;
 }
 
-/* Mobile styles */
-@media (max-width: 768px) {
-  .mobile-menu-toggle {
-    display: flex;
-  }
-
-  .header-actions {
-    display: none;
-  }
-
-  .nav {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: #1e293b;
-    transform: translateY(-100%);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .nav-open {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .nav-list {
-    flex-direction: column;
-    padding: 20px;
-    gap: 15px;
-  }
-
-  .header-actions {
-    display: flex;
-    flex-direction: column;
-    padding: 0 20px 20px;
-    gap: 10px;
-  }
-
-  .nav-open ~ .header-actions {
-    display: flex;
-  }
-
-  .user-menu {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .btn-login,
-  .btn-logout,
-  .cta-button {
-    width: 100%;
-    text-align: center;
-    margin: 0;
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-
-  /* Hamburger animation */
-  .mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(-45deg) translate(-5px, 6px);
-  }
-
-  .mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(45deg) translate(-5px, -6px);
-  }
+@media (min-width: 1024px) {
+  .ctv-drawer { display: none !important; }
 }
