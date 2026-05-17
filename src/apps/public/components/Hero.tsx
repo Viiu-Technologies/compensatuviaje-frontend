@@ -5,13 +5,11 @@ import './Hero.css';
 
 const Hero = () => {
   const [isMounted, setIsMounted] = useState(false);
-  // Estado para controlar la pestaña activa de la columna derecha
   const [activeTab, setActiveTab] = useState<'impacto' | 'empresas'>('impacto');
 
   useEffect(() => {
     setIsMounted(true);
     
-    // Rotación automática sutil cada 8 segundos solo si el usuario no está interactuando
     const interval = setInterval(() => {
       setActiveTab((prev) => (prev === 'impacto' ? 'empresas' : 'impacto'));
     }, 8000);
@@ -19,9 +17,9 @@ const Hero = () => {
   }, []);
 
   const stats = [
-    { icon: FaLeaf, value: 15420, label: 'Toneladas CO₂ Compensadas', suffix: '+', color: 'text-emerald-400', barWidth: 'w-[85%]', bg: 'bg-emerald-500/10' },
-    { icon: FaPlane, value: 8234, label: 'Vuelos Verificados', suffix: '+', color: 'text-blue-400', barWidth: 'w-[62%]', bg: 'bg-blue-500/10' },
-    { icon: FaUsers, value: 3567, label: 'Usuarios Activos', suffix: '+', color: 'text-amber-400', barWidth: 'w-[74%]', bg: 'bg-amber-500/10' },
+    { icon: FaLeaf, value: 15420, label: 'Toneladas CO₂ Compensadas', suffix: '+', color: 'text-emerald-400', barWidth: 'w-[85%]' },
+    { icon: FaPlane, value: 8234, label: 'Vuelos Verificados', suffix: '+', color: 'text-blue-400', barWidth: 'w-[62%]' },
+    { icon: FaUsers, value: 3567, label: 'Usuarios Activos', suffix: '+', color: 'text-amber-400', barWidth: 'w-[74%]' },
   ];
 
   const scrollToCalculator = () => {
@@ -48,7 +46,7 @@ const Hero = () => {
         />
       </div>
 
-      {/* Blobs Animados del CSS */}
+      {/* Blobs Animados */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow" />
         <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow-reverse" />
@@ -64,10 +62,10 @@ const Hero = () => {
           paddingBottom: 'clamp(2rem, 6vh, 5rem)',
         }}
       >
-        <div className="grid lg:grid-cols-2 xl:grid-cols-[1fr_450px] gap-12 xl:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 xl:grid-cols-[1fr_480px] gap-12 xl:gap-16 items-center">
           
           {/* Columna Izquierda: Tu Diseño Original Intacto */}
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-start w-full">
             <h1
               className="font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
               style={{
@@ -92,7 +90,7 @@ const Hero = () => {
                 lineHeight: '1.5',
               }}
             >
-              Neutraliza el impacto ambiental de tus viajes con proyectos verificados y certificados.
+              Neutraliza el impacto ambiental de tus viajes con proyectos verificados y certified.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full sm:w-auto !mb-8 lg:!mb-12">
@@ -127,58 +125,61 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Columna Derecha: INTERACTIVE HUB REIMAGINADO */}
-          <div className="hidden lg:flex flex-col w-full relative group/hub">
+          {/* Columna Derecha: FIX COMPLETO DE ALINEACIÓN Y DISTRIBUCIÓN */}
+          <div className="hidden lg:flex flex-col w-full relative">
             
-            {/* Efecto Glow Perimetral detrás del Dashboard */}
-            <div className={`absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r ${activeTab === 'impacto' ? 'from-emerald-500/20 to-teal-500/10' : 'from-blue-500/20 to-purple-500/10'} blur-xl opacity-70 group-hover/hub:opacity-100 transition duration-1000`} />
+            {/* Efecto Glow Perimetral Ajustado */}
+            <div className={`absolute -inset-0.5 rounded-[2rem] bg-gradient-to-r ${activeTab === 'impacto' ? 'from-emerald-500/10 to-teal-500/5' : 'from-blue-500/10 to-purple-500/5'} blur-lg opacity-70`} />
 
-            {/* Contenedor Principal Flotante (Glassmorphism de un solo bloque) */}
-            <div className="relative w-full bg-slate-900/30 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-7 shadow-2xl flex flex-col min-h-[440px] justify-between transition-all duration-500">
+            {/* Contenedor Principal (Cambié px-7 a px-6 para mejor espacio interno) */}
+            <div className="relative w-full bg-white/[0.06] backdrop-blur-3xl border border-white/15 rounded-[2rem] p-6 shadow-2xl flex flex-col justify-between min-h-[420px]">
               
-              {/* Header: Selector de Perspectiva (Tabs Estilizadas) */}
-              <div className="grid grid-cols-2 gap-2 bg-black/20 p-1.5 rounded-2xl border border-white/5 mb-6">
+              {/* Header: Tabs ajustadas con ancho completo */}
+              <div className="grid grid-cols-2 gap-2 bg-black/40 p-1.5 rounded-xl border border-white/5 w-full">
                 <button
                   onClick={() => setActiveTab('impacto')}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs xl:text-sm font-bold tracking-wide transition-all duration-300 ${activeTab === 'impacto' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-lg font-black' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold tracking-wide transition-all duration-300 ${activeTab === 'impacto' ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-md font-black' : 'text-white/60 hover:text-white'}`}
                 >
                   <FaGlobeAmericas className="text-sm" />
                   <span>Impacto Colectivo</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('empresas')}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs xl:text-sm font-bold tracking-wide transition-all duration-300 ${activeTab === 'empresas' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg font-black' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold tracking-wide transition-all duration-300 ${activeTab === 'empresas' ? 'bg-gradient-to-r from-blue-400 to-indigo-400 text-slate-950 shadow-md font-black' : 'text-white/60 hover:text-white'}`}
                 >
                   <FaBriefcase className="text-sm" />
                   <span>Soluciones B2B</span>
                 </button>
               </div>
 
-              {/* Contenido Cambiante con Transición Suave */}
-              <div className="flex-1 flex flex-col justify-center">
+              {/* Área de Contenido Justificada */}
+              <div className="flex-1 flex flex-col justify-center my-4 w-full">
                 {activeTab === 'impacto' ? (
-                  /* VISTA 1: Estadísticas de Impacto */
-                  <div className="flex flex-col gap-5 animate-fadeIn">
-                    <div className="mb-1">
-                      <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">Live Metrics</span>
-                      <h3 className="text-white font-bold text-xl mt-2">Nuestra huella verde global</h3>
+                  /* VISTA 1: Estadísticas (Arreglado el aplastamiento lateral) */
+                  <div className="flex flex-col gap-4 animate-fadeIn w-full">
+                    <div className="text-left mb-2">
+                      <span className="text-[10px] uppercase tracking-widest text-emerald-300 font-extrabold bg-emerald-400/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20">
+                        Live Metrics
+                      </span>
+                      <h3 className="text-white font-bold text-lg mt-1.5">Nuestra huella verde global</h3>
                     </div>
                     
                     {stats.map((stat, i) => {
                       const Icon = stat.icon;
                       return (
-                        <div key={i} className="flex flex-col gap-1.5 bg-white/[0.02] border border-white/5 p-3.5 rounded-xl">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-white/80 text-xs font-semibold">
-                              <Icon className={stat.color} />
+                        <div key={i} className="w-full bg-white/[0.03] border border-white/5 p-4 rounded-xl flex flex-col gap-2">
+                          {/* flex justify-between obliga a los textos a irse a los extremos opuestos */}
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2.5 text-white/70 text-xs font-medium">
+                              <Icon className={`${stat.color} text-sm flex-shrink-0`} />
                               <span>{stat.label}</span>
                             </div>
-                            <span className={`font-black tracking-tight text-white text-base`}>
+                            <span className="font-black tracking-tight text-white text-base flex-shrink-0">
                               {isMounted ? stat.value.toLocaleString() : stat.value}{stat.suffix}
                             </span>
                           </div>
-                          {/* Gráfico de barras simulado para dar una sensación analítica */}
-                          <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                          {/* Barra de Progreso Separada */}
+                          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
                             <div className={`h-full bg-gradient-to-r from-emerald-400 to-teal-400 ${stat.barWidth} rounded-full`} />
                           </div>
                         </div>
@@ -186,32 +187,32 @@ const Hero = () => {
                     })}
                   </div>
                 ) : (
-                  /* VISTA 2: Propuesta Exclusiva Corporativa */
-                  <div className="flex flex-col items-start gap-4 animate-fadeIn text-left">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl shadow-lg shadow-blue-500/10">
+                  /* VISTA 2: Propuesta Corporativa */
+                  <div className="flex flex-col items-start gap-4 animate-fadeIn text-left w-full px-1">
+                    <div className="w-10 h-10 rounded-xl bg-blue-400/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-lg shadow-md">
                       <FaBuilding />
                     </div>
                     <div>
-                      <h3 className="text-white text-lg font-black tracking-tight">¿Representas a una organización?</h3>
-                      <p className="text-white/70 text-sm mt-1.5 leading-relaxed">
+                      <h3 className="text-white text-base font-bold tracking-tight">¿Representas a una organización?</h3>
+                      <p className="text-white/70 text-xs mt-1 leading-relaxed">
                         Automatiza la medición, reducción y compensación de carbono de los viajes de tu equipo mediante nuestra infraestructura API corporativa.
                       </p>
                     </div>
-                    <ul className="text-white/60 text-xs space-y-1.5 font-medium">
+                    <ul className="text-white/60 text-[11px] space-y-1 w-full">
                       <li className="flex items-center gap-2">✔ Certificados ISO de Neutralidad</li>
                       <li className="flex items-center gap-2">✔ Reportes de Sostenibilidad Automatizados</li>
                     </ul>
                     
-                    <button className="group/btn w-full mt-2 inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white font-bold text-sm py-3.5 px-5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                    <button className="group/btn w-full mt-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-300 hover:to-indigo-400 text-slate-950 font-bold text-xs py-3 rounded-xl transition-all shadow-lg shadow-blue-500/10">
                       <span>Acceder a Registro Empresarial</span>
-                      <HiArrowRight className="text-base group-hover/btn:translate-x-1 transition-transform" />
+                      <HiArrowRight className="text-sm group-hover/btn:translate-x-0.5 transition-transform" />
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Footer del Bloque: Pequeño indicador de paginación o estado */}
-              <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-6 text-[11px] text-white/40 font-medium">
+              {/* Footer del Bloque */}
+              <div className="flex justify-between items-center border-t border-white/5 pt-3 text-[10px] text-white/40 font-medium w-full">
                 <span>Actualizado en tiempo real</span>
                 <div className="flex gap-1.5">
                   <span className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${activeTab === 'impacto' ? 'bg-emerald-400 w-3' : 'bg-white/20'}`} />
@@ -224,7 +225,7 @@ const Hero = () => {
 
         </div>
 
-        {/* Layout móvil unificado (mantiene compatibilidad intacta) */}
+        {/* Layout móvil unificado */}
         <div className="flex flex-col gap-4 mt-12 lg:hidden">
           <div className="grid grid-cols-3 gap-3">
             {stats.map((stat, index) => {
