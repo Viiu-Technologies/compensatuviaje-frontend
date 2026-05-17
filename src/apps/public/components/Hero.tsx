@@ -99,25 +99,24 @@ const Hero = () => {
               </span>
             </h1>
 
-            {/* Subtítulo — alineado a la izquierda igual que el título */}
+            {/* Subtítulo — máximo 2 líneas, line-height 1.5 para legibilidad */}
             <p
-              className="text-white/85 leading-relaxed max-w-md !mb-8 lg:!mb-10"
+              className="text-white/85 max-w-md !mb-10 lg:!mb-14"
               style={{
-                /* Fluid: 14px en móvil → 20px en desktop */
-                fontSize: 'clamp(0.875rem, 2vw, 1.25rem)',
+                /* Fluid: 14px en móvil → 18px en desktop */
+                fontSize: 'clamp(0.875rem, 1.8vw, 1.125rem)',
                 textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+                lineHeight: '1.5',
               }}
             >
-              La forma más <span className="text-white font-bold">transparente</span> y{' '}
-              <span className="text-white font-bold">efectiva</span> de neutralizar el impacto 
-              ambiental de tus viajes corporativos y personales.
+              Neutraliza el impacto ambiental de tus viajes con proyectos verificados y certificados.
             </p>
 
             {/* Botones CTA */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto !mb-6 lg:!mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full sm:w-auto !mb-8 lg:!mb-12">
               <button
                 onClick={scrollToCalculator}
-                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-900 font-bold text-base sm:text-lg !px-8 sm:!px-10 !py-3.5 sm:!py-4 !leading-[1.15] !min-h-[48px] sm:!min-h-[56px] whitespace-nowrap rounded-2xl shadow-2xl shadow-amber-500/40 hover:shadow-amber-400/50 hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300 overflow-hidden"
+                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 hover:from-emerald-300 hover:via-green-400 hover:to-teal-400 text-slate-900 font-black text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl shadow-2xl shadow-emerald-500/50 hover:shadow-emerald-400/60 active:shadow-emerald-500/30 !transition-all !duration-300 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <FaChartLine className="text-lg sm:text-xl group-hover:scale-110 transition-transform relative z-10" />
@@ -125,7 +124,7 @@ const Hero = () => {
               </button>
               
               <button
-                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-xl text-white font-semibold text-base sm:text-lg !px-8 sm:!px-10 !py-3.5 sm:!py-4 !leading-[1.15] !min-h-[48px] sm:!min-h-[56px] whitespace-nowrap rounded-2xl border-2 border-white/40 hover:border-white/70 shadow-lg shadow-black/20 hover:shadow-xl hover:!scale-[1.04] hover:!-translate-y-1 active:!scale-[0.97] !transition-all !duration-300"
+                className="group inline-flex justify-center items-center !gap-3 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl text-white/90 hover:text-white font-semibold text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl border-2 border-white/30 hover:border-white/50 shadow-lg shadow-black/20 !transition-all !duration-300"
               >
                 <span>Cómo Funciona</span>
                 <HiArrowRight className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform" />
