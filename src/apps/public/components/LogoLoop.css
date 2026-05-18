@@ -1,96 +1,128 @@
 /* ==========================================================================
-   LogoLoop.css — Payment Methods · CompensaTuViaje
+   LogoLoop.css — Payment Marquee v4 · CompensaTuViaje
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Section wrapper
+   Section
    -------------------------------------------------------------------------- */
 .pm-section {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 2rem 1.5rem 1.5rem;
+  gap: 1.25rem;
+  padding: 2rem 0 2.5rem;
+  background: transparent;
 }
 
-/* Eyebrow */
 .pm-eyebrow {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #9ca3af;
   margin: 0;
 }
 
 /* --------------------------------------------------------------------------
-   Cards grid — desktop
+   Marquee outer + fade edges
    -------------------------------------------------------------------------- */
-.pm-grid {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+.pm-marquee-outer {
+  position: relative;
   width: 100%;
-  max-width: 680px;
+  overflow: hidden;
 }
 
-/* Card base */
+.pm-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pm-fade--left  { left:  0; background: linear-gradient(to right, #ffffff, transparent); }
+.pm-fade--right { right: 0; background: linear-gradient(to left,  #ffffff, transparent); }
+
+/* Si el fondo de la sección es oscuro, cambia estos gradientes a #0b1320 */
+
+/* --------------------------------------------------------------------------
+   Track animado
+   -------------------------------------------------------------------------- */
+.pm-marquee-track {
+  display: flex;
+  gap: 14px;
+  width: max-content;
+  padding: 12px 0;
+  animation: pmMarquee 22s linear infinite;
+  will-change: transform;
+}
+
+.pm-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes pmMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* --------------------------------------------------------------------------
+   Card
+   -------------------------------------------------------------------------- */
 .pm-card {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.125rem 1.5rem;
+  gap: 14px;
+  padding: 16px 22px;
   border-radius: 16px;
   background: #ffffff;
   border: 1.5px solid #e5e7eb;
-  min-width: 260px;
-  flex: 1 1 260px;
-  max-width: 320px;
+  flex-shrink: 0;
+  min-width: 210px;
+  cursor: default;
   transition:
     border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    transform 0.18s ease;
-  cursor: default;
+    box-shadow   0.22s ease,
+    transform    0.18s ease;
 }
 
 .pm-card:hover {
-  border-color: rgba(var(--accent), 0.45);
-  box-shadow: 0 8px 28px rgba(var(--accent), 0.14);
-  transform: translateY(-3px);
+  border-color: var(--accent-hover);
+  box-shadow: 0 10px 32px var(--accent);
+  transform: translateY(-2px);
 }
 
-/* Logo area */
-.pm-card__logo-wrap {
+/* --------------------------------------------------------------------------
+   Logo area
+   -------------------------------------------------------------------------- */
+.pm-card__logo {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 40px;
 }
 
-/* SVG base */
-.payment-svg {
-  height: 28px;
-  width: auto;
-  display: block;
-  color: #635bff; /* Stripe purple — overridden per card */
-}
-
-.payment-svg--webpay {
+/* Stripe — icono cuadrado, morado */
+.pm-logo--stripe {
+  width: 36px;
   height: 36px;
+}
+
+/* Webpay — pill rectangular */
+.pm-logo--webpay {
+  height: 36px;
+  width: auto;
   border-radius: 7px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.25);
+  display: block;
+  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.20);
 }
 
-.payment-svg--transbank {
-  height: 20px;
-}
-
-/* Info block */
+/* --------------------------------------------------------------------------
+   Info
+   -------------------------------------------------------------------------- */
 .pm-card__info {
   display: flex;
   flex-direction: column;
@@ -106,93 +138,6 @@
 
 .pm-card__sub {
   font-size: 0.75rem;
-  color: #6b7280;
   font-weight: 500;
-}
-
-/* Badge "Seguro" */
-.pm-card__badge {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #059669;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  border-radius: 100px;
-  padding: 2px 8px;
-}
-
-/* ---- Variantes ---- */
-.pm-card--stripe   { --accent: 99, 91, 255; }
-.pm-card--webpay   { --accent: 227, 6, 19; }
-
-/* Stripe: color del wordmark en modo light */
-.pm-card--stripe .payment-svg { color: #635bff; }
-
-/* --------------------------------------------------------------------------
-   Marquee — solo visible en mobile
-   -------------------------------------------------------------------------- */
-.marquee-outer {
-  display: none;
-  width: 100%;
-  overflow: hidden;
-  padding: 8px 0;
-}
-
-@media (max-width: 600px) {
-  .pm-grid      { display: none; }
-  .marquee-outer{ display: block; }
-}
-
-.marquee-track {
-  display: inline-flex;
-  align-items: center;
-  gap: 48px;
-  white-space: nowrap;
-  animation: marqueeScroll 14s linear infinite;
-  animation-play-state: paused;
-  will-change: transform;
-}
-
-.marquee-track.marquee-running {
-  animation-play-state: running;
-}
-
-.marquee-item {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  opacity: 0.85;
-  transition: opacity 0.2s ease;
-}
-.marquee-item:hover { opacity: 1; }
-
-@keyframes marqueeScroll {
-  0%   { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(var(--marquee-w, -50%), 0, 0); }
-}
-
-/* --------------------------------------------------------------------------
-   Trust footer
-   -------------------------------------------------------------------------- */
-.pm-trust {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
   color: #9ca3af;
-  font-weight: 500;
-  margin: 0;
-  letter-spacing: 0.01em;
-}
-
-.pm-trust__icon {
-  color: #34d399;
-  flex-shrink: 0;
 }

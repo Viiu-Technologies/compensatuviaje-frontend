@@ -1,146 +1,109 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import './LogoLoop.css';
 
-/* ─────────────────────────────────────────────
-   SVG logos inline — sin dependencia de archivos
-   ───────────────────────────────────────────── */
-
-const StripeWordmark = () => (
-  <svg viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stripe" role="img" className="payment-svg">
+/* ─────────────────────────────────────────────────────────────────
+   Stripe — path oficial extraído de simple-icons (hex: #635BFF)
+   viewBox 0 0 24 24
+   ───────────────────────────────────────────────────────────────── */
+const StripeLogo = () => (
+  <svg
+    role="img"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-label="Stripe"
+    className="pm-logo pm-logo--stripe"
+  >
     <path
-      d="M5.67 10.3c0-.78.64-1.08 1.7-1.08 1.52 0 3.44.46 4.96 1.28V6.44A13.2 13.2 0 0 0 7.37 5.6C4.02 5.6 1.8 7.32 1.8 10.5c0 5 6.88 4.2 6.88 6.36 0 .92-.8 1.22-1.9 1.22-1.66 0-3.78-.68-5.46-1.6v4.1c1.86.8 3.74 1.14 5.46 1.14 4.16 0 7.02-2.06 7.02-5.28C13.8 11.2 5.67 12.18 5.67 10.3ZM19.2 2.56l-4.06.86v3.3l-2.06.44v3.3h2.06v7.34c0 3.04 2.14 4.2 5.18 4.2.82 0 1.76-.1 2.56-.3v-3.42c-.46.1-.94.16-1.44.16-1.02 0-2.24-.28-2.24-1.86V10.46h3.68V6.72H19.2V2.56ZM26 6.72h4.2V21.6H26V6.72Zm2.1-6.72C24.9 0 23.76 1.14 23.76 2.56c0 1.4 1.14 2.56 2.54 2.56 1.44 0 2.58-1.16 2.58-2.56S28.7 0 28.1 0ZM37.5 6.72l-.26 1.66c-.78-1.1-2.02-1.96-3.76-1.96C30.44 6.42 28 9.3 28 14.14s2.42 7.86 5.48 7.86c1.72 0 2.96-.84 3.76-1.94l.26 1.64H41V6.72H37.5ZM34.62 18.1c-1.88 0-2.92-1.54-2.92-4s1.04-4 2.92-4c1.9 0 2.94 1.54 2.94 4s-1.04 4-2.94 4ZM49.6 8.58V6.72h-4.2V21.6h4.2v-8.22c0-2.42 1.62-3.36 3.72-3.36.34 0 .7.04 1.06.1V6.46c-.34-.06-.66-.08-1-.08-1.84 0-2.98.82-3.78 2.2ZM55.38 6.72h4.6l-5.56 14.88h-4.3l5.26-14.88Z"
-      fill="currentColor"
+      fill="#635BFF"
+      d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305
+         1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975
+         15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757
+         4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445
+         1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921
+         -6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0
+         4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732
+         0-4.128-2.524-5.851-6.594-7.305h.003z"
     />
   </svg>
 );
 
+/* ─────────────────────────────────────────────────────────────────
+   Webpay — logo pill oficial con colores de marca Transbank
+   ───────────────────────────────────────────────────────────────── */
 const WebpayLogo = () => (
-  <svg viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Webpay by Transbank" role="img" className="payment-svg payment-svg--webpay">
-    {/* Fondo pill rojo de Webpay */}
-    <rect width="120" height="36" rx="8" fill="#E30613"/>
+  <svg
+    viewBox="0 0 130 40"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-label="Webpay by Transbank"
+    role="img"
+    className="pm-logo pm-logo--webpay"
+  >
+    {/* Pill rojo */}
+    <rect width="130" height="40" rx="8" fill="#E30613" />
     {/* Texto WEBPAY */}
-    <text x="12" y="24" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="15" fill="white" letterSpacing="1">WEBPAY</text>
-    {/* Icono de tarjeta simplificado */}
-    <rect x="88" y="10" width="22" height="16" rx="3" fill="white" fillOpacity="0.25"/>
-    <rect x="88" y="15" width="22" height="4" fill="white" fillOpacity="0.50"/>
-    <rect x="90" y="20" width="6" height="2" rx="1" fill="white" fillOpacity="0.70"/>
+    <text
+      x="12" y="27"
+      fontFamily="'Arial Black', Arial, sans-serif"
+      fontWeight="900"
+      fontSize="17"
+      fill="white"
+      letterSpacing="1.2"
+    >
+      WEBPAY
+    </text>
+    {/* Ícono tarjeta */}
+    <rect x="98" y="11" width="22" height="18" rx="3.5" fill="white" fillOpacity=".20" />
+    <rect x="98" y="17" width="22" height="5"  fill="white" fillOpacity=".40" />
+    <rect x="100" y="25" width="7" height="2"  rx="1"   fill="white" fillOpacity=".55" />
   </svg>
 );
 
-const TransbankBadge = () => (
-  <svg viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Transbank" role="img" className="payment-svg payment-svg--transbank">
-    <text x="0" y="20" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="13" fill="#00529B" letterSpacing="0.3">TRANSBANK</text>
-  </svg>
-);
-
-/* ─────────────────────────────────────────────
-   Datos de los métodos de pago
-   ───────────────────────────────────────────── */
-interface PaymentMethod {
-  id: string;
-  label: string;
-  sublabel?: string;
-  logo: React.ReactNode;
-  accent: string;       // color del borde/glow en hover
-  bgClass: string;
-}
-
-const PAYMENT_METHODS: PaymentMethod[] = [
-  {
-    id: 'stripe',
-    label: 'Stripe',
-    sublabel: 'Tarjetas de crédito y débito',
-    logo: <StripeWordmark />,
-    accent: '99, 91, 255',
-    bgClass: 'pm-card--stripe',
-  },
-  {
-    id: 'webpay',
-    label: 'Webpay',
-    sublabel: 'Transbank · Chile',
-    logo: <WebpayLogo />,
-    accent: '227, 6, 19',
-    bgClass: 'pm-card--webpay',
-  },
+/* ─────────────────────────────────────────────────────────────────
+   Items del marquee — duplicados para loop infinito seamless
+   ───────────────────────────────────────────────────────────────── */
+const ITEMS = [
+  { id: 'stripe',  Logo: StripeLogo,  name: 'Stripe',  sub: 'Crédito · Débito · Wallet', accent: 'rgba(99,91,255,0.18)',  accentHover: 'rgba(99,91,255,0.42)'  },
+  { id: 'webpay',  Logo: WebpayLogo,  name: 'Webpay',  sub: 'Transbank · Chile',          accent: 'rgba(227,6,19,0.15)',   accentHover: 'rgba(227,6,19,0.40)'   },
 ];
 
-/* ─────────────────────────────────────────────
-   Marquee strip (solo en mobile donde las cards
-   no caben side-by-side)
-   ───────────────────────────────────────────── */
-const MarqueeStrip: React.FC = () => {
-  const trackRef = useRef<HTMLDivElement>(null);
+const LOOP = [...ITEMS, ...ITEMS, ...ITEMS, ...ITEMS]; // 4 repeticiones para un loop fluido
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const half = track.scrollWidth / 2;
-    track.style.setProperty('--marquee-w', `-${half}px`);
-    track.classList.add('marquee-running');
-  }, []);
-
-  const icons = [...PAYMENT_METHODS, ...PAYMENT_METHODS];
-
-  return (
-    <div className="marquee-outer" aria-hidden="true">
-      <div ref={trackRef} className="marquee-track">
-        {icons.map((m, i) => (
-          <span key={`${m.id}-${i}`} className="marquee-item">
-            {m.logo}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/* ─────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────
    Componente principal
-   ───────────────────────────────────────────── */
+   ───────────────────────────────────────────────────────────────── */
 const LogoLoop: React.FC = () => (
   <section className="pm-section" aria-label="Métodos de pago aceptados">
-
-    {/* Eyebrow */}
     <p className="pm-eyebrow">Pagos seguros con</p>
 
-    {/* Cards desktop */}
-    <div className="pm-grid">
-      {PAYMENT_METHODS.map((method) => (
-        <div key={method.id} className={`pm-card ${method.bgClass}`} style={{ '--accent': method.accent } as React.CSSProperties}>
-          {/* Logo area */}
-          <div className="pm-card__logo-wrap">
-            {method.logo}
-          </div>
+    <div className="pm-marquee-outer">
+      {/* fade edges */}
+      <div className="pm-fade pm-fade--left"  aria-hidden="true" />
+      <div className="pm-fade pm-fade--right" aria-hidden="true" />
 
-          {/* Info */}
-          <div className="pm-card__info">
-            <span className="pm-card__name">{method.label}</span>
-            {method.sublabel && (
-              <span className="pm-card__sub">{method.sublabel}</span>
-            )}
-          </div>
-
-          {/* Badge "Seguro" */}
-          <div className="pm-card__badge">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-              <path d="M5 .5 9 2v3.5C9 7.88 7.2 9.5 5 9.5S1 7.88 1 5.5V2L5 .5Z" fill="currentColor" fillOpacity=".9"/>
-            </svg>
-            Seguro
-          </div>
-        </div>
-      ))}
+      <div className="pm-marquee-track">
+        {LOOP.map((item, i) => {
+          const { Logo } = item;
+          return (
+            <div
+              key={`${item.id}-${i}`}
+              className={`pm-card pm-card--${item.id}`}
+              style={{
+                '--accent':       item.accent,
+                '--accent-hover': item.accentHover,
+              } as React.CSSProperties}
+            >
+              <div className="pm-card__logo">
+                <Logo />
+              </div>
+              <div className="pm-card__info">
+                <span className="pm-card__name">{item.name}</span>
+                <span className="pm-card__sub">{item.sub}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
-
-    {/* Marquee mobile */}
-    <MarqueeStrip />
-
-    {/* Footer trust line */}
-    <p className="pm-trust">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true" className="pm-trust__icon">
-        <path d="M6.5 1 11 3v4.5C11 10.1 9 11.9 6.5 12S2 10.1 2 7.5V3L6.5 1Z" fill="currentColor"/>
-      </svg>
-      Transacciones encriptadas con SSL · PCI DSS Compliant
-    </p>
   </section>
 );
 
