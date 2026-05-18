@@ -1,821 +1,302 @@
-.features {
-  background: #ffffff;
-  position: relative;
-  padding: 80px 0 60px;
+/* ==========================================================================
+   Features.css — Calculator Section · CompensaTuViaje
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  --ft-green:        #16a34a;
+  --ft-green-light:  #22c55e;
+  --ft-green-bg:     #f0fdf4;
+  --ft-green-border: #bbf7d0;
+  --ft-amber:        #d97706;
+  --ft-amber-bg:     #fef3c7;
+  --ft-amber-border: #fde68a;
+  --ft-blue:         #2563eb;
+  --ft-blue-bg:      #eff6ff;
+  --ft-blue-border:  #bfdbfe;
+  --ft-radius:       14px;
+  --ft-card-radius:  24px;
 }
 
-/* CSS animations replacing framer-motion infinite loops */
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
-}
-@keyframes bounce-x {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(5px); }
-}
-.animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
-.animate-bounce-x { display: inline-block; animation: bounce-x 1.5s ease-in-out infinite; }
-
-/* Scroll-reveal animations replacing framer-motion whileInView */
-.features-hidden {
-  opacity: 0;
-  transform: translateY(20px);
-}
-.features-visible {
+/* --------------------------------------------------------------------------
+   Scroll-reveal
+   -------------------------------------------------------------------------- */
+.ft-hidden  { opacity: 0; transform: translateY(18px); }
+.ft-visible {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
 }
-.content-left.features-visible {
-  transition-delay: 0.2s;
-}
-.content-right.features-visible {
-  transition-delay: 0.3s;
+.ft-visible--delay { transition-delay: 0.15s; }
+
+/* --------------------------------------------------------------------------
+   Section + container
+   -------------------------------------------------------------------------- */
+.ft-section {
+  background: #f8fafc;
+  padding: 56px 0 64px;
+  position: relative;
 }
 
-.container {
-  max-width: 1280px;
+.ft-container {
+  max-width: 640px;          /* card centrada, no necesita más */
   margin: 0 auto;
   padding: 0 24px;
-}
-
-.features-header {
-  margin-bottom: 60px;
-}
-
-.features-header h2 {
-  font-size: 2.5rem;
-  color: #171717;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* Payment methods */
-.payment-methods {
-  margin-bottom: 80px;
-}
-
-/* Logo loop wrapper (new animated layout) */
-.payment-loop-wrapper{
-  max-width: 920px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 8px 0;
-}
-
-.payment-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 30px;
-  max-width: 1000px;
-  margin: 0 auto;
-  align-items: center;
-  justify-items: center;
-}
-
-.payment-method {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 20px 10px;
-  transition: transform 0.3s ease;
+  gap: 28px;
 }
 
-.payment-method:hover {
-  transform: translateY(-5px);
+/* --------------------------------------------------------------------------
+   Logo loop de pagos
+   -------------------------------------------------------------------------- */
+.ft-payment {
+  width: 100%;
+  max-width: 640px;
 }
 
-.payment-logo {
-  width: 120px;
-  height: 70px;
+/* --------------------------------------------------------------------------
+   Header — badge + título
+   -------------------------------------------------------------------------- */
+.ft-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  border: 2px solid #E5E7EB;
-  border-radius: 12px;
-  background: #F9FAFB;
-  padding: 12px;
-  transition: all 0.3s ease;
-}
-
-.payment-method:hover .payment-logo {
-  border-color: #22c55e;
-  background: #F0FDF4;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-  transform: translateY(-2px);
-}
-
-.payment-name {
-  font-size: 1rem;
-  color: #525252;
-  font-weight: 600;
+  gap: 16px;
   text-align: center;
-  margin-top: 8px;
 }
 
-/* Main content */
-.features-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center; /* center left and right columns vertically so cards match height */
-  margin-top: 60px;
-}
-
-.content-right {
-  display: flex;
-  align-items: flex-start;
-}
-
-/* Título principal centrado */
-.features-main-title {
-  text-align: center;
-  max-width: 900px;
-  margin: 0 auto 40px;
-}
-
-.calculator-badge-centered {
+.ft-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
-  color: #059669;
-  padding: 12px 28px;
-  border-radius: 30px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 24px;
-  border: 2px solid rgba(34, 197, 94, 0.3);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
-}
-
-.badge-icon {
-  color: #22c55e;
-  font-size: 1.1rem;
-}
-
-.main-title-large {
-  font-size: 2.75rem;
+  background: var(--ft-green-bg);
+  border: 1.5px solid var(--ft-green-border);
+  color: var(--ft-green);
+  font-size: 0.8125rem;
   font-weight: 700;
-  color: #171717;
-  line-height: 1.3;
+  padding: 8px 20px;
+  border-radius: 100px;
+  letter-spacing: 0.03em;
+}
+.ft-badge svg { font-size: 14px; }
+
+.ft-title {
+  font-size: clamp(1.5rem, 3.5vw, 2.125rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  max-width: 580px;
+  margin: 0;
+}
+.ft-title__accent {
+  color: var(--ft-green);
+}
+
+/* --------------------------------------------------------------------------
+   Card calculadora
+   -------------------------------------------------------------------------- */
+.ft-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--ft-card-radius);
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.ft-card:hover {
+  box-shadow: 0 8px 36px rgba(34, 197, 94, 0.12);
+  border-color: var(--ft-green-border);
+}
+
+/* Cabecera verde */
+.ft-card__top {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-bottom: 1.5px solid var(--ft-green-border);
+  padding: 24px 28px;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.ft-card__icon {
+  width: 50px;
+  height: 50px;
+  background: var(--ft-green);
+  border-radius: var(--ft-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.ft-card:hover .ft-card__icon { transform: scale(1.06); }
+
+.ft-card__top-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ft-card__name {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
 }
 
-.main-title-large .text-gradient {
-  background: linear-gradient(135deg, #22C55E 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.ft-card__bolt {
+  color: var(--ft-amber);
+  font-size: 15px;
 }
 
-.content-left {
+.ft-card__sub {
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ft-card__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--ft-amber-bg);
+  border: 1px solid var(--ft-amber-border);
+  color: #92400e;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+.ft-card__pill svg { font-size: 11px; }
+
+/* Cuerpo */
+.ft-card__body {
+  padding: 22px 28px 26px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 16px;
 }
 
-.content-left h3 {
-  font-size: 2rem;
-  color: #171717;
-  font-weight: 700;
-  margin-bottom: 20px;
+/* --------------------------------------------------------------------------
+   Trust grid — 3 columnas
+   -------------------------------------------------------------------------- */
+.ft-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ft-trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.ft-trust-item:hover { background: var(--ft-green-bg); border-color: var(--ft-green-border); }
+
+.ft-trust-item svg { font-size: 18px; }
+.ft-trust-item span {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #475569;
   line-height: 1.3;
 }
 
-.content-left p {
-  color: #525252;
-  font-size: 1.1rem;
+.ft-trust-item--green svg { color: var(--ft-green); }
+.ft-trust-item--blue  svg { color: var(--ft-blue);  }
+.ft-trust-item--amber svg { color: var(--ft-amber); }
+
+/* --------------------------------------------------------------------------
+   Descripción con acento verde
+   -------------------------------------------------------------------------- */
+.ft-card__desc {
+  font-size: 0.8125rem;
+  color: #64748b;
   line-height: 1.6;
-  margin-bottom: 30px;
+  margin: 0;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-left: 3px solid var(--ft-green-light);
+  border-radius: 0 10px 10px 0;
 }
+.ft-card__desc strong { color: #0f172a; }
 
-/* Modern Calculator Card */
-.calculator-card-modern {
-  position: relative;
-  margin: 0; /* remove extra top margin so it lines up with image card */
-  padding: 40px;
-  min-height: 550px; /* match image placeholder min-height to align both cards */
+/* Fine print */
+.ft-card__fine {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 8px 32px rgba(34, 197, 94, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  margin: 0;
 }
+.ft-card__fine svg { font-size: 11px; }
 
-.calculator-card-modern:hover {
-  border-color: rgba(34, 197, 94, 0.5);
-  box-shadow: 
-    0 20px 60px rgba(34, 197, 94, 0.25),
-    0 8px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-/* Animated gradient background */
-.card-gradient-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(34, 197, 94, 0.1) 0%,
-    rgba(59, 130, 246, 0.1) 50%,
-    rgba(217, 119, 6, 0.1) 100%
-  );
-  background-size: 200% 200%;
-  animation: gradientFlow 8s ease infinite;
-  opacity: 0.6;
-  z-index: 0;
-}
-
-@keyframes gradientFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.card-content {
-  position: relative;
-  z-index: 1;
-}
-
-/* Icon section */
-.card-icon-wrapper {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 24px;
+/* --------------------------------------------------------------------------
+   CTA
+   -------------------------------------------------------------------------- */
+.ft-cta {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.card-icon {
-  font-size: 3rem;
-  color: #22C55E;
-  filter: drop-shadow(0 4px 12px rgba(34, 197, 94, 0.4));
-  position: relative;
-  z-index: 2;
-}
-
-.icon-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  gap: 10px;
   width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
-}
-
-.card-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #171717;
-  margin-bottom: 12px;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.inline-icon {
-  color: #D97706;
-  font-size: 1.5rem;
-}
-
-.card-description {
-  color: #525252;
-  font-size: 1rem;
-  line-height: 1.6;
-  text-align: center;
-  margin-bottom: 24px;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Benefits grid */
-.card-benefits {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-.benefit-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  transition: all 0.3s ease;
-}
-
-.benefit-item:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(34, 197, 94, 0.4);
-  transform: translateX(8px);
-}
-
-.benefit-icon {
-  font-size: 1.25rem;
-}
-
-.benefit-item span {
-  color: #171717;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-/* CTA Button */
-.calculator-cta-btn {
-  width: 100%;
-  padding: 18px 32px;
-  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  padding: 15px 24px;
+  background: linear-gradient(135deg, var(--ft-green-light) 0%, var(--ft-green) 100%);
   border: none;
-  border-radius: 14px;
-  color: white;
-  font-size: 1.1rem;
+  border-radius: var(--ft-radius);
+  color: #ffffff;
+  font-size: 0.9375rem;
   font-weight: 700;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  box-shadow: 
-    0 4px 16px rgba(34, 197, 94, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
 }
-
-.calculator-cta-btn::before {
+.ft-cta::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
   transition: left 0.5s ease;
 }
-
-.calculator-cta-btn:hover::before {
-  left: 100%;
-}
-
-.calculator-cta-btn:hover {
-  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-  box-shadow: 
-    0 8px 24px rgba(34, 197, 94, 0.5),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.calculator-cta-btn:active {
-  transform: translateY(0);
-  box-shadow: 
-    0 4px 12px rgba(34, 197, 94, 0.4),
-    inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-text {
-  position: relative;
-  z-index: 1;
-}
-
-.btn-arrow {
-  font-size: 1.5rem;
-  font-weight: 700;
-  position: relative;
-  z-index: 1;
-}
-
-/* Features List */
-.features-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 30px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #E5E7EB;
-  transition: all 0.3s ease;
-}
-
-.feature-item:hover {
-  border-color: #22c55e;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-}
-
-.feature-icon {
-  font-size: 1.2rem;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  border-radius: 8px;
-}
-
-.feature-item span:last-child {
-  color: #171717;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.nature-image {
-  position: relative;
-  height: auto;
-  max-height: 550px;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  width: 100%;
-}
-
-.image-placeholder {
-  width: 100%;
-  height: 100%;
-  min-height: 550px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  transition: transform 0.5s ease, filter 0.3s ease;
-  filter: brightness(1) saturate(1.1);
-  background-color: #e5e7eb;
-}
-
-.nature-image:hover .image-placeholder {
-  filter: brightness(1.1) saturate(1.2);
-}
-
-/* Floating badge */
-.image-floating-badge {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 16px 20px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  animation: floatBadge 3s ease-in-out infinite;
-}
-
-@keyframes floatBadge {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.badge-leaf-icon {
-  font-size: 2rem;
-  color: #22C55E;
-  filter: drop-shadow(0 2px 8px rgba(34, 197, 94, 0.4));
-}
-
-.image-floating-badge > div {
-  display: flex;
-  flex-direction: column;
-}
-
-.badge-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #22C55E;
-  line-height: 1.2;
-}
-
-.badge-label {
-  font-size: 0.75rem;
-  color: #525252;
-  font-weight: 600;
-}
-
-/* Fallback si la imagen no carga */
-.image-placeholder::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #3B82F6 0%, #22C55E 50%, #10B981 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
-}
-
-.image-placeholder[data-loaded="false"]::before {
-  opacity: 1;
-}
-
-.image-overlay {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 20px 24px;
-  border-radius: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nature-image:hover .image-overlay {
-  transform: translateY(0);
-}
-
-.overlay-icon {
-  font-size: 1.5rem;
-  color: #22C55E;
-  flex-shrink: 0;
-}
-
-.image-overlay span {
-  color: #171717;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-align: left;
-  flex: 1;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .features-content {
-    gap: 40px;
-  }
-  
-  .payment-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    max-width: 600px;
-  }
-
-  .payment-logo {
-    width: 100px;
-    height: 60px;
-  }
-}
-
-@media (max-width: 768px) {
-  .features-header h2 {
-    font-size: 2rem;
-  }
-
-  .main-title-large {
-    font-size: 2rem;
-  }
-
-  .payment-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 450px;
-  }
-
-  .payment-logo {
-    width: 90px;
-    height: 55px;
-  }
-
-  .features-content {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    margin-top: 40px;
-  }
-
-  .nature-image {
-    max-height: 450px;
-  }
-
-  .image-placeholder {
-    min-height: 450px;
-  }
-
-  .calculator-card-modern {
-    padding: 30px 24px;
-  }
-
-  .card-icon {
-    font-size: 2.5rem;
-  }
-
-  .card-title {
-    font-size: 1.5rem;
-  }
-
-  .calculator-cta-btn {
-    font-size: 1rem;
-    padding: 16px 28px;
-  }
-
-  .image-floating-badge {
-    top: 16px;
-    right: 16px;
-    padding: 12px 16px;
-  }
-
-  .badge-leaf-icon {
-    font-size: 1.5rem;
-  }
-
-  .badge-value {
-    font-size: 1.25rem;
-  }
-
-  .badge-label {
-    font-size: 0.7rem;
-  }
-
-  .features-list {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  .feature-item {
-    padding: 12px 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .main-title-large {
-    font-size: 1.5rem;
-  }
-
-  .calculator-badge-centered {
-    padding: 10px 20px;
-    font-size: 0.85rem;
-  }
-
-  .features-main-title {
-    margin-bottom: 30px;
-  }
-
-  .payment-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    max-width: 300px;
-  }
-
-  .payment-logo {
-    width: 80px;
-    height: 50px;
-  }
-
-  .payment-name {
-    font-size: 0.9rem;
-  }
-
-  .calculator-card-modern {
-    padding: 24px 20px;
-    border-radius: 20px;
-  }
-
-  .card-icon-wrapper {
-    width: 60px;
-    height: 60px;
-  }
-
-  .card-icon {
-    font-size: 2rem;
-  }
-
-  .card-title {
-    font-size: 1.3rem;
-  }
-
-  .card-description {
-    font-size: 0.9rem;
-  }
-
-  .benefit-item {
-    padding: 10px 12px;
-  }
-
-  .benefit-icon {
-    font-size: 1rem;
-  }
-
-  .benefit-item span {
-    font-size: 0.85rem;
-  }
-
-  .calculator-cta-btn {
-    font-size: 0.95rem;
-    padding: 14px 24px;
-  }
-
-  .content-left h3 {
-    font-size: 1.4rem;
-  }
-
-  .nature-image {
-    max-height: 350px;
-  }
-
-  .image-placeholder {
-    min-height: 350px;
-  }
-
-  .image-floating-badge {
-    top: 12px;
-    right: 12px;
-    padding: 10px 14px;
-  }
-
-  .badge-leaf-icon {
-    font-size: 1.25rem;
-  }
-
-  .badge-value {
-    font-size: 1.1rem;
-  }
-
-  .badge-label {
-    font-size: 0.65rem;
-  }
-
-  .image-overlay {
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    padding: 16px 18px;
-  }
-
-  .overlay-icon {
-    font-size: 1.25rem;
-  }
-
-  .image-overlay span {
-    font-size: 0.85rem;
-  }
-
-  .feature-item {
-    padding: 10px 12px;
-  }
-
-  .feature-icon {
-    width: 25px;
-    height: 25px;
-    font-size: 1rem;
-  }
-
-  .feature-item span:last-child {
-    font-size: 0.8rem;
-  }
+.ft-cta:hover::before { left: 100%; }
+.ft-cta:hover  { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,.45); }
+.ft-cta:active { transform: scale(0.98); }
+.ft-cta svg { font-size: 16px; }
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 520px) {
+  .ft-section { padding: 40px 0 48px; }
+  .ft-container { gap: 22px; }
+  .ft-card__top { flex-direction: column; gap: 14px; }
+  .ft-card__icon { width: 44px; height: 44px; font-size: 18px; }
+  .ft-trust-grid { grid-template-columns: 1fr 1fr; }
+  .ft-trust-item:last-child { grid-column: 1 / -1; }
+  .ft-title { font-size: 1.375rem; }
 }
