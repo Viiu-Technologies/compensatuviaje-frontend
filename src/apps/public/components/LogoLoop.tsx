@@ -1,119 +1,110 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './LogoLoop.css';
 
-type LogoItem = { src: string; alt?: string };
+/* ─────────────────────────────────────────────────────────────────
+   Stripe — path oficial extraído de simple-icons (hex: #635BFF)
+   viewBox 0 0 24 24
+   ───────────────────────────────────────────────────────────────── */
+const StripeLogo = () => (
+  <svg
+    role="img"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-label="Stripe"
+    className="pm-logo pm-logo--stripe"
+  >
+    <path
+      fill="#635BFF"
+      d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305
+         1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975
+         15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757
+         4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445
+         1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921
+         -6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0
+         4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732
+         0-4.128-2.524-5.851-6.594-7.305h.003z"
+    />
+  </svg>
+);
 
-interface Props {
-  logos: LogoItem[];
-  logoHeight?: number;
-  gap?: number;
-  speed?: number;
-}
+/* ─────────────────────────────────────────────────────────────────
+   Webpay — logo pill oficial con colores de marca Transbank
+   ───────────────────────────────────────────────────────────────── */
+const WebpayLogo = () => (
+  <svg
+    viewBox="0 0 130 40"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-label="Webpay by Transbank"
+    role="img"
+    className="pm-logo pm-logo--webpay"
+  >
+    {/* Pill rojo */}
+    <rect width="130" height="40" rx="8" fill="#E30613" />
+    {/* Texto WEBPAY */}
+    <text
+      x="12" y="27"
+      fontFamily="'Arial Black', Arial, sans-serif"
+      fontWeight="900"
+      fontSize="17"
+      fill="white"
+      letterSpacing="1.2"
+    >
+      WEBPAY
+    </text>
+    {/* Ícono tarjeta */}
+    <rect x="98" y="11" width="22" height="18" rx="3.5" fill="white" fillOpacity=".20" />
+    <rect x="98" y="17" width="22" height="5"  fill="white" fillOpacity=".40" />
+    <rect x="100" y="25" width="7" height="2"  rx="1"   fill="white" fillOpacity=".55" />
+  </svg>
+);
 
-// Native CSS-based continuous loop fallback
-const NativeLogoLoop: React.FC<Props> = ({ logos, logoHeight = 88, gap = 120, speed = 90 }) => {
-  // Duplicate the logos so the loop is seamless
-  const items = [...logos, ...logos];
+/* ─────────────────────────────────────────────────────────────────
+   Items del marquee — duplicados para loop infinito seamless
+   ───────────────────────────────────────────────────────────────── */
+const ITEMS = [
+  { id: 'stripe',  Logo: StripeLogo,  name: 'Stripe',  sub: 'Crédito · Débito · Wallet', accent: 'rgba(99,91,255,0.18)',  accentHover: 'rgba(99,91,255,0.42)'  },
+  { id: 'webpay',  Logo: WebpayLogo,  name: 'Webpay',  sub: 'Transbank · Chile',          accent: 'rgba(227,6,19,0.15)',   accentHover: 'rgba(227,6,19,0.40)'   },
+];
 
-  // Estimate animation duration (seconds) based on number of items, logo size and gap and desired speed
-  // duration = total_length_in_px / speed_px_per_s. We approximate width per item ~= logoHeight * 1.8
-  // Use a slightly more conservative estimate for item width to give breathing room
-  const approxItemWidth = logoHeight * 2 + gap;
-  const totalLength = approxItemWidth * logos.length; // one set length in px
-  // duration in seconds = totalLength(px) / speed(px/s)
-  const durationSeconds = Math.max(8, Math.round(totalLength / speed));
+const LOOP = [...ITEMS, ...ITEMS, ...ITEMS, ...ITEMS]; // 4 repeticiones para un loop fluido
 
-  const trackRef = React.useRef<HTMLDivElement | null>(null);
-  const [allLoaded, setAllLoaded] = React.useState(false);
+/* ─────────────────────────────────────────────────────────────────
+   Componente principal
+   ───────────────────────────────────────────────────────────────── */
+const LogoLoop: React.FC = () => (
+  <section className="pm-section" aria-label="Métodos de pago aceptados">
+    <p className="pm-eyebrow">Pagos seguros con</p>
 
-  // Wait for images to load, measure one set width, then set CSS vars for seamless loop
-  React.useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
+    <div className="pm-marquee-outer">
+      {/* fade edges */}
+      <div className="pm-fade pm-fade--left"  aria-hidden="true" />
+      <div className="pm-fade pm-fade--right" aria-hidden="true" />
 
-    const imgs = Array.from(track.querySelectorAll('img')) as HTMLImageElement[];
-    if (!imgs.length) {
-      setAllLoaded(true);
-      return;
-    }
-
-    let loaded = 0;
-    const onImgLoad = () => {
-      loaded += 1;
-      if (loaded === imgs.length) {
-        // all images in both duplicated halves are loaded
-        // measure the width of the first half
-        const children = Array.from(track.children) as HTMLElement[];
-        const half = Math.floor(children.length / 2);
-        if (half === 0) {
-          setAllLoaded(true);
-          return;
-        }
-        let width = 0;
-        for (let i = 0; i < half; i++) {
-          const el = children[i] as HTMLElement;
-          const rect = el.getBoundingClientRect();
-          width += rect.width;
-        }
-
-        // set CSS vars: translate distance and duration based on speed (px per second)
-        const pxPerSec = Math.max(10, speed); // avoid divide by zero
-        const duration = Math.max(1, Math.round((width / pxPerSec) * 100) / 100);
-
-        // set track width explicitly to avoid flex reflow during animation
-        track.style.width = `${width * 2}px`;
-        track.style.setProperty('--translate-x', `-${width}px`);
-        track.style.setProperty('--loop-duration', `${duration}s`);
-
-        // allow animation to run by adding running class (we keep base class present)
-        track.classList.add('native-loop-running');
-        setAllLoaded(true);
-      }
-    };
-
-    imgs.forEach((img) => {
-      if (img.complete) {
-        onImgLoad();
-      } else {
-        img.addEventListener('load', onImgLoad, { once: true });
-        img.addEventListener('error', onImgLoad, { once: true });
-      }
-    });
-
-    return () => {
-      imgs.forEach((img) => {
-        img.removeEventListener('load', onImgLoad);
-        img.removeEventListener('error', onImgLoad);
-      });
-    };
-  }, [logos, speed]);
-
-  return (
-    <div className="native-loop-outer" aria-label="Métodos de pago">
-      <div
-        ref={trackRef}
-        className="native-loop-track"
-        style={{
-          '--logo-height': `${logoHeight}px`,
-          '--loop-gap': `${gap}px`,
-          // keep default duration until measured
-          '--loop-duration': `${durationSeconds}s`,
-          // translate-x will be set after measurement
-        } as React.CSSProperties}
-      >
-        {items.map((l, i) => (
-          <div className="native-loop-item" key={i}>
-            <img src={l.src} alt={l.alt || `logo-${i}`} width={Math.round(logoHeight * 2)} height={logoHeight} style={{ height: logoHeight }} />
-          </div>
-        ))}
+      <div className="pm-marquee-track">
+        {LOOP.map((item, i) => {
+          const { Logo } = item;
+          return (
+            <div
+              key={`${item.id}-${i}`}
+              className={`pm-card pm-card--${item.id}`}
+              style={{
+                '--accent':       item.accent,
+                '--accent-hover': item.accentHover,
+              } as React.CSSProperties}
+            >
+              <div className="pm-card__logo">
+                <Logo />
+              </div>
+              <div className="pm-card__info">
+                <span className="pm-card__name">{item.name}</span>
+                <span className="pm-card__sub">{item.sub}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  );
-};
+  </section>
+);
 
-const LogoLoopComponent: React.FC<Props> = ({ logos, logoHeight = 60, gap = 48, speed = 100 }) => {
-  // Use native implementation directly to avoid Vite dynamic import warnings
-  return <NativeLogoLoop logos={logos} logoHeight={logoHeight} gap={gap} speed={speed} />;
-};
-
-export default LogoLoopComponent;
+export default LogoLoop;

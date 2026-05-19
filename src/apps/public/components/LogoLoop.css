@@ -1,88 +1,143 @@
-.logo-loop-container{
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+/* ==========================================================================
+   LogoLoop.css — Payment Marquee v4 · CompensaTuViaje
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Section
+   -------------------------------------------------------------------------- */
+.pm-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 2rem 0 2.5rem;
+  background: transparent;
+}
+
+.pm-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Marquee outer + fade edges
+   -------------------------------------------------------------------------- */
+.pm-marquee-outer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.pm-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pm-fade--left  { left:  0; background: linear-gradient(to right, #ffffff, transparent); }
+.pm-fade--right { right: 0; background: linear-gradient(to left,  #ffffff, transparent); }
+
+/* Si el fondo de la sección es oscuro, cambia estos gradientes a #0b1320 */
+
+/* --------------------------------------------------------------------------
+   Track animado
+   -------------------------------------------------------------------------- */
+.pm-marquee-track {
+  display: flex;
+  gap: 14px;
+  width: max-content;
   padding: 12px 0;
-}
-
-.custom-logo-loop{
-  width:100%;
-  max-width:920px;
-}
-
-.logo-loop-fallback{
-  display:flex;
-  gap:24px;
-  align-items:center;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-
-.fallback-item img{
-  opacity:0.95;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.06));
-  transition: transform 0.18s ease, filter 0.18s ease;
-}
-
-.fallback-item img:hover{
-  transform: translateY(-4px) scale(1.03);
-  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.12));
-}
-
-/* Native loop styles */
-.native-loop-outer{
-  width:100%;
-  overflow:hidden;
-  display:flex;
-  justify-content:center;
-  padding: 8px 40px; /* give breathing room on edges */
-}
-
-.native-loop-track{
-  display:inline-flex; /* ensure horizontal inline layout */
-  gap:var(--loop-gap, 48px);
-  align-items:center;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  animation: nativeLoop var(--loop-duration, 22s) linear infinite;
+  animation: pmMarquee 22s linear infinite;
   will-change: transform;
-  padding: 12px 0;
 }
 
-.native-loop-item{
-  flex: 0 0 auto;
-  padding-right: calc(var(--loop-gap, 48px) / 2);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.native-loop-item img{
-  height: var(--logo-height, 60px);
-  max-width: 220px;
-  display:block;
-  opacity: 0.98;
-  transition: transform 0.25s ease, filter 0.18s ease;
-  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.08));
-}
-
-.native-loop-item img:hover{
-  transform: translateY(-6px) scale(1.06);
-  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.14));
-}
-
-@keyframes nativeLoop{
-  0% { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(var(--translate-x, -50%),0,0); }
-}
-
-/* Pause animation while measurements happen (JS will switch to running) */
-.native-loop-track {
+.pm-marquee-track:hover {
   animation-play-state: paused;
 }
 
-/* When JS finishes measurement, add this class to start the animation */
-.native-loop-track.native-loop-running {
-  animation-play-state: running;
+@keyframes pmMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* --------------------------------------------------------------------------
+   Card
+   -------------------------------------------------------------------------- */
+.pm-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  flex-shrink: 0;
+  min-width: 210px;
+  cursor: default;
+  transition:
+    border-color 0.22s ease,
+    box-shadow   0.22s ease,
+    transform    0.18s ease;
+}
+
+.pm-card:hover {
+  border-color: var(--accent-hover);
+  box-shadow: 0 10px 32px var(--accent);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   Logo area
+   -------------------------------------------------------------------------- */
+.pm-card__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Stripe — icono cuadrado, morado */
+.pm-logo--stripe {
+  width: 36px;
+  height: 36px;
+}
+
+/* Webpay — pill rectangular */
+.pm-logo--webpay {
+  height: 36px;
+  width: auto;
+  border-radius: 7px;
+  overflow: hidden;
+  display: block;
+  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.20);
+}
+
+/* --------------------------------------------------------------------------
+   Info
+   -------------------------------------------------------------------------- */
+.pm-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pm-card__name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.pm-card__sub {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
 }
