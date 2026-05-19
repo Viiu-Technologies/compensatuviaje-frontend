@@ -90,9 +90,12 @@ function formatDate(d?: string | null): string {
   if (!d) return '-';
   return new Date(d).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function getStockPercent(remaining?: number | null, approved?: number | null): number {
-  if (!approved || !remaining) return 0;
-  return Math.min(100, Math.round((remaining / approved) * 100));
+function getConsumptionPercent(remaining?: number | null, approved?: number | null): number {
+  if (!approved || approved <= 0) return 0;
+  if (remaining == null) return 0;
+  
+  const consumed = Math.max(0, approved - remaining);
+  return Math.min(100, Math.round((consumed / approved) * 100));
 }
 
 // ── Sub-components ────────────────────────────────────────────────
