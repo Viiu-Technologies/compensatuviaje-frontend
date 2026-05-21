@@ -1,254 +1,144 @@
-import React, { useEffect, useState } from 'react';
-import { FaLeaf, FaPlane, FaUsers, FaBuilding, FaChartLine } from 'react-icons/fa';
+import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
+import { useGsapReveal } from '../hooks/useGsapReveal';
 import './Hero.css';
 
 const Hero = () => {
-  const [isMounted, setIsMounted] = useState(false);
+  const scopeRef = useGsapReveal<HTMLElement>((root) => {
+    const tl = gsap.timeline({
+      defaults: { ease: 'power3.out', duration: 0.9 },
+    });
 
-  useEffect(() => {
-    setIsMounted(true);
+    // Marca todo como listo (quita el opacity:0 inicial)
+    gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
+
+    // Mask reveal de las líneas del titular
+    tl.from('.hero-display .hero-line__inner', {
+      yPercent: 110,
+      stagger: 0.12,
+      duration: 1.0,
+    }, 0);
+
+    // Eyebrow y párrafo
+    tl.from('.hero-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0.1);
+    tl.from('.hero-lede',    { y: 16, autoAlpha: 0, duration: 0.7 }, 0.55);
+
+    // CTAs
+    tl.from('.hero-actions > *', {
+      y: 16,
+      autoAlpha: 0,
+      stagger: 0.08,
+      duration: 0.6,
+    }, 0.75);
+
+    // Stat card
+    tl.from('.hero-stat', {
+      y: 28,
+      autoAlpha: 0,
+      duration: 0.8,
+    }, 0.5);
+
+    // Counter up
+    const target = root.querySelector<HTMLElement>('.hero-stat__number');
+    if (target) {
+      const end = Number(target.dataset.value ?? 0);
+      const obj = { v: 0 };
+      tl.to(obj, {
+        v: end,
+        duration: 1.6,
+        ease: 'power2.out',
+        snap: { v: 1 },
+        onUpdate: () => {
+          target.textContent = Math.round(obj.v).toLocaleString('es-CL');
+        },
+      }, 0.7);
+    }
+
+    // Línea horizontal (separador inferior) line-draw
+    tl.from('.hero-rule', { scaleX: 0, transformOrigin: 'left center', duration: 1.0 }, 0.4);
+
+    // Footer meta
+    tl.from('.hero-meta > *', { y: 10, autoAlpha: 0, stagger: 0.1, duration: 0.5 }, 1.0);
   }, []);
 
-  const stats = [
-    {
-      icon: FaLeaf,
-      value: 15420,
-      label: 'Toneladas CO₂ Compensadas',
-      suffix: '+',
-      iconColorClass: 'bento-icon bento-icon--green',
-    },
-    {
-      icon: FaPlane,
-      value: 8234,
-      label: 'Vuelos Compensados',
-      sublabel: 'Compensados',
-      suffix: '+',
-      iconColorClass: 'bento-icon bento-icon--blue',
-    },
-    {
-      icon: FaUsers,
-      value: 3567,
-      label: 'Empresas Certificadas',
-      sublabel: 'Certificadas',
-      suffix: '+',
-      iconColorClass: 'bento-icon bento-icon--amber',
-    },
-  ];
-
   const scrollToCalculator = () => {
-    const element = document.getElementById('calculadora');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById('calculadora')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <section className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden" id="inicio">
+    <section ref={scopeRef} className="hero" id="inicio">
+      {/* Grano sutil opcional */}
+      <div className="hero__grain" aria-hidden="true" />
 
-      {/* Fondo con Gradientes */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/images/hero-background.webp)' }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%),
-              linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 58, 138, 0.55) 50%, rgba(15, 23, 42, 0.7) 100%)
-            `,
-          }}
-        />
-      </div>
+      <div className="hero__container">
+        <div className="hero__grid">
+          {/* ─────────── Columna principal ─────────── */}
+          <div className="hero__main">
+            <span className="hero-eyebrow ctv-reveal">
+              <span className="hero-eyebrow__dot" />
+              La sostenibilidad es posible
+            </span>
 
-      {/* Blobs Animados */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow" />
-        <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-blue-500/20 rounded-full blur-[150px] will-change-transform animate-blob-slow-reverse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] will-change-transform animate-blob-slow-mid" />
-      </div>
-
-      {/* Contenedor Principal */}
-      <div
-        className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full"
-        style={{
-          maxWidth: '1280px',
-          paddingTop: 'clamp(5.5rem, 12vh, 9rem)',
-          paddingBottom: 'clamp(2rem, 6vh, 5rem)',
-        }}
-      >
-        <div className="grid lg:grid-cols-2 xl:grid-cols-[1fr_460px] gap-12 xl:gap-16 items-center">
-
-          {/* ── Columna Izquierda ── */}
-          <div className="flex flex-col items-start">
-            <h1
-              className="font-black leading-[1.1] tracking-tight !mb-5 lg:!mb-6"
-              style={{
-                fontSize: 'clamp(2rem, 5vw, 4.5rem)',
-                textShadow: '0 4px 30px rgba(0,0,0,0.4)',
-              }}
-            >
-              <span className="text-white">Compensa</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
-                tu Viaje
-              </span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-teal-400">
-                Sostenible
+            <h1 className="hero-display">
+              <span className="hero-line"><span className="hero-line__inner">Compensa la huella</span></span>
+              <span className="hero-line"><span className="hero-line__inner">de cada viaje,</span></span>
+              <span className="hero-line hero-line--accent">
+                <span className="hero-line__inner"><em>medible</em> y verificada.</span>
               </span>
             </h1>
 
-            <p
-              className="text-white/85 max-w-md !mb-10 lg:!mb-14"
-              style={{
-                fontSize: 'clamp(0.875rem, 1.8vw, 1.125rem)',
-                textShadow: '0 2px 20px rgba(0,0,0,0.5)',
-                lineHeight: '1.5',
-              }}
-            >
-              Neutraliza el impacto ambiental de tus viajes con proyectos verificados y certificados.
+            <p className="hero-lede ctv-reveal">
+              Neutraliza el impacto ambiental de tus vuelos y operaciones con proyectos
+              certificados internacionalmente.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full sm:w-auto !mb-8 lg:!mb-12">
-              <button
-                onClick={scrollToCalculator}
-                className="group relative inline-flex justify-center items-center !gap-3 bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 hover:from-emerald-300 hover:via-green-400 hover:to-teal-400 text-slate-900 font-black text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl shadow-2xl shadow-emerald-500/50 hover:shadow-emerald-400/60 active:shadow-emerald-500/30 !transition-all !duration-300 overflow-hidden"
+            <div className="hero-actions ctv-reveal">
+              <button onClick={scrollToCalculator} className="hero-btn hero-btn--primary">
+                Calcula tu huella
+                <HiArrowRight aria-hidden="true" />
+              </button>
+              <button className="hero-btn hero-btn--ghost">
+                Cómo funciona
+              </button>
+            </div>
+          </div>
+
+          {/* ─────────── Stat card minimal ─────────── */}
+          <aside className="hero-stat ctv-reveal" aria-label="Toneladas compensadas">
+            <span className="hero-stat__label">Toneladas de CO₂ ya neutralizadas</span>
+            <div className="hero-stat__number-row">
+              <span
+                className="hero-stat__number"
+                data-value="15420"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <FaChartLine className="text-lg sm:text-xl group-hover:scale-110 transition-transform relative z-10" />
-                <span className="relative z-10">Calcula tu Huella</span>
-              </button>
-
-              <button className="group inline-flex justify-center items-center !gap-3 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl text-white/90 hover:text-white font-semibold text-base sm:text-lg !px-9 sm:!px-12 !py-4 sm:!py-5 !leading-[1.15] !min-h-[52px] sm:!min-h-[60px] whitespace-nowrap rounded-2xl border-2 border-white/30 hover:border-white/50 shadow-lg shadow-black/20 !transition-all !duration-300">
-                <span>Cómo Funciona</span>
-                <HiArrowRight className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform" />
-              </button>
+                15,420
+              </span>
+              <span className="hero-stat__suffix">t</span>
             </div>
-
-            <div className="flex flex-nowrap gap-x-3 sm:gap-x-5">
-              {[
-                { color: 'bg-emerald-400', glow: 'shadow-emerald-400/80', text: '100% Verificado' },
-                { color: 'bg-blue-400',    glow: 'shadow-blue-400/80',    text: 'Certificación ISO' },
-                { color: 'bg-amber-400',   glow: 'shadow-amber-400/80',   text: 'Transparencia Total' },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-1.5 sm:gap-2 text-white/90 text-[11px] sm:text-sm font-medium"
-                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
-                >
-                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 ${item.color} rounded-full shadow-lg ${item.glow}`} />
-                  <span>{item.text}</span>
-                </div>
-              ))}
+            <div className="hero-stat__live">
+              <span className="hero-stat__pulse" />
+              Datos verificados en tiempo real
             </div>
-          </div>
-
-          {/* ── Columna Derecha: Bento Grid ── */}
-          <div className="hidden lg:block w-full">
-            <div className="bento-grid">
-
-              {/* Card CO₂ — span completo */}
-              <div className="bento-card bento-card--co2 bento-card--full">
-                {/* Chip live */}
-                <div className="bento-chip">
-                  <span className="bento-chip__dot" />
-                  En tiempo real
-                </div>
-
-                {/* Icono */}
-                <div className="bento-icon bento-icon--green">
-                  <FaLeaf />
-                </div>
-
-                <p className="bento-label">Toneladas CO₂ Compensadas</p>
-
-                <div className="bento-number bento-number--hero">
-                  {isMounted ? (15420).toLocaleString() : '15,420'}
-                  <span className="bento-suffix">+</span>
-                </div>
-
-                <p className="bento-sublabel">
-                  Toneladas equivalentes neutralizadas con proyectos verificados
-                </p>
-              </div>
-
-              {/* Card Vuelos */}
-              <div className="bento-card bento-card--flights">
-                <div className="bento-icon bento-icon--blue">
-                  <FaPlane />
-                </div>
-                <p className="bento-label">Vuelos</p>
-                <div className="bento-number">
-                  {isMounted ? (8234).toLocaleString() : '8,234'}
-                  <span className="bento-suffix">+</span>
-                </div>
-                <p className="bento-sublabel bento-sublabel--blue">Compensados</p>
-              </div>
-
-              {/* Card Empresas */}
-              <div className="bento-card bento-card--companies">
-                <div className="bento-icon bento-icon--amber">
-                  <FaUsers />
-                </div>
-                <p className="bento-label">Empresas</p>
-                <div className="bento-number">
-                  {isMounted ? (3567).toLocaleString() : '3,567'}
-                  <span className="bento-suffix">+</span>
-                </div>
-                <p className="bento-sublabel bento-sublabel--amber">Certificadas</p>
-              </div>
-
-              {/* Card ¿Eres Empresa? — span completo */}
-              <div className="bento-card bento-card--empresa bento-card--full">
-                <div className="bento-empresa-icon">
-                  <FaBuilding />
-                </div>
-                <div className="bento-empresa-body">
-                  <h3 className="bento-empresa-title">¿Eres Empresa?</h3>
-                  <p className="bento-empresa-desc">
-                    Certifica el impacto de tus operaciones corporativas y reduce emisiones.
-                  </p>
-                  <button className="bento-empresa-cta">
-                    Solicitar registro
-                    <HiArrowRight />
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
+          </aside>
         </div>
 
-        {/* Stats móvil */}
-        <div className="grid grid-cols-3 gap-3 mt-8 lg:hidden">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={index} className="bg-white/10 backdrop-blur-xl rounded-xl !p-3 text-center border border-white/15">
-                <Icon className="text-lg mx-auto mb-1 text-emerald-400" />
-                <div className="text-xl sm:text-2xl font-black text-white leading-none">
-                  {isMounted ? stat.value.toLocaleString() : stat.value}
-                  <span className="text-sm font-bold text-white/70">{stat.suffix}</span>
-                </div>
-                <p className="text-white/50 text-[10px] sm:text-xs font-medium mt-1 leading-tight">{stat.label}</p>
-              </div>
-            );
-          })}
-        </div>
+        {/* Separador */}
+        <div className="hero-rule" aria-hidden="true" />
 
-      </div>
-
-      {/* Scroll Arrow */}
-      <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 cursor-pointer group"
-        onClick={scrollToCalculator}
-      >
-        <span className="text-xs uppercase tracking-[0.25em] text-white/50 font-semibold group-hover:text-white/80 transition-colors animate-pulse-slow">
-          Descubre más
-        </span>
-        <div className="w-6 h-10 rounded-full border-2 border-white/25 group-hover:border-white/50 flex justify-center pt-2 transition-colors">
-          <div className="w-1.5 h-2.5 bg-white/50 group-hover:bg-white/80 rounded-full animate-scroll-dot transition-colors" />
+        {/* Meta */}
+        <div className="hero-meta">
+          <div className="hero-meta__item">
+            <span className="hero-meta__num">01</span>
+            <span className="hero-meta__txt">DEFRA 2024 · GHG Protocol</span>
+          </div>
+          <div className="hero-meta__item">
+            <span className="hero-meta__num">02</span>
+            <span className="hero-meta__txt">Proyectos verificados</span>
+          </div>
+          <div className="hero-meta__item">
+            <span className="hero-meta__num">03</span>
+            <span className="hero-meta__txt">Certificado para empresas</span>
+          </div>
         </div>
       </div>
     </section>

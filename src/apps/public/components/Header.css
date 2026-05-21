@@ -1,19 +1,14 @@
 /* ==========================================================================
-   Header.css — CompensaTuViaje
+   Header.css — Minimal, editorial, tema claro sobre canvas
    ========================================================================== */
+@import './landing/tokens.css';
 
 /* --------------------------------------------------------------------------
-   Tokens
+   Tokens locales
    -------------------------------------------------------------------------- */
 :root {
-  --header-h:           72px;
-  --header-green:       #34d399;
-  --header-green-dark:  #10b981;
-  --header-amber:       #f59e0b;
-  --header-amber-dark:  #d97706;
-  --header-bg-scroll:   rgba(10, 20, 35, 0.88);
-  --header-border:      rgba(255, 255, 255, 0.08);
-  --header-radius:      12px;
+  --header-h:           76px;
+  --header-radius:      999px;
   --header-transition:  0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -32,17 +27,18 @@
   transition:
     background var(--header-transition),
     border-color var(--header-transition),
-    box-shadow var(--header-transition);
-  animation: headerSlideIn 0.5s ease-out both;
+    box-shadow var(--header-transition),
+    backdrop-filter var(--header-transition);
+  animation: headerSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  font-family: var(--ctv-font-body);
 }
 
-/* Scrolled state — glassmorphism oscuro */
+/* Scrolled: blur + sutil rule */
 .ctv-header--scrolled {
-  background: var(--header-bg-scroll);
-  border-bottom-color: var(--header-border);
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(250, 250, 247, 0.78);
+  border-bottom-color: var(--ctv-rule);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
 
 @keyframes headerSlideIn {
@@ -56,14 +52,10 @@
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  max-width: 1280px;
+  max-width: var(--ctv-page-max);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--ctv-gutter);
   gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .ctv-header__inner { padding: 0 2rem; }
 }
 
 /* --------------------------------------------------------------------------
@@ -77,14 +69,13 @@
 }
 
 .ctv-header__logo img {
-  height: 44px;
+  height: 40px;
   width: auto;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  transition: transform 0.25s var(--ctv-ease-out), opacity 0.25s var(--ctv-ease-out);
 }
 .ctv-header__logo:hover img {
-  transform: scale(1.03);
-  opacity: 0.9;
+  transform: scale(1.02);
+  opacity: 0.92;
 }
 
 /* --------------------------------------------------------------------------
@@ -95,7 +86,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 @media (min-width: 1024px) {
@@ -106,44 +97,34 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.80);
+  color: var(--ctv-ink-soft);
   text-decoration: none;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-  transition:
-    color var(--header-transition),
-    background var(--header-transition);
+  background: transparent;
+  border-radius: 8px;
+  transition: color var(--header-transition);
 }
-.ctv-nav-link:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-}
+.ctv-nav-link:hover { color: var(--ctv-brand-deep); }
 
-/* Underline animado */
+/* Underline animado en hover/active */
 .ctv-nav-link::after {
   content: '';
   position: absolute;
   bottom: 4px;
-  left: 1rem;
-  right: 1rem;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--header-green);
+  left: 0.85rem;
+  right: 0.85rem;
+  height: 1.5px;
+  background: var(--ctv-brand);
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s var(--ctv-ease-out);
 }
 .ctv-nav-link:hover::after,
-.ctv-nav-link--active::after {
-  transform: scaleX(1);
-}
-.ctv-nav-link--active {
-  color: #ffffff;
-}
+.ctv-nav-link--active::after { transform: scaleX(1); }
+.ctv-nav-link--active { color: var(--ctv-brand-deep); }
 
 /* --------------------------------------------------------------------------
    Desktop auth buttons
@@ -151,7 +132,7 @@
 .ctv-header__actions {
   display: none;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -160,64 +141,61 @@
 }
 
 /* --------------------------------------------------------------------------
-   Botones base
+   Botones — píldoras minimal
    -------------------------------------------------------------------------- */
 .ctv-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.375rem;
+  padding: 0.6rem 1.25rem;
   border-radius: var(--header-radius);
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   cursor: pointer;
   text-decoration: none;
-  border: none;
+  border: 1px solid transparent;
   transition:
     background var(--header-transition),
     border-color var(--header-transition),
-    transform 0.15s ease,
-    box-shadow var(--header-transition);
+    color var(--header-transition),
+    transform 0.15s ease;
 }
-.ctv-btn:hover  { transform: scale(1.025); }
-.ctv-btn:active { transform: scale(0.975); }
+.ctv-btn:active { transform: scale(0.97); }
 
 /* Ghost */
 .ctv-btn--ghost {
   background: transparent;
-  color: rgba(255, 255, 255, 0.80);
-  border: 1.5px solid transparent;
+  color: var(--ctv-ink-soft);
 }
 .ctv-btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.10);
-  color: #ffffff;
+  color: var(--ctv-brand-deep);
+  background: rgba(15, 61, 46, 0.05);
 }
 
-/* Outline */
+/* Outline (login) */
 .ctv-btn--outline {
   background: transparent;
-  color: rgba(255, 255, 255, 0.90);
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  color: var(--ctv-ink);
+  border-color: var(--ctv-rule-strong);
 }
 .ctv-btn--outline:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.70);
-  color: #ffffff;
+  border-color: var(--ctv-brand-deep);
+  color: var(--ctv-brand-deep);
+  background: rgba(15, 61, 46, 0.04);
 }
 
-/* Primary — gradiente ámbar (igual que la captura original) */
+/* Primary — verde bosque sólido */
 .ctv-btn--primary {
-  background: linear-gradient(135deg, var(--header-amber) 0%, var(--header-amber-dark) 100%);
-  color: #1a1a1a;
-  border: none;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.30);
+  background: var(--ctv-brand-deep);
+  color: var(--ctv-canvas);
+  border-color: var(--ctv-brand-deep);
 }
 .ctv-btn--primary:hover {
-  background: linear-gradient(135deg, #fbbf24 0%, var(--header-amber) 100%);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+  background: var(--ctv-brand);
+  border-color: var(--ctv-brand);
 }
 
 /* Full-width (mobile) */
@@ -230,21 +208,21 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.375rem 0.75rem 0.375rem 0.5rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.4rem;
   border-radius: 100px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 61, 46, 0.05);
+  border: 1px solid var(--ctv-rule);
 }
 .ctv-user-chip__avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--header-green) 0%, var(--header-green-dark) 100%);
+  background: var(--ctv-brand-deep);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: #fff;
+  color: var(--ctv-canvas);
   flex-shrink: 0;
 }
 .ctv-user-chip__avatar--lg {
@@ -253,9 +231,9 @@
   font-size: 16px;
 }
 .ctv-user-chip__name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.90);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ctv-ink);
 }
 
 /* --------------------------------------------------------------------------
@@ -267,16 +245,19 @@
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid var(--ctv-rule-strong);
+  color: var(--ctv-ink);
   font-size: 22px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
   flex-shrink: 0;
 }
-.ctv-hamburger:hover  { background: rgba(255, 255, 255, 0.18); }
+.ctv-hamburger:hover {
+  background: rgba(15, 61, 46, 0.05);
+  border-color: var(--ctv-brand-deep);
+}
 .ctv-hamburger:active { transform: scale(0.92); }
 
 @media (min-width: 1024px) {
@@ -298,11 +279,10 @@
   pointer-events: auto;
 }
 
-/* Overlay oscuro */
 .ctv-drawer__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(5, 12, 24, 0.70);
+  background: rgba(15, 61, 46, 0.45);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   animation: fadeOverlay 0.25s ease both;
@@ -312,19 +292,18 @@
   to   { opacity: 1; }
 }
 
-/* Panel lateral derecho */
 .ctv-drawer__panel {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   width: min(85vw, 340px);
-  background: linear-gradient(160deg, #0a1626 0%, #0f1f38 100%);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--ctv-canvas);
+  border-left: 1px solid var(--ctv-rule);
   display: flex;
   flex-direction: column;
   padding-top: var(--header-h);
-  animation: slidePanel 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: slidePanel 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow-y: auto;
 }
 @keyframes slidePanel {
@@ -332,12 +311,11 @@
   to   { transform: translateX(0); }
 }
 
-/* Nav links del drawer */
 .ctv-drawer__nav {
   display: flex;
   flex-direction: column;
   padding: 1.25rem 1rem 0;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .ctv-drawer__link {
@@ -345,10 +323,10 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-radius: var(--header-radius);
+  border-radius: 12px;
   font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.70);
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
   text-decoration: none;
   transition:
     color 0.2s ease,
@@ -360,61 +338,54 @@
   width: 100%;
 }
 .ctv-drawer__link:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.07);
+  color: var(--ctv-brand-deep);
+  background: rgba(15, 61, 46, 0.05);
   transform: translateX(3px);
 }
 .ctv-drawer__link--active {
-  color: var(--header-green);
-  background: rgba(52, 211, 153, 0.08);
-}
-.ctv-drawer__link--active:hover {
-  color: var(--header-green);
-  background: rgba(52, 211, 153, 0.12);
+  color: var(--ctv-brand-deep);
+  background: var(--ctv-brand-soft);
 }
 
-/* Arrow icon push al final */
 .ctv-drawer__link-arrow {
   margin-left: auto;
   font-size: 16px;
-  opacity: 0.4;
+  opacity: 0.45;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .ctv-drawer__link:hover .ctv-drawer__link-arrow {
-  opacity: 0.8;
+  opacity: 0.85;
   transform: translateX(2px);
 }
 
-/* Footer de drawer con botones */
 .ctv-drawer__footer {
   margin-top: auto;
   padding: 1.25rem 1rem 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid var(--ctv-rule);
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.5rem;
 }
 
-/* User info móvil */
 .ctv-drawer__user {
   display: flex;
   align-items: center;
   gap: 0.875rem;
   padding: 0.875rem 1rem;
-  border-radius: var(--header-radius);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(15, 61, 46, 0.04);
+  border: 1px solid var(--ctv-rule);
   margin-bottom: 0.25rem;
 }
 .ctv-drawer__user-name {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.92);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ctv-ink);
   margin: 0;
 }
 .ctv-drawer__user-role {
   font-size: 0.8125rem;
-  color: rgba(255,255,255,0.40);
+  color: var(--ctv-ink-mute);
   margin: 0;
 }
 

@@ -1,302 +1,249 @@
 /* ==========================================================================
-   Features.css — Calculator Section · CompensaTuViaje
+   Features.css — "Cómo funciona" editorial minimalista
    ========================================================================== */
+@import './landing/tokens.css';
 
-/* --------------------------------------------------------------------------
-   Tokens
-   -------------------------------------------------------------------------- */
-:root {
-  --ft-green:        #16a34a;
-  --ft-green-light:  #22c55e;
-  --ft-green-bg:     #f0fdf4;
-  --ft-green-border: #bbf7d0;
-  --ft-amber:        #d97706;
-  --ft-amber-bg:     #fef3c7;
-  --ft-amber-border: #fde68a;
-  --ft-blue:         #2563eb;
-  --ft-blue-bg:      #eff6ff;
-  --ft-blue-border:  #bfdbfe;
-  --ft-radius:       14px;
-  --ft-card-radius:  24px;
-}
-
-/* --------------------------------------------------------------------------
-   Scroll-reveal
-   -------------------------------------------------------------------------- */
-.ft-hidden  { opacity: 0; transform: translateY(18px); }
-.ft-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
-}
-.ft-visible--delay { transition-delay: 0.15s; }
-
-/* --------------------------------------------------------------------------
-   Section + container
-   -------------------------------------------------------------------------- */
 .ft-section {
-  background: #f8fafc;
-  padding: 56px 0 64px;
+  background: var(--ctv-canvas-2);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+  padding: clamp(4rem, 10vw, 8rem) 0;
   position: relative;
+  overflow: hidden;
 }
 
 .ft-container {
-  max-width: 640px;          /* card centrada, no necesita más */
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-}
-
-/* --------------------------------------------------------------------------
-   Logo loop de pagos
-   -------------------------------------------------------------------------- */
-.ft-payment {
   width: 100%;
-  max-width: 640px;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
 }
 
-/* --------------------------------------------------------------------------
-   Header — badge + título
-   -------------------------------------------------------------------------- */
+/* ── Header ─────────────────────────────────────────── */
 .ft-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
+  max-width: 760px;
+  margin: 0 0 clamp(3rem, 6vw, 5rem);
 }
 
-.ft-badge {
+.ft-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: var(--ft-green-bg);
-  border: 1.5px solid var(--ft-green-border);
-  color: var(--ft-green);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  padding: 8px 20px;
-  border-radius: 100px;
-  letter-spacing: 0.03em;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-soft);
+  font-weight: 500;
+  margin: 0 0 1.5rem;
 }
-.ft-badge svg { font-size: 14px; }
+.ft-eyebrow__line {
+  width: 28px;
+  height: 1px;
+  background: var(--ctv-brand);
+  display: inline-block;
+}
 
 .ft-title {
-  font-size: clamp(1.5rem, 3.5vw, 2.125rem);
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.25;
-  max-width: 580px;
+  font-family: var(--ctv-font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 5.5vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 1.5rem;
+  max-width: 16ch;
+}
+
+.ft-title--accent .hero-line__inner em {
+  font-style: italic;
+  color: var(--ctv-brand);
+}
+
+.ft-lede {
+  font-size: clamp(1rem, 1.25vw, 1.125rem);
+  line-height: 1.55;
+  color: var(--ctv-ink-soft);
+  max-width: 56ch;
   margin: 0;
 }
-.ft-title__accent {
-  color: var(--ft-green);
+
+/* ── Steps 01 / 02 / 03 ─────────────────────────────── */
+.ft-steps {
+  list-style: none;
+  margin: 0 0 clamp(4rem, 8vw, 6rem);
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid var(--ctv-rule);
+}
+@media (min-width: 800px) {
+  .ft-steps {
+    grid-template-columns: repeat(3, 1fr);
+    border-top: none;
+  }
 }
 
-/* --------------------------------------------------------------------------
-   Card calculadora
-   -------------------------------------------------------------------------- */
+.ft-step {
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--ctv-rule);
+  position: relative;
+}
+@media (min-width: 800px) {
+  .ft-step {
+    padding: 2.5rem 1.75rem 2.5rem 0;
+    border-bottom: none;
+    border-right: 1px solid var(--ctv-rule);
+    border-top: 1px solid var(--ctv-rule);
+  }
+  .ft-step:last-child { border-right: none; padding-right: 0; }
+  .ft-step + .ft-step { padding-left: 1.75rem; }
+}
+
+.ft-step__num {
+  font-family: var(--ctv-font-display);
+  font-style: italic;
+  font-size: 1.75rem;
+  color: var(--ctv-brand);
+  letter-spacing: 0.02em;
+  display: block;
+  margin: 0 0 1rem;
+}
+
+.ft-step__title {
+  font-family: var(--ctv-font-display);
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: var(--ctv-brand-deep);
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.ft-step__body {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+  max-width: 32ch;
+}
+
+/* ── Card calculadora ───────────────────────────────── */
 .ft-card {
-  width: 100%;
-  background: #ffffff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: var(--ft-card-radius);
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  background: var(--ctv-canvas);
+  border: 1px solid var(--ctv-rule);
+  border-radius: 24px;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 4vw, 3rem);
+  box-shadow: 0 1px 0 rgba(15,61,46,0.04),
+              0 40px 80px -50px rgba(15,61,46,0.30);
 }
-.ft-card:hover {
-  box-shadow: 0 8px 36px rgba(34, 197, 94, 0.12);
-  border-color: var(--ft-green-border);
-}
-
-/* Cabecera verde */
-.ft-card__top {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border-bottom: 1.5px solid var(--ft-green-border);
-  padding: 24px 28px;
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
+@media (min-width: 900px) {
+  .ft-card { grid-template-columns: 1.3fr 1fr; align-items: center; }
 }
 
-.ft-card__icon {
-  width: 50px;
-  height: 50px;
-  background: var(--ft-green);
-  border-radius: var(--ft-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: #ffffff;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-.ft-card:hover .ft-card__icon { transform: scale(1.06); }
-
-.ft-card__top-text {
-  flex: 1;
+.ft-card__copy {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.ft-card__name {
-  font-size: 1.0625rem;
-  font-weight: 800;
-  color: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-}
-
-.ft-card__bolt {
-  color: var(--ft-amber);
-  font-size: 15px;
-}
-
-.ft-card__sub {
-  font-size: 0.8125rem;
-  color: #475569;
-  line-height: 1.5;
-  margin: 0;
+  gap: 1rem;
 }
 
 .ft-card__pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: var(--ft-amber-bg);
-  border: 1px solid var(--ft-amber-border);
-  color: #92400e;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 100px;
-  margin-top: 6px;
-  letter-spacing: 0.04em;
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-accent);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
   width: fit-content;
 }
-.ft-card__pill svg { font-size: 11px; }
 
-/* Cuerpo */
-.ft-card__body {
-  padding: 22px 28px 26px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* --------------------------------------------------------------------------
-   Trust grid — 3 columnas
-   -------------------------------------------------------------------------- */
-.ft-trust-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.ft-trust-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  text-align: center;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-.ft-trust-item:hover { background: var(--ft-green-bg); border-color: var(--ft-green-border); }
-
-.ft-trust-item svg { font-size: 18px; }
-.ft-trust-item span {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: #475569;
-  line-height: 1.3;
-}
-
-.ft-trust-item--green svg { color: var(--ft-green); }
-.ft-trust-item--blue  svg { color: var(--ft-blue);  }
-.ft-trust-item--amber svg { color: var(--ft-amber); }
-
-/* --------------------------------------------------------------------------
-   Descripción con acento verde
-   -------------------------------------------------------------------------- */
-.ft-card__desc {
-  font-size: 0.8125rem;
-  color: #64748b;
-  line-height: 1.6;
+.ft-card__name {
+  font-family: var(--ctv-font-display);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.05;
+  color: var(--ctv-brand-deep);
   margin: 0;
-  padding: 12px 14px;
-  background: #f8fafc;
-  border-left: 3px solid var(--ft-green-light);
-  border-radius: 0 10px 10px 0;
+  letter-spacing: -0.01em;
 }
-.ft-card__desc strong { color: #0f172a; }
 
-/* Fine print */
-.ft-card__fine {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.6875rem;
-  color: #94a3b8;
+.ft-card__sub {
+  font-size: 1rem;
+  color: var(--ctv-ink-soft);
+  line-height: 1.55;
   margin: 0;
+  max-width: 44ch;
 }
-.ft-card__fine svg { font-size: 11px; }
 
-/* --------------------------------------------------------------------------
-   CTA
-   -------------------------------------------------------------------------- */
 .ft-cta {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 15px 24px;
-  background: linear-gradient(135deg, var(--ft-green-light) 0%, var(--ft-green) 100%);
+  gap: 0.6rem;
+  padding: 1rem 1.75rem;
+  background: var(--ctv-brand-deep);
+  color: var(--ctv-canvas);
   border: none;
-  border-radius: var(--ft-radius);
-  color: #ffffff;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  position: relative;
-  overflow: hidden;
+  width: fit-content;
+  margin-top: 0.5rem;
+  font-family: var(--ctv-font-body);
+  transition: background 0.25s var(--ctv-ease-out), transform 0.25s var(--ctv-ease-out);
 }
-.ft-cta::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-  transition: left 0.5s ease;
+.ft-cta:hover {
+  background: var(--ctv-brand);
+  transform: translateY(-1px);
 }
-.ft-cta:hover::before { left: 100%; }
-.ft-cta:hover  { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,.45); }
-.ft-cta:active { transform: scale(0.98); }
-.ft-cta svg { font-size: 16px; }
+.ft-cta svg {
+  transition: transform 0.25s var(--ctv-ease-out);
+}
+.ft-cta:hover svg { transform: translateX(3px); }
 
-/* --------------------------------------------------------------------------
-   Responsive
-   -------------------------------------------------------------------------- */
-@media (max-width: 520px) {
-  .ft-section { padding: 40px 0 48px; }
-  .ft-container { gap: 22px; }
-  .ft-card__top { flex-direction: column; gap: 14px; }
-  .ft-card__icon { width: 44px; height: 44px; font-size: 18px; }
-  .ft-trust-grid { grid-template-columns: 1fr 1fr; }
-  .ft-trust-item:last-child { grid-column: 1 / -1; }
-  .ft-title { font-size: 1.375rem; }
+.ft-card__fine {
+  font-size: 0.75rem;
+  color: var(--ctv-ink-mute);
+  letter-spacing: 0.06em;
+  margin: 0.25rem 0 0;
 }
+
+.ft-card__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-top: 1px solid var(--ctv-rule);
+  padding-top: 1.5rem;
+}
+@media (min-width: 900px) {
+  .ft-card__aside {
+    border-top: none;
+    border-left: 1px solid var(--ctv-rule);
+    padding-top: 0;
+    padding-left: clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+.ft-card__aside-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-mute);
+  font-weight: 500;
+}
+
+/* Reset clases antiguas que ya no se usan en el JSX */
+.ft-hidden, .ft-visible, .ft-visible--delay,
+.ft-badge, .ft-payment,
+.ft-card__top, .ft-card__icon, .ft-card__top-text,
+.ft-card__bolt, .ft-card__name + .ft-card__pill,
+.ft-card__body, .ft-trust-grid, .ft-trust-item,
+.ft-card__desc { all: revert; }

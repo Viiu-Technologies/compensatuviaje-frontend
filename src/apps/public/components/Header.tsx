@@ -68,7 +68,7 @@ const Header = () => {
         {/* ── Logo ── */}
         <Link to="/" onClick={closeMenu} className="ctv-header__logo">
           <img
-            src="/images/brand/logo-horizontal-white.svg"
+            src="/images/brand/logo-horizontal.png"
             alt="CompensaTuViaje"
             width="200"
             height="48"

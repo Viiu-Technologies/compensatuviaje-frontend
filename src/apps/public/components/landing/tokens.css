@@ -1,0 +1,41 @@
+/* ==========================================================================
+   tokens.css — Sistema de diseño minimalista para landing pública
+   Paleta extraída del logo: verde brillante + verde bosque sobre canvas crema
+   ========================================================================== */
+
+:root {
+  /* ── Brand ── */
+  --ctv-brand:        #00B140;   /* verde brillante (alas del logo) */
+  --ctv-brand-deep:   #0F3D2E;   /* verde bosque (wordmark)        */
+  --ctv-brand-soft:   #E6F4EC;   /* tintado claro para fondos      */
+  --ctv-accent:       #00873E;   /* hover / estado activo          */
+
+  /* ── Neutrals ── */
+  --ctv-canvas:       #FAFAF7;   /* fondo principal, blanco roto   */
+  --ctv-canvas-2:     #F2F2EC;   /* secciones alternas             */
+  --ctv-ink:          #0F3D2E;   /* texto principal                */
+  --ctv-ink-soft:     #4A5A52;   /* texto secundario               */
+  --ctv-ink-mute:     #8A9690;   /* labels, captions, meta         */
+  --ctv-rule:         rgba(15, 61, 46, 0.10);
+  --ctv-rule-strong:  rgba(15, 61, 46, 0.20);
+
+  /* ── Tipografía ── */
+  --ctv-font-display: 'Instrument Serif', 'Times New Roman', serif;
+  --ctv-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ── Easing & duración (alineado al skill GSAP) ── */
+  --ctv-ease-out:  cubic-bezier(0.22, 1, 0.36, 1);   /* ≈ power3.out */
+  --ctv-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* ≈ power3.inOut */
+
+  /* ── Layout ── */
+  --ctv-page-max:    1200px;
+  --ctv-gutter:      clamp(1rem, 4vw, 2.5rem);
+}
+
+/* Estado inicial para reveals GSAP (evita flash antes del mount) */
+.ctv-reveal { opacity: 0; }
+.ctv-reveal--ready { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ctv-reveal { opacity: 1 !important; }
+}

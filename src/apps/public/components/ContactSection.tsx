@@ -1,17 +1,35 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaEnvelope, FaUser, FaBuilding, FaPaperPlane } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
+import gsap from 'gsap';
+import { HiArrowRight, HiCheck } from 'react-icons/hi';
+import { useGsapReveal } from '../hooks/useGsapReveal';
+import './ContactSection.css';
+
+const SUBJECTS = [
+  'Consulta general',
+  'Compensación corporativa (B2B)',
+  'Certificados NFT',
+  'Soporte técnico',
+  'Alianzas y partnerships',
+  'Otro',
+];
 
 const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    subject: '',
-    message: '',
+    name: '', email: '', company: '', subject: '', message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+
+  const scopeRef = useGsapReveal<HTMLElement>((root) => {
+    gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
+    tl.from('.contact-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0);
+    tl.from('.contact-title .hero-line__inner', {
+      yPercent: 110, stagger: 0.1, duration: 0.9,
+    }, 0.1);
+    tl.from('.contact-lede', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.4);
+    tl.from('.contact-form', { y: 24, autoAlpha: 0, duration: 0.8 }, 0.5);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,234 +37,131 @@ const ContactSection: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to email service
     setSubmitted(true);
   };
 
-  const subjects = [
-    'Consulta general',
-    'Compensación corporativa (B2B)',
-    'Certificados NFT',
-    'Soporte técnico',
-    'Alianzas y partnerships',
-    'Otro',
-  ];
-
   return (
-    <section
-      id="contacto"
-      className="!relative !overflow-hidden !py-20"
-      style={{
-        background: 'linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 30%, #f8fafc 100%)',
-      }}
-    >
-      {/* Decorative */}
-      <div className="!absolute !top-10 !left-0 !w-72 !h-72 !bg-emerald-200 !rounded-full !filter !blur-3xl !opacity-20" />
-      <div className="!absolute !bottom-10 !right-0 !w-72 !h-72 !bg-blue-200 !rounded-full !filter !blur-3xl !opacity-20" />
+    <section ref={scopeRef} id="contacto" className="contact-section">
+      <div className="contact-container">
+        <header className="contact-header">
+          <span className="contact-eyebrow ctv-reveal">
+            <span className="contact-eyebrow__line" />
+            Contacto
+          </span>
 
-      <div className="!relative !z-10" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
-        {/* Header */}
-        <div className="!text-center !max-w-3xl !mx-auto !mb-14">
-          <motion.div
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="!inline-flex !items-center !gap-2 !bg-emerald-50 !text-emerald-600 !px-4 !py-2 !rounded-full !text-sm !font-semibold !mb-6"
-          >
-            <HiSparkles className="!text-emerald-500" />
-            <span>Contacto</span>
-          </motion.div>
-
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="!text-4xl md:!text-5xl !font-bold !text-gray-900 !mb-4"
-          >
-            ¿Listo para{' '}
-            <span
-              style={{
-                background: 'linear-gradient(to right, #22c55e, #16a34a)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              compensar
+          <h2 className="contact-title">
+            <span className="hero-line"><span className="hero-line__inner">¿Listo para</span></span>
+            <span className="hero-line contact-title--accent">
+              <span className="hero-line__inner"><em>compensar</em>?</span>
             </span>
-            ?
-          </motion.h2>
+          </h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="!text-lg !text-gray-500"
-          >
+          <p className="contact-lede ctv-reveal">
             Cuéntanos cómo podemos ayudarte. Respondemos en menos de 24 horas.
-          </motion.p>
-        </div>
+          </p>
+        </header>
 
-        {/* Form Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="!max-w-2xl !mx-auto"
-        >
-          {submitted ? (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="!bg-white !rounded-3xl !shadow-xl !border !border-gray-100 !p-12 !text-center"
+        {submitted ? (
+          <div className="contact-success">
+            <span className="contact-success__icon" aria-hidden="true">
+              <HiCheck />
+            </span>
+            <h3 className="contact-success__title">Mensaje recibido</h3>
+            <p className="contact-success__sub">
+              Nos pondremos en contacto contigo pronto. Revisa tu correo electrónico.
+            </p>
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setFormData({ name: '', email: '', company: '', subject: '', message: '' });
+              }}
+              className="contact-success__again"
             >
-              <div
-                className="!mx-auto !mb-6 !w-16 !h-16 !rounded-full !flex !items-center !justify-center"
-                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}
-              >
-                <FaPaperPlane className="!text-white !text-2xl" />
-              </div>
-              <h3 className="!text-2xl !font-bold !text-gray-900 !mb-3">
-                ¡Mensaje recibido!
-              </h3>
-              <p className="!text-gray-500 !mb-6">
-                Nos pondremos en contacto contigo pronto. Revisa tu correo electrónico.
-              </p>
-              <button
-                onClick={() => {
-                  setSubmitted(false);
-                  setFormData({ name: '', email: '', company: '', subject: '', message: '' });
-                }}
-                className="!px-6 !py-2 !rounded-full !bg-gray-100 !text-gray-700 !font-medium hover:!bg-gray-200 !transition-colors"
-              >
-                Enviar otro mensaje
-              </button>
-            </motion.div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="!bg-white !rounded-3xl !shadow-xl !border !border-gray-100 !p-8 md:!p-10"
-            >
-              <div className="!grid md:!grid-cols-2 !gap-5 !mb-5">
-                {/* Name */}
-                <div>
-                  <label className="!block !text-sm !font-medium !text-gray-700 !mb-1.5">
-                    Nombre completo
-                  </label>
-                  <div className="!relative">
-                    <FaUser className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !text-gray-400 !text-sm" />
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Tu nombre"
-                      className="!w-full !pl-10 !pr-4 !py-3 !rounded-xl !border !border-gray-200 !bg-gray-50 !text-gray-900 !placeholder-gray-400 focus:!border-emerald-400 focus:!ring-2 focus:!ring-emerald-100 focus:!bg-white !outline-none !transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="!block !text-sm !font-medium !text-gray-700 !mb-1.5">
-                    Correo electrónico
-                  </label>
-                  <div className="!relative">
-                    <FaEnvelope className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !text-gray-400 !text-sm" />
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="tu@email.com"
-                      className="!w-full !pl-10 !pr-4 !py-3 !rounded-xl !border !border-gray-200 !bg-gray-50 !text-gray-900 !placeholder-gray-400 focus:!border-emerald-400 focus:!ring-2 focus:!ring-emerald-100 focus:!bg-white !outline-none !transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="!grid md:!grid-cols-2 !gap-5 !mb-5">
-                {/* Company */}
-                <div>
-                  <label className="!block !text-sm !font-medium !text-gray-700 !mb-1.5">
-                    Empresa <span className="!text-gray-400 !font-normal">(opcional)</span>
-                  </label>
-                  <div className="!relative">
-                    <FaBuilding className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !text-gray-400 !text-sm" />
-                    <input
-                      type="text"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      placeholder="Tu empresa"
-                      className="!w-full !pl-10 !pr-4 !py-3 !rounded-xl !border !border-gray-200 !bg-gray-50 !text-gray-900 !placeholder-gray-400 focus:!border-emerald-400 focus:!ring-2 focus:!ring-emerald-100 focus:!bg-white !outline-none !transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Subject */}
-                <div>
-                  <label className="!block !text-sm !font-medium !text-gray-700 !mb-1.5">
-                    Asunto
-                  </label>
-                  <select
-                    name="subject"
-                    required
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="!w-full !px-4 !py-3 !rounded-xl !border !border-gray-200 !bg-gray-50 !text-gray-900 focus:!border-emerald-400 focus:!ring-2 focus:!ring-emerald-100 focus:!bg-white !outline-none !transition-all !appearance-none"
-                  >
-                    <option value="">Selecciona un asunto</option>
-                    {subjects.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Message */}
-              <div className="!mb-6">
-                <label className="!block !text-sm !font-medium !text-gray-700 !mb-1.5">
-                  Mensaje
-                </label>
-                <textarea
-                  name="message"
+              Enviar otro mensaje
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="contact-form">
+            <div className="contact-row">
+              <label className="contact-field">
+                <span className="contact-field__label">Nombre completo</span>
+                <input
+                  type="text"
+                  name="name"
                   required
-                  value={formData.message}
+                  value={formData.name}
                   onChange={handleChange}
-                  rows={4}
-                  placeholder="Cuéntanos en qué podemos ayudarte..."
-                  className="!w-full !px-4 !py-3 !rounded-xl !border !border-gray-200 !bg-gray-50 !text-gray-900 !placeholder-gray-400 focus:!border-emerald-400 focus:!ring-2 focus:!ring-emerald-100 focus:!bg-white !outline-none !transition-all !resize-none"
+                  placeholder="Tu nombre"
+                  className="contact-input"
                 />
-              </div>
+              </label>
+              <label className="contact-field">
+                <span className="contact-field__label">Correo electrónico</span>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="tu@email.com"
+                  className="contact-input"
+                />
+              </label>
+            </div>
 
-              {/* Submit */}
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="!w-full !py-3.5 !rounded-xl !font-semibold !text-white !shadow-lg !flex !items-center !justify-center !gap-2 !transition-all"
-                style={{
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                }}
-              >
-                <FaPaperPlane className="!text-sm" />
+            <div className="contact-row">
+              <label className="contact-field">
+                <span className="contact-field__label">
+                  Empresa <span className="contact-field__opt">(opcional)</span>
+                </span>
+                <input
+                  type="text"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleChange}
+                  placeholder="Tu empresa"
+                  className="contact-input"
+                />
+              </label>
+              <label className="contact-field">
+                <span className="contact-field__label">Asunto</span>
+                <select
+                  name="subject"
+                  required
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="contact-input contact-input--select"
+                >
+                  <option value="">Selecciona un asunto</option>
+                  {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <label className="contact-field">
+              <span className="contact-field__label">Mensaje</span>
+              <textarea
+                name="message"
+                required
+                value={formData.message}
+                onChange={handleChange}
+                rows={5}
+                placeholder="Cuéntanos en qué podemos ayudarte..."
+                className="contact-input contact-input--textarea"
+              />
+            </label>
+
+            <div className="contact-footer">
+              <button type="submit" className="contact-submit">
                 Enviar mensaje
-              </motion.button>
-
-              <p className="!text-center !text-xs !text-gray-400 !mt-4">
-                Al enviar aceptas nuestra política de privacidad. No compartimos tus datos.
+                <HiArrowRight aria-hidden="true" />
+              </button>
+              <p className="contact-fine">
+                Al enviar aceptas nuestra política de privacidad.
               </p>
-            </form>
-          )}
-        </motion.div>
+            </div>
+          </form>
+        )}
       </div>
     </section>
   );
