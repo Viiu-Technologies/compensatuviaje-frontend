@@ -26,7 +26,17 @@ export function useGsapReveal<T extends HTMLElement = HTMLDivElement>(
         },
         (context) => {
           const { motionOK } = context.conditions as { motionOK: boolean };
-          if (!motionOK) return;
+          if (!motionOK) {
+            gsap.set(root.querySelectorAll('.ctv-reveal, .hero-line__inner, [class*="reveal"]'), {
+              autoAlpha: 1,
+              y: 0,
+              yPercent: 0,
+              x: 0,
+              scale: 1,
+              clipPath: 'none',
+            });
+            return;
+          }
           setup(root);
         },
       );

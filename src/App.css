@@ -130,10 +130,7 @@ html {
   image-rendering: crisp-edges;
 }
 
-/* Smooth transitions globales */
-* {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
+
 
 /* Loading States */
 .loading-container {
