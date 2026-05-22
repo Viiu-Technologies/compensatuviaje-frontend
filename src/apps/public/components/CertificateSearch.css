@@ -14,9 +14,84 @@
 
 .cs-container {
   width: 100%;
-  max-width: 920px;
+  max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
+}
+
+/* ── Grid Layout ─────────────────────────────────────── */
+.cs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .cs-grid {
+    grid-template-columns: 1.25fr 0.75fr;
+  }
+}
+
+.cs-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.cs-card-wrapper {
+  position: relative;
+  background: var(--ctv-canvas);
+  border: 1px solid var(--ctv-rule);
+  border-radius: 24px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 1px 0 rgba(15, 61, 46, 0.04),
+              0 30px 60px -40px rgba(15, 61, 46, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 360px;
+  width: 100%;
+  transition: transform 0.5s var(--ctv-ease-out), box-shadow 0.5s var(--ctv-ease-out);
+}
+
+.cs-card-wrapper:hover {
+  transform: translateY(-6px) rotate(1deg);
+  box-shadow: 0 1px 0 rgba(15, 61, 46, 0.04),
+              0 40px 80px -30px rgba(15, 61, 46, 0.25);
+}
+
+.cs-certificate-img {
+  width: 100%;
+  height: auto;
+  max-width: 220px;
+  border-radius: 12px;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+
+.cs-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-brand-deep);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cs-card-badge__icon {
+  font-size: 0.85rem;
 }
 
 /* ── Header ─────────────────────────────────────────── */

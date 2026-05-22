@@ -52,6 +52,7 @@ const Testimonials = () => {
     tl.from('.ts-quote', { y: 20, autoAlpha: 0, duration: 0.8 }, 0.4);
     tl.from('.ts-author > *', { y: 14, autoAlpha: 0, stagger: 0.08, duration: 0.6 }, 0.6);
     tl.from('.ts-nav', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.75);
+    tl.from('.ts-visual', { x: 24, autoAlpha: 0, duration: 0.85 }, 0.4);
   }, []);
 
   const animateSwap = (next: number) => {
@@ -85,57 +86,71 @@ const Testimonials = () => {
   return (
     <section ref={scopeRef} className="ts-section">
       <div className="ts-container">
-        <header className="ts-header">
-          <span className="ts-eyebrow ctv-reveal">
-            <span className="ts-eyebrow__line" />
-            Historias
-          </span>
+        <div className="ts-grid">
+          <div className="ts-content">
+            <header className="ts-header">
+              <span className="ts-eyebrow ctv-reveal">
+                <span className="ts-eyebrow__line" />
+                Historias
+              </span>
 
-          <h2 className="ts-title">
-            <span className="hero-line"><span className="hero-line__inner">Voces que ya</span></span>
-            <span className="hero-line ts-title--accent">
-              <span className="hero-line__inner"><em>compensan</em></span>
-            </span>
-            <span className="hero-line"><span className="hero-line__inner">su impacto.</span></span>
-          </h2>
-        </header>
+              <h2 className="ts-title">
+                <span className="hero-line"><span className="hero-line__inner">Voces que ya</span></span>
+                <span className="hero-line ts-title--accent">
+                  <span className="hero-line__inner"><em>compensan</em></span>
+                </span>
+                <span className="hero-line"><span className="hero-line__inner">su impacto.</span></span>
+              </h2>
+            </header>
 
-        <article className="ts-quote-wrap" aria-live="polite">
-          <blockquote className="ts-quote">
-            <span className="ts-quote__mark" aria-hidden="true">“</span>
-            {current.quote}
-          </blockquote>
+            <article className="ts-quote-wrap" aria-live="polite">
+              <blockquote className="ts-quote">
+                <span className="ts-quote__mark" aria-hidden="true">“</span>
+                {current.quote}
+              </blockquote>
 
-          <footer className="ts-author">
-            <div className="ts-author__avatar" aria-hidden="true">
-              {current.name.split(' ').map((p) => p[0]).slice(0, 2).join('')}
+              <footer className="ts-author">
+                <div className="ts-author__avatar" aria-hidden="true">
+                  {current.name.split(' ').map((p) => p[0]).slice(0, 2).join('')}
+                </div>
+                <div className="ts-author__meta">
+                  <p className="ts-author__name">{current.name}</p>
+                  <p className="ts-author__role">{current.role}</p>
+                  <p className="ts-author__company">{current.company}</p>
+                </div>
+              </footer>
+            </article>
+
+            <div className="ts-nav">
+              <div className="ts-nav__counter">
+                <span className="ts-nav__index">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="ts-nav__sep">/</span>
+                <span className="ts-nav__total">
+                  {String(TESTIMONIALS.length).padStart(2, '0')}
+                </span>
+              </div>
+
+              <div className="ts-nav__btns">
+                <button onClick={prev} className="ts-nav__btn" aria-label="Anterior">
+                  <HiArrowLeft />
+                </button>
+                <button onClick={next} className="ts-nav__btn" aria-label="Siguiente">
+                  <HiArrowRight />
+                </button>
+              </div>
             </div>
-            <div className="ts-author__meta">
-              <p className="ts-author__name">{current.name}</p>
-              <p className="ts-author__role">{current.role}</p>
-              <p className="ts-author__company">{current.company}</p>
-            </div>
-          </footer>
-        </article>
-
-        <div className="ts-nav">
-          <div className="ts-nav__counter">
-            <span className="ts-nav__index">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <span className="ts-nav__sep">/</span>
-            <span className="ts-nav__total">
-              {String(TESTIMONIALS.length).padStart(2, '0')}
-            </span>
           </div>
-
-          <div className="ts-nav__btns">
-            <button onClick={prev} className="ts-nav__btn" aria-label="Anterior">
-              <HiArrowLeft />
-            </button>
-            <button onClick={next} className="ts-nav__btn" aria-label="Siguiente">
-              <HiArrowRight />
-            </button>
+          
+          <div className="ts-visual ctv-reveal">
+            <div className="ts-image-wrapper">
+              <img
+                src="/images/realistic_eco_seedling.png"
+                alt="Eco-friendly seedling growing in forest"
+                className="ts-image"
+              />
+            </div>
           </div>
         </div>
       </div>

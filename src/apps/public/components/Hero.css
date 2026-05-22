@@ -159,6 +159,28 @@
   background: rgba(15, 61, 46, 0.04);
 }
 
+.hero__aside-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.hero-illustration {
+  width: 100%;
+  max-width: clamp(240px, 80%, 320px);
+  height: auto;
+  margin-bottom: -3rem;
+  z-index: 0;
+  border-radius: 20px;
+  transition: transform 0.5s var(--ctv-ease-out);
+}
+
+.hero-illustration:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
 /* ── Stat card ──────────────────────────────────────────────── */
 .hero-stat {
   display: flex;
@@ -170,6 +192,10 @@
   border: 1px solid var(--ctv-rule);
   box-shadow: 0 1px 0 rgba(15, 61, 46, 0.04),
               0 30px 60px -40px rgba(15, 61, 46, 0.25);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
 }
 
 .hero-stat__label {

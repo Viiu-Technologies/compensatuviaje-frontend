@@ -31,8 +31,8 @@ const Hero = () => {
       duration: 0.6,
     }, 0.75);
 
-    // Stat card
-    tl.from('.hero-stat', {
+    // Stat card e ilustración
+    tl.from('.hero__aside-wrapper', {
       y: 28,
       autoAlpha: 0,
       duration: 0.8,
@@ -103,23 +103,30 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* ─────────── Stat card minimal ─────────── */}
-          <aside className="hero-stat ctv-reveal" aria-label="Toneladas compensadas">
-            <span className="hero-stat__label">Toneladas de CO₂ ya neutralizadas</span>
-            <div className="hero-stat__number-row">
-              <span
-                className="hero-stat__number"
-                data-value="15420"
-              >
-                15,420
-              </span>
-              <span className="hero-stat__suffix">t</span>
-            </div>
-            <div className="hero-stat__live">
-              <span className="hero-stat__pulse" />
-              Datos verificados en tiempo real
-            </div>
-          </aside>
+          {/* ─────────── Ilustración y Stat card ─────────── */}
+          <div className="hero__aside-wrapper ctv-reveal">
+            <img
+              src="/images/eco_travel_illustration.png"
+              alt="Viajes eco-sostenibles"
+              className="hero-illustration"
+            />
+            <aside className="hero-stat" aria-label="Toneladas compensadas">
+              <span className="hero-stat__label">Toneladas de CO₂ ya neutralizadas</span>
+              <div className="hero-stat__number-row">
+                <span
+                  className="hero-stat__number"
+                  data-value="15420"
+                >
+                  15,420
+                </span>
+                <span className="hero-stat__suffix">t</span>
+              </div>
+              <div className="hero-stat__live">
+                <span className="hero-stat__pulse" />
+                Datos verificados en tiempo real
+              </div>
+            </aside>
+          </div>
         </div>
 
         {/* Separador */}

@@ -12,9 +12,54 @@
 
 .contact-container {
   width: 100%;
-  max-width: 920px;
+  max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
+}
+
+/* ── Grid Layout ─────────────────────────────────────── */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(3rem, 6vw, 5rem);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .contact-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
+
+.contact-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.contact-image-wrapper {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(15, 61, 46, 0.2);
+  transform: translateZ(0);
+}
+
+.contact-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.8s var(--ctv-ease-out);
+}
+
+.contact-image-wrapper:hover .contact-image {
+  transform: scale(1.04);
 }
 
 .contact-header { margin: 0 0 clamp(2.5rem, 5vw, 4rem); }

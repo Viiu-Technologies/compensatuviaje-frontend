@@ -4,7 +4,7 @@ import { HiPlus, HiMinus, HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import './FAQ.css';
 
-const FAQS = [
+const FAQS_B2C = [
   {
     id: 1,
     q: '¿Cómo calculo mi huella de carbono?',
@@ -42,7 +42,31 @@ const FAQS = [
   },
 ];
 
+const FAQS_B2B = [
+  {
+    id: 101,
+    q: '¿Cómo calculo la huella corporativa?',
+    a: 'Nuestra plataforma B2B permite cargar datos masivos de vuelos de sus colaboradores para obtener un cálculo agregado según el GHG Protocol.',
+  },
+  {
+    id: 102,
+    q: '¿Qué tipo de certificados entregan a empresas?',
+    a: 'Entregamos certificados corporativos auditables y registrados en blockchain, ideales para reportes ESG y memorias de sostenibilidad.',
+  },
+  {
+    id: 103,
+    q: '¿Podemos integrar la API a nuestro sistema de reservas?',
+    a: 'Sí, ofrecemos una API RESTful para que las agencias de viaje y corporaciones integren la calculadora y la compra de bonos directamente en su flujo.',
+  },
+  {
+    id: 104,
+    q: '¿Los proyectos tienen beneficios tributarios?',
+    a: 'Dependiendo de la jurisdicción y la normativa local (como la Ley Marco de Cambio Climático en Chile), la compensación puede ayudar al cumplimiento normativo.',
+  },
+];
+
 const FAQ = () => {
+  const [activeTab, setActiveTab] = useState<'b2c' | 'b2b'>('b2c');
   const [openId, setOpenId] = useState<number | null>(1);
   const panelsRef = useRef<Map<number, HTMLDivElement>>(new Map());
 
@@ -54,9 +78,18 @@ const FAQ = () => {
     tl.from('.faq-title .hero-line__inner', {
       yPercent: 110, stagger: 0.1, duration: 0.9,
     }, 0.1);
+    tl.from('.faq-tabs', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.3);
     tl.from('.faq-item', { y: 14, autoAlpha: 0, stagger: 0.06, duration: 0.5 }, 0.4);
     tl.from('.faq-cta', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.7);
   }, []);
+
+  const currentFaqs = activeTab === 'b2c' ? FAQS_B2C : FAQS_B2B;
+
+  useEffect(() => {
+    if (currentFaqs.length > 0) {
+      setOpenId(currentFaqs[0].id);
+    }
+  }, [activeTab]);
 
   // Animar apertura/cierre del panel con GSAP
   useEffect(() => {
@@ -91,8 +124,23 @@ const FAQ = () => {
           </h2>
         </header>
 
+        <div className="faq-tabs ctv-reveal">
+          <button 
+            className={`faq-tab ${activeTab === 'b2c' ? 'faq-tab--active' : ''}`}
+            onClick={() => setActiveTab('b2c')}
+          >
+            Viajeros
+          </button>
+          <button 
+            className={`faq-tab ${activeTab === 'b2b' ? 'faq-tab--active' : ''}`}
+            onClick={() => setActiveTab('b2b')}
+          >
+            Empresas
+          </button>
+        </div>
+
         <ul className="faq-list">
-          {FAQS.map((f) => {
+          {currentFaqs.map((f) => {
             const isOpen = openId === f.id;
             return (
               <li key={f.id} className={`faq-item ${isOpen ? 'faq-item--open' : ''}`}>

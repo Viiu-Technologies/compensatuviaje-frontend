@@ -7,12 +7,12 @@
   /* ── Brand ── */
   --ctv-brand:        #00B140;   /* verde brillante (alas del logo) */
   --ctv-brand-deep:   #0F3D2E;   /* verde bosque (wordmark)        */
-  --ctv-brand-soft:   #E6F4EC;   /* tintado claro para fondos      */
+  --ctv-brand-soft:   #DCEFE2;   /* verde marca ultra-suave        */
   --ctv-accent:       #00873E;   /* hover / estado activo          */
 
   /* ── Neutrals ── */
-  --ctv-canvas:       #FAFAF7;   /* fondo principal, blanco roto   */
-  --ctv-canvas-2:     #F2F2EC;   /* secciones alternas             */
+  --ctv-canvas:       #F4F7F5;   /* blanco roto con un toque de verde salvia */
+  --ctv-canvas-2:     #E8EFEA;   /* secciones alternas con tono verde suave  */
   --ctv-ink:          #0F3D2E;   /* texto principal                */
   --ctv-ink-soft:     #4A5A52;   /* texto secundario               */
   --ctv-ink-mute:     #8A9690;   /* labels, captions, meta         */

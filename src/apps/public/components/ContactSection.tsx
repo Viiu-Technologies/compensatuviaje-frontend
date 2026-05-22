@@ -29,6 +29,7 @@ const ContactSection: React.FC = () => {
     }, 0.1);
     tl.from('.contact-lede', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.4);
     tl.from('.contact-form', { y: 24, autoAlpha: 0, duration: 0.8 }, 0.5);
+    tl.from('.contact-visual', { x: 24, autoAlpha: 0, duration: 0.85 }, 0.4);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -43,25 +44,27 @@ const ContactSection: React.FC = () => {
   return (
     <section ref={scopeRef} id="contacto" className="contact-section">
       <div className="contact-container">
-        <header className="contact-header">
-          <span className="contact-eyebrow ctv-reveal">
-            <span className="contact-eyebrow__line" />
-            Contacto
-          </span>
+        <div className="contact-grid">
+          <div className="contact-content">
+            <header className="contact-header">
+              <span className="contact-eyebrow ctv-reveal">
+                <span className="contact-eyebrow__line" />
+                Contacto
+              </span>
 
-          <h2 className="contact-title">
-            <span className="hero-line"><span className="hero-line__inner">¿Listo para</span></span>
-            <span className="hero-line contact-title--accent">
-              <span className="hero-line__inner"><em>compensar</em>?</span>
-            </span>
-          </h2>
+              <h2 className="contact-title">
+                <span className="hero-line"><span className="hero-line__inner">¿Listo para</span></span>
+                <span className="hero-line contact-title--accent">
+                  <span className="hero-line__inner"><em>compensar</em>?</span>
+                </span>
+              </h2>
 
-          <p className="contact-lede ctv-reveal">
-            Cuéntanos cómo podemos ayudarte. Respondemos en menos de 24 horas.
-          </p>
-        </header>
+              <p className="contact-lede ctv-reveal">
+                Cuéntanos cómo podemos ayudarte. Respondemos en menos de 24 horas.
+              </p>
+            </header>
 
-        {submitted ? (
+            {submitted ? (
           <div className="contact-success">
             <span className="contact-success__icon" aria-hidden="true">
               <HiCheck />
@@ -161,7 +164,19 @@ const ContactSection: React.FC = () => {
               </p>
             </div>
           </form>
-        )}
+            )}
+          </div>
+          
+          <div className="contact-visual ctv-reveal">
+            <div className="contact-image-wrapper">
+              <img
+                src="/images/realistic_forest_canopy.png"
+                alt="Lush green forest canopy bathed in sunlight"
+                className="contact-image"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

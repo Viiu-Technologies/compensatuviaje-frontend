@@ -141,7 +141,7 @@
               0 40px 80px -50px rgba(15,61,46,0.30);
 }
 @media (min-width: 900px) {
-  .ft-card { grid-template-columns: 1.3fr 1fr; align-items: center; }
+  .ft-card { grid-template-columns: 1.3fr minmax(0, 1fr); align-items: center; }
 }
 
 .ft-card__copy {
@@ -222,6 +222,8 @@
   gap: 1rem;
   border-top: 1px solid var(--ctv-rule);
   padding-top: 1.5rem;
+  min-width: 0;
+  overflow: hidden;
 }
 @media (min-width: 900px) {
   .ft-card__aside {
@@ -229,6 +231,7 @@
     border-left: 1px solid var(--ctv-rule);
     padding-top: 0;
     padding-left: clamp(1.5rem, 3vw, 2.5rem);
+    min-width: 0;
   }
 }
 
