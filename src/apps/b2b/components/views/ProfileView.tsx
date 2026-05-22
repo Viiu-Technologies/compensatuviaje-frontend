@@ -71,7 +71,7 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
             name: apiProfile.name || user?.name || 'Usuario',
             email: apiProfile.email || user?.email || '',
             phone: apiProfile.phone || '+56 9 0000 0000',
-            company: apiProfile.company?.razonSocial || 'Sin empresa',
+            company: apiProfile.company?.name || apiProfile.company?.razonSocial || 'Sin empresa',
             position: 'Gerente de Sostenibilidad', // No está en API, demo
             location: 'Santiago, Chile', // No está en API, demo
             joinDate: new Date(apiProfile.createdAt).toLocaleDateString('es-CL', { 
