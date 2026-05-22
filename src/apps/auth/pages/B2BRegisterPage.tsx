@@ -9,6 +9,7 @@ interface FormData {
   nombreComercial: string;
   giroSii: string;
   tamanoEmpresa: 'micro' | 'pequena' | 'mediana' | 'grande' | '';
+  companyType: 'TRAVEL_AGENCY' | 'TRANSPORT' | 'LOGISTICS' | 'CORPORATE' | 'EVENTS' | 'OTHER' | '';
   direccion: string;
   phone: string;
   adminName: string;
@@ -25,6 +26,7 @@ const B2BRegisterPage: React.FC = () => {
     nombreComercial: '',
     giroSii: '',
     tamanoEmpresa: '',
+    companyType: '',
     direccion: '',
     phone: '',
     adminName: '',
@@ -73,6 +75,7 @@ const B2BRegisterPage: React.FC = () => {
           nombreComercial: formData.nombreComercial,
           giroSii: formData.giroSii,
           tamanoEmpresa: formData.tamanoEmpresa,
+          companyType: formData.companyType || undefined,
           direccion: formData.direccion,
           phone: formData.phone,
           adminUser: {
@@ -226,6 +229,25 @@ const B2BRegisterPage: React.FC = () => {
                     <option value="pequena">Pequeña</option>
                     <option value="mediana">Mediana</option>
                     <option value="grande">Grande</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Empresa
+                  </label>
+                  <select
+                    name="companyType"
+                    value={formData.companyType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="TRAVEL_AGENCY">Agencia de Viajes</option>
+                    <option value="TRANSPORT">Transporte</option>
+                    <option value="LOGISTICS">Logística</option>
+                    <option value="CORPORATE">Corporativo</option>
+                    <option value="EVENTS">Eventos</option>
+                    <option value="OTHER">Otro</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">

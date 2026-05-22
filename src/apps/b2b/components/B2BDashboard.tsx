@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { useTheme } from '../../../shared/context/ThemeContext';
+import type { CompanyType } from '../../../types/auth.types';
 import {
   Trees,
   User,
@@ -30,33 +31,56 @@ import OrdersView from './views/OrdersView';
 import ManifestView from './views/ManifestView';
 import CertificatesView from './views/CertificatesView';
 
-// Navegación agrupada por secciones
-const NAV_SECTIONS = [
-  {
-    label: 'MI EMPRESA',
-    items: [
-      { id: 'dashboard', label: 'Tu Perfil', icon: User },
-      { id: 'panel', label: 'Panel Principal', icon: BarChart3 },
-      { id: 'documentos', label: 'Documentos', icon: FileText },
-    ],
-  },
-  {
-    label: 'COMPENSACIONES',
-    items: [
-      { id: 'proyectos', label: 'Proyectos ESG', icon: Trees },
-      { id: 'ordenes', label: 'Mis Órdenes', icon: Package },
-      { id: 'certificados', label: 'Bóveda de Certificados', icon: ShieldCheck },
-      { id: 'manifiestos', label: 'Manifiestos de Vuelos', icon: FileUp },
-    ],
-  },
-  {
-    label: 'HERRAMIENTAS',
-    items: [
-      { id: 'calculadora', label: 'Calculadora CO₂', icon: Calculator },
-      { id: 'asistente', label: 'Asistente IA', icon: Bot },
-    ],
-  },
-];
+// ─── Nav items base ────────────────────────────────────────────────────────────
+const ITEMS = {
+  perfil:       { id: 'dashboard',    label: 'Tu Perfil',               icon: User },
+  panel:        { id: 'panel',        label: 'Panel Principal',          icon: BarChart3 },
+  documentos:   { id: 'documentos',   label: 'Documentos',               icon: FileText },
+  proyectos:    { id: 'proyectos',    label: 'Proyectos ESG',            icon: Trees },
+  ordenes:      { id: 'ordenes',      label: 'Mis Órdenes',              icon: Package },
+  certificados: { id: 'certificados', label: 'Bóveda de Certificados',   icon: ShieldCheck },
+  manifiestos:  { id: 'manifiestos',  label: 'Manifiestos de Vuelos',    icon: FileUp },
+  calculadora:  { id: 'calculadora',  label: 'Calculadora CO₂',          icon: Calculator },
+  asistente:    { id: 'asistente',    label: 'Asistente IA',             icon: Bot },
+} as const;
+
+// Navegación base para todos los tipos
+const BASE_EMPRESA = [ITEMS.perfil, ITEMS.panel, ITEMS.documentos];
+const BASE_TOOLS   = [ITEMS.calculadora, ITEMS.asistente];
+
+// Configuración de secciones por tipo de empresa
+const DASHBOARD_CONFIGS: Record<CompanyType, { label: string; items: typeof ITEMS[keyof typeof ITEMS][] }[]> = {
+  TRAVEL_AGENCY: [
+    { label: 'MI EMPRESA',     items: BASE_EMPRESA },
+    { label: 'VUELOS',         items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados, ITEMS.manifiestos] },
+    { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
+  ],
+  TRANSPORT: [
+    { label: 'MI EMPRESA',     items: BASE_EMPRESA },
+    { label: 'RUTAS',          items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados] },
+    { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
+  ],
+  LOGISTICS: [
+    { label: 'MI EMPRESA',     items: BASE_EMPRESA },
+    { label: 'LOGÍSTICA',      items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados, ITEMS.manifiestos] },
+    { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
+  ],
+  CORPORATE: [
+    { label: 'MI EMPRESA',     items: BASE_EMPRESA },
+    { label: 'COMPENSACIONES', items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados] },
+    { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
+  ],
+  EVENTS: [
+    { label: 'MI EMPRESA',     items: BASE_EMPRESA },
+    { label: 'EVENTOS',        items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados, ITEMS.manifiestos] },
+    { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
+  ],
+  OTHER: [
+    { label: 'MI EMPRESA',     items: BASE_EMPRESA },
+    { label: 'COMPENSACIONES', items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados] },
+    { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
+  ],
+};
 
 // Ítem inferior (fuera de secciones)
 const BOTTOM_ITEM = { id: 'cuenta', label: 'Configuración', icon: Settings };
@@ -81,7 +105,8 @@ const SidebarContent: React.FC<{
   onNav: (id: string) => void;
   user: any;
   onLogout: () => void;
-}> = ({ activeTab, onNav, user, onLogout }) => (
+  navSections: { label: string; items: { id: string; label: string; icon: React.ElementType }[] }[];
+}> = ({ activeTab, onNav, user, onLogout, navSections }) => (
   <>
     {/* Logo */}
     <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10 !flex-shrink-0">
@@ -107,7 +132,7 @@ const SidebarContent: React.FC<{
 
     {/* Secciones de navegación */}
     <nav className="!flex-1 !overflow-y-auto !px-3 !py-4 !space-y-5">
-      {NAV_SECTIONS.map((section) => (
+      {navSections.map((section) => (
         <div key={section.label}>
           <p className="!text-[10px] !font-bold !tracking-widest !text-gray-500 !uppercase !px-3 !mb-2">
             {section.label}
@@ -164,6 +189,8 @@ const B2BDashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isDark = resolvedTheme === 'dark';
 
+  const navSections = DASHBOARD_CONFIGS[user?.companyType ?? 'OTHER'];
+
   const handleNav = (id: string) => {
     setActiveTab(id);
     setSidebarOpen(false);
@@ -197,7 +224,7 @@ const B2BDashboard: React.FC = () => {
 
       {/* ── SIDEBAR DESKTOP ── */}
       <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen !bg-gradient-to-b !from-[#0d1117] !via-gray-900 !to-[#0d1117] !shadow-2xl !fixed !left-0 !top-0 !z-50 !overflow-hidden">
-        <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} />
+        <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} navSections={navSections} />
       </aside>
 
       {/* ── SIDEBAR MOBILE (DRAWER) ── */}
@@ -210,7 +237,7 @@ const B2BDashboard: React.FC = () => {
             className="!fixed !left-0 !top-0 !h-full !w-64 !bg-gradient-to-b !from-[#0d1117] !via-gray-900 !to-[#0d1117] !shadow-2xl !flex !flex-col !z-[70]"
             onClick={(e) => e.stopPropagation()}
           >
-            <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} />
+            <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} navSections={navSections} />
             <button
               className="!absolute !top-4 !right-4 !text-white/50 hover:!text-white !border-0 !bg-transparent !p-1"
               onClick={() => setSidebarOpen(false)}

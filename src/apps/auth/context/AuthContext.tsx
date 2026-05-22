@@ -33,6 +33,7 @@ const mapUserInfoToAuthUser = (userInfo: LoginResponse['user_info']): AuthUser =
     name: userInfo.name,
     companyId: userInfo.company_id,
     companyName: userInfo.company_name,
+    companyType: userInfo.company_type,
     role: userInfo.role,
     permissions: userInfo.permissions,
     isAdmin: userInfo.is_admin,
