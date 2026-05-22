@@ -98,6 +98,13 @@ function getConsumptionPercent(remaining?: number | null, approved?: number | nu
   return Math.min(100, Math.round((consumed / approved) * 100));
 }
 
+function getStockPercent(remaining?: number | null, approved?: number | null): number {
+  if (!approved || approved <= 0) return 0;
+  if (remaining == null) return 0;
+
+  return Math.min(100, Math.max(0, Math.round((remaining / approved) * 100)));
+}
+
 // ── Sub-components ────────────────────────────────────────────────
 
 function InfoCard({ title, icon: Icon, children, className = '' }: {
