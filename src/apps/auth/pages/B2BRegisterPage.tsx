@@ -25,7 +25,7 @@ interface FormData {
 }
 
 const COMPANY_TYPES: { id: CompanyType; label: string; desc: string; icon: React.FC<any> }[] = [
-  { id: 'TRAVEL_AGENCY', label: 'Agencia de Viajes', desc: 'Gestión de viajes corporativos y turismo', icon: Plane },
+  { id: 'TRAVEL_AGENCY', label: 'Aerolíneas', desc: 'Gestión de viajes corporativos y turismo', icon: Plane },
   { id: 'TRANSPORT',     label: 'Transporte',         desc: 'Empresa de transporte de pasajeros o carga', icon: Truck },
   { id: 'LOGISTICS',     label: 'Logística',           desc: 'Cadena de suministro y distribución', icon: Package },
   { id: 'CORPORATE',     label: 'Corporativo',         desc: 'Empresa con viajes de negocios frecuentes', icon: Briefcase },
@@ -56,11 +56,13 @@ const B2BRegisterPage: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
+    if (fieldErrors[e.target.name]) setFieldErrors(prev => ({ ...prev, [e.target.name]: '' }));
   };
 
   const canProceedStep1 = formData.companyType !== '';
@@ -99,7 +101,35 @@ const B2BRegisterPage: React.FC = () => {
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || data.message || 'Error al registrar empresa');
+      if (!response.ok) {
+        // Si el backend devuelve errores de campo específicos, mostrarlos
+        if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+          const fieldMap: Record<string, string> = {};
+          const fieldLabels: Record<string, string> = {
+            phone: 'Teléfono', rut: 'RUT', razonSocial: 'Razón Social',
+            email: 'Email', adminUser: 'Cuenta admin', nombreComercial: 'Nombre Comercial',
+          };
+          const messages: string[] = [];
+          for (const e of data.errors) {
+            if (e.field) {
+              fieldMap[e.field] = e.message || e.msg || 'Valor inválido';
+              const label = fieldLabels[e.field] || e.field;
+              messages.push(`${label}: ${fieldMap[e.field]}`);
+            } else {
+              messages.push(e.message || e.msg || 'Error de validación');
+            }
+          }
+          setFieldErrors(fieldMap);
+          setError(messages.join(' · '));
+          // Si el error es en datos de empresa, volver al paso 2
+          const step2Fields = ['phone', 'rut', 'razonSocial', 'nombreComercial', 'giroSii', 'direccion', 'tamanoEmpresa'];
+          const hasStep2Error = data.errors.some((e: any) => step2Fields.includes(e.field));
+          if (hasStep2Error) setStep(2);
+        } else {
+          throw new Error(data.error || data.message || 'Error al registrar empresa');
+        }
+        return;
+      }
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Error al registrar empresa');
@@ -295,17 +325,20 @@ const B2BRegisterPage: React.FC = () => {
                     <div className="!grid sm:!grid-cols-2 !gap-5">
                       <div>
                         <label className={labelCls}>Razón Social <span className="!text-red-400">*</span></label>
-                        <input type="text" name="razonSocial" value={formData.razonSocial} onChange={handleChange} className={inputCls} placeholder="Ej: LATAM Airlines Group S.A." />
+                        <input type="text" name="razonSocial" value={formData.razonSocial} onChange={handleChange} className={`${inputCls} ${fieldErrors.razonSocial ? '!border-red-500' : ''}`} placeholder="Ej: LATAM Airlines Group S.A." />
+                        {fieldErrors.razonSocial && <p className="!text-xs !text-red-400 !mt-1 !ml-2">{fieldErrors.razonSocial}</p>}
                       </div>
                       <div>
                         <label className={labelCls}>RUT <span className="!text-red-400">*</span></label>
-                        <input type="text" name="rut" value={formData.rut} onChange={handleChange} className={inputCls} placeholder="XX.XXX.XXX-X" />
+                        <input type="text" name="rut" value={formData.rut} onChange={handleChange} className={`${inputCls} ${fieldErrors.rut ? '!border-red-500' : ''}`} placeholder="Ej: 76.123.456-7" />
+                        {fieldErrors.rut && <p className="!text-xs !text-red-400 !mt-1 !ml-2">{fieldErrors.rut}</p>}
                       </div>
                     </div>
                     <div className="!grid sm:!grid-cols-2 !gap-5">
                       <div>
                         <label className={labelCls}>Nombre Comercial</label>
-                        <input type="text" name="nombreComercial" value={formData.nombreComercial} onChange={handleChange} className={inputCls} placeholder="Ej: LATAM" />
+                        <input type="text" name="nombreComercial" value={formData.nombreComercial} onChange={handleChange} className={`${inputCls} ${fieldErrors.nombreComercial ? '!border-red-500' : ''}`} placeholder="Ej: LATAM" />
+                        {fieldErrors.nombreComercial && <p className="!text-xs !text-red-400 !mt-1 !ml-2">{fieldErrors.nombreComercial}</p>}
                       </div>
                       <div className="!relative">
                         <label className={labelCls}>Tamaño de empresa <span className="!text-red-400">*</span></label>
@@ -326,11 +359,15 @@ const B2BRegisterPage: React.FC = () => {
                     <div className="!grid sm:!grid-cols-2 !gap-5">
                       <div>
                         <label className={labelCls}>Dirección</label>
-                        <input type="text" name="direccion" value={formData.direccion} onChange={handleChange} className={inputCls} placeholder="Dirección de la empresa" />
+                        <input type="text" name="direccion" value={formData.direccion} onChange={handleChange} className={inputCls} placeholder="Ej: Av. Providencia 1234, Santiago" />
                       </div>
                       <div>
-                        <label className={labelCls}>Teléfono</label>
-                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputCls} placeholder="+56 9 XXXX XXXX" />
+                        <label className={labelCls}>Teléfono <span className="!text-emerald-500/60 !font-normal !text-xs">(+56 9 XXXXXXXX)</span></label>
+                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={`${inputCls} ${fieldErrors.phone ? '!border-red-500' : ''}`} placeholder="+56912345678" />
+                        {fieldErrors.phone
+                          ? <p className="!text-xs !text-red-400 !mt-1 !ml-2">{fieldErrors.phone}</p>
+                          : <p className="!text-xs !text-emerald-500/60 !mt-1 !ml-2">Formato: +56 seguido de 9 dígitos</p>
+                        }
                       </div>
                     </div>
                   </div>
