@@ -107,17 +107,19 @@ const B2BRegisterPage: React.FC = () => {
           const fieldMap: Record<string, string> = {};
           const fieldLabels: Record<string, string> = {
             phone: 'Teléfono', rut: 'RUT', razonSocial: 'Razón Social',
-            email: 'Email', adminUser: 'Cuenta admin', nombreComercial: 'Nombre Comercial',
+            email: 'Email', password: 'Contraseña', nombreComercial: 'Nombre Comercial',
+            tamanoEmpresa: 'Tamaño de empresa', giroSii: 'Giro SII', direccion: 'Dirección',
+            name: 'Nombre',
           };
           const messages: string[] = [];
           for (const e of data.errors) {
-            if (e.field) {
-              fieldMap[e.field] = e.message || e.msg || 'Valor inválido';
-              const label = fieldLabels[e.field] || e.field;
-              messages.push(`${label}: ${fieldMap[e.field]}`);
-            } else {
-              messages.push(e.message || e.msg || 'Error de validación');
-            }
+            // Normalizar el campo: quitar prefijos como "adminUser."
+            const rawField = (e.field || '').replace(/^adminUser\./, '');
+            const label = fieldLabels[rawField] || fieldLabels[e.field] || null;
+            const msg = e.message || e.msg || 'Valor inválido';
+            messages.push(label ? `${label}: ${msg}` : msg);
+            if (rawField) fieldMap[rawField] = msg;
+            if (e.field) fieldMap[e.field] = msg;
           }
           setFieldErrors(fieldMap);
           setError(messages.join(' · '));
