@@ -53,6 +53,40 @@
   color: var(--ctv-brand);
 }
 
+/* ── Tabs ───────────────────────────────────────────── */
+.faq-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 0 clamp(2rem, 4vw, 3rem);
+  background: var(--ctv-canvas-2);
+  padding: 0.35rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.faq-tab {
+  border: none;
+  background: transparent;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-family: var(--ctv-font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
+  cursor: pointer;
+  transition: all 0.25s var(--ctv-ease-out);
+}
+
+.faq-tab:hover {
+  color: var(--ctv-brand-deep);
+}
+
+.faq-tab--active {
+  background: var(--ctv-brand-deep);
+  color: var(--ctv-canvas) !important;
+  box-shadow: 0 4px 12px -4px rgba(15, 61, 46, 0.2);
+}
+
 /* ── Lista ──────────────────────────────────────────── */
 .faq-list {
   list-style: none;
