@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../auth/context/AuthContext';
 import { useTheme } from '../../../../shared/context/ThemeContext';
+import api from '../../../../shared/services/api';
 import { getUserProfile, updateUserProfile, type UserProfile as ApiUserProfile } from '../../services/profileService';
 
 interface LocalUserProfile {
@@ -70,13 +71,22 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
       setIsLoading(true);
       try {
         const extras = getLocalExtras();
-        const apiProfile = await getUserProfile();
+        const [apiProfile, companyRes] = await Promise.all([
+          getUserProfile(),
+          api.get('/b2b/company').catch(() => null) as Promise<any>,
+        ]);
+        const companyName =
+          companyRes?.data?.nombreComercial ||
+          companyRes?.data?.razonSocial ||
+          apiProfile?.company?.name ||
+          apiProfile?.company?.razonSocial ||
+          '';
         if (apiProfile) {
           const mappedProfile: LocalUserProfile = {
             name: apiProfile.name || user?.name || '',
             email: apiProfile.email || user?.email || '',
             phone: extras.phone || '',
-            company: apiProfile.company?.name || apiProfile.company?.razonSocial || 'Sin empresa',
+            company: companyName || 'Sin empresa',
             position: extras.position || '',
             location: extras.location || '',
             joinDate: apiProfile.createdAt
@@ -90,7 +100,7 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
             name: user?.name || '',
             email: user?.email || '',
             phone: extras.phone || '',
-            company: 'Sin empresa',
+            company: companyName || 'Sin empresa',
             position: extras.position || '',
             location: extras.location || '',
             joinDate: ''
