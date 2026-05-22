@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Building2, Mail, Lock, User, Phone, MapPin, FileText,
+  Building2, Mail, Lock, User,
   ArrowLeft, ArrowRight, Loader2, CheckCircle, AlertCircle,
   Plane, Truck, Package, Briefcase, Star, Globe, Check
 } from 'lucide-react';
@@ -33,10 +33,9 @@ const COMPANY_TYPES: { id: CompanyType; label: string; desc: string; icon: React
   { id: 'OTHER',         label: 'Otro',                desc: 'Otro tipo de organización', icon: Globe },
 ];
 
-const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-const inputCls = 'w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-900 bg-white placeholder-gray-400';
-const labelCls = 'block text-sm font-medium text-gray-700 mb-1.5';
+const API_URL = (import.meta as any).env?.VITE_APP_API_URL
+  || (import.meta as any).env?.VITE_API_URL
+  || 'http://localhost:3001/api';
 
 const B2BRegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,7 +63,6 @@ const B2BRegisterPage: React.FC = () => {
     setError('');
   };
 
-  // ── Step validation ────────────────────────────────────────────────────────
   const canProceedStep1 = formData.companyType !== '';
   const canProceedStep2 = formData.razonSocial.trim() !== '' && formData.rut.trim() !== '' && formData.tamanoEmpresa !== '';
 
@@ -74,20 +72,11 @@ const B2BRegisterPage: React.FC = () => {
     setStep(3);
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (formData.adminPassword !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-    if (formData.adminPassword.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres');
-      return;
-    }
-
+    if (formData.adminPassword !== formData.confirmPassword) { setError('Las contraseñas no coinciden'); return; }
+    if (formData.adminPassword.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return; }
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/public/companies/register`, {
@@ -109,10 +98,8 @@ const B2BRegisterPage: React.FC = () => {
           },
         }),
       });
-
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || data.message || 'Error al registrar empresa');
-
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Error al registrar empresa');
@@ -121,292 +108,276 @@ const B2BRegisterPage: React.FC = () => {
     }
   };
 
-  // ── Success screen ─────────────────────────────────────────────────────────
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' as const } },
+  };
+  const formVariants = {
+    hidden: { x: 50, opacity: 0 },
+    visible: { x: 0, opacity: 1, transition: { duration: 0.6, delay: 0.2, ease: 'easeOut' as const } },
+  };
+  const treeVariants = {
+    hidden: { y: 100, opacity: 0 },
+    visible: (custom: number) => ({
+      y: 0, opacity: 1,
+      transition: { duration: 0.8, delay: custom * 0.2, type: 'spring' as const, bounce: 0.4 },
+    }),
+  };
+
+  const inputCls = '!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none hover:!bg-emerald-800/70';
+  const labelCls = '!text-sm !font-medium !text-emerald-100 !ml-1 !block !mb-1';
+  const selectCls = '!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none hover:!bg-emerald-800/70 appearance-none';
+
+  const steps = ['Tipo de empresa', 'Datos de empresa', 'Cuenta admin'];
+
   if (success) {
     const typeLabel = COMPANY_TYPES.find((t) => t.id === formData.companyType)?.label || '';
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-          className="bg-white rounded-3xl shadow-2xl p-10 text-center max-w-lg w-full"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
-            className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30"
-          >
-            <CheckCircle className="w-12 h-12 text-white" />
-          </motion.div>
-
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Cuenta creada con éxito!</h2>
-          <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-            Tu empresa <span className="font-semibold text-gray-800">{formData.razonSocial}</span> ha sido registrada como{' '}
-            <span className="font-semibold text-green-600">{typeLabel}</span>.
-            <br /><br />
-            Hemos recibido tus datos y un administrador revisará tu cuenta. Puedes iniciar sesión ahora.
-          </p>
-
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-left bg-green-50 rounded-xl p-3 text-sm">
-              <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                <Check className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-gray-700">Empresa registrada: <strong>{formData.razonSocial}</strong></span>
-            </div>
-            <div className="flex items-center gap-3 text-left bg-green-50 rounded-xl p-3 text-sm">
-              <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                <Check className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-gray-700">Cuenta admin: <strong>{formData.adminEmail}</strong></span>
-            </div>
+      <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
+        <motion.div className="!hidden lg:!flex !w-[45%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden" initial="hidden" animate="visible" variants={containerVariants}>
+          <motion.div className="!absolute !top-20 !right-20 !w-40 !h-40 !rounded-full !bg-yellow-100/50 !blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 8, repeat: Infinity }} />
+          <div className="!relative !z-10 !max-w-lg !w-full !text-center">
+            <motion.h2 className="!text-5xl !font-extrabold !text-emerald-900 !mb-6 !tracking-tight" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>¡Bienvenido!</motion.h2>
+            <motion.p className="!text-xl !text-emerald-800/80 !mb-8" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>Tu empresa ya forma parte de la red de compensación carbono.</motion.p>
           </div>
-
-          <button
-            onClick={() => navigate('/auth/login')}
-            className="mt-8 w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3.5 px-6 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all border-0"
-          >
-            Ir al inicio de sesión
-          </button>
+          <div className="!absolute !bottom-0 !left-0 !right-0 !h-1/3 !z-0 !pointer-events-none">
+            <div className="!absolute !bottom-0 !left-0 !w-full !h-full !bg-emerald-400/20 !rounded-tr-[100%] !transform !translate-y-10" />
+            <motion.div custom={1} variants={treeVariants} initial="hidden" animate="visible" className="!absolute !bottom-0 !left-[15%] !text-emerald-800/20"><svg width="120" height="200" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg></motion.div>
+            <motion.div custom={2} variants={treeVariants} initial="hidden" animate="visible" className="!absolute !bottom-0 !right-[20%] !text-emerald-700/30 !transform !scale-110"><svg width="140" height="220" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg></motion.div>
+          </div>
         </motion.div>
+        <div className="!w-full lg:!w-[55%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-4 lg:!p-12">
+          <div className="!hidden lg:!block !absolute !top-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden !z-20"><svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b"><path d="M100 0 C 20 20 20 80 100 100 V 0 Z" /></svg></div>
+          <motion.div className="!w-full !max-w-lg !relative !z-30 !text-center" initial="hidden" animate="visible" variants={formVariants}>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 300 }} className="!w-24 !h-24 !bg-gradient-to-br !from-emerald-400 !to-emerald-600 !rounded-full !flex !items-center !justify-center !mx-auto !mb-6 !shadow-lg">
+              <CheckCircle className="!w-12 !h-12 !text-white" />
+            </motion.div>
+            <h2 className="!text-3xl !font-bold !text-white !mb-3">¡Cuenta creada con éxito!</h2>
+            <p className="!text-emerald-200/80 !mb-8 !leading-relaxed">
+              Tu empresa <span className="!font-semibold !text-white">{formData.razonSocial}</span> ha sido registrada como{' '}
+              <span className="!font-semibold !text-emerald-300">{typeLabel}</span>.
+              <br /><br />
+              Hemos recibido tus datos. Un administrador revisará tu cuenta pronto.
+            </p>
+            <div className="!space-y-3 !mb-8 !text-left">
+              {[{ label: 'Empresa registrada', value: formData.razonSocial }, { label: 'Cuenta admin', value: formData.adminEmail }].map(({ label, value }) => (
+                <div key={label} className="!flex !items-center !gap-3 !bg-emerald-800/50 !rounded-2xl !p-4 !text-sm">
+                  <div className="!w-7 !h-7 !rounded-full !bg-emerald-500 !flex !items-center !justify-center !flex-shrink-0"><Check className="!w-4 !h-4 !text-white" /></div>
+                  <span className="!text-emerald-200">{label}: <strong className="!text-white">{value}</strong></span>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => navigate('/auth/login')} className="!w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
+              Ir al inicio de sesión <ArrowRight className="!w-5 !h-5" />
+            </button>
+          </motion.div>
+        </div>
       </div>
     );
   }
 
-  // ── Progress indicator ─────────────────────────────────────────────────────
-  const steps = ['Tipo de empresa', 'Datos de empresa', 'Cuenta admin'];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
 
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => step === 1 ? navigate('/auth/register') : setStep(step - 1)}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors mb-6 text-sm border-0 bg-transparent cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
+      {/* LEFT PANEL */}
+      <motion.div className="!hidden lg:!flex !w-[45%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden" initial="hidden" animate="visible" variants={containerVariants}>
+        <motion.div className="!absolute !top-20 !right-20 !w-40 !h-40 !rounded-full !bg-yellow-100/50 !blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 8, repeat: Infinity }} />
+        <div className="!relative !z-10 !max-w-lg !w-full !text-center">
+          <motion.h2 className="!text-5xl !font-extrabold !text-emerald-900 !mb-6 !tracking-tight" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>Registro Empresarial</motion.h2>
+          <motion.p className="!text-xl !text-emerald-800/80 !mb-8" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>Crea tu cuenta corporativa y comienza a compensar las emisiones de tu empresa.</motion.p>
+          <motion.div className="!space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+            {steps.map((label, i) => {
+              const n = i + 1;
+              const done = step > n;
+              const active = step === n;
+              return (
+                <div key={n} className={`!flex !items-center !gap-3 !rounded-2xl !p-3 !transition-all ${active ? '!bg-emerald-700/30' : '!bg-transparent'}`}>
+                  <div className={`!w-8 !h-8 !rounded-full !flex !items-center !justify-center !text-sm !font-bold !flex-shrink-0 !transition-all ${done ? '!bg-emerald-600 !text-white' : active ? '!bg-emerald-800 !text-white !shadow-md' : '!bg-emerald-200 !text-emerald-600'}`}>
+                    {done ? <Check className="!w-4 !h-4" /> : n}
+                  </div>
+                  <span className={`!text-sm !font-medium ${active ? '!text-emerald-900' : done ? '!text-emerald-700' : '!text-emerald-600/60'}`}>{label}</span>
+                </div>
+              );
+            })}
+          </motion.div>
+        </div>
+        <div className="!absolute !bottom-0 !left-0 !right-0 !h-1/3 !z-0 !pointer-events-none">
+          <div className="!absolute !bottom-0 !left-0 !w-full !h-full !bg-emerald-400/20 !rounded-tr-[100%] !transform !translate-y-10" />
+          <motion.div custom={1} variants={treeVariants} initial="hidden" animate="visible" className="!absolute !bottom-0 !left-[15%] !text-emerald-800/20"><svg width="120" height="200" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg></motion.div>
+          <motion.div custom={2} variants={treeVariants} initial="hidden" animate="visible" className="!absolute !bottom-0 !right-[20%] !text-emerald-700/30 !transform !scale-110"><svg width="140" height="220" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg></motion.div>
+        </div>
+      </motion.div>
+
+      {/* RIGHT PANEL */}
+      <div className="!w-full lg:!w-[55%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-4 lg:!p-12 !overflow-y-auto">
+        <div className="!hidden lg:!block !absolute !top-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden !z-20"><svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b"><path d="M100 0 C 20 20 20 80 100 100 V 0 Z" /></svg></div>
+
+        <motion.div className="!w-full !max-w-2xl !relative !z-30 !py-8" initial="hidden" animate="visible" variants={formVariants}>
+
+          <button onClick={() => step === 1 ? navigate('/register') : setStep(step - 1)} className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6 !bg-transparent !border-0 !cursor-pointer">
+            <ArrowLeft className="!w-4 !h-4" />
             {step === 1 ? 'Volver a selección de cuenta' : 'Paso anterior'}
           </button>
 
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-11 h-11 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md shadow-green-500/30">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Registro Empresarial</h1>
-              <p className="text-sm text-gray-500">Crea tu cuenta corporativa de compensación</p>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="flex items-center gap-2">
+          {/* Mobile progress bar */}
+          <div className="!flex lg:!hidden !items-center !gap-2 !mb-6">
             {steps.map((label, i) => {
               const n = i + 1;
               const active = step === n;
               const done = step > n;
               return (
                 <React.Fragment key={n}>
-                  <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                      done  ? 'bg-green-500 text-white'
-                      : active ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-500/30'
-                      : 'bg-gray-200 text-gray-400'
-                    }`}>
-                      {done ? <Check className="w-4 h-4" /> : n}
+                  <div className="!flex !flex-col !items-center !gap-1 !flex-shrink-0">
+                    <div className={`!w-8 !h-8 !rounded-full !flex !items-center !justify-center !text-sm !font-bold !transition-all ${done ? '!bg-emerald-500 !text-white' : active ? '!bg-emerald-400 !text-emerald-900' : '!bg-emerald-800 !text-emerald-500'}`}>
+                      {done ? <Check className="!w-4 !h-4" /> : n}
                     </div>
-                    <span className={`text-xs font-medium hidden sm:block ${active ? 'text-green-600' : done ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {label}
-                    </span>
+                    <span className={`!text-xs !font-medium ${active ? '!text-emerald-300' : done ? '!text-emerald-500' : '!text-emerald-700'}`}>{label}</span>
                   </div>
-                  {i < steps.length - 1 && (
-                    <div className={`flex-1 h-1 rounded-full transition-all ${step > n ? 'bg-green-500' : 'bg-gray-200'}`} />
-                  )}
+                  {i < steps.length - 1 && <div className={`!flex-1 !h-1 !rounded-full !transition-all ${step > n ? '!bg-emerald-500' : '!bg-emerald-800'}`} />}
                 </React.Fragment>
               );
             })}
           </div>
-        </div>
 
-        {/* Card */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white rounded-2xl shadow-xl p-8"
-          >
-            {/* Error */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 mb-6">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
+          {error && (
+            <div className="!bg-red-900/40 !border !border-red-500/50 !rounded-2xl !p-4 !flex !items-start !gap-3 !mb-6">
+              <AlertCircle className="!w-5 !h-5 !text-red-400 !flex-shrink-0 !mt-0.5" />
+              <p className="!text-sm !text-red-300">{error}</p>
+            </div>
+          )}
 
-            {/* ── STEP 1: Company type ────────────────────────────────────── */}
-            {step === 1 && (
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">¿Qué tipo de empresa eres?</h2>
-                <p className="text-sm text-gray-500 mb-6">Selecciona la categoría que mejor describe tu organización</p>
+          <AnimatePresence mode="wait">
+            <motion.div key={step} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.2 }}>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-                  {COMPANY_TYPES.map(({ id, label, desc, icon: Icon }) => {
-                    const selected = formData.companyType === id;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => { setFormData({ ...formData, companyType: id }); setError(''); }}
-                        className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer bg-white ${
-                          selected
-                            ? 'border-green-500 bg-green-50 shadow-md shadow-green-500/20'
-                            : 'border-gray-200 hover:border-green-300 hover:bg-green-50/50'
-                        }`}
-                      >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                          selected ? 'bg-green-500' : 'bg-gray-100'
-                        }`}>
-                          <Icon className={`w-5 h-5 ${selected ? 'text-white' : 'text-gray-500'}`} />
-                        </div>
-                        <p className={`font-semibold text-sm ${selected ? 'text-green-700' : 'text-gray-800'}`}>{label}</p>
-                        <p className={`text-xs mt-0.5 leading-tight ${selected ? 'text-green-600' : 'text-gray-400'}`}>{desc}</p>
-                      </button>
-                    );
-                  })}
+              {/* STEP 1 */}
+              {step === 1 && (
+                <div>
+                  <h2 className="!text-2xl !font-bold !text-white !mb-1">¿Qué tipo de empresa eres?</h2>
+                  <p className="!text-sm !text-emerald-200/70 !mb-6">Selecciona la categoría que mejor describe tu organización</p>
+                  <div className="!grid !grid-cols-2 sm:!grid-cols-3 !gap-3 !mb-8">
+                    {COMPANY_TYPES.map(({ id, label, desc, icon: Icon }) => {
+                      const selected = formData.companyType === id;
+                      return (
+                        <button key={id} type="button" onClick={() => { setFormData({ ...formData, companyType: id }); setError(''); }}
+                          className={`!p-4 !rounded-2xl !border-2 !text-left !transition-all !cursor-pointer !bg-transparent ${selected ? '!border-emerald-400 !bg-emerald-700/50' : '!border-emerald-700/50 hover:!border-emerald-500 hover:!bg-emerald-800/50'}`}>
+                          <div className={`!w-10 !h-10 !rounded-xl !flex !items-center !justify-center !mb-3 !transition-all ${selected ? '!bg-emerald-400' : '!bg-emerald-800'}`}>
+                            <Icon className={`!w-5 !h-5 ${selected ? '!text-emerald-900' : '!text-emerald-400'}`} />
+                          </div>
+                          <p className={`!font-semibold !text-sm ${selected ? '!text-white' : '!text-emerald-200'}`}>{label}</p>
+                          <p className={`!text-xs !mt-0.5 !leading-tight ${selected ? '!text-emerald-300' : '!text-emerald-500'}`}>{desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button type="button" disabled={!canProceedStep1} onClick={() => { setError(''); setStep(2); }}
+                    className="!w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer disabled:!opacity-40 disabled:!cursor-not-allowed">
+                    Continuar <ArrowRight className="!w-4 !h-4" />
+                  </button>
                 </div>
+              )}
 
-                <button
-                  type="button"
-                  disabled={!canProceedStep1}
-                  onClick={() => { setError(''); setStep(2); }}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3.5 px-6 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all border-0 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Continuar
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* ── STEP 2: Company data ────────────────────────────────────── */}
-            {step === 2 && (
-              <div>
-                {(() => {
-                  const ct = COMPANY_TYPES.find((t) => t.id === formData.companyType);
-                  return ct ? (
-                    <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-green-50 rounded-xl border border-green-200 text-sm">
-                      <ct.icon className="w-4 h-4 text-green-600 flex-shrink-0" />
-                      <span className="text-green-700 font-medium">{ct.label}</span>
-                      <button type="button" onClick={() => setStep(1)} className="ml-auto text-xs text-green-600 underline border-0 bg-transparent cursor-pointer">Cambiar</button>
+              {/* STEP 2 */}
+              {step === 2 && (
+                <div>
+                  {(() => {
+                    const ct = COMPANY_TYPES.find((t) => t.id === formData.companyType);
+                    return ct ? (
+                      <div className="!flex !items-center !gap-2 !mb-5 !px-4 !py-2 !bg-emerald-800/50 !rounded-full !border !border-emerald-700 !text-sm">
+                        <ct.icon className="!w-4 !h-4 !text-emerald-400 !flex-shrink-0" />
+                        <span className="!text-emerald-300 !font-medium">{ct.label}</span>
+                        <button type="button" onClick={() => setStep(1)} className="!ml-auto !text-xs !text-emerald-400 !underline !border-0 !bg-transparent !cursor-pointer">Cambiar</button>
+                      </div>
+                    ) : null;
+                  })()}
+                  <h2 className="!text-2xl !font-bold !text-white !mb-1">Datos de la empresa</h2>
+                  <p className="!text-sm !text-emerald-200/70 !mb-6">Los campos con <span className="!text-red-400">*</span> son obligatorios</p>
+                  <div className="!space-y-5">
+                    <div className="!grid sm:!grid-cols-2 !gap-5">
+                      <div>
+                        <label className={labelCls}>Razón Social <span className="!text-red-400">*</span></label>
+                        <input type="text" name="razonSocial" value={formData.razonSocial} onChange={handleChange} className={inputCls} placeholder="Ej: LATAM Airlines Group S.A." />
+                      </div>
+                      <div>
+                        <label className={labelCls}>RUT <span className="!text-red-400">*</span></label>
+                        <input type="text" name="rut" value={formData.rut} onChange={handleChange} className={inputCls} placeholder="XX.XXX.XXX-X" />
+                      </div>
                     </div>
-                  ) : null;
-                })()}
-
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Datos de la empresa</h2>
-                <p className="text-sm text-gray-500 mb-5">Los campos con <span className="text-red-500">*</span> son obligatorios</p>
-
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Razón Social <span className="text-red-500">*</span></label>
-                      <input type="text" name="razonSocial" value={formData.razonSocial} onChange={handleChange} required className={inputCls} placeholder="Ej: LATAM Airlines Group S.A." />
+                    <div className="!grid sm:!grid-cols-2 !gap-5">
+                      <div>
+                        <label className={labelCls}>Nombre Comercial</label>
+                        <input type="text" name="nombreComercial" value={formData.nombreComercial} onChange={handleChange} className={inputCls} placeholder="Ej: LATAM" />
+                      </div>
+                      <div className="!relative">
+                        <label className={labelCls}>Tamaño de empresa <span className="!text-red-400">*</span></label>
+                        <select name="tamanoEmpresa" value={formData.tamanoEmpresa} onChange={handleChange} className={selectCls}>
+                          <option value="" className="!bg-emerald-900">Seleccionar...</option>
+                          <option value="micro" className="!bg-emerald-900">Microempresa (1–9)</option>
+                          <option value="pequena" className="!bg-emerald-900">Pequeña (10–49)</option>
+                          <option value="mediana" className="!bg-emerald-900">Mediana (50–199)</option>
+                          <option value="grande" className="!bg-emerald-900">Grande (200+)</option>
+                        </select>
+                        <div className="!absolute !right-6 !bottom-4 !pointer-events-none !text-emerald-400"><svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg></div>
+                      </div>
                     </div>
                     <div>
-                      <label className={labelCls}>RUT <span className="text-red-500">*</span></label>
-                      <input type="text" name="rut" value={formData.rut} onChange={handleChange} required className={inputCls} placeholder="XX.XXX.XXX-X" />
+                      <label className={labelCls}>Giro SII</label>
+                      <input type="text" name="giroSii" value={formData.giroSii} onChange={handleChange} className={inputCls} placeholder="Ej: Transporte aéreo de pasajeros" />
+                    </div>
+                    <div className="!grid sm:!grid-cols-2 !gap-5">
+                      <div>
+                        <label className={labelCls}>Dirección</label>
+                        <input type="text" name="direccion" value={formData.direccion} onChange={handleChange} className={inputCls} placeholder="Dirección de la empresa" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Teléfono</label>
+                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputCls} placeholder="+56 9 XXXX XXXX" />
+                      </div>
                     </div>
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Nombre Comercial</label>
-                      <input type="text" name="nombreComercial" value={formData.nombreComercial} onChange={handleChange} className={inputCls} placeholder="Ej: LATAM" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Tamaño de empresa <span className="text-red-500">*</span></label>
-                      <select name="tamanoEmpresa" value={formData.tamanoEmpresa} onChange={handleChange} required className={inputCls}>
-                        <option value="">Seleccionar...</option>
-                        <option value="micro">Microempresa (1–9)</option>
-                        <option value="pequena">Pequeña (10–49)</option>
-                        <option value="mediana">Mediana (50–199)</option>
-                        <option value="grande">Grande (200+)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Giro SII</label>
-                    <input type="text" name="giroSii" value={formData.giroSii} onChange={handleChange} className={inputCls} placeholder="Ej: Transporte aéreo de pasajeros" />
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Dirección</label>
-                      <input type="text" name="direccion" value={formData.direccion} onChange={handleChange} className={inputCls} placeholder="Dirección de la empresa" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Teléfono</label>
-                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputCls} placeholder="+56 9 XXXX XXXX" />
-                    </div>
-                  </div>
+                  <button type="button" onClick={handleStep2} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
+                    Continuar <ArrowRight className="!w-4 !h-4" />
+                  </button>
                 </div>
+              )}
 
-                <button
-                  type="button"
-                  onClick={handleStep2}
-                  className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3.5 px-6 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all border-0"
-                >
-                  Continuar
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* ── STEP 3: Admin account ───────────────────────────────────── */}
-            {step === 3 && (
-              <form onSubmit={handleSubmit}>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Cuenta de administrador</h2>
-                <p className="text-sm text-gray-500 mb-5">Esta será la cuenta principal para gestionar tu empresa</p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Nombre completo <span className="text-red-500">*</span></label>
-                    <input type="text" name="adminName" value={formData.adminName} onChange={handleChange} required className={inputCls} placeholder="Tu nombre completo" />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Email corporativo <span className="text-red-500">*</span></label>
-                    <input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} required className={inputCls} placeholder="admin@empresa.com" />
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
+              {/* STEP 3 */}
+              {step === 3 && (
+                <form onSubmit={handleSubmit}>
+                  <h2 className="!text-2xl !font-bold !text-white !mb-1">Cuenta de administrador</h2>
+                  <p className="!text-sm !text-emerald-200/70 !mb-6">Esta será la cuenta principal para gestionar tu empresa</p>
+                  <div className="!space-y-5">
                     <div>
-                      <label className={labelCls}>Contraseña <span className="text-red-500">*</span></label>
-                      <input type="password" name="adminPassword" value={formData.adminPassword} onChange={handleChange} required className={inputCls} placeholder="Mínimo 8 caracteres" />
+                      <label className={labelCls}><User className="!w-4 !h-4 !inline !mr-1" />Nombre completo <span className="!text-red-400">*</span></label>
+                      <input type="text" name="adminName" value={formData.adminName} onChange={handleChange} required className={inputCls} placeholder="Tu nombre completo" />
                     </div>
                     <div>
-                      <label className={labelCls}>Confirmar contraseña <span className="text-red-500">*</span></label>
-                      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required className={inputCls} placeholder="Repetir contraseña" />
+                      <label className={labelCls}><Mail className="!w-4 !h-4 !inline !mr-1" />Email corporativo <span className="!text-red-400">*</span></label>
+                      <input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} required className={inputCls} placeholder="admin@empresa.com" />
+                    </div>
+                    <div className="!grid sm:!grid-cols-2 !gap-5">
+                      <div>
+                        <label className={labelCls}><Lock className="!w-4 !h-4 !inline !mr-1" />Contraseña <span className="!text-red-400">*</span></label>
+                        <input type="password" name="adminPassword" value={formData.adminPassword} onChange={handleChange} required className={inputCls} placeholder="Mínimo 8 caracteres" />
+                      </div>
+                      <div>
+                        <label className={labelCls}><Lock className="!w-4 !h-4 !inline !mr-1" />Confirmar contraseña <span className="!text-red-400">*</span></label>
+                        <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required className={inputCls} placeholder="Repetir contraseña" />
+                      </div>
                     </div>
                   </div>
-                </div>
+                  <button type="submit" disabled={isLoading} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer disabled:!opacity-50 disabled:!cursor-not-allowed">
+                    {isLoading ? <><Loader2 className="!w-5 !h-5 !animate-spin" /> Registrando...</> : <>Crear cuenta empresarial <ArrowRight className="!w-4 !h-4" /></>}
+                  </button>
+                  <p className="!text-center !text-emerald-400/70 !text-sm !mt-4">
+                    ¿Ya tienes cuenta?{' '}
+                    <Link to="/auth/login" className="!text-emerald-300 !font-semibold hover:!text-white !transition-colors">Iniciar sesión</Link>
+                  </p>
+                </form>
+              )}
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3.5 px-6 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all border-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? <><Loader2 className="w-5 h-5 animate-spin" /> Registrando...</> : <>Crear cuenta empresarial</>}
-                </button>
-
-                <p className="text-center text-gray-500 text-sm mt-4">
-                  ¿Ya tienes cuenta?{' '}
-                  <Link to="/auth/login" className="text-green-600 font-semibold hover:text-green-700">Iniciar sesión</Link>
-                </p>
-              </form>
-            )}
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );
