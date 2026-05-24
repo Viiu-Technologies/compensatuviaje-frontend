@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { useAuth } from '../../auth/context/AuthContext';
 import { useTheme } from '../../../shared/context/ThemeContext';
 import type { CompanyType } from '../../../types/auth.types';
@@ -30,6 +31,96 @@ import DocumentsView from './views/DocumentsView';
 import OrdersView from './views/OrdersView';
 import ManifestView from './views/ManifestView';
 import CertificatesView from './views/CertificatesView';
+
+// ─── Per-company-type theme system ────────────────────────────────────────────
+
+interface CompanyTheme {
+  /** CSS gradient for sidebar background */
+  sidebarGradient: string;
+  /** Tailwind classes for active nav button */
+  activeGrad: string;
+  activeShadow: string;
+  /** Inline style for user pill container */
+  pillStyle: React.CSSProperties;
+  /** Tailwind classes for avatar bg */
+  avatarGrad: string;
+  avatarShadow: string;
+  /** Tailwind class for email text color */
+  emailColor: string;
+  /** Hex for the topbar accent line + title border */
+  accentHex: string;
+  /** Human-readable label shown in topbar subtitle */
+  industryLabel: string;
+}
+
+const COMPANY_THEMES: Record<CompanyType, CompanyTheme> = {
+  TRAVEL_AGENCY: {
+    sidebarGradient: 'linear-gradient(to bottom, #040e1e, #071528, #040e1e)',
+    activeGrad: '!from-sky-500 !to-blue-600',
+    activeShadow: '!shadow-sky-500/30',
+    pillStyle: { background: 'linear-gradient(to right, rgba(14,165,233,0.15), rgba(37,99,235,0.12))', borderColor: 'rgba(56,189,248,0.25)' },
+    avatarGrad: '!from-sky-400 !to-blue-600',
+    avatarShadow: '!shadow-sky-500/40',
+    emailColor: '!text-sky-400/80',
+    accentHex: '#0ea5e9',
+    industryLabel: 'Plataforma para Aerolíneas y Agencias',
+  },
+  TRANSPORT: {
+    sidebarGradient: 'linear-gradient(to bottom, #1a0e00, #231500, #1a0e00)',
+    activeGrad: '!from-amber-500 !to-orange-600',
+    activeShadow: '!shadow-amber-500/30',
+    pillStyle: { background: 'linear-gradient(to right, rgba(245,158,11,0.15), rgba(234,88,12,0.12))', borderColor: 'rgba(251,191,36,0.25)' },
+    avatarGrad: '!from-amber-400 !to-orange-600',
+    avatarShadow: '!shadow-amber-500/40',
+    emailColor: '!text-amber-400/80',
+    accentHex: '#f59e0b',
+    industryLabel: 'Gestión de Rutas y Transporte',
+  },
+  LOGISTICS: {
+    sidebarGradient: 'linear-gradient(to bottom, #00111a, #001e2c, #00111a)',
+    activeGrad: '!from-teal-500 !to-cyan-600',
+    activeShadow: '!shadow-teal-500/30',
+    pillStyle: { background: 'linear-gradient(to right, rgba(20,184,166,0.15), rgba(8,145,178,0.12))', borderColor: 'rgba(45,212,191,0.25)' },
+    avatarGrad: '!from-teal-400 !to-cyan-600',
+    avatarShadow: '!shadow-teal-500/40',
+    emailColor: '!text-teal-400/80',
+    accentHex: '#14b8a6',
+    industryLabel: 'Control de Cadena Logística',
+  },
+  CORPORATE: {
+    sidebarGradient: 'linear-gradient(to bottom, #0f0820, #17102e, #0f0820)',
+    activeGrad: '!from-violet-500 !to-purple-600',
+    activeShadow: '!shadow-violet-500/30',
+    pillStyle: { background: 'linear-gradient(to right, rgba(139,92,246,0.15), rgba(147,51,234,0.12))', borderColor: 'rgba(167,139,250,0.25)' },
+    avatarGrad: '!from-violet-400 !to-purple-600',
+    avatarShadow: '!shadow-violet-500/40',
+    emailColor: '!text-violet-400/80',
+    accentHex: '#8b5cf6',
+    industryLabel: 'Compensación Corporativa de Viajes',
+  },
+  EVENTS: {
+    sidebarGradient: 'linear-gradient(to bottom, #1a0810, #251016, #1a0810)',
+    activeGrad: '!from-rose-500 !to-pink-600',
+    activeShadow: '!shadow-rose-500/30',
+    pillStyle: { background: 'linear-gradient(to right, rgba(244,63,94,0.15), rgba(219,39,119,0.12))', borderColor: 'rgba(251,113,133,0.25)' },
+    avatarGrad: '!from-rose-400 !to-pink-600',
+    avatarShadow: '!shadow-rose-500/40',
+    emailColor: '!text-rose-400/80',
+    accentHex: '#f43f5e',
+    industryLabel: 'Eventos y Turismo Sostenible',
+  },
+  OTHER: {
+    sidebarGradient: 'linear-gradient(to bottom, #0d1117, #111827, #0d1117)',
+    activeGrad: '!from-green-500 !to-emerald-600',
+    activeShadow: '!shadow-green-500/30',
+    pillStyle: { background: 'linear-gradient(to right, rgba(16,185,129,0.15), rgba(5,150,105,0.12))', borderColor: 'rgba(52,211,153,0.25)' },
+    avatarGrad: '!from-green-400 !to-emerald-600',
+    avatarShadow: '!shadow-green-500/40',
+    emailColor: '!text-green-400/80',
+    accentHex: '#10b981',
+    industryLabel: 'Panel de impacto ambiental corporativo',
+  },
+};
 
 // ─── Nav items base ────────────────────────────────────────────────────────────
 const ITEMS = {
@@ -106,7 +197,8 @@ const SidebarContent: React.FC<{
   user: any;
   onLogout: () => void;
   navSections: { label: string; items: { id: string; label: string; icon: React.ElementType }[] }[];
-}> = ({ activeTab, onNav, user, onLogout, navSections }) => (
+  theme: CompanyTheme;
+}> = ({ activeTab, onNav, user, onLogout, navSections, theme }) => (
   <>
     {/* Logo */}
     <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b !border-white/10 !flex-shrink-0">
@@ -119,13 +211,13 @@ const SidebarContent: React.FC<{
 
     {/* User pill */}
     <div className="!px-4 !py-4 !border-b !border-white/10 !flex-shrink-0">
-      <div className="!flex !items-center !gap-3 !p-3 !rounded-xl !bg-gradient-to-r !from-green-500/20 !to-emerald-500/20 !border !border-green-400/30">
-        <div className="!w-9 !h-9 !rounded-full !bg-gradient-to-br !from-green-400 !to-emerald-600 !flex !items-center !justify-center !text-white !font-bold !flex-shrink-0 !text-sm !shadow-lg !shadow-green-500/40">
+      <div className="!flex !items-center !gap-3 !p-3 !rounded-xl !border" style={theme.pillStyle}>
+        <div className={`!w-9 !h-9 !rounded-full !bg-gradient-to-br ${theme.avatarGrad} !flex !items-center !justify-center !text-white !font-bold !flex-shrink-0 !text-sm !shadow-lg ${theme.avatarShadow}`}>
           {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
         </div>
         <div className="!flex-1 !min-w-0">
           <p className="!text-xs !font-semibold !text-white !truncate">{user?.name || user?.email || 'Usuario'}</p>
-          <p className="!text-[10px] !text-green-400/80 !truncate">{user?.email || ''}</p>
+          <p className={`!text-[10px] ${theme.emailColor} !truncate`}>{user?.email || ''}</p>
         </div>
       </div>
     </div>
@@ -141,10 +233,11 @@ const SidebarContent: React.FC<{
             {section.items.map((item) => (
               <button
                 key={item.id}
+                data-nav-item="true"
                 onClick={() => onNav(item.id)}
                 className={`!w-full !flex !items-center !gap-3 !px-3 !py-2.5 !rounded-xl !transition-all !text-left !text-sm !font-medium !border-0 !outline-none ${
                   activeTab === item.id
-                    ? '!bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !shadow-lg !shadow-green-500/30'
+                    ? `!bg-gradient-to-r ${theme.activeGrad} !text-white !shadow-lg ${theme.activeShadow}`
                     : '!bg-transparent !text-gray-400 hover:!bg-white/8 hover:!text-white'
                 }`}
               >
@@ -160,10 +253,11 @@ const SidebarContent: React.FC<{
     {/* Footer: Configuración + Cerrar sesión */}
     <div className="!flex-shrink-0 !px-3 !py-4 !border-t !border-white/10 !space-y-0.5">
       <button
+        data-nav-item="true"
         onClick={() => onNav(BOTTOM_ITEM.id)}
         className={`!w-full !flex !items-center !gap-3 !px-3 !py-2.5 !rounded-xl !transition-all !text-left !text-sm !font-medium !border-0 !outline-none ${
           activeTab === BOTTOM_ITEM.id
-            ? '!bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !shadow-lg !shadow-green-500/30'
+            ? `!bg-gradient-to-r ${theme.activeGrad} !text-white !shadow-lg ${theme.activeShadow}`
             : '!bg-transparent !text-gray-400 hover:!bg-white/8 hover:!text-white'
         }`}
       >
@@ -189,7 +283,32 @@ const B2BDashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isDark = resolvedTheme === 'dark';
 
-  const navSections = DASHBOARD_CONFIGS[user?.companyType ?? 'OTHER'];
+  const sidebarRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const companyType = (user?.companyType as CompanyType) ?? 'OTHER';
+  const theme       = COMPANY_THEMES[companyType];
+  const navSections = DASHBOARD_CONFIGS[companyType];
+
+  // GSAP: stagger nav items into view on first mount
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '[data-nav-item]',
+        { x: -18, autoAlpha: 0 },
+        { x: 0, autoAlpha: 1, stagger: 0.045, duration: 0.4, ease: 'power2.out', delay: 0.25 },
+      );
+    }, sidebarRef);
+    return () => ctx.revert();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // GSAP: fade + slide content area on tab change
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const tl = gsap.timeline();
+    tl.fromTo(contentRef.current, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+  }, [activeTab]);
 
   const handleNav = (id: string) => {
     setActiveTab(id);
@@ -223,8 +342,12 @@ const B2BDashboard: React.FC = () => {
     }`}>
 
       {/* ── SIDEBAR DESKTOP ── */}
-      <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen !bg-gradient-to-b !from-[#0d1117] !via-gray-900 !to-[#0d1117] !shadow-2xl !fixed !left-0 !top-0 !z-50 !overflow-hidden">
-        <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} navSections={navSections} />
+      <aside
+        ref={sidebarRef}
+        className="!hidden lg:!flex !flex-col !w-64 !h-screen !shadow-2xl !fixed !left-0 !top-0 !z-50 !overflow-hidden"
+        style={{ background: theme.sidebarGradient }}
+      >
+        <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} navSections={navSections} theme={theme} />
       </aside>
 
       {/* ── SIDEBAR MOBILE (DRAWER) ── */}
@@ -234,10 +357,11 @@ const B2BDashboard: React.FC = () => {
           onClick={() => setSidebarOpen(false)}
         >
           <aside
-            className="!fixed !left-0 !top-0 !h-full !w-64 !bg-gradient-to-b !from-[#0d1117] !via-gray-900 !to-[#0d1117] !shadow-2xl !flex !flex-col !z-[70]"
+            className="!fixed !left-0 !top-0 !h-full !w-64 !shadow-2xl !flex !flex-col !z-[70]"
+            style={{ background: theme.sidebarGradient }}
             onClick={(e) => e.stopPropagation()}
           >
-            <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} navSections={navSections} />
+            <SidebarContent activeTab={activeTab} onNav={handleNav} user={user} onLogout={handleLogout} navSections={navSections} theme={theme} />
             <button
               className="!absolute !top-4 !right-4 !text-white/50 hover:!text-white !border-0 !bg-transparent !p-1"
               onClick={() => setSidebarOpen(false)}
@@ -254,9 +378,14 @@ const B2BDashboard: React.FC = () => {
       }`}>
 
         {/* Top Bar */}
-        <div className={`!backdrop-blur-md !border-b !sticky !top-0 !z-40 !w-full ${
+        <div className={`!backdrop-blur-md !border-b !sticky !top-0 !z-40 !w-full !overflow-hidden ${
           isDark ? '!bg-gray-800/80 !border-gray-700' : '!bg-white/80 !border-gray-200'
         }`}>
+          {/* Colored accent line */}
+          <div
+            className="!h-[2px] !w-full"
+            style={{ background: `linear-gradient(to right, ${theme.accentHex}, ${theme.accentHex}60, transparent)` }}
+          />
           <div className="!max-w-7xl !mx-auto !px-4 sm:!px-6 lg:!px-8 !py-3.5">
             <div className="!flex !items-center !justify-between">
               <div className="!flex !items-center !gap-3">
@@ -267,12 +396,12 @@ const B2BDashboard: React.FC = () => {
                 >
                   <Menu className="!w-5 !h-5" />
                 </button>
-                <div>
+                <div className="!pl-3" style={{ borderLeft: `2px solid ${theme.accentHex}` }}>
                   <h2 className={`!text-base !font-semibold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
                     {TAB_LABELS[activeTab] || 'Panel B2B'}
                   </h2>
                   <p className={`!text-xs !hidden sm:!block ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-                    Panel de impacto ambiental corporativo
+                    {theme.industryLabel}
                   </p>
                 </div>
               </div>
@@ -287,9 +416,10 @@ const B2BDashboard: React.FC = () => {
                   onClick={() => handleNav('cuenta')}
                   className={`!p-2 !rounded-lg !transition-colors !border-0 ${
                     activeTab === 'cuenta'
-                      ? '!bg-green-500/20 !text-green-400'
+                      ? isDark ? '!bg-gray-700' : '!bg-gray-100'
                       : isDark ? '!bg-gray-700 hover:!bg-gray-600 !text-gray-400' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-500'
                   }`}
+                  style={activeTab === 'cuenta' ? { color: theme.accentHex } : {}}
                 >
                   <Settings className="!w-4.5 !h-4.5" />
                 </button>
@@ -299,7 +429,7 @@ const B2BDashboard: React.FC = () => {
         </div>
 
         {/* Page content */}
-        <div className="!max-w-7xl !mx-auto !px-4 sm:!px-6 lg:!px-8 !py-8">
+        <div ref={contentRef} className="!max-w-7xl !mx-auto !px-4 sm:!px-6 lg:!px-8 !py-8">
           {renderActiveView()}
         </div>
       </main>
