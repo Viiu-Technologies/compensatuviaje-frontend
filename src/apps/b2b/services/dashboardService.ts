@@ -25,6 +25,7 @@ export interface CompanyOverview {
   razonSocial: string;
   rut: string;
   industry?: string;
+  companyType?: string;
   tamanoEmpresa?: string;
   status: string;
   createdAt: string;
