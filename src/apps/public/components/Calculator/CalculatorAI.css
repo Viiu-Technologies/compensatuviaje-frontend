@@ -256,6 +256,48 @@
   gap: 10px;
 }
 
+/* Transport segmented selection cards */
+.transport-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.transport-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  color: #e6eef7;
+}
+
+.transport-card:hover {
+  background: rgba(34,197,94,0.08);
+  border-color: rgba(34,197,94,0.35);
+  transform: translateY(-4px);
+}
+
+.transport-icon { font-size: 26px; color: #22c55e; }
+.transport-label { font-size: 14px; font-weight: 700; }
+
+/* Accessibility: focus-visible for interactive options */
+.transport-card:focus-visible,
+.cabin-option:focus-visible,
+.passenger-option:focus-visible,
+.roundtrip-option:focus-visible,
+.btn-new-calc:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(34,197,94,0.12), 0 0 0 2px rgba(34,197,94,0.22);
+  border-color: rgba(34,197,94,0.5);
+}
+
 .cabin-option {
   display: flex;
   flex-direction: column;

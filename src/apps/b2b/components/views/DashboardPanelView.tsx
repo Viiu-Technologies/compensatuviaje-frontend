@@ -90,9 +90,9 @@ const DashboardPanelView: React.FC = () => {
     return labels[status] || { text: status, color: 'text-gray-700', bg: 'bg-gray-100' };
   };
 
-  const getIndustryLabel = (industry?: string) => {
-    if (!industry) return 'Sin categoría';
+  const getIndustryLabel = (industry?: string, companyType?: string) => {
     const labels: Record<string, string> = {
+      // industry values
       aerolineas: 'Aerolíneas y Aviación',
       maritimo: 'Transporte Marítimo',
       terrestre: 'Transporte Terrestre y Logística',
@@ -109,9 +109,18 @@ const DashboardPanelView: React.FC = () => {
       telecomunicaciones: 'Telecomunicaciones',
       gobierno: 'Gobierno y Sector Público',
       consultoria: 'Consultoría y Servicios Profesionales',
-      otra: 'Otra'
+      otra: 'Otra',
+      // companyType values
+      TRAVEL_AGENCY: 'Aerolíneas y Viajes',
+      TRANSPORT: 'Transporte',
+      LOGISTICS: 'Logística',
+      CORPORATE: 'Corporativo',
+      EVENTS: 'Eventos',
+      OTHER: 'Otra'
     };
-    return labels[industry] || industry;
+    if (industry && labels[industry]) return labels[industry];
+    if (companyType && labels[companyType]) return labels[companyType];
+    return industry || 'Sin categoría';
   };
 
   if (isLoading) {
@@ -192,7 +201,7 @@ const DashboardPanelView: React.FC = () => {
         <div>
           <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Panel Principal</h1>
           <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-            {company.razonSocial} — {getIndustryLabel(company.industry)}
+            {company.razonSocial} — {getIndustryLabel(company.industry, company.companyType)}
           </p>
         </div>
         <div className="!flex !items-center !gap-3">
@@ -232,7 +241,7 @@ const DashboardPanelView: React.FC = () => {
           <div className={`!h-10 !w-px ${isDark ? '!bg-gray-700' : '!bg-green-200'} !hidden sm:!block`} />
           <div>
             <p className={`!text-xs !uppercase !tracking-wider ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Industria</p>
-            <p className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>{getIndustryLabel(company.industry)}</p>
+            <p className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>{getIndustryLabel(company.industry, company.companyType)}</p>
           </div>
           {company.tamanoEmpresa && (
             <>

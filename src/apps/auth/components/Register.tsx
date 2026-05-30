@@ -157,8 +157,8 @@ const Register: React.FC = () => {
       // Para B2C mostramos directamente la opción de Google
       setCurrentStep(0);
     } else if (type === 'b2b') {
-      // Para B2B avanzamos directamente al paso 1 del formulario
-      setCurrentStep(1);
+      // Redirigir al wizard B2B dedicado
+      navigate('/register/empresa');
     }
   };
 

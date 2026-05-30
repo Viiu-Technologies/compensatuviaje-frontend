@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../auth/context/AuthContext';
 import { useTheme } from '../../../../shared/context/ThemeContext';
-import { getUserProfile, updateUserProfile, getMockUserProfile, type UserProfile as ApiUserProfile } from '../../services/profileService';
+import api from '../../../../shared/services/api';
+import { getUserProfile, updateUserProfile, type UserProfile as ApiUserProfile } from '../../services/profileService';
 
 interface LocalUserProfile {
   name: string;
@@ -48,14 +49,18 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   
+  const getLocalExtras = () => {
+    try { return JSON.parse(localStorage.getItem('b2b_profile_extra') || '{}'); } catch { return {}; }
+  };
+
   const [profile, setProfile] = useState<LocalUserProfile>({
-    name: user?.name || 'Usuario Empresarial',
-    email: user?.email || 'admin@empresa.com',
-    phone: '+56 9 1234 5678',
-    company: 'Empresa Demo S.A.',
-    position: 'Gerente de Sostenibilidad',
-    location: 'Santiago, Chile',
-    joinDate: 'Diciembre 2024'
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+    company: '',
+    position: '',
+    location: '',
+    joinDate: ''
   });
 
   const [editedProfile, setEditedProfile] = useState<LocalUserProfile>(profile);
@@ -65,33 +70,40 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
     const loadProfile = async () => {
       setIsLoading(true);
       try {
-        const apiProfile = await getUserProfile();
+        const extras = getLocalExtras();
+        const [apiProfile, companyRes] = await Promise.all([
+          getUserProfile(),
+          api.get('/b2b/company').catch(() => null) as Promise<any>,
+        ]);
+        const companyName =
+          companyRes?.data?.nombreComercial ||
+          companyRes?.data?.razonSocial ||
+          apiProfile?.company?.name ||
+          apiProfile?.company?.razonSocial ||
+          '';
         if (apiProfile) {
           const mappedProfile: LocalUserProfile = {
-            name: apiProfile.name || user?.name || 'Usuario',
+            name: apiProfile.name || user?.name || '',
             email: apiProfile.email || user?.email || '',
-            phone: apiProfile.phone || '+56 9 0000 0000',
-            company: apiProfile.company?.razonSocial || 'Sin empresa',
-            position: 'Gerente de Sostenibilidad', // No está en API, demo
-            location: 'Santiago, Chile', // No está en API, demo
-            joinDate: new Date(apiProfile.createdAt).toLocaleDateString('es-CL', { 
-              month: 'long', 
-              year: 'numeric' 
-            })
+            phone: extras.phone || '',
+            company: companyName || 'Sin empresa',
+            position: extras.position || '',
+            location: extras.location || '',
+            joinDate: apiProfile.createdAt
+              ? new Date(apiProfile.createdAt).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
+              : ''
           };
           setProfile(mappedProfile);
           setEditedProfile(mappedProfile);
         } else {
-          // Usar datos mock si no hay API
-          const mockProfile = getMockUserProfile(user?.email);
           const mappedProfile: LocalUserProfile = {
-            name: mockProfile.name,
-            email: mockProfile.email,
-            phone: mockProfile.phone || '+56 9 0000 0000',
-            company: mockProfile.company?.razonSocial || 'Sin empresa',
-            position: 'Gerente de Sostenibilidad',
-            location: 'Santiago, Chile',
-            joinDate: 'Diciembre 2024'
+            name: user?.name || '',
+            email: user?.email || '',
+            phone: extras.phone || '',
+            company: companyName || 'Sin empresa',
+            position: extras.position || '',
+            location: extras.location || '',
+            joinDate: ''
           };
           setProfile(mappedProfile);
           setEditedProfile(mappedProfile);
@@ -112,11 +124,13 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
     setSaveSuccess(false);
     
     try {
-      const response = await updateUserProfile({
-        name: editedProfile.name,
-        phone: editedProfile.phone
-      });
-      
+      const response = await updateUserProfile({ name: editedProfile.name });
+      // Persist extras in localStorage regardless of API result
+      localStorage.setItem('b2b_profile_extra', JSON.stringify({
+        phone: editedProfile.phone,
+        position: editedProfile.position,
+        location: editedProfile.location,
+      }));
       if (response.success) {
         setProfile(editedProfile);
         setIsEditing(false);
@@ -126,7 +140,11 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
         setSaveError(response.message || 'Error guardando cambios');
       }
     } catch (error) {
-      // Si falla la API, guardar localmente (demo)
+      localStorage.setItem('b2b_profile_extra', JSON.stringify({
+        phone: editedProfile.phone,
+        position: editedProfile.position,
+        location: editedProfile.location,
+      }));
       setProfile(editedProfile);
       setIsEditing(false);
       setSaveSuccess(true);

@@ -45,6 +45,7 @@ export interface UserInfo {
   name: string;
   company_id?: string;
   company_name?: string;
+  company_type?: CompanyType;
   role: UserRole;
   permissions: Permission[];
   is_admin: boolean;
@@ -122,6 +123,7 @@ export interface AuthUser {
   name: string;
   companyId?: string;
   companyName?: string;
+  companyType?: CompanyType;
   role: UserRole;
   permissions: Permission[];
   isAdmin: boolean;
@@ -157,6 +159,7 @@ export interface RegisterCompanyRequest {
   nombreComercial?: string;
   giroSii?: string;
   tamanoEmpresa: CompanySize;
+  companyType?: CompanyType;
   direccion?: string;
   phone?: string;
   adminUser: AdminUserData;
@@ -184,4 +187,5 @@ export interface RegisterCompanyResponse {
 }
 
 export type CompanySize = 'micro' | 'pequena' | 'mediana' | 'grande';
+export type CompanyType = 'TRAVEL_AGENCY' | 'TRANSPORT' | 'LOGISTICS' | 'CORPORATE' | 'EVENTS' | 'OTHER';
 export type CompanyStatus = 'registered' | 'pending_contract' | 'signed' | 'active' | 'suspended';

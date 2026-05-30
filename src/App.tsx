@@ -27,6 +27,7 @@ import LandingPage from './apps/public/pages/LandingPage';
 // Lazy-loaded pages (code splitting)
 const LoginPage = lazy(() => import('./apps/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('./apps/auth/pages/RegisterPage'));
+const B2BRegisterPage = lazy(() => import('./apps/auth/pages/B2BRegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./apps/auth/pages/ForgotPasswordPage'));
 const DashboardPage = lazy(() => import('./apps/auth/pages/DashboardPage'));
 const AuthCallbackPage = lazy(() => import('./apps/b2c/pages/AuthCallback'));
@@ -106,6 +107,14 @@ function App() {
               } 
             />
             <Route 
+              path="/register/empresa" 
+              element={
+                <PublicRoute>
+                  <B2BRegisterPage />
+                </PublicRoute>
+              } 
+            />
+            <Route 
               path="/forgot-password" 
               element={
                 <PublicRoute>
@@ -128,6 +137,14 @@ function App() {
               element={
                 <PublicRoute>
                   <RegisterPage />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/auth/register/empresa" 
+              element={
+                <PublicRoute>
+                  <B2BRegisterPage />
                 </PublicRoute>
               } 
             />

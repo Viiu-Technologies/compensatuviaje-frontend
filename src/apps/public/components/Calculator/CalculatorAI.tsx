@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaPaperPlane, 
   FaPlane, 
+  FaCar,
+  FaBus,
+  FaTrain,
   FaLeaf, 
   FaTree, 
   FaWater, 
@@ -89,7 +92,8 @@ const CalculatorAI: React.FC = () => {
     destination: null as Airport | null,
     cabinCode: '',
     passengers: 1,
-    roundTrip: true
+    roundTrip: true,
+    transport: ''
   });
   const [result, setResult] = useState<CalculationResult | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -104,16 +108,20 @@ const CalculatorAI: React.FC = () => {
   useEffect(() => {
     setTimeout(() => {
       addBotMessage(
-        '¡Hola! 👋 Soy tu asistente de huella de carbono. Te ayudaré a calcular las emisiones de CO₂ de tu vuelo y cómo puedes compensarlas.',
+        '¡Hola! 👋 Soy tu asistente de huella de carbono. Te ayudaré a calcular las emisiones de CO₂ de tu viaje y cómo puedes compensarlas.',
         'welcome'
       );
       setTimeout(() => {
-        addBotMessage(
-          '¿Desde qué ciudad o aeropuerto saldrás? Puedes escribir el nombre de la ciudad o el código IATA (ej: SCL, Santiago, Miami).',
-          'origin'
-        );
-        setCurrentStep('origin');
-      }, 1500);
+        // First ask transport mode using segmented selection cards
+        setMessages(prev => [...prev, {
+          id: `options-transport-${Date.now()}`,
+          type: 'options',
+          content: '¿Qué medio de transporte utilizarás?',
+          data: { type: 'transport' },
+          timestamp: new Date()
+        }]);
+        setCurrentStep('transport');
+      }, 1200);
     }, 500);
   }, []);
 
@@ -192,6 +200,18 @@ const CalculatorAI: React.FC = () => {
       }]);
       setCurrentStep('passengers');
     }, 500);
+  };
+
+  const handleTransportSelect = (transport: string, label: string) => {
+    setFormData(prev => ({ ...prev, transport }));
+    addUserMessage(label);
+    setTimeout(() => {
+      addBotMessage(
+        `Perfecto. ¿Desde qué ciudad o aeropuerto saldrás? Puedes escribir el nombre de la ciudad o el código IATA (ej: SCL, Santiago, Miami).`,
+        'origin'
+      );
+      setCurrentStep('origin');
+    }, 600);
   };
 
   const handlePassengersSelect = (count: number) => {
@@ -552,6 +572,36 @@ const OptionsCard: React.FC<OptionsCardProps> = ({
               <span className="cabin-icon">{cabin.icon}</span>
               <span className="cabin-label">{cabin.label}</span>
               <span className="cabin-desc">{cabin.description}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (data.type === 'transport') {
+    const TRANSPORTS = [
+      { id: 'plane', label: 'Avión', icon: <FaPlane /> },
+      { id: 'car', label: 'Auto', icon: <FaCar /> },
+      { id: 'bus', label: 'Bus', icon: <FaBus /> },
+      { id: 'train', label: 'Tren', icon: <FaTrain /> }
+    ];
+
+    return (
+      <div className="options-card">
+        <p className="options-question">{content}</p>
+        <div className="transport-options" role="list">
+          {TRANSPORTS.map((t) => (
+            <motion.button
+              key={t.id}
+              className="transport-card"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleTransportSelect(t.id, t.label)}
+              aria-label={t.label}
+            >
+              <div className="transport-icon">{t.icon}</div>
+              <div className="transport-label">{t.label}</div>
             </motion.button>
           ))}
         </div>
