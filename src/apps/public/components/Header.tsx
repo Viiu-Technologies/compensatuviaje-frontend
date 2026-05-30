@@ -62,6 +62,7 @@ const Header = () => {
   ];
 
   return (
+    <>
     <header className={`ctv-header${scrolled ? ' ctv-header--scrolled' : ''}`}>
       <div className="ctv-header__inner">
 
@@ -132,12 +133,13 @@ const Header = () => {
           {isMenuOpen ? <HiX /> : <HiMenu />}
         </button>
       </div>
+    </header>
 
-      {/* ── Mobile drawer ── */}
-      <div
-        className={`ctv-drawer${isMenuOpen ? ' ctv-drawer--open' : ''}`}
-        aria-hidden={!isMenuOpen}
-      >
+    {/* ── Mobile drawer — sibling del header para evitar stacking-context bugs ── */}
+    <div
+      className={`ctv-drawer${isMenuOpen ? ' ctv-drawer--open' : ''}`}
+      aria-hidden={!isMenuOpen}
+    >
         {/* Overlay */}
         <div className="ctv-drawer__overlay" onClick={closeMenu} />
 
@@ -202,7 +204,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 };
 

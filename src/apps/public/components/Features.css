@@ -45,7 +45,7 @@
 
 .ft-title {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(2rem, 5.5vw, 4.25rem);
   line-height: 1;
   letter-spacing: -0.015em;
@@ -112,7 +112,7 @@
 
 .ft-step__title {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: 1.5rem;
   color: var(--ctv-brand-deep);
   line-height: 1.15;
@@ -166,7 +166,7 @@
 
 .ft-card__name {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   line-height: 1.05;
   color: var(--ctv-brand-deep);

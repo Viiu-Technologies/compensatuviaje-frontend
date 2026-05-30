@@ -265,17 +265,18 @@
 }
 
 /* --------------------------------------------------------------------------
-   Mobile drawer
+   Mobile drawer — sibling del <header> (NO dentro), z-index encima del header
+   Usa visibility+opacity+transform para permitir transición suave.
    -------------------------------------------------------------------------- */
 .ctv-drawer {
-  display: none;
   position: fixed;
   inset: 0;
-  z-index: 8999;
+  z-index: 9500;          /* > header (9000) para nunca quedar tapado */
+  visibility: hidden;
   pointer-events: none;
 }
 .ctv-drawer--open {
-  display: block;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -285,12 +286,10 @@
   background: rgba(15, 61, 46, 0.45);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  animation: fadeOverlay 0.25s ease both;
+  opacity: 0;
+  transition: opacity 0.28s var(--ctv-ease-out);
 }
-@keyframes fadeOverlay {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+.ctv-drawer--open .ctv-drawer__overlay { opacity: 1; }
 
 .ctv-drawer__panel {
   position: absolute;
@@ -303,13 +302,12 @@
   display: flex;
   flex-direction: column;
   padding-top: var(--header-h);
-  animation: slidePanel 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.32s var(--ctv-ease-out);
+  box-shadow: -20px 0 60px -30px rgba(15, 61, 46, 0.35);
 }
-@keyframes slidePanel {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
-}
+.ctv-drawer--open .ctv-drawer__panel { transform: translateX(0); }
 
 .ctv-drawer__nav {
   display: flex;
@@ -390,5 +388,5 @@
 }
 
 @media (min-width: 1024px) {
-  .ctv-drawer { display: none !important; }
+  .ctv-drawer { display: none; }
 }

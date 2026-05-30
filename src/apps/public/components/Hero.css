@@ -72,7 +72,7 @@
 /* ── Display titular ────────────────────────────────────────── */
 .hero-display {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(2.5rem, 6.5vw, 5.8rem);
   line-height: 0.98;
   letter-spacing: -0.015em;
@@ -215,7 +215,7 @@
 .hero-stat__number {
   font-family: var(--ctv-font-display);
   font-size: clamp(3rem, 5vw, 4.25rem);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   line-height: 1;
   color: var(--ctv-brand-deep);
   letter-spacing: -0.02em;

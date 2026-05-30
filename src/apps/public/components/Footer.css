@@ -32,7 +32,7 @@
 
 .ft-display {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(2.5rem, 7vw, 6rem);
   line-height: 0.95;
   letter-spacing: -0.02em;
@@ -91,7 +91,7 @@
 
 .ft-newsletter__title {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(1.5rem, 2.5vw, 2rem);
   line-height: 1.15;
   letter-spacing: -0.005em;

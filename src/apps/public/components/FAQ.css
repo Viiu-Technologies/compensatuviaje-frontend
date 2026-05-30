@@ -40,7 +40,7 @@
 
 .faq-title {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(2rem, 5.5vw, 4.25rem);
   line-height: 1;
   letter-spacing: -0.015em;
@@ -122,7 +122,7 @@
   font-size: clamp(1.1rem, 1.8vw, 1.5rem);
   line-height: 1.25;
   letter-spacing: -0.005em;
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
 }
 
 .faq-item__icon {

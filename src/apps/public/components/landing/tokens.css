@@ -20,8 +20,10 @@
   --ctv-rule-strong:  rgba(15, 61, 46, 0.20);
 
   /* ── Tipografía ── */
-  --ctv-font-display: 'Instrument Serif', 'Times New Roman', serif;
+  --ctv-font-display: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif;
   --ctv-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --ctv-display-weight:    600;       /* Montserrat semibold — tono serio */
+  --ctv-display-tracking:  -0.005em;  /* menos negativo que el serif */
 
   /* ── Easing & duración (alineado al skill GSAP) ── */
   --ctv-ease-out:  cubic-bezier(0.22, 1, 0.36, 1);   /* ≈ power3.out */

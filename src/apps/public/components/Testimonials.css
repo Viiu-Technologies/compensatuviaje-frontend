@@ -88,7 +88,7 @@
 
 .ts-title {
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-size: clamp(2rem, 5.5vw, 4.25rem);
   line-height: 1;
   letter-spacing: -0.015em;
@@ -110,7 +110,7 @@
 .ts-quote {
   position: relative;
   font-family: var(--ctv-font-display);
-  font-weight: 400;
+  font-weight: var(--ctv-display-weight);
   font-style: italic;
   font-size: clamp(1.5rem, 3.5vw, 2.75rem);
   line-height: 1.2;
