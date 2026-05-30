@@ -104,6 +104,30 @@
   margin: 0;
 }
 
+.contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.5rem 0;
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  color: var(--ctv-brand-deep);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ctv-brand);
+  transition: color 0.25s var(--ctv-ease-out), border-color 0.25s var(--ctv-ease-out);
+}
+.contact-email:hover {
+  color: var(--ctv-brand);
+  border-color: var(--ctv-brand-deep);
+}
+.contact-email svg {
+  font-size: 1rem;
+  transition: transform 0.25s var(--ctv-ease-out);
+}
+.contact-email:hover svg { transform: translateX(3px); }
+
 /* ── Form ───────────────────────────────────────────── */
 .contact-form {
   background: var(--ctv-canvas);

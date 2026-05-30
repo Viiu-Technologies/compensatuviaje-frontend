@@ -27,10 +27,10 @@ const SECTIONS = [
   {
     title: 'Contacto',
     links: [
-      { label: 'Contáctanos', href: '#contacto' },
-      { label: 'Soporte',     href: '#soporte' },
-      { label: 'Prensa',      href: '#prensa' },
-      { label: 'Empresas',    href: '#empresas' },
+      { label: 'Contáctanos', href: 'mailto:compensatuviaje@gmail.com' },
+      { label: 'Soporte',     href: 'mailto:compensatuviaje@gmail.com?subject=Soporte' },
+      { label: 'Prensa',      href: 'mailto:compensatuviaje@gmail.com?subject=Prensa' },
+      { label: 'Empresas',    href: 'mailto:compensatuviaje@gmail.com?subject=Empresas' },
     ],
   },
 ];

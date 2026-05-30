@@ -129,36 +129,6 @@ const Login: React.FC = () => {
             Estamos encantados de verte :)
           </motion.p>
 
-          {/* Social Buttons */}
-          <motion.div 
-            className="!flex !flex-col !gap-4 !items-center"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <button 
-              onClick={async () => {
-                try {
-                  setIsGoogleSigningIn(true);
-                  await loginWithGoogle();
-                } catch (error) {
-                  console.error('Error al iniciar sesión con Google:', error);
-                  setIsGoogleSigningIn(false);
-                }
-              }}
-              disabled={googleLoading || isGoogleSigningIn}
-              className="!w-full !max-w-xs !flex !items-center !justify-center !gap-3 !py-3 !px-6 !rounded-full !bg-white/90 !text-emerald-800 !font-semibold !shadow-lg hover:!bg-white hover:!scale-105 !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed"
-            >
-              {isGoogleSigningIn ? (
-                <Loader2 className="!w-6 !h-6 animate-spin" />
-              ) : (
-                <BsGoogle className="!w-6 !h-6" />
-              )}
-              {isGoogleSigningIn ? 'Conectando...' : 'Iniciar sesión con Google'}
-            </button>
-            
-
-          </motion.div>
         </div>
 
         {/* Landscape / Trees Illustration */}
@@ -313,7 +283,33 @@ const Login: React.FC = () => {
           </form>
 
           <div className="!mt-10 !text-center">
-            <p className="!text-emerald-200/60 !text-sm !mb-4">O continúa con</p>
+            <div className="!flex !items-center !gap-4 !mb-5">
+              <div className="!flex-1 !h-px !bg-emerald-700/60" />
+              <p className="!text-emerald-200/60 !text-sm !whitespace-nowrap">O continúa con</p>
+              <div className="!flex-1 !h-px !bg-emerald-700/60" />
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  setIsGoogleSigningIn(true);
+                  await loginWithGoogle();
+                } catch (err) {
+                  console.error('Error al iniciar sesión con Google:', err);
+                  setIsGoogleSigningIn(false);
+                }
+              }}
+              disabled={googleLoading || isGoogleSigningIn || loading}
+              className="!w-full !flex !items-center !justify-center !gap-3 !py-3.5 !px-6 !rounded-full !bg-white !text-emerald-900 !font-semibold !shadow-lg hover:!bg-emerald-50 hover:!shadow-emerald-500/20 !transition-all disabled:!opacity-60 disabled:!cursor-not-allowed"
+            >
+              {isGoogleSigningIn ? (
+                <Loader2 className="!w-5 !h-5 !animate-spin" />
+              ) : (
+                <BsGoogle className="!w-5 !h-5" />
+              )}
+              <span>{isGoogleSigningIn ? 'Conectando...' : 'Iniciar sesión con Google'}</span>
+            </button>
 
             <div className="!mt-6">
               <span className="!text-emerald-200/80">¿No tienes cuenta? </span>

@@ -13,6 +13,8 @@ const SUBJECTS = [
   'Otro',
 ];
 
+const CONTACT_EMAIL = 'compensatuviaje@gmail.com';
+
 const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '', email: '', company: '', subject: '', message: '',
@@ -38,6 +40,21 @@ const ContactSection: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const subject = formData.subject || 'Consulta desde el sitio web';
+    const bodyLines = [
+      `Nombre: ${formData.name}`,
+      `Email: ${formData.email}`,
+      formData.company ? `Empresa: ${formData.company}` : null,
+      '',
+      formData.message,
+    ].filter(Boolean);
+
+    const href = `mailto:${CONTACT_EMAIL}`
+      + `?subject=${encodeURIComponent(subject)}`
+      + `&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+
+    window.location.href = href;
     setSubmitted(true);
   };
 
@@ -62,6 +79,11 @@ const ContactSection: React.FC = () => {
               <p className="contact-lede ctv-reveal">
                 Cuéntanos cómo podemos ayudarte. Respondemos en menos de 24 horas.
               </p>
+
+              <a href={`mailto:${CONTACT_EMAIL}`} className="contact-email ctv-reveal">
+                {CONTACT_EMAIL}
+                <HiArrowRight aria-hidden="true" />
+              </a>
             </header>
 
             {submitted ? (
