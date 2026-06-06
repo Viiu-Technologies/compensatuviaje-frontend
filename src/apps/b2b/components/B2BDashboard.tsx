@@ -18,6 +18,7 @@ import {
   Bell,
   X,
   Menu,
+  Trophy,
 } from 'lucide-react';
 
 // Import Views
@@ -31,6 +32,7 @@ import DocumentsView from './views/DocumentsView';
 import OrdersView from './views/OrdersView';
 import ManifestView from './views/ManifestView';
 import CertificatesView from './views/CertificatesView';
+import RankingView from './views/RankingView';
 
 // ─── Per-company-type theme system ────────────────────────────────────────────
 
@@ -133,6 +135,7 @@ const ITEMS = {
   manifiestos:  { id: 'manifiestos',  label: 'Manifiestos de Vuelos',    icon: FileUp },
   calculadora:  { id: 'calculadora',  label: 'Calculadora CO₂',          icon: Calculator },
   asistente:    { id: 'asistente',    label: 'Asistente IA',             icon: Bot },
+  ranking:      { id: 'ranking',      label: 'Ranking Empresas',         icon: Trophy },
 } as const;
 
 // Navegación base para todos los tipos
@@ -144,31 +147,37 @@ const DASHBOARD_CONFIGS: Record<CompanyType, { label: string; items: typeof ITEM
   TRAVEL_AGENCY: [
     { label: 'MI EMPRESA',     items: BASE_EMPRESA },
     { label: 'VUELOS',         items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados, ITEMS.manifiestos] },
+    { label: 'COMUNIDAD',      items: [ITEMS.ranking] },
     { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
   ],
   TRANSPORT: [
     { label: 'MI EMPRESA',     items: BASE_EMPRESA },
     { label: 'RUTAS',          items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados] },
+    { label: 'COMUNIDAD',      items: [ITEMS.ranking] },
     { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
   ],
   LOGISTICS: [
     { label: 'MI EMPRESA',     items: BASE_EMPRESA },
     { label: 'LOGÍSTICA',      items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados, ITEMS.manifiestos] },
+    { label: 'COMUNIDAD',      items: [ITEMS.ranking] },
     { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
   ],
   CORPORATE: [
     { label: 'MI EMPRESA',     items: BASE_EMPRESA },
     { label: 'COMPENSACIONES', items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados] },
+    { label: 'COMUNIDAD',      items: [ITEMS.ranking] },
     { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
   ],
   EVENTS: [
     { label: 'MI EMPRESA',     items: BASE_EMPRESA },
     { label: 'EVENTOS',        items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados, ITEMS.manifiestos] },
+    { label: 'COMUNIDAD',      items: [ITEMS.ranking] },
     { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
   ],
   OTHER: [
     { label: 'MI EMPRESA',     items: BASE_EMPRESA },
     { label: 'COMPENSACIONES', items: [ITEMS.proyectos, ITEMS.ordenes, ITEMS.certificados] },
+    { label: 'COMUNIDAD',      items: [ITEMS.ranking] },
     { label: 'HERRAMIENTAS',   items: BASE_TOOLS },
   ],
 };
@@ -187,6 +196,7 @@ const TAB_LABELS: Record<string, string> = {
   manifiestos: 'Manifiestos de Vuelos',
   calculadora: 'Calculadora CO₂',
   asistente: 'Asistente IA',
+  ranking: 'Ranking de Empresas',
   cuenta: 'Configuración',
 };
 
@@ -329,6 +339,7 @@ const B2BDashboard: React.FC = () => {
       case 'manifiestos': return <ManifestView />;
       case 'calculadora': return <CalculatorView />;
       case 'asistente':   return <AssistantView />;
+      case 'ranking':     return <RankingView />;
       case 'cuenta':      return <SettingsView />;
       default:            return <DashboardPanelView />;
     }
