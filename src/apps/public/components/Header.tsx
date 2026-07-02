@@ -6,18 +6,18 @@ import { HiMenu, HiX, HiArrowRight } from 'react-icons/hi';
 import './Header.css';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen]   = useState(false);
-  const [scrolled,   setScrolled]     = useState(false);
-  const [activeHash, setActiveHash]   = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeHash, setActiveHash] = useState('');
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const dashboardPath =
     user?.userType === 'superadmin' ? '/admin'
-    : user?.userType === 'b2c'     ? '/b2c/dashboard'
-    : user?.userType === 'partner' ? '/partner'
-    : user?.userType === 'b2b'     ? '/b2b/dashboard'
-    : '/dashboard';
+      : user?.userType === 'b2c' ? '/b2c/dashboard'
+        : user?.userType === 'partner' ? '/partner'
+          : user?.userType === 'b2b' ? '/b2b/dashboard'
+            : '/dashboard';
 
   /* ── Scroll effect ── */
   useEffect(() => {
@@ -52,94 +52,95 @@ const Header = () => {
     return () => { document.body.style.overflow = ''; };
   }, [isMenuOpen]);
 
-  const closeMenu   = () => setIsMenuOpen(false);
+  const closeMenu = () => setIsMenuOpen(false);
   const handleLogout = () => { logout(); navigate('/'); closeMenu(); };
 
   const navLinks = [
-    { href: '#inicio',              label: 'Inicio' },
+    { href: '#inicio', label: 'Inicio' },
     { href: '#calculadora-content', label: 'Calculadora' },
-    { href: '#contacto',            label: 'Contacto' },
+    { href: '#contacto', label: 'Contacto' },
   ];
 
   return (
     <>
-    <header className={`ctv-header${scrolled ? ' ctv-header--scrolled' : ''}`}>
-      <div className="ctv-header__inner">
+      <header className={`ctv-header${scrolled ? ' ctv-header--scrolled' : ''}`}>
+        <div className="ctv-header__inner">
 
-        {/* ── Logo ── */}
-        <Link to="/" onClick={closeMenu} className="ctv-header__logo">
-          <img
-            src="/images/brand/logo-horizontal.png"
-            alt="CompensaTuViaje"
-            width="200"
-            height="48"
-          />
-        </Link>
+          {/* ── Logo ── */}
+          <Link to="/" onClick={closeMenu} className="ctv-header__logo">
+            <img
+              src="/images/brand/logo-horizontal.svg"
+              alt="compensatuviaje"
+              className="ctv-header__logo-img"
+              width="188"
+              height="42"
+            />
+          </Link>
 
-        {/* ── Desktop nav ── */}
-        <nav className="ctv-header__nav" aria-label="Navegación principal">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className={`ctv-nav-link${activeHash === link.href ? ' ctv-nav-link--active' : ''}`}
-            >
-              {link.label}
-            </a>
-          ))}
-        </nav>
+          {/* ── Desktop nav ── */}
+          <nav className="ctv-header__nav" aria-label="Navegación principal">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className={`ctv-nav-link${activeHash === link.href ? ' ctv-nav-link--active' : ''}`}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
 
-        {/* ── Desktop auth ── */}
-        <div className="ctv-header__actions">
-          {isAuthenticated ? (
-            <>
-              <Link to={dashboardPath} className="ctv-btn ctv-btn--ghost">
-                <FaChartBar />
-                <span>Dashboard</span>
-              </Link>
+          {/* ── Desktop auth ── */}
+          <div className="ctv-header__actions">
+            {isAuthenticated ? (
+              <>
+                <Link to={dashboardPath} className="ctv-btn ctv-btn--ghost">
+                  <FaChartBar />
+                  <span>Dashboard</span>
+                </Link>
 
-              <div className="ctv-user-chip">
-                <div className="ctv-user-chip__avatar">
-                  <FaUser />
+                <div className="ctv-user-chip">
+                  <div className="ctv-user-chip__avatar">
+                    <FaUser />
+                  </div>
+                  <span className="ctv-user-chip__name">
+                    {user?.firstName || user?.name}
+                  </span>
                 </div>
-                <span className="ctv-user-chip__name">
-                  {user?.firstName || user?.name}
-                </span>
-              </div>
 
-              <button onClick={handleLogout} className="ctv-btn ctv-btn--ghost">
-                Salir
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="ctv-btn ctv-btn--outline">
-                Iniciar Sesión
-              </Link>
-              <Link to="/register" className="ctv-btn ctv-btn--primary">
-                Registrarse Gratis
-              </Link>
-            </>
-          )}
+                <button onClick={handleLogout} className="ctv-btn ctv-btn--ghost">
+                  Salir
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="ctv-btn ctv-btn--outline">
+                  Iniciar Sesión
+                </Link>
+                <Link to="/register" className="ctv-btn ctv-btn--primary">
+                  Registrarse Gratis
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* ── Mobile hamburger ── */}
+          <button
+            className="ctv-hamburger"
+            onClick={() => setIsMenuOpen((v) => !v)}
+            aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={isMenuOpen}
+          >
+            {isMenuOpen ? <HiX /> : <HiMenu />}
+          </button>
         </div>
+      </header>
 
-        {/* ── Mobile hamburger ── */}
-        <button
-          className="ctv-hamburger"
-          onClick={() => setIsMenuOpen((v) => !v)}
-          aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={isMenuOpen}
-        >
-          {isMenuOpen ? <HiX /> : <HiMenu />}
-        </button>
-      </div>
-    </header>
-
-    {/* ── Mobile drawer — sibling del header para evitar stacking-context bugs ── */}
-    <div
-      className={`ctv-drawer${isMenuOpen ? ' ctv-drawer--open' : ''}`}
-      aria-hidden={!isMenuOpen}
-    >
+      {/* ── Mobile drawer — sibling del header para evitar stacking-context bugs ── */}
+      <div
+        className={`ctv-drawer${isMenuOpen ? ' ctv-drawer--open' : ''}`}
+        aria-hidden={!isMenuOpen}
+      >
         {/* Overlay */}
         <div className="ctv-drawer__overlay" onClick={closeMenu} />
 
@@ -193,7 +194,7 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Link to="/login"    onClick={closeMenu} className="ctv-btn ctv-btn--outline ctv-btn--full">
+                <Link to="/login" onClick={closeMenu} className="ctv-btn ctv-btn--outline ctv-btn--full">
                   Iniciar Sesión
                 </Link>
                 <Link to="/register" onClick={closeMenu} className="ctv-btn ctv-btn--primary ctv-btn--full">

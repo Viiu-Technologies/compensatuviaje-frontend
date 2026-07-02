@@ -44,23 +44,30 @@
   width: 100%;
 }
 
-.ts-image-wrapper {
+.ts-svg-wrapper {
   position: relative;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px -15px rgba(15, 61, 46, 0.2);
-  transform: translateZ(0);
+  width: 100%;
+  max-width: 320px;
+  background: #ffffff;
+  border: 1px solid rgba(1, 57, 56, 0.08);
+  border-radius: 28px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 0 rgba(1, 57, 56, 0.02),
+              0 30px 60px -40px rgba(1, 57, 56, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.4s var(--ctv-ease-out), box-shadow 0.4s var(--ctv-ease-out);
+}
+.ts-svg-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 40px 80px -30px rgba(1, 57, 56, 0.22);
 }
 
-.ts-image {
+.ts-tech-svg {
   width: 100%;
   height: auto;
   display: block;
-  transition: transform 0.8s var(--ctv-ease-out);
-}
-
-.ts-image-wrapper:hover .ts-image {
-  transform: scale(1.04);
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -80,6 +87,7 @@
   font-weight: 500;
   margin: 0 0 1.5rem;
 }
+
 .ts-eyebrow__line {
   width: 28px;
   height: 1px;
@@ -96,6 +104,7 @@
   margin: 0;
   max-width: 16ch;
 }
+
 .ts-title--accent .hero-line__inner em {
   font-style: italic;
   color: var(--ctv-brand);
@@ -199,16 +208,19 @@
   font-family: var(--ctv-font-display);
   color: var(--ctv-ink);
 }
+
 .ts-nav__index {
   font-size: 2rem;
   color: var(--ctv-brand-deep);
   letter-spacing: -0.01em;
 }
+
 .ts-nav__sep {
   font-size: 1.25rem;
   color: var(--ctv-ink-mute);
   font-style: italic;
 }
+
 .ts-nav__total {
   font-size: 1.25rem;
   color: var(--ctv-ink-mute);
@@ -233,6 +245,7 @@
   cursor: pointer;
   transition: all 0.25s var(--ctv-ease-out);
 }
+
 .ts-nav__btn:hover {
   background: var(--ctv-brand-deep);
   border-color: var(--ctv-brand-deep);

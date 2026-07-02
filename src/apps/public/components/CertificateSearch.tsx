@@ -8,6 +8,7 @@ import {
 import { searchCertificateByNumber, publicVerifyCertificate } from '../../../shared/services/blockchainApi';
 import type { PublicVerification } from '../../../types/blockchain.types';
 import { useGsapReveal } from '../hooks/useGsapReveal';
+import { PlanetDataSVG } from './Illustrations';
 import './CertificateSearch.css';
 
 const TRUST = [
@@ -18,11 +19,11 @@ const TRUST = [
 
 const CertificateSearch: React.FC = () => {
   const navigate = useNavigate();
-  const [query, setQuery]       = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [result, setResult]     = useState<PublicVerification | null>(null);
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<PublicVerification | null>(null);
   const [searched, setSearched] = useState(false);
-  const [error, setError]       = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
@@ -190,11 +191,7 @@ const CertificateSearch: React.FC = () => {
           {/* Columna derecha: Visual e ilustración */}
           <div className="cs-visual ctv-reveal">
             <div className="cs-card-wrapper">
-              <img
-                src="/images/nft_bg.jpg"
-                alt="Blockchain Eco Certificate NFT"
-                className="cs-certificate-img"
-              />
+              <PlanetDataSVG className="cs-certificate-img" style={{ width: '220px', height: '220px' }} />
               <div className="cs-card-badge">
                 <FaShieldAlt className="cs-card-badge__icon" aria-hidden="true" />
                 <span>100% Seguro & Transparente</span>

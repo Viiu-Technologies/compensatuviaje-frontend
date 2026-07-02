@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 96 96">
-  <rect width="96" height="96" rx="22" fill="#08AE06"/>
-  <g transform="translate(4.5 16) scale(0.66)">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 132 88">
   <defs>
-    <mask id="cut-f">
+    <mask id="cut-m">
       <rect width="132" height="88" fill="white"/>
       <circle cx="52" cy="60" r="10" fill="black"/>
       <circle cx="65" cy="49" r="12" fill="black"/>
@@ -11,11 +9,11 @@
       <path d="M 78 58 C 94 62 102 54 124 46" stroke="black" stroke-width="5" fill="none" stroke-linecap="round"/>
     </mask>
   </defs>
-  <g fill="#FFFFFF" mask="url(#cut-f)">
+  <g fill="#08AE06" mask="url(#cut-m)">
     <circle cx="36" cy="56" r="24"/>
     <circle cx="64" cy="34" r="24"/>
     <circle cx="95" cy="42" r="13"/>
     <circle cx="104" cy="64" r="15"/>
     <rect x="26" y="42" width="90" height="37" rx="18.5"/>
-  </g></g>
+  </g>
 </svg>

@@ -3,6 +3,9 @@
 /* Tailwind CSS v4 */
 @import "tailwindcss";
 
+/* Dashboard dark-mode overrides (Admin/B2C/Partner). B2B usa useTheme propio. */
+@import "./shared/styles/dashboard-dark.css";
+
 /* Theme customization para Tailwind v4 */
 @theme {
   /* Primary - Verde sostenible */

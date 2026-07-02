@@ -17,6 +17,17 @@
   max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
+  position: relative;
+  z-index: 1;
+}
+
+/* Patrón de blobs de marca al fondo */
+.ft-section__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -36,6 +47,7 @@
   font-weight: 500;
   margin: 0 0 1.5rem;
 }
+
 .ft-eyebrow__line {
   width: 28px;
   height: 1px;
@@ -67,37 +79,70 @@
   margin: 0;
 }
 
-/* ── Steps 01 / 02 / 03 ─────────────────────────────── */
+/* ── Steps 01 / 02 / 03 — tarjetas modernas ─────────── */
 .ft-steps {
   list-style: none;
   margin: 0 0 clamp(4rem, 8vw, 6rem);
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0;
-  border-top: 1px solid var(--ctv-rule);
+  gap: 1.25rem;
 }
+
 @media (min-width: 800px) {
   .ft-steps {
     grid-template-columns: repeat(3, 1fr);
-    border-top: none;
   }
 }
 
 .ft-step {
-  padding: 2rem 0;
-  border-bottom: 1px solid var(--ctv-rule);
   position: relative;
+  padding: 2rem 1.75rem 2.25rem;
+  border-radius: 22px;
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--ctv-shadow-card);
+  transition: transform 0.35s var(--ctv-ease-out),
+    box-shadow 0.35s var(--ctv-ease-out),
+    border-color 0.35s var(--ctv-ease-out);
+  overflow: hidden;
 }
-@media (min-width: 800px) {
-  .ft-step {
-    padding: 2.5rem 1.75rem 2.5rem 0;
-    border-bottom: none;
-    border-right: 1px solid var(--ctv-rule);
-    border-top: 1px solid var(--ctv-rule);
-  }
-  .ft-step:last-child { border-right: none; padding-right: 0; }
-  .ft-step + .ft-step { padding-left: 1.75rem; }
+
+.ft-step::after {
+  content: '';
+  position: absolute;
+  inset: auto -30% -55% -30%;
+  height: 70%;
+  background: radial-gradient(ellipse at center,
+      rgba(8, 174, 6, 0.10) 0%,
+      transparent 65%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ctv-ease-out);
+  pointer-events: none;
+}
+
+.ft-step:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--ctv-shadow-card-hover), var(--ctv-glow-green-soft);
+  border-color: rgba(8, 174, 6, 0.25);
+}
+
+.ft-step:hover::after {
+  opacity: 1;
+}
+
+.ft-step__art {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 1.25rem;
+  will-change: transform;
+}
+
+.ft-step__art svg {
+  width: 100%;
+  height: 100%;
 }
 
 .ft-step__num {
@@ -128,20 +173,40 @@
   max-width: 32ch;
 }
 
-/* ── Card calculadora ───────────────────────────────── */
+/* ── Card calculadora — panel teal de marca ─────────── */
 .ft-card {
-  background: var(--ctv-canvas);
-  border: 1px solid var(--ctv-rule);
-  border-radius: 24px;
+  position: relative;
+  background: linear-gradient(135deg, var(--ctv-teal-800) 0%, var(--ctv-teal-900) 55%, var(--ctv-teal-950) 100%);
+  border: 1px solid var(--ctv-glass-border-dark);
+  border-radius: 28px;
   padding: clamp(2rem, 4vw, 3.5rem);
   display: grid;
   grid-template-columns: 1fr;
   gap: clamp(2rem, 4vw, 3rem);
-  box-shadow: 0 1px 0 rgba(15,61,46,0.04),
-              0 40px 80px -50px rgba(15,61,46,0.30);
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 48px 96px -48px rgba(1, 33, 32, 0.65);
 }
+
+.ft-card__pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ft-card__copy,
+.ft-card__aside {
+  position: relative;
+  z-index: 1;
+}
+
 @media (min-width: 900px) {
-  .ft-card { grid-template-columns: 1.3fr minmax(0, 1fr); align-items: center; }
+  .ft-card {
+    grid-template-columns: 1.3fr minmax(0, 1fr);
+    align-items: center;
+  }
 }
 
 .ft-card__copy {
@@ -153,8 +218,9 @@
 .ft-card__pill {
   display: inline-flex;
   align-items: center;
-  background: var(--ctv-brand-soft);
-  color: var(--ctv-accent);
+  background: rgba(8, 174, 6, 0.16);
+  border: 1px solid rgba(8, 174, 6, 0.35);
+  color: #7BE96D;
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -169,14 +235,14 @@
   font-weight: var(--ctv-display-weight);
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   line-height: 1.05;
-  color: var(--ctv-brand-deep);
+  color: #ffffff;
   margin: 0;
   letter-spacing: -0.01em;
 }
 
 .ft-card__sub {
   font-size: 1rem;
-  color: var(--ctv-ink-soft);
+  color: #A9C7C3;
   line-height: 1.55;
   margin: 0;
   max-width: 44ch;
@@ -187,8 +253,8 @@
   align-items: center;
   gap: 0.6rem;
   padding: 1rem 1.75rem;
-  background: var(--ctv-brand-deep);
-  color: var(--ctv-canvas);
+  background: var(--ctv-gradient-brand);
+  color: #ffffff;
   border: none;
   border-radius: 999px;
   font-size: 0.95rem;
@@ -198,16 +264,22 @@
   width: fit-content;
   margin-top: 0.5rem;
   font-family: var(--ctv-font-body);
-  transition: background 0.25s var(--ctv-ease-out), transform 0.25s var(--ctv-ease-out);
+  box-shadow: var(--ctv-glow-green-soft);
+  transition: box-shadow 0.25s var(--ctv-ease-out), transform 0.25s var(--ctv-ease-out);
 }
+
 .ft-cta:hover {
-  background: var(--ctv-brand);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 48px -10px rgba(8, 174, 6, 0.5);
 }
+
 .ft-cta svg {
   transition: transform 0.25s var(--ctv-ease-out);
 }
-.ft-cta:hover svg { transform: translateX(3px); }
+
+.ft-cta:hover svg {
+  transform: translateX(3px);
+}
 
 .ft-card__fine {
   font-size: 0.75rem;
@@ -225,6 +297,7 @@
   min-width: 0;
   overflow: hidden;
 }
+
 @media (min-width: 900px) {
   .ft-card__aside {
     border-top: none;
@@ -244,9 +317,19 @@
 }
 
 /* Reset clases antiguas que ya no se usan en el JSX */
-.ft-hidden, .ft-visible, .ft-visible--delay,
-.ft-badge, .ft-payment,
-.ft-card__top, .ft-card__icon, .ft-card__top-text,
-.ft-card__bolt, .ft-card__name + .ft-card__pill,
-.ft-card__body, .ft-trust-grid, .ft-trust-item,
-.ft-card__desc { all: revert; }
+.ft-hidden,
+.ft-visible,
+.ft-visible--delay,
+.ft-badge,
+.ft-payment,
+.ft-card__top,
+.ft-card__icon,
+.ft-card__top-text,
+.ft-card__bolt,
+.ft-card__name+.ft-card__pill,
+.ft-card__body,
+.ft-trust-grid,
+.ft-trust-item,
+.ft-card__desc {
+  all: revert;
+}

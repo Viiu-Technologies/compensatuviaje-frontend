@@ -5,6 +5,8 @@
 	"type": "module",
 	"dependencies": {
 		"@headlessui/react": "^2.2.9",
+		"@react-three/drei": "^10.7.7",
+		"@react-three/fiber": "^9.6.1",
 		"@supabase/supabase-js": "^2.89.0",
 		"axios": "^1.15.2",
 		"clsx": "^2.1.1",
@@ -24,7 +26,8 @@
 		"react-router": "^7.9.6",
 		"react-router-dom": "^7.9.6",
 		"recharts": "^3.4.1",
-		"tailwind-merge": "^3.4.0"
+		"tailwind-merge": "^3.4.0",
+		"three": "^0.184.0"
 	},
 	"scripts": {
 		"dev": "vite",
@@ -51,6 +54,7 @@
 		"@types/node": "^24.10.1",
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
+		"@types/three": "^0.184.1",
 		"@vitejs/plugin-react": "^5.1.1",
 		"autoprefixer": "^10.4.22",
 		"jsrepo": "^3.0.8",

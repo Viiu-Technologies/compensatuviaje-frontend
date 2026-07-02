@@ -1,43 +1,85 @@
 /* ==========================================================================
-   tokens.css — Sistema de diseño minimalista para landing pública
-   Paleta extraída del logo: verde brillante + verde bosque sobre canvas crema
+   tokens.css — Sistema de diseño del landing público
+   Paleta oficial extraída de public/images/brand/new-brand:
+   verde vivo #08AE06 (nube) · teal profundo #073D3D (wordmark)
+   · fondos teal #003837/#004443 (tarjetas corporativas)
    ========================================================================== */
 
 :root {
   /* ── Brand ── */
-  --ctv-brand:        #00B140;   /* verde brillante (alas del logo) */
-  --ctv-brand-deep:   #0F3D2E;   /* verde bosque (wordmark)        */
-  --ctv-brand-soft:   #DCEFE2;   /* verde marca ultra-suave        */
-  --ctv-accent:       #00873E;   /* hover / estado activo          */
+  --ctv-brand: #08AE06;
+  /* verde vivo de la nube del logo    */
+  --ctv-brand-bright: #3ED32B;
+  /* verde luminoso para glows         */
+  --ctv-brand-deep: #073D3D;
+  /* teal profundo del wordmark        */
+  --ctv-brand-soft: #E4F6E0;
+  /* verde marca ultra-suave           */
+  --ctv-accent: #079705;
+  /* hover / estado activo             */
+
+  /* ── Escala teal (fondos corporativos de marca) ── */
+  --ctv-teal-950: #012120;
+  --ctv-teal-900: #003837;
+  --ctv-teal-800: #044443;
+  --ctv-teal-700: #0B5350;
+  --ctv-teal-600: #14625D;
+  --ctv-teal-500: #246C69;
 
   /* ── Neutrals ── */
-  --ctv-canvas:       #F4F7F5;   /* blanco roto con un toque de verde salvia */
-  --ctv-canvas-2:     #E8EFEA;   /* secciones alternas con tono verde suave  */
-  --ctv-ink:          #0F3D2E;   /* texto principal                */
-  --ctv-ink-soft:     #4A5A52;   /* texto secundario               */
-  --ctv-ink-mute:     #8A9690;   /* labels, captions, meta         */
-  --ctv-rule:         rgba(15, 61, 46, 0.10);
-  --ctv-rule-strong:  rgba(15, 61, 46, 0.20);
+  --ctv-canvas: #F7FAF8;
+  /* blanco roto con tinte verde-teal   */
+  --ctv-canvas-2: #EDF4F1;
+  /* secciones alternas                 */
+  --ctv-ink: #073D3D;
+  /* texto principal                    */
+  --ctv-ink-soft: #40605C;
+  /* texto secundario                   */
+  --ctv-ink-mute: #7E9491;
+  /* labels, captions, meta             */
+  --ctv-rule: rgba(7, 61, 61, 0.10);
+  --ctv-rule-strong: rgba(7, 61, 61, 0.22);
+
+  /* ── Efectos premium ── */
+  --ctv-gradient-brand: linear-gradient(120deg, #08AE06 0%, #0B8A4A 55%, #073D3D 100%);
+  --ctv-gradient-text: linear-gradient(100deg, #08AE06 0%, #0E9E5C 100%);
+  --ctv-glow-green: 0 0 80px -12px rgba(8, 174, 6, 0.35);
+  --ctv-glow-green-soft: 0 8px 40px -12px rgba(8, 174, 6, 0.28);
+  --ctv-glass-bg: rgba(255, 255, 255, 0.62);
+  --ctv-glass-bg-dark: rgba(4, 68, 67, 0.55);
+  --ctv-glass-border: rgba(255, 255, 255, 0.55);
+  --ctv-glass-border-dark: rgba(255, 255, 255, 0.12);
+  --ctv-shadow-card: 0 1px 2px rgba(7, 61, 61, 0.05),
+    0 24px 60px -32px rgba(7, 61, 61, 0.28);
+  --ctv-shadow-card-hover: 0 2px 4px rgba(7, 61, 61, 0.06),
+    0 32px 72px -28px rgba(7, 61, 61, 0.36);
 
   /* ── Tipografía ── */
   --ctv-font-display: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif;
-  --ctv-font-body:    'Inter', system-ui, -apple-system, sans-serif;
-  --ctv-display-weight:    600;       /* Montserrat semibold — tono serio */
-  --ctv-display-tracking:  -0.005em;  /* menos negativo que el serif */
+  --ctv-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --ctv-display-weight: 600;
+  --ctv-display-tracking: -0.005em;
 
-  /* ── Easing & duración (alineado al skill GSAP) ── */
-  --ctv-ease-out:  cubic-bezier(0.22, 1, 0.36, 1);   /* ≈ power3.out */
-  --ctv-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* ≈ power3.inOut */
+  /* ── Easing & duración (alineado a GSAP power3) ── */
+  --ctv-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ctv-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* ── Layout ── */
-  --ctv-page-max:    1200px;
-  --ctv-gutter:      clamp(1rem, 4vw, 2.5rem);
+  --ctv-page-max: 1200px;
+  --ctv-gutter: clamp(1rem, 4vw, 2.5rem);
 }
 
 /* Estado inicial para reveals GSAP (evita flash antes del mount) */
-.ctv-reveal { opacity: 0; }
-.ctv-reveal--ready { opacity: 1; }
+.ctv-reveal {
+  opacity: 0;
+}
+
+.ctv-reveal--ready {
+  opacity: 1;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .ctv-reveal { opacity: 1 !important; }
+  .ctv-reveal {
+    opacity: 1 !important;
+  }
 }

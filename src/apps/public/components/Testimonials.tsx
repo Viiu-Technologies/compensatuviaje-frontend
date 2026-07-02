@@ -2,6 +2,7 @@ import { useState } from 'react';
 import gsap from 'gsap';
 import { HiArrowLeft, HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
+import { ForestSVG } from './Illustrations';
 import './Testimonials.css';
 
 const TESTIMONIALS = [
@@ -42,7 +43,14 @@ const Testimonials = () => {
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
 
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
+    const tl = gsap.timeline({
+      defaults: { ease: 'power3.out', duration: 0.8 },
+      scrollTrigger: {
+        trigger: root,
+        start: 'top 75%',
+        toggleActions: 'play none none none',
+      },
+    });
     tl.from('.ts-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0);
     tl.from('.ts-title .hero-line__inner', {
       yPercent: 110,
@@ -142,14 +150,10 @@ const Testimonials = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="ts-visual ctv-reveal">
-            <div className="ts-image-wrapper">
-              <img
-                src="/images/realistic_eco_seedling.png"
-                alt="Eco-friendly seedling growing in forest"
-                className="ts-image"
-              />
+            <div className="ts-svg-wrapper">
+              <ForestSVG className="ts-tech-svg" style={{ width: '280px', height: '280px' }} />
             </div>
           </div>
         </div>

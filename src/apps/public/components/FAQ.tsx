@@ -65,8 +65,31 @@ const FAQS_B2B = [
   },
 ];
 
+const FAQS_PARTNER = [
+  {
+    id: 201,
+    q: 'Tengo un proyecto de sostenibilidad, ¿cómo puedo ser parte?',
+    a: 'Si posees o gestionas un proyecto de reforestación, conservación, energías renovables u otro impacto ESG, puedes postular enviándonos un correo con la ficha técnica. Evaluamos factibilidad y metodologías de certificación.',
+  },
+  {
+    id: 202,
+    q: '¿Qué tipo de verificación requieren los proyectos?',
+    a: 'Todos los proyectos deben estar acreditados o en vías de acreditación por estándares reconocidos internacionalmente como Gold Standard, VCS (Verra) o el Mercado de Carbono correspondiente en Chile.',
+  },
+  {
+    id: 203,
+    q: '¿Cómo funciona la comercialización de créditos de carbono?',
+    a: 'Integramos la venta de tus créditos directo a nuestra plataforma B2B/B2C, automatizando la trazabilidad blockchain y entregando las liquidaciones correspondientes al desarrollador del proyecto.',
+  },
+  {
+    id: 204,
+    q: '¿Qué costo tiene para el desarrollador del proyecto?',
+    a: 'No cobramos costos de incorporación ni cuotas anuales. Trabajamos bajo un modelo de comisión por volumen transado en la plataforma, alineando incentivos en beneficio de la restauración ecológica.',
+  },
+];
+
 const FAQ = () => {
-  const [activeTab, setActiveTab] = useState<'b2c' | 'b2b'>('b2c');
+  const [activeTab, setActiveTab] = useState<'b2c' | 'b2b' | 'partner'>('b2c');
   const [openId, setOpenId] = useState<number | null>(1);
   const panelsRef = useRef<Map<number, HTMLDivElement>>(new Map());
 
@@ -83,7 +106,7 @@ const FAQ = () => {
     tl.from('.faq-cta', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.7);
   }, []);
 
-  const currentFaqs = activeTab === 'b2c' ? FAQS_B2C : FAQS_B2B;
+  const currentFaqs = activeTab === 'b2c' ? FAQS_B2C : activeTab === 'b2b' ? FAQS_B2B : FAQS_PARTNER;
 
   useEffect(() => {
     if (currentFaqs.length > 0) {
@@ -125,17 +148,23 @@ const FAQ = () => {
         </header>
 
         <div className="faq-tabs ctv-reveal">
-          <button 
+          <button
             className={`faq-tab ${activeTab === 'b2c' ? 'faq-tab--active' : ''}`}
             onClick={() => setActiveTab('b2c')}
           >
             Viajeros
           </button>
-          <button 
+          <button
             className={`faq-tab ${activeTab === 'b2b' ? 'faq-tab--active' : ''}`}
             onClick={() => setActiveTab('b2b')}
           >
             Empresas
+          </button>
+          <button
+            className={`faq-tab ${activeTab === 'partner' ? 'faq-tab--active' : ''}`}
+            onClick={() => setActiveTab('partner')}
+          >
+            Partners
           </button>
         </div>
 

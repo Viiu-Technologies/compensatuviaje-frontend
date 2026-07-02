@@ -87,108 +87,108 @@ const ContactSection: React.FC = () => {
             </header>
 
             {submitted ? (
-          <div className="contact-success">
-            <span className="contact-success__icon" aria-hidden="true">
-              <HiCheck />
-            </span>
-            <h3 className="contact-success__title">Mensaje recibido</h3>
-            <p className="contact-success__sub">
-              Nos pondremos en contacto contigo pronto. Revisa tu correo electrónico.
-            </p>
-            <button
-              onClick={() => {
-                setSubmitted(false);
-                setFormData({ name: '', email: '', company: '', subject: '', message: '' });
-              }}
-              className="contact-success__again"
-            >
-              Enviar otro mensaje
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="contact-form">
-            <div className="contact-row">
-              <label className="contact-field">
-                <span className="contact-field__label">Nombre completo</span>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Tu nombre"
-                  className="contact-input"
-                />
-              </label>
-              <label className="contact-field">
-                <span className="contact-field__label">Correo electrónico</span>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="tu@email.com"
-                  className="contact-input"
-                />
-              </label>
-            </div>
-
-            <div className="contact-row">
-              <label className="contact-field">
-                <span className="contact-field__label">
-                  Empresa <span className="contact-field__opt">(opcional)</span>
+              <div className="contact-success">
+                <span className="contact-success__icon" aria-hidden="true">
+                  <HiCheck />
                 </span>
-                <input
-                  type="text"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  placeholder="Tu empresa"
-                  className="contact-input"
-                />
-              </label>
-              <label className="contact-field">
-                <span className="contact-field__label">Asunto</span>
-                <select
-                  name="subject"
-                  required
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="contact-input contact-input--select"
+                <h3 className="contact-success__title">Mensaje recibido</h3>
+                <p className="contact-success__sub">
+                  Nos pondremos en contacto contigo pronto. Revisa tu correo electrónico.
+                </p>
+                <button
+                  onClick={() => {
+                    setSubmitted(false);
+                    setFormData({ name: '', email: '', company: '', subject: '', message: '' });
+                  }}
+                  className="contact-success__again"
                 >
-                  <option value="">Selecciona un asunto</option>
-                  {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </label>
-            </div>
+                  Enviar otro mensaje
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="contact-form">
+                <div className="contact-row">
+                  <label className="contact-field">
+                    <span className="contact-field__label">Nombre completo</span>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Tu nombre"
+                      className="contact-input"
+                    />
+                  </label>
+                  <label className="contact-field">
+                    <span className="contact-field__label">Correo electrónico</span>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="tu@email.com"
+                      className="contact-input"
+                    />
+                  </label>
+                </div>
 
-            <label className="contact-field">
-              <span className="contact-field__label">Mensaje</span>
-              <textarea
-                name="message"
-                required
-                value={formData.message}
-                onChange={handleChange}
-                rows={5}
-                placeholder="Cuéntanos en qué podemos ayudarte..."
-                className="contact-input contact-input--textarea"
-              />
-            </label>
+                <div className="contact-row">
+                  <label className="contact-field">
+                    <span className="contact-field__label">
+                      Empresa <span className="contact-field__opt">(opcional)</span>
+                    </span>
+                    <input
+                      type="text"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      placeholder="Tu empresa"
+                      className="contact-input"
+                    />
+                  </label>
+                  <label className="contact-field">
+                    <span className="contact-field__label">Asunto</span>
+                    <select
+                      name="subject"
+                      required
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className="contact-input contact-input--select"
+                    >
+                      <option value="">Selecciona un asunto</option>
+                      {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </label>
+                </div>
 
-            <div className="contact-footer">
-              <button type="submit" className="contact-submit">
-                Enviar mensaje
-                <HiArrowRight aria-hidden="true" />
-              </button>
-              <p className="contact-fine">
-                Al enviar aceptas nuestra política de privacidad.
-              </p>
-            </div>
-          </form>
+                <label className="contact-field">
+                  <span className="contact-field__label">Mensaje</span>
+                  <textarea
+                    name="message"
+                    required
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={5}
+                    placeholder="Cuéntanos en qué podemos ayudarte..."
+                    className="contact-input contact-input--textarea"
+                  />
+                </label>
+
+                <div className="contact-footer">
+                  <button type="submit" className="contact-submit">
+                    Enviar mensaje
+                    <HiArrowRight aria-hidden="true" />
+                  </button>
+                  <p className="contact-fine">
+                    Al enviar aceptas nuestra política de privacidad.
+                  </p>
+                </div>
+              </form>
             )}
           </div>
-          
+
           <div className="contact-visual ctv-reveal">
             <div className="contact-image-wrapper">
               <img

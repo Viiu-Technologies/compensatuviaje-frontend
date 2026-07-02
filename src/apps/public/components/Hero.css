@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Hero.css — Minimal, editorial, ecology-inspired
+   Hero.css — Premium, tecnológico, branding compensatuviaje
    ========================================================================== */
 @import './landing/tokens.css';
 
@@ -15,14 +15,53 @@
   align-items: center;
 }
 
+/* ── Fondo con profundidad ──────────────────────────────────── */
+.hero__glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+  will-change: transform;
+}
+
+.hero__glow--a {
+  width: 640px;
+  height: 640px;
+  top: -220px;
+  right: -140px;
+  background: radial-gradient(circle at 40% 40%,
+      rgba(8, 174, 6, 0.16) 0%,
+      rgba(11, 138, 74, 0.08) 45%,
+      transparent 70%);
+}
+
+.hero__glow--b {
+  width: 520px;
+  height: 520px;
+  bottom: -260px;
+  left: -180px;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(7, 61, 61, 0.10) 0%,
+      transparent 65%);
+}
+
+/* Nube de marca gigante como marca de agua */
+.hero__cloud-bg {
+  position: absolute;
+  width: clamp(420px, 46vw, 700px);
+  left: -120px;
+  top: 8%;
+  pointer-events: none;
+}
+
 /* Grano sutil para textura papel */
 .hero__grain {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.3;
   mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.24 0 0 0 0 0.18 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.03 0 0 0 0 0.24 0 0 0 0 0.24 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 .hero__container {
@@ -48,17 +87,24 @@
   }
 }
 
-/* ── Eyebrow ────────────────────────────────────────────────── */
+/* ── Eyebrow — pill glass ───────────────────────────────────── */
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ctv-ink-soft);
   margin: 0 0 1.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-rule);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 2px rgba(7, 61, 61, 0.04);
 }
 
 .hero-eyebrow__dot {
@@ -66,7 +112,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--ctv-brand);
-  box-shadow: 0 0 0 4px rgba(0, 177, 64, 0.14);
+  box-shadow: 0 0 0 4px rgba(8, 174, 6, 0.14);
 }
 
 /* ── Display titular ────────────────────────────────────────── */
@@ -81,11 +127,11 @@
   max-width: 18ch;
 }
 
-/* Cada línea es contenedor con overflow:hidden para mask reveal */
 .hero-line {
   display: block;
   overflow: hidden;
-  padding: 0.06em 0; /* evita recorte de descenders */
+  padding: 0.18em 0.05em;
+  margin: -0.18em -0.05em;
 }
 
 .hero-line__inner {
@@ -95,8 +141,11 @@
 
 .hero-line--accent .hero-line__inner em {
   font-style: italic;
-  color: var(--ctv-brand);
   font-family: var(--ctv-font-display);
+  background: var(--ctv-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* ── Lede ───────────────────────────────────────────────────── */
@@ -104,7 +153,7 @@
   font-size: clamp(1rem, 1.3vw, 1.125rem);
   line-height: 1.55;
   color: var(--ctv-ink-soft);
-  max-width: 44ch;
+  max-width: 46ch;
   margin: 0 0 2.5rem;
   font-weight: 400;
 }
@@ -130,68 +179,140 @@
   cursor: pointer;
   border: 1px solid transparent;
   transition: transform 0.25s var(--ctv-ease-out),
-              background 0.25s var(--ctv-ease-out),
-              color 0.25s var(--ctv-ease-out),
-              border-color 0.25s var(--ctv-ease-out);
+    background 0.25s var(--ctv-ease-out),
+    color 0.25s var(--ctv-ease-out),
+    border-color 0.25s var(--ctv-ease-out),
+    box-shadow 0.25s var(--ctv-ease-out);
 }
 
 .hero-btn--primary {
-  background: var(--ctv-brand-deep);
-  color: var(--ctv-canvas);
+  background: var(--ctv-gradient-brand);
+  color: #ffffff;
+  box-shadow: var(--ctv-glow-green-soft);
 }
+
 .hero-btn--primary:hover {
-  background: var(--ctv-brand);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 48px -10px rgba(8, 174, 6, 0.45);
 }
+
 .hero-btn--primary svg {
   font-size: 1.05rem;
   transition: transform 0.25s var(--ctv-ease-out);
 }
-.hero-btn--primary:hover svg { transform: translateX(3px); }
+
+.hero-btn--primary:hover svg {
+  transform: translateX(3px);
+}
 
 .hero-btn--ghost {
   background: transparent;
   color: var(--ctv-ink);
   border-color: var(--ctv-rule-strong);
 }
+
 .hero-btn--ghost:hover {
   border-color: var(--ctv-brand-deep);
-  background: rgba(15, 61, 46, 0.04);
+  background: rgba(7, 61, 61, 0.04);
 }
 
+/* ── Aside: planeta + chips + stat ──────────────────────────── */
 .hero__aside-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   width: 100%;
+  will-change: transform;
 }
 
-.hero-illustration {
+.hero-planet {
+  position: relative;
   width: 100%;
-  max-width: clamp(240px, 80%, 320px);
-  height: auto;
+  aspect-ratio: 1 / 1;
+  max-width: clamp(280px, 90%, 400px);
   margin-bottom: -3rem;
-  z-index: 0;
-  border-radius: 20px;
-  transition: transform 0.5s var(--ctv-ease-out);
+  pointer-events: none;
 }
 
-.hero-illustration:hover {
-  transform: translateY(-8px) scale(1.02);
+.hero-planet__inner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 30px 60px rgba(7, 61, 61, 0.25));
 }
 
-/* ── Stat card ──────────────────────────────────────────────── */
+/* Chips flotantes glass */
+.hero-chip {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ctv-brand-deep);
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 8px 32px -12px rgba(7, 61, 61, 0.35);
+  white-space: nowrap;
+}
+
+.hero-chip--a {
+  top: 12%;
+  left: -2%;
+}
+
+.hero-chip--b {
+  top: 46%;
+  right: -4%;
+}
+
+.hero-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hero-chip__icon--leaf {
+  color: var(--ctv-brand);
+  background: var(--ctv-brand-soft);
+  padding: 3px;
+}
+
+.hero-chip__icon--leaf svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-chip__icon--check {
+  color: #ffffff;
+  background: var(--ctv-brand);
+  font-size: 14px;
+}
+
+/* ── Stat card — glassmorphism ──────────────────────────────── */
 .hero-stat {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding: 1.5rem 1.75rem;
-  border-radius: 18px;
-  background: var(--ctv-canvas);
-  border: 1px solid var(--ctv-rule);
-  box-shadow: 0 1px 0 rgba(15, 61, 46, 0.04),
-              0 30px 60px -40px rgba(15, 61, 46, 0.25);
+  border-radius: 20px;
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 30px 60px -40px rgba(7, 61, 61, 0.4);
   position: relative;
   z-index: 1;
   width: 100%;
@@ -246,23 +367,32 @@
   background: var(--ctv-brand);
   position: relative;
 }
+
 .hero-stat__pulse::after {
   content: '';
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 1.5px solid rgba(0, 177, 64, 0.45);
+  border: 1.5px solid rgba(8, 174, 6, 0.45);
   animation: ctvPulse 2s ease-out infinite;
 }
+
 @keyframes ctvPulse {
-  0%   { transform: scale(0.6); opacity: 0.9; }
-  100% { transform: scale(2);   opacity: 0;   }
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 /* ── Separador ──────────────────────────────────────────────── */
 .hero-rule {
   height: 1px;
-  background: var(--ctv-rule);
+  background: linear-gradient(90deg, var(--ctv-brand) 0%, var(--ctv-rule) 30%, var(--ctv-rule) 100%);
   margin: clamp(3rem, 8vw, 5rem) 0 1.75rem;
 }
 
@@ -272,8 +402,11 @@
   grid-template-columns: 1fr;
   gap: 1.25rem;
 }
+
 @media (min-width: 700px) {
-  .hero-meta { grid-template-columns: repeat(3, 1fr); }
+  .hero-meta {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .hero-meta__item {
@@ -296,11 +429,16 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Limpieza de utilidades antiguas ────────────────────────── */
-.hero-bg-fallback,
-.animate-blob-slow,
-.animate-blob-slow-reverse,
-.animate-blob-slow-mid,
-.animate-pulse-slow,
-.animate-scroll-dot,
-.animate-fadeIn { display: revert; }
+@media (max-width: 899px) {
+  .hero-chip--a {
+    left: 2%;
+  }
+
+  .hero-chip--b {
+    right: 2%;
+  }
+
+  .hero__cloud-bg {
+    left: -180px;
+  }
+}

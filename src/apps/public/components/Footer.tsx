@@ -10,27 +10,28 @@ const SECTIONS = [
     title: 'Servicios',
     links: [
       { label: 'Calculadora CO₂', href: '#calculadora' },
-      { label: 'Compensación',    href: '#compensacion' },
-      { label: 'Proyectos',       href: '#proyectos' },
-      { label: 'Certificación',   href: '#certificacion' },
+      { label: 'Compensación', href: '#compensacion' },
+      { label: 'Proyectos', href: '#proyectos' },
+      { label: 'Certificación', href: '#certificacion' },
     ],
   },
   {
     title: 'Información',
     links: [
-      { label: 'Blog',          href: '#blog' },
+      { label: 'Blog', href: '#blog' },
       { label: 'Transparencia', href: '#transparencia' },
-      { label: 'FAQ',           href: '#faq' },
-      { label: 'Nosotros',      href: '#nosotros' },
+      { label: 'FAQ', href: '#faq' },
+      { label: 'Nosotros', href: '#nosotros' },
     ],
   },
   {
     title: 'Contacto',
     links: [
       { label: 'Contáctanos', href: 'mailto:compensatuviaje@gmail.com' },
-      { label: 'Soporte',     href: 'mailto:compensatuviaje@gmail.com?subject=Soporte' },
-      { label: 'Prensa',      href: 'mailto:compensatuviaje@gmail.com?subject=Prensa' },
-      { label: 'Empresas',    href: 'mailto:compensatuviaje@gmail.com?subject=Empresas' },
+      { label: 'Soporte', href: 'mailto:compensatuviaje@gmail.com?subject=Soporte' },
+      { label: 'Prensa', href: 'mailto:compensatuviaje@gmail.com?subject=Prensa' },
+      { label: 'Empresas', href: 'mailto:compensatuviaje@gmail.com?subject=Empresas' },
+      { label: 'Partners', href: 'mailto:compensatuviaje@gmail.com?subject=Partners' },
     ],
   },
 ];
@@ -92,6 +93,21 @@ const Footer = () => {
               <HiArrowRight aria-hidden="true" />
             </button>
           </form>
+        </div>
+
+        {/* ── Banner de Proyectos ESG / Partners ── */}
+        <div className="ft-esg-banner">
+          <div className="ft-esg-banner__copy">
+            <span className="ft-esg-banner__pill">Proyectos ESG</span>
+            <h3 className="ft-esg-banner__title">¿Tienes un proyecto de sostenibilidad?</h3>
+            <p className="ft-esg-banner__text">
+              Si quieres ser parte de nuestra red de compensación, postula a Proyectos ESG. Envíanos un email para presentar tu iniciativa e iniciar conversaciones.
+            </p>
+          </div>
+          <a href="mailto:compensatuviaje@gmail.com?subject=Postulacion%20Proyecto%20ESG" className="ft-esg-banner__btn">
+            Aplicar ahora
+            <HiArrowRight aria-hidden="true" />
+          </a>
         </div>
 
         {/* ── Columnas ── */}
