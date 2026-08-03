@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { FaUser, FaChartBar } from 'react-icons/fa';
 import { HiMenu, HiX, HiArrowRight } from 'react-icons/hi';
@@ -11,6 +11,7 @@ const Header = () => {
   const [activeHash, setActiveHash] = useState('');
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const dashboardPath =
     user?.userType === 'superadmin' ? '/admin'
@@ -62,6 +63,13 @@ const Header = () => {
     { href: '#contacto', label: 'Contacto' },
   ];
 
+  const buildLinkHref = (href: string) => {
+    if (href.startsWith('#')) {
+      return location.pathname === '/' ? href : `/${href}`;
+    }
+    return href;
+  };
+
   return (
     <>
       <header className={`ctv-header${scrolled ? ' ctv-header--scrolled' : ''}`}>
@@ -83,7 +91,7 @@ const Header = () => {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={buildLinkHref(link.href)}
                 className={`ctv-nav-link${activeHash === link.href ? ' ctv-nav-link--active' : ''}`}
               >
                 {link.label}
@@ -151,7 +159,7 @@ const Header = () => {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={buildLinkHref(link.href)}
                 onClick={closeMenu}
                 className={`ctv-drawer__link${activeHash === link.href ? ' ctv-drawer__link--active' : ''}`}
               >
