@@ -18,7 +18,7 @@ const SECTIONS = [
   {
     title: 'Información',
     links: [
-      { label: 'Blog', href: '#blog' },
+      { label: 'Blog', href: '/blog' },
       { label: 'Transparencia', href: '#transparencia' },
       { label: 'FAQ', href: '#faq' },
       { label: 'Nosotros', href: '#nosotros' },

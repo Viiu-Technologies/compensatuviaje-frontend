@@ -58,6 +58,7 @@ const Header = () => {
   const navLinks = [
     { href: '#inicio', label: 'Inicio' },
     { href: '#calculadora-content', label: 'Calculadora' },
+    { href: '/blog', label: 'Blog' },
     { href: '#contacto', label: 'Contacto' },
   ];
 
