@@ -46,6 +46,7 @@ const B2CNFTCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CNFTCertifi
 const B2CAchievementsPage = lazy(() => import('./apps/b2c/pages/B2CAchievementsPage'));
 const PublicImpactProfile  = lazy(() => import('./apps/b2c/pages/PublicImpactProfile'));
 const PaymentResultPage = lazy(() => import('./apps/b2c/pages/PaymentResultPage'));
+const BlogPage = lazy(() => import('./apps/public/pages/BlogPage'));
 
 const CertificateVerificationPage = lazy(() => import('./shared/components/blockchain').then(m => ({ default: m.CertificateVerificationPage })));
 
@@ -85,6 +86,7 @@ function App() {
             {/* Public Blockchain Verification */}
             <Route path="/verify/:compensationId" element={<CertificateVerificationPage />} />
             <Route path="/verify/token/:tokenId" element={<CertificateVerificationPage />} />
+            <Route path="/blog" element={<BlogPage />} />
             
             {/* Auth Callback for OAuth */}
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
