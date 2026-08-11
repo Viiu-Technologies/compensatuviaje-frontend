@@ -14,6 +14,10 @@ interface FeedSource {
 
 const FEED_SOURCES: FeedSource[] = [
   {
+    name: 'ESG Diario',
+    url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.esgdiario.com/feed/',
+  },
+  {
     name: 'La Tercera',
     url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.latercera.com/rss/',
   },

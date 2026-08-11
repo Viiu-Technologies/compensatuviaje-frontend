@@ -46,12 +46,12 @@ const BlogPage = () => {
                 Volver a la landing
               </Link>
               <a
-                href="https://www.latercera.com/"
+                href="https://www.esgdiario.com/"
                 target="_blank"
                 rel="noreferrer"
                 className="blog-btn blog-btn--outline"
               >
-                Ver más noticias chilenas
+                Ver más noticias de ESG Diario
               </a>
             </div>
           </div>
