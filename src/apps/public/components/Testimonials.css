@@ -191,6 +191,80 @@
   margin: 0;
 }
 
+.ts-author__company-pill {
+  display: inline-block;
+  background: rgba(8, 174, 6, 0.12);
+  border: 1px solid rgba(8, 174, 6, 0.25);
+  color: var(--ctv-brand-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  width: fit-content;
+  margin-top: 0.25rem;
+}
+
+/* ── Ticker Infinito de Aliados ───────────────────────────────── */
+.ts-ticker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  padding: 0.65rem 1.25rem;
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-rule);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ts-ticker__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ctv-ink-mute);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ts-ticker__track-wrap {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ts-ticker__track {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  animation: tsMarquee 25s linear infinite;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.ts-ticker__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ctv-brand-deep);
+  opacity: 0.88;
+}
+
+.ts-ticker__item svg {
+  color: var(--ctv-brand);
+  font-size: 0.95rem;
+}
+
+@keyframes tsMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
 /* ── Nav ────────────────────────────────────────────── */
 .ts-nav {
   display: flex;

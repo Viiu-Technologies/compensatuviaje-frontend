@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import gsap from 'gsap';
-import { HiArrowLeft, HiArrowRight } from 'react-icons/hi';
+import { HiArrowLeft, HiArrowRight, HiOutlineShieldCheck } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import { ForestSVG } from './Illustrations';
 import './Testimonials.css';
+
+const PARTNERS = [
+  'LATAM Airlines',
+  'Sky Airline',
+  'Copec Verde',
+  'Banco de Chile',
+  'Fundación Verde',
+  'EcoAventura Chile',
+];
 
 const TESTIMONIALS = [
   {
@@ -57,7 +66,8 @@ const Testimonials = () => {
       stagger: 0.1,
       duration: 0.9,
     }, 0.1);
-    tl.from('.ts-quote', { y: 20, autoAlpha: 0, duration: 0.8 }, 0.4);
+    tl.from('.ts-ticker', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.35);
+    tl.from('.ts-quote', { y: 20, autoAlpha: 0, duration: 0.8 }, 0.45);
     tl.from('.ts-author > *', { y: 14, autoAlpha: 0, stagger: 0.08, duration: 0.6 }, 0.6);
     tl.from('.ts-nav', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.75);
     tl.from('.ts-visual', { x: 24, autoAlpha: 0, duration: 0.85 }, 0.4);
@@ -94,12 +104,27 @@ const Testimonials = () => {
   return (
     <section ref={scopeRef} className="ts-section">
       <div className="ts-container">
+        {/* Ticker Infinito de Organizaciones Aliadas */}
+        <div className="ts-ticker ctv-reveal" aria-label="Organizaciones que confían en nosotros">
+          <span className="ts-ticker__label">Organizaciones que confían:</span>
+          <div className="ts-ticker__track-wrap">
+            <div className="ts-ticker__track">
+              {[...PARTNERS, ...PARTNERS, ...PARTNERS].map((partner, i) => (
+                <span key={`${partner}-${i}`} className="ts-ticker__item">
+                  <HiOutlineShieldCheck aria-hidden="true" />
+                  {partner}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="ts-grid">
           <div className="ts-content">
             <header className="ts-header">
               <span className="ts-eyebrow ctv-reveal">
                 <span className="ts-eyebrow__line" />
-                Historias
+                Historias de Impacto
               </span>
 
               <h2 className="ts-title">
@@ -124,7 +149,7 @@ const Testimonials = () => {
                 <div className="ts-author__meta">
                   <p className="ts-author__name">{current.name}</p>
                   <p className="ts-author__role">{current.role}</p>
-                  <p className="ts-author__company">{current.company}</p>
+                  <span className="ts-author__company-pill">{current.company}</span>
                 </div>
               </footer>
             </article>
