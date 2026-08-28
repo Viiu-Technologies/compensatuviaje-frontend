@@ -90,8 +90,36 @@ const Hero = () => {
     document.getElementById('calculadora')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToHowItWorks = () => {
+    document.getElementById('calculadora-content')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rotateX = (-y / rect.height) * 12;
+    const rotateY = (x / rect.width) * 12;
+
+    const target = container.querySelector('.hero__aside-wrapper') as HTMLElement;
+    if (target) {
+      target.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+      target.style.transition = 'transform 0.1s ease-out';
+    }
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const target = container.querySelector('.hero__aside-wrapper') as HTMLElement;
+    if (target) {
+      target.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+      target.style.transition = 'transform 0.6s var(--ctv-ease-out)';
+    }
+  };
+
   return (
-    <section ref={scopeRef} className="hero" id="inicio">
+    <section ref={scopeRef} className="hero" id="inicio" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
       {/* Fondo con profundidad: glows + nube de marca + grano */}
       <div className="hero__glow hero__glow--a" aria-hidden="true" />
       <div className="hero__glow hero__glow--b" aria-hidden="true" />
@@ -126,7 +154,7 @@ const Hero = () => {
                 Calcula tu huella
                 <HiArrowRight aria-hidden="true" />
               </button>
-              <button className="hero-btn hero-btn--ghost">
+              <button onClick={scrollToHowItWorks} className="hero-btn hero-btn--ghost">
                 Cómo funciona
               </button>
             </div>

@@ -138,11 +138,21 @@
   height: 96px;
   margin-bottom: 1.25rem;
   will-change: transform;
+  transition: transform 0.4s var(--ctv-ease-out);
+}
+
+.ft-step:hover .ft-step__art {
+  transform: scale(1.12) translateY(-4px);
 }
 
 .ft-step__art svg {
   width: 100%;
   height: 100%;
+  transition: filter 0.4s var(--ctv-ease-out);
+}
+
+.ft-step:hover .ft-step__art svg {
+  filter: drop-shadow(0 12px 28px rgba(8, 174, 6, 0.35));
 }
 
 .ft-step__num {
