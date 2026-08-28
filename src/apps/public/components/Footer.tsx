@@ -16,6 +16,9 @@ const SECTIONS = [
     links: [
       { label: 'Blog', href: '/blog' },
       { label: 'Sé un aliado', href: '/aliados' },
+      { label: 'Transparencia', href: '#transparencia' },
+      { label: 'FAQ', href: '#faq' },
+      { label: 'Nosotros', href: '#nosotros' },
     ],
   },
   {
