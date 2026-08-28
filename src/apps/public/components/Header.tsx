@@ -59,6 +59,7 @@ const Header = () => {
     { href: '#inicio', label: 'Inicio' },
     { href: '#calculadora-content', label: 'Calculadora' },
     { href: '/blog', label: 'Blog' },
+    { href: '/aliados', label: 'Aliados' },
     { href: '#contacto', label: 'Contacto' },
   ];
 
