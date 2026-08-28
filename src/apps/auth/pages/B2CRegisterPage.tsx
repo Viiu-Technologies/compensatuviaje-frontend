@@ -140,10 +140,7 @@ const B2CRegisterPage: React.FC = () => {
 
           {/* Terms */}
           <p className="text-xs text-gray-500 text-center mt-4">
-            Al crear una cuenta, aceptas nuestros{' '}
-            <a href="#" className="text-green-600 hover:underline">Términos de Servicio</a>
-            {' '}y{' '}
-            <a href="#" className="text-green-600 hover:underline">Política de Privacidad</a>
+            Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad
           </p>
         </motion.div>
       </div>

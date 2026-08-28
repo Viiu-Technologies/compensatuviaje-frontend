@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import gsap from 'gsap';
-import { FaFacebook, FaLinkedin } from 'react-icons/fa';
 import { HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import './Footer.css';
@@ -10,18 +9,13 @@ const SECTIONS = [
     title: 'Servicios',
     links: [
       { label: 'Calculadora CO₂', href: '#calculadora' },
-      { label: 'Compensación', href: '#compensacion' },
-      { label: 'Proyectos', href: '#proyectos' },
-      { label: 'Certificación', href: '#certificacion' },
     ],
   },
   {
     title: 'Información',
     links: [
       { label: 'Blog', href: '/blog' },
-      { label: 'Transparencia', href: '#transparencia' },
-      { label: 'FAQ', href: '#faq' },
-      { label: 'Nosotros', href: '#nosotros' },
+      { label: 'Sé un aliado', href: '/aliados' },
     ],
   },
   {
@@ -143,20 +137,6 @@ const Footer = () => {
           <p className="ft-bottom__copy">
             © {year} CompensaTuViaje. Todos los derechos reservados.
           </p>
-
-          <div className="ft-bottom__social">
-            <a href="#" aria-label="Facebook" onClick={(e) => e.preventDefault()} className="ft-bottom__icon">
-              <FaFacebook />
-            </a>
-            <a href="#" aria-label="LinkedIn" onClick={(e) => e.preventDefault()} className="ft-bottom__icon">
-              <FaLinkedin />
-            </a>
-          </div>
-
-          <div className="ft-bottom__legal">
-            <a href="#privacidad" className="ft-bottom__link">Privacidad</a>
-            <a href="#terminos" className="ft-bottom__link">Términos</a>
-          </div>
         </div>
       </div>
     </footer>

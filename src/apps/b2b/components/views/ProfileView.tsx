@@ -13,7 +13,6 @@ import {
   Shield,
   Award,
   Leaf,
-  Camera,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '../../../auth/context/AuthContext';
@@ -260,13 +259,6 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
                 <div className="!w-28 !h-28 !rounded-full !bg-gradient-to-br !from-green-400 !to-emerald-600 !flex !items-center !justify-center !text-white !text-4xl !font-bold !shadow-lg !shadow-green-500/30 !mx-auto">
                   {profile.name.charAt(0).toUpperCase()}
                 </div>
-                {isEditing && (
-                  <button className={`!absolute !bottom-0 !right-0 !w-10 !h-10 !rounded-full !shadow-lg !flex !items-center !justify-center !border hover:!opacity-80 !transition-colors ${
-                    isDark ? '!bg-gray-700 !border-gray-600' : '!bg-white !border-gray-200 hover:!bg-gray-50'
-                  }`}>
-                    <Camera className={`!w-5 !h-5 ${isDark ? '!text-gray-300' : '!text-gray-600'}`} />
-                  </button>
-                )}
               </div>
 
               <h2 className={`!text-xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{profile.name}</h2>

@@ -9,7 +9,6 @@ import {
   CheckCircle,
   Clock,
   MoreVertical,
-  Download,
   FileText,
   Pause,
   Play,
@@ -165,12 +164,6 @@ export default function EmpresasPage() {
         <div>
           <h2 className="!text-3xl !font-black !text-slate-900 !tracking-tight">Empresas B2B</h2>
           <p className="!text-slate-500 !mt-1">Gestiona y verifica las empresas registradas en la plataforma.</p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          <button className="!flex !items-center !gap-2 !bg-white !text-slate-700 !px-4 !py-2.5 !rounded-xl !border !border-slate-200 !font-bold !text-sm hover:!bg-slate-50 !transition-all !shadow-sm">
-            <Download className="!w-4 !h-4" />
-            Exportar
-          </button>
         </div>
       </div>
 

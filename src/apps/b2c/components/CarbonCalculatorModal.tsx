@@ -186,15 +186,6 @@ const CarbonCalculatorModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              <div className="compensation-actions">
-                <button className="btn btn-primary compensation-btn">
-                  🌍 Compensar Ahora
-                </button>
-                <button className="btn btn-outline share-btn">
-                  📤 Compartir Resultado
-                </button>
-              </div>
-
               <div className="result-info">
                 <p>💡 <strong>¿Sabías que?</strong> Compensar tu huella de carbono ayuda a financiar proyectos de reforestación y energías renovables que contribuyen a un planeta más sostenible.</p>
               </div>

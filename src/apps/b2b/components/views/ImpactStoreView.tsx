@@ -234,9 +234,6 @@ const ImpactStoreView: React.FC = () => {
           <p className="!text-white/80 !mb-4">
             Maximiza tu contribución ambiental con nuestros paquetes combinados.
           </p>
-          <button className="!px-6 !py-2.5 !bg-white !text-green-700 !rounded-xl !font-semibold !text-sm hover:!bg-green-50 !transition-colors !border-0">
-            Ver Paquetes
-          </button>
         </div>
         <div className="!absolute !right-0 !top-0 !bottom-0 !w-1/3 !opacity-20">
           <TreePine className="!w-full !h-full" />

@@ -13,7 +13,6 @@ import {
   ExternalLink,
   Heart,
   Share2,
-  ChevronRight,
   Cloud,
   Droplets,
   Bird,
@@ -693,16 +692,12 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
                       </span>
                     ))}
                   </div>
-                  {project.status === 'active' && project.pricePerTonCLP > 0 ? (
+                  {project.status === 'active' && project.pricePerTonCLP > 0 && (
                     <button
                       onClick={() => setCheckoutProject(project)}
                       className="!flex !items-center !gap-1.5 !px-4 !py-2 !rounded-xl !bg-gradient-to-r !from-green-500 !to-emerald-600 !text-white !text-sm !font-medium !border-0 !shadow-md !shadow-green-500/20 hover:!shadow-green-500/40 !transition-all"
                     >
                       <ShoppingCart className="!w-4 !h-4" /> Compensar
-                    </button>
-                  ) : (
-                    <button className="!flex !items-center !gap-1 !text-green-600 hover:!text-green-700 !text-sm !font-medium !bg-transparent !border-0">
-                      Ver detalles <ChevronRight className="!w-4 !h-4" />
                     </button>
                   )}
                 </div>

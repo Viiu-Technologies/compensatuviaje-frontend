@@ -15,8 +15,7 @@ import {
   TrendingUp,
   Globe,
   Shield,
-  Zap,
-  Download
+  Zap
 } from 'lucide-react';
 import { getB2CUsers, getB2CStats, B2CUser, B2CUsersListResponse } from '../services/adminApi';
 
@@ -137,10 +136,6 @@ export default function UsuariosB2CPage() {
             <option value="30d">Últimos 30 días</option>
             <option value="90d">Últimos 90 días</option>
           </select>
-          <button className="!flex !items-center !gap-2 !bg-slate-900 !text-white !px-4 !py-2.5 !rounded-xl !font-bold !text-sm hover:!bg-slate-800 !transition-all !shadow-lg">
-            <Download className="!w-4 !h-4" />
-            Exportar
-          </button>
         </div>
       </div>
 

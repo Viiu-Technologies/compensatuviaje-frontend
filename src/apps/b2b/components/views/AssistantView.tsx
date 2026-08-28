@@ -12,9 +12,6 @@ import {
   Lightbulb,
   MessageSquare,
   RotateCcw,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
   Zap,
   Globe,
   TrendingDown,
@@ -289,20 +286,6 @@ const AssistantView: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Message Actions for Assistant */}
-                  {message.type === 'assistant' && message.id !== '1' && (
-                    <div className="!flex !items-center !gap-2 !mt-2">
-                      <button className="!p-1.5 !text-gray-400 hover:!text-gray-600 !transition-colors !border-0 !bg-transparent">
-                        <Copy className="!w-4 !h-4" />
-                      </button>
-                      <button className="!p-1.5 !text-gray-400 hover:!text-green-600 !transition-colors !border-0 !bg-transparent">
-                        <ThumbsUp className="!w-4 !h-4" />
-                      </button>
-                      <button className="!p-1.5 !text-gray-400 hover:!text-red-600 !transition-colors !border-0 !bg-transparent">
-                        <ThumbsDown className="!w-4 !h-4" />
-                      </button>
-                    </div>
-                  )}
                 </div>
               </motion.div>
             ))}

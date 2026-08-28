@@ -5,7 +5,6 @@ import {
   CheckCircle2, 
   AlertCircle, 
   X, 
-  Download, 
   History,
   FileSpreadsheet,
   ArrowRight,
@@ -131,10 +130,6 @@ const BatchUpload: React.FC = () => {
           <h1 className="text-3xl font-bold text-white tracking-tight">Carga Masiva</h1>
           <p className="text-slate-400 mt-1">Sube archivos CSV o Excel para procesar múltiples registros de viajes.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all border border-slate-700">
-          <Download className="w-4 h-4" />
-          <span>Descargar Plantilla</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -209,14 +204,11 @@ const BatchUpload: React.FC = () => {
                         <p className="text-slate-400">El archivo ha sido procesado correctamente.</p>
                       </div>
                       <div className="flex gap-3">
-                        <button 
+                        <button
                           onClick={resetUpload}
                           className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-all border border-slate-700 flex items-center justify-center gap-2"
                         >
                           <RefreshCcw className="w-4 h-4" /> Nueva Carga
-                        </button>
-                        <button className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
-                          Ver Resultados <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -263,9 +255,6 @@ const BatchUpload: React.FC = () => {
               <History className="w-5 h-5 text-indigo-400" />
               Historial
             </h3>
-            <button className="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors">
-              Ver todo
-            </button>
           </div>
 
           <div className="space-y-4">
@@ -302,11 +291,6 @@ const BatchUpload: React.FC = () => {
                   </div>
                 </div>
 
-                {upload.errorRows > 0 && (
-                  <button className="w-full mt-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 flex items-center justify-center gap-1 transition-colors">
-                    <Download className="w-3 h-3" /> Descargar Errores
-                  </button>
-                )}
               </div>
             ))}
           </div>
