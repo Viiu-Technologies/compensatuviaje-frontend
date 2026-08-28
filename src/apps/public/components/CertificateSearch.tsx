@@ -61,6 +61,28 @@ const CertificateSearch: React.FC = () => {
     }
   };
 
+  const handleDemoClick = (sampleCode: string) => {
+    setQuery(sampleCode);
+  };
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -12;
+    const rotateY = ((x - centerX) / centerX) * 12;
+
+    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.03, 1.03, 1.03)`;
+  };
+
+  const handleCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+  };
+
   return (
     <section ref={scopeRef} className="cs-section" id="verificar">
       <div className="cs-container">
@@ -102,6 +124,17 @@ const CertificateSearch: React.FC = () => {
                 Verificar
               </button>
             </form>
+
+            {/* Chips de prueba rápida 1-Click */}
+            <div className="cs-demo-chips ctv-reveal">
+              <span className="cs-demo-label">Probar ejemplo:</span>
+              <button type="button" className="cs-demo-chip" onClick={() => handleDemoClick('CERT-2024-SCL-MIA-001')}>
+                CERT-2024-SCL-MIA-001
+              </button>
+              <button type="button" className="cs-demo-chip" onClick={() => handleDemoClick('CMP-84920-CL')}>
+                CMP-84920-CL
+              </button>
+            </div>
 
             {/* Resultados */}
             {searched && !loading && (
@@ -188,10 +221,19 @@ const CertificateSearch: React.FC = () => {
             </ul>
           </div>
 
-          {/* Columna derecha: Visual e ilustración */}
+          {/* Columna derecha: Tarjeta Holográfica 3D */}
           <div className="cs-visual ctv-reveal">
-            <div className="cs-card-wrapper">
+            <div
+              className="cs-card-wrapper cs-card-wrapper--holographic"
+              onMouseMove={handleCardMouseMove}
+              onMouseLeave={handleCardMouseLeave}
+            >
+              <div className="cs-hologram-sheen" aria-hidden="true" />
               <PlanetDataSVG className="cs-certificate-img" style={{ width: '220px', height: '220px' }} />
+              <div className="cs-card-meta">
+                <span className="cs-card-meta__network">POLYGON MAINNET · ERC-721</span>
+                <span className="cs-card-meta__hash">0x71C...4a9b</span>
+              </div>
               <div className="cs-card-badge">
                 <FaShieldAlt className="cs-card-badge__icon" aria-hidden="true" />
                 <span>100% Seguro & Transparente</span>
