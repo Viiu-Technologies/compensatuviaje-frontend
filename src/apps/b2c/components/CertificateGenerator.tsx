@@ -160,20 +160,20 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="!bg-white !rounded-2xl !shadow-2xl !max-w-5xl !w-full !max-h-[95vh] !overflow-auto"
+        className="bg-white dark:bg-slate-900 !rounded-2xl !shadow-2xl !max-w-5xl !w-full !max-h-[95vh] !overflow-auto"
       >
         {/* Barra de acciones */}
-        <div className="!sticky !top-0 !bg-white !border-b !border-gray-200 !px-6 !py-4 !flex !items-center !justify-between !z-10">
+        <div className="!sticky !top-0 bg-white dark:bg-slate-900 !border-b border-gray-200 dark:border-slate-700 !px-6 !py-4 !flex !items-center !justify-between !z-10">
           <div className="!flex !items-center !gap-3">
-            <div className="!w-10 !h-10 !bg-green-100 !rounded-full !flex !items-center !justify-center">
-              <FaLeaf className="!text-green-600" />
+            <div className="!w-10 !h-10 !bg-green-100 dark:!bg-green-500/10 !rounded-full !flex !items-center !justify-center">
+              <FaLeaf className="!text-green-600 dark:!text-green-300" />
             </div>
             <div>
-              <h3 className="!font-bold !text-gray-900">Tu Certificado de Compensación</h3>
-              <p className="!text-sm !text-gray-500">ID: {data.certificateId}</p>
+              <h3 className="!font-bold text-gray-900 dark:text-slate-100">Tu Certificado de Compensación</h3>
+              <p className="!text-sm text-gray-500 dark:text-slate-400">ID: {data.certificateId}</p>
             </div>
           </div>
-          
+
           <div className="!flex !items-center !gap-3">
             {/* Botón compartir */}
             <div className="!relative">
@@ -181,32 +181,32 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="!px-4 !py-2.5 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !flex !items-center !gap-2 !border-0 !cursor-pointer hover:!bg-gray-200 !transition"
+                className="!px-4 !py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-200 !rounded-xl !font-semibold !flex !items-center !gap-2 !border-0 !cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 !transition"
               >
                 <FaShareAlt /> Compartir
               </motion.button>
-              
+
               {showShareMenu && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="!absolute !right-0 !mt-2 !bg-white !rounded-xl !shadow-xl !border !border-gray-200 !py-2 !w-48 !z-20"
+                  className="!absolute !right-0 !mt-2 bg-white dark:bg-slate-800 !rounded-xl !shadow-xl !border border-gray-200 dark:border-slate-700 !py-2 !w-48 !z-20"
                 >
                   <button
                     onClick={() => shareOnSocial('twitter')}
-                    className="!w-full !px-4 !py-2.5 !text-left !flex !items-center !gap-3 hover:!bg-gray-50 !bg-transparent !border-0 !cursor-pointer"
+                    className="!w-full !px-4 !py-2.5 !text-left !flex !items-center !gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 !bg-transparent !border-0 !cursor-pointer"
                   >
                     <FaTwitter className="!text-[#1DA1F2]" /> Twitter
                   </button>
                   <button
                     onClick={() => shareOnSocial('linkedin')}
-                    className="!w-full !px-4 !py-2.5 !text-left !flex !items-center !gap-3 hover:!bg-gray-50 !bg-transparent !border-0 !cursor-pointer"
+                    className="!w-full !px-4 !py-2.5 !text-left !flex !items-center !gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 !bg-transparent !border-0 !cursor-pointer"
                   >
                     <FaLinkedin className="!text-[#0A66C2]" /> LinkedIn
                   </button>
                   <button
                     onClick={() => shareOnSocial('facebook')}
-                    className="!w-full !px-4 !py-2.5 !text-left !flex !items-center !gap-3 hover:!bg-gray-50 !bg-transparent !border-0 !cursor-pointer"
+                    className="!w-full !px-4 !py-2.5 !text-left !flex !items-center !gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 !bg-transparent !border-0 !cursor-pointer"
                   >
                     <FaFacebook className="!text-[#1877F2]" /> Facebook
                   </button>
@@ -221,7 +221,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
               onClick={() => setShowMintModal(true)}
               className={`!px-5 !py-2.5 !rounded-xl !font-bold !flex !items-center !gap-2 !border-0 !cursor-pointer !shadow-lg hover:!shadow-xl !transition ${
                 nftMinted
-                  ? '!bg-purple-100 !text-purple-700'
+                  ? '!bg-purple-100 dark:!bg-purple-500/10 !text-purple-700 dark:!text-purple-300'
                   : '!bg-gradient-to-r !from-purple-600 !to-violet-600 !text-white'
               }`}
             >
@@ -260,7 +260,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
             {onClose && (
               <button
                 onClick={onClose}
-                className="!p-2 !text-gray-400 hover:!text-gray-600 !bg-transparent !border-0 !cursor-pointer !text-2xl"
+                className="!p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 !bg-transparent !border-0 !cursor-pointer !text-2xl"
               >
                 ×
               </button>
@@ -541,12 +541,12 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
 
         {/* Info adicional */}
         <div className="!px-6 !pb-6">
-          <div className="!bg-gray-50 !rounded-xl !p-4 !text-center !text-sm !text-gray-600">
+          <div className="bg-gray-50 dark:bg-slate-800 !rounded-xl !p-4 !text-center !text-sm text-gray-600 dark:text-slate-300">
             <p>
-              Este certificado es válido y verificable. Tu contribución apoya proyectos de 
+              Este certificado es válido y verificable. Tu contribución apoya proyectos de
               reforestación y energías renovables certificados internacionalmente.
             </p>
-            <p className="!mt-2 !text-xs !text-gray-400">
+            <p className="!mt-2 !text-xs text-gray-400 dark:text-slate-500">
               www.compensatuviaje.cl | contacto@compensatuviaje.cl
             </p>
           </div>

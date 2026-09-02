@@ -270,7 +270,7 @@ export const ProcessingState: React.FC<ProcessingStateProps> = ({
       </p>
       
       {documentName && (
-        <div className="!flex !items-center !gap-2 !text-sm !text-blue-600 !bg-white !px-4 !py-2 !rounded-lg !border !border-blue-200">
+        <div className="!flex !items-center !gap-2 !text-sm !text-blue-600 bg-white dark:bg-slate-800 !px-4 !py-2 !rounded-lg !border !border-blue-200">
           <span>📄</span>
           <span className="!font-medium">{documentName}</span>
         </div>
@@ -307,8 +307,8 @@ export const EvaluationStatusBadge: React.FC<EvaluationStatusBadgeProps> = ({
   const configs: Record<GenericStatus, { icon: React.ReactNode; bg: string; text: string; defaultLabel: string }> = {
     pending: {
       icon: <Clock className="!w-4 !h-4" />,
-      bg: '!bg-gray-100',
-      text: '!text-gray-700',
+      bg: 'bg-gray-100 dark:!bg-gray-500/10',
+      text: 'text-gray-700 dark:!text-gray-300',
       defaultLabel: 'Pendiente'
     },
     processing: {

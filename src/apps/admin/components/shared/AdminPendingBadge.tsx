@@ -74,7 +74,7 @@ const AdminPendingBadge: React.FC<AdminPendingBadgeProps> = ({ aiStatus, adminDe
       );
     default:
       return (
-        <span className={`${baseClasses} !bg-gray-100 dark:!bg-gray-800 !text-gray-800 dark:!text-gray-300 !border !border-gray-200 dark:!border-gray-700`}>
+        <span className={`${baseClasses} bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 !border border-gray-200 dark:border-gray-700`}>
           Desconocido
         </span>
       );

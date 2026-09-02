@@ -130,7 +130,7 @@ const ScoreGauge: React.FC<ScoreGaugeProps> = ({
       <div className="!flex !items-center !justify-between !mb-1.5">
         <div className="!flex !items-center !gap-1.5">
           {icon && <span className={sizes.icon}>{icon}</span>}
-          <span className={`${sizes.label} !font-medium !text-slate-700`}>
+          <span className={`${sizes.label} !font-medium text-slate-700 dark:text-slate-200`}>
             {label}
           </span>
         </div>
@@ -195,7 +195,7 @@ export const ScoreCircle: React.FC<ScoreCircleProps> = ({
         {normalizedScore}
       </div>
       {label && (
-        <span className="!text-xs !text-slate-600 !text-center !font-medium">
+        <span className="!text-xs text-slate-600 dark:text-slate-300 !text-center !font-medium">
           {label}
         </span>
       )}
@@ -229,28 +229,28 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
 
   return (
     <div className={`
-      !p-4 !rounded-xl !border !bg-white !shadow-sm
+      !p-4 !rounded-xl !border bg-white dark:bg-slate-900 !shadow-sm
       ${className}
     `}>
       <div className="!flex !items-center !gap-2 !mb-2">
         {icon && <span className="!text-lg">{icon}</span>}
-        <span className="!text-sm !font-medium !text-slate-600">{label}</span>
+        <span className="!text-sm !font-medium text-slate-600 dark:text-slate-300">{label}</span>
       </div>
-      
+
       <div className={`!text-3xl !font-bold ${colors.text} !mb-2`}>
         {normalizedScore}
-        <span className="!text-lg !font-normal !text-slate-400">/100</span>
+        <span className="!text-lg !font-normal text-slate-400 dark:text-slate-500">/100</span>
       </div>
-      
+
       <div className={`!h-2 !w-full ${colors.bg} !rounded-full !overflow-hidden`}>
-        <div 
+        <div
           className={`!h-full ${colors.fill} !rounded-full !transition-all !duration-500`}
           style={{ width: `${normalizedScore}%` }}
         />
       </div>
-      
+
       {description && (
-        <p className="!text-xs !text-slate-500 !mt-2">{description}</p>
+        <p className="!text-xs text-slate-500 dark:text-slate-400 !mt-2">{description}</p>
       )}
     </div>
   );

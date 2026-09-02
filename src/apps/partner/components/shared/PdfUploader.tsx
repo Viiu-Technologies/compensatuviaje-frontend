@@ -202,7 +202,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
         ? '!border-red-300 !bg-red-50' 
         : selectedFile || currentFileName
           ? '!border-emerald-300 !bg-emerald-50'
-          : '!border-slate-300 !bg-slate-50 hover:!border-emerald-400 hover:!bg-emerald-50/50'
+          : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:!border-emerald-400 hover:!bg-emerald-50/50 dark:hover:!bg-emerald-500/10'
     }
     ${disabled || isUploading ? '!opacity-60 !cursor-not-allowed' : ''}
     ${className}
@@ -231,7 +231,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       {isUploading && (
         <div className="!flex !flex-col !items-center !gap-3">
           <div className="!w-12 !h-12 !border-4 !border-emerald-200 !border-t-emerald-600 !rounded-full !animate-spin" />
-          <p className="!text-slate-600 !font-medium">Subiendo archivo...</p>
+          <p className="text-slate-600 dark:text-slate-300 !font-medium">Subiendo archivo...</p>
         </div>
       )}
 
@@ -242,7 +242,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
             <AlertCircle className="!w-7 !h-7 !text-red-500" />
           </div>
           <p className="!text-red-600 !font-medium">{error.message}</p>
-          <p className="!text-sm !text-slate-500">Haz clic para seleccionar otro archivo</p>
+          <p className="!text-sm text-slate-500 dark:text-slate-400">Haz clic para seleccionar otro archivo</p>
         </div>
       )}
 
@@ -254,11 +254,11 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
           </div>
           <div className="!flex !items-center !gap-2">
             <File className="!w-5 !h-5 !text-emerald-600" />
-            <span className="!text-slate-700 !font-medium !max-w-xs !truncate">
+            <span className="text-slate-700 dark:text-slate-200 !font-medium !max-w-xs !truncate">
               {selectedFile?.name || currentFileName}
             </span>
             {selectedFile && (
-              <span className="!text-sm !text-slate-500">
+              <span className="!text-sm text-slate-500 dark:text-slate-400">
                 ({formatFileSize(selectedFile.size)})
               </span>
             )}
@@ -266,7 +266,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
           {!disabled && (
             <button
               onClick={clearSelection}
-              className="!flex !items-center !gap-1 !text-sm !text-slate-500 hover:!text-red-500 !transition-colors !bg-transparent !border-0 !cursor-pointer"
+              className="!flex !items-center !gap-1 !text-sm text-slate-500 dark:text-slate-400 hover:!text-red-500 !transition-colors !bg-transparent !border-0 !cursor-pointer"
             >
               <X className="!w-4 !h-4" />
               Cambiar archivo
@@ -279,13 +279,13 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       {!isUploading && !error && !selectedFile && !currentFileName && (
         <div className="!flex !flex-col !items-center !gap-3">
           <div className={`!w-14 !h-14 !rounded-full !flex !items-center !justify-center !transition-colors ${
-            isDragging ? '!bg-emerald-200' : '!bg-slate-200'
+            isDragging ? '!bg-emerald-200 dark:!bg-emerald-500/20' : 'bg-slate-200 dark:bg-slate-700'
           }`}>
-            <Upload className={`!w-7 !h-7 ${isDragging ? '!text-emerald-600' : '!text-slate-500'}`} />
+            <Upload className={`!w-7 !h-7 ${isDragging ? '!text-emerald-600 dark:!text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`} />
           </div>
           <div>
-            <p className="!text-slate-700 !font-medium">{instruction}</p>
-            <p className="!text-sm !text-slate-500 !mt-1">
+            <p className="text-slate-700 dark:text-slate-200 !font-medium">{instruction}</p>
+            <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">
               Formato: PDF • Máximo: {maxSizeMB}MB
             </p>
           </div>
