@@ -74,7 +74,11 @@ const MonthlyRestockPage: React.FC = () => {
       setFiles([]);
       await loadData();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al enviar la solicitud.');
+      if (err.code === 'ECONNABORTED') {
+        setError('El envío tardó demasiado. Verifica tu conexión e intenta nuevamente con archivos más livianos si el problema persiste.');
+      } else {
+        setError(err.response?.data?.message || 'Error al enviar la solicitud.');
+      }
     } finally {
       setSubmitting(false);
     }

@@ -4,7 +4,7 @@
 // ============================================
 
 import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   EsgProject,
   PROJECT_TYPE_LABELS,
@@ -76,6 +76,7 @@ const StatItem: React.FC<StatItemProps> = ({ label, value, icon, color }) => {
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [project, setProject] = useState<EsgProject | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -83,6 +84,9 @@ const ProjectDetail: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [fileUploadWarning, setFileUploadWarning] = useState<string | null>(
+    (location.state as { fileUploadWarning?: string } | null)?.fileUploadWarning || null
+  );
   const [evidencePhotos, setEvidencePhotos] = useState<any[]>([]);
   const [evidenceDocs, setEvidenceDocs] = useState<any[]>([]);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
@@ -337,6 +341,17 @@ const ProjectDetail: React.FC = () => {
         {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
             {success}
+          </div>
+        )}
+        {fileUploadWarning && (
+          <div className="flex items-start justify-between gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg">
+            <span>{fileUploadWarning}</span>
+            <button
+              onClick={() => setFileUploadWarning(null)}
+              className="text-amber-500 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-200 flex-shrink-0"
+            >
+              ×
+            </button>
           </div>
         )}
 

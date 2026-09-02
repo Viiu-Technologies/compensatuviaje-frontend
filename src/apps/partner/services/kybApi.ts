@@ -26,10 +26,13 @@ import type {
  */
 export const uploadKybDossier = async (formData: FormData): Promise<KybUploadResponse> => {
   try {
+    // Timeout más generoso que el default (30s) porque es un archivo PDF
+    // que puede pesar varios MB y tardar más en conexiones lentas.
     const response = await api.post('/partner/kyb', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000
     }) as any;
-    
+
     if (response.success && response.data) {
       return response.data;
     }
@@ -38,6 +41,9 @@ export const uploadKybDossier = async (formData: FormData): Promise<KybUploadRes
     // Re-lanzar el error con más contexto
     if (error.status === 409) {
       throw { ...error, message: 'Ya existe una evaluación KYB en proceso. Espera a que finalice.' };
+    }
+    if (error.code === 'ECONNABORTED') {
+      throw { ...error, message: 'La subida del documento tardó demasiado. Verifica tu conexión e intenta nuevamente con un archivo más liviano si el problema persiste.' };
     }
     throw error;
   }

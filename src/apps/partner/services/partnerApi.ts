@@ -153,7 +153,8 @@ export const updatePartnerLogo = async (
         formData.append('logo_url', data.logo_url);
       }
       payload = formData;
-      config = { headers: { 'Content-Type': 'multipart/form-data' } };
+      // Timeout más generoso que el default (30s) para conexiones lentas al subir el archivo.
+      config = { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 };
     } else {
       payload = data;
     }

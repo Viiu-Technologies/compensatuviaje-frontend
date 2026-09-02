@@ -230,6 +230,7 @@ const ProjectForm: React.FC = () => {
         const projectId = projectResult.id;
         setUploadingFiles(true);
 
+        let uploadWarning: string | undefined;
         try {
           if (photoFiles.length > 0) {
             await uploadProjectFiles(projectId, photoFiles, 'photo');
@@ -240,19 +241,30 @@ const ProjectForm: React.FC = () => {
           if (operationalDocFiles.length > 0) {
             await uploadProjectFiles(projectId, operationalDocFiles, 'operational_doc');
           }
-        } catch (uploadErr) {
+        } catch (uploadErr: any) {
           console.warn('Some files failed to upload:', uploadErr);
-          // Don't block navigation — project was created successfully
+          // No bloqueamos la navegación — el proyecto ya se creó exitosamente —
+          // pero sí avisamos que algunos archivos no llegaron a subirse.
+          uploadWarning =
+            uploadErr.code === 'ECONNABORTED'
+              ? 'El proyecto se creó, pero la subida de archivos tardó demasiado y no se completó. Puedes agregarlos luego desde el detalle del proyecto.'
+              : 'El proyecto se creó, pero algunos archivos no se pudieron subir. Puedes intentarlo de nuevo desde el detalle del proyecto.';
         } finally {
           setUploadingFiles(false);
         }
 
-        navigate(`/partner/projects/${projectId}`);
+        navigate(`/partner/projects/${projectId}`, {
+          state: uploadWarning ? { fileUploadWarning: uploadWarning } : undefined,
+        });
       } else if (projectResult) {
         navigate(`/partner/projects/${id}`);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al guardar el proyecto');
+      if (err.code === 'ECONNABORTED') {
+        setError('La operación tardó demasiado. Verifica tu conexión e intenta nuevamente.');
+      } else {
+        setError(err.response?.data?.message || 'Error al guardar el proyecto');
+      }
     } finally {
       setSaving(false);
     }
@@ -653,7 +665,7 @@ const ProjectForm: React.FC = () => {
                     <circle className="!opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="!opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Guardando...
+                  {uploadingFiles ? 'Subiendo archivos...' : 'Guardando...'}
                 </>
               ) : (
                 <>

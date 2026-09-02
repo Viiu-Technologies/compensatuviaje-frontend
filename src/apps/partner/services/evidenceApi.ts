@@ -34,6 +34,9 @@ export const uploadProjectFiles = async (
       formData,
       {
         headers: { 'Content-Type': 'multipart/form-data' },
+        // Timeout más generoso que el default (30s): pueden ser varios
+        // archivos (fotos, documentos) en una sola subida.
+        timeout: 120000,
       }
     ) as any;
 
@@ -71,6 +74,9 @@ export const submitMonthlyEvidence = async (
       formData,
       {
         headers: { 'Content-Type': 'multipart/form-data' },
+        // Timeout más generoso que el default (30s): pueden ser varios
+        // archivos de evidencia en una sola subida.
+        timeout: 120000,
       }
     ) as any;
 
