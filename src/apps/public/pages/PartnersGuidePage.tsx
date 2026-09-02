@@ -252,39 +252,41 @@ const PartnersGuidePage = () => {
               </p>
             </header>
 
-            <div className="pg-timeline__rail">
-              <div className="pg-timeline__rail-track" />
-              <div className="pg-timeline__rail-fill" />
-            </div>
+            <div className="pg-timeline__steps-wrap">
+              <div className="pg-timeline__rail">
+                <div className="pg-timeline__rail-track" />
+                <div className="pg-timeline__rail-fill" />
+              </div>
 
-            <ol className="pg-steps">
-              {STEPS.map((step, i) => {
-                const { Art } = step;
-                return (
-                  <li key={step.num} className={`pg-step${i % 2 === 0 ? ' pg-step--left' : ' pg-step--right'}`}>
-                    <span className="pg-step__dot">{step.num}</span>
-                    <div className="pg-step__card">
-                      <span className="pg-step__eyebrow">{step.eyebrow}</span>
-                      <h3 className="pg-step__title">{step.title}</h3>
-                      <p className="pg-step__body">{step.body}</p>
-                      <ul className="pg-step__bullets">
-                        {step.bullets.map((b) => (
-                          <li key={b}>{b}</li>
-                        ))}
-                      </ul>
-                      {step.badge && (
-                        <span className={`pg-badge pg-badge--${step.badge.tone}`}>
-                          ✅ {step.badge.label}
-                        </span>
-                      )}
-                    </div>
-                    <div className="pg-step__art" aria-hidden="true">
-                      <Art />
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
+              <ol className="pg-steps">
+                {STEPS.map((step, i) => {
+                  const { Art } = step;
+                  return (
+                    <li key={step.num} className={`pg-step${i % 2 === 0 ? ' pg-step--left' : ' pg-step--right'}`}>
+                      <span className="pg-step__dot">{step.num}</span>
+                      <div className="pg-step__card">
+                        <span className="pg-step__eyebrow">{step.eyebrow}</span>
+                        <h3 className="pg-step__title">{step.title}</h3>
+                        <p className="pg-step__body">{step.body}</p>
+                        <ul className="pg-step__bullets">
+                          {step.bullets.map((b) => (
+                            <li key={b}>{b}</li>
+                          ))}
+                        </ul>
+                        {step.badge && (
+                          <span className={`pg-badge pg-badge--${step.badge.tone}`}>
+                            ✅ {step.badge.label}
+                          </span>
+                        )}
+                      </div>
+                      <div className="pg-step__art" aria-hidden="true">
+                        <Art />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           </div>
         </section>
 

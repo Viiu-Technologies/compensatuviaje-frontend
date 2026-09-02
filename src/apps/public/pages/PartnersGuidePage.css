@@ -220,7 +220,13 @@
   margin: 0 auto;
 }
 
-/* Rail vertical central (solo desktop) */
+.pg-timeline__steps-wrap {
+  position: relative;
+}
+
+/* Rail vertical central (solo desktop) — posicionado relativo al wrapper
+   de los pasos, no al timeline completo, para no cruzar por detrás del
+   título/subtítulo del header. */
 .pg-timeline__rail {
   position: absolute;
   left: 50%;
