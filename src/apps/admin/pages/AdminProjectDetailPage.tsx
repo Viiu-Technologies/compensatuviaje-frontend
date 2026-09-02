@@ -53,13 +53,13 @@ import DocumentViewer from '../../../shared/components/DocumentViewer';
 
 // ── Config ────────────────────────────────────────────────────────
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  draft: { label: 'Borrador', color: '!text-slate-600', bgColor: '!bg-slate-100' },
-  pending_review: { label: 'En Revisión', color: '!text-amber-700', bgColor: '!bg-amber-100' },
-  approved: { label: 'Aprobado', color: '!text-blue-700', bgColor: '!bg-blue-100' },
-  rejected: { label: 'Rechazado', color: '!text-red-700', bgColor: '!bg-red-100' },
-  active: { label: 'Activo', color: '!text-emerald-700', bgColor: '!bg-emerald-100' },
-  paused: { label: 'Pausado', color: '!text-orange-700', bgColor: '!bg-orange-100' },
-  completed: { label: 'Completado', color: '!text-indigo-700', bgColor: '!bg-indigo-100' },
+  draft: { label: 'Borrador', color: '!text-slate-600 dark:!text-slate-300', bgColor: '!bg-slate-100 dark:!bg-slate-700' },
+  pending_review: { label: 'En Revisión', color: '!text-amber-700 dark:!text-amber-300', bgColor: '!bg-amber-100 dark:!bg-amber-500/10' },
+  approved: { label: 'Aprobado', color: '!text-blue-700 dark:!text-blue-300', bgColor: '!bg-blue-100 dark:!bg-blue-500/10' },
+  rejected: { label: 'Rechazado', color: '!text-red-700 dark:!text-red-300', bgColor: '!bg-red-100 dark:!bg-red-500/10' },
+  active: { label: 'Activo', color: '!text-emerald-700 dark:!text-emerald-300', bgColor: '!bg-emerald-100 dark:!bg-emerald-500/10' },
+  paused: { label: 'Pausado', color: '!text-orange-700 dark:!text-orange-300', bgColor: '!bg-orange-100 dark:!bg-orange-500/10' },
+  completed: { label: 'Completado', color: '!text-indigo-700 dark:!text-indigo-300', bgColor: '!bg-indigo-100 dark:!bg-indigo-500/10' },
 };
 
 const verticalIcons: Record<string, any> = {
@@ -70,15 +70,15 @@ const verticalIcons: Record<string, any> = {
 };
 
 const projectTypeConfig: Record<string, { label: string; vertical: string; color: string }> = {
-  reforestation: { label: 'Reforestacion', vertical: 'Bosque', color: '!bg-emerald-100 !text-emerald-700' },
-  conservation: { label: 'Conservacion', vertical: 'Bosque', color: '!bg-emerald-100 !text-emerald-700' },
-  clean_water: { label: 'Agua Limpia', vertical: 'Agua', color: '!bg-blue-100 !text-blue-700' },
-  water_security: { label: 'Seguridad Hidrica', vertical: 'Agua', color: '!bg-blue-100 !text-blue-700' },
-  circular_economy: { label: 'Economia Circular', vertical: 'Textil', color: '!bg-purple-100 !text-purple-700' },
-  waste_management: { label: 'Gestion de Residuos', vertical: 'Textil', color: '!bg-purple-100 !text-purple-700' },
-  energy_efficiency: { label: 'Eficiencia Energetica', vertical: 'Social', color: '!bg-amber-100 !text-amber-700' },
-  social_housing: { label: 'Vivienda Social', vertical: 'Social', color: '!bg-amber-100 !text-amber-700' },
-  community_development: { label: 'Desarrollo Comunitario', vertical: 'Social', color: '!bg-amber-100 !text-amber-700' },
+  reforestation: { label: 'Reforestacion', vertical: 'Bosque', color: '!bg-emerald-100 dark:!bg-emerald-500/10 !text-emerald-700 dark:!text-emerald-300' },
+  conservation: { label: 'Conservacion', vertical: 'Bosque', color: '!bg-emerald-100 dark:!bg-emerald-500/10 !text-emerald-700 dark:!text-emerald-300' },
+  clean_water: { label: 'Agua Limpia', vertical: 'Agua', color: '!bg-blue-100 dark:!bg-blue-500/10 !text-blue-700 dark:!text-blue-300' },
+  water_security: { label: 'Seguridad Hidrica', vertical: 'Agua', color: '!bg-blue-100 dark:!bg-blue-500/10 !text-blue-700 dark:!text-blue-300' },
+  circular_economy: { label: 'Economia Circular', vertical: 'Textil', color: '!bg-purple-100 dark:!bg-purple-500/10 !text-purple-700 dark:!text-purple-300' },
+  waste_management: { label: 'Gestion de Residuos', vertical: 'Textil', color: '!bg-purple-100 dark:!bg-purple-500/10 !text-purple-700 dark:!text-purple-300' },
+  energy_efficiency: { label: 'Eficiencia Energetica', vertical: 'Social', color: '!bg-amber-100 dark:!bg-amber-500/10 !text-amber-700 dark:!text-amber-300' },
+  social_housing: { label: 'Vivienda Social', vertical: 'Social', color: '!bg-amber-100 dark:!bg-amber-500/10 !text-amber-700 dark:!text-amber-300' },
+  community_development: { label: 'Desarrollo Comunitario', vertical: 'Social', color: '!bg-amber-100 dark:!bg-amber-500/10 !text-amber-700 dark:!text-amber-300' },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -165,18 +165,18 @@ function DataRow({ label, value }: { label: string; value: React.ReactNode }) {
 function EvaluationBadge({ evaluation }: { evaluation: ProjectDetailEvaluation }) {
   const aiIcon = evaluation.ai_status === 'ai_approved' ? ShieldCheck
     : evaluation.ai_status === 'ai_rejected' ? ShieldX : ShieldAlert;
-  const aiColor = evaluation.ai_status === 'ai_approved' ? '!text-emerald-600'
-    : evaluation.ai_status === 'ai_rejected' ? '!text-red-600' : '!text-amber-600';
+  const aiColor = evaluation.ai_status === 'ai_approved' ? '!text-emerald-600 dark:!text-emerald-400'
+    : evaluation.ai_status === 'ai_rejected' ? '!text-red-600 dark:!text-red-400' : '!text-amber-600 dark:!text-amber-400';
   const adminIcon = evaluation.admin_decision === 'approved' ? CheckCircle
     : evaluation.admin_decision === 'rejected' ? XCircle : Clock;
-  const adminColor = evaluation.admin_decision === 'approved' ? '!text-emerald-600'
-    : evaluation.admin_decision === 'rejected' ? '!text-red-600' : '!text-slate-400';
+  const adminColor = evaluation.admin_decision === 'approved' ? '!text-emerald-600 dark:!text-emerald-400'
+    : evaluation.admin_decision === 'rejected' ? '!text-red-600 dark:!text-red-400' : '!text-slate-400 dark:!text-slate-500';
 
   return (
     <div className="!bg-slate-50 dark:!bg-slate-700/50 !rounded-lg !p-4 !space-y-3">
       <div className="!flex !items-center !justify-between">
         <div className="!flex !items-center !gap-2">
-          <Shield className="!w-4 !h-4 !text-slate-400" />
+          <Shield className="!w-4 !h-4 !text-slate-400 dark:!text-slate-500" />
           <span className="!text-xs !text-slate-500 dark:!text-slate-400">{formatDate(evaluation.createdAt)}</span>
         </div>
         {evaluation.final_score != null && (
@@ -262,7 +262,7 @@ export default function AdminProjectDetailPage() {
   if (loading) {
     return (
       <div className="!flex !items-center !justify-center !h-64">
-        <div className="!animate-spin !rounded-full !h-8 !w-8 !border-b-2 !border-emerald-600" />
+        <div className="!animate-spin !rounded-full !h-8 !w-8 !border-b-2 !border-emerald-600 dark:!border-emerald-400" />
       </div>
     );
   }
@@ -271,9 +271,9 @@ export default function AdminProjectDetailPage() {
     return (
       <div className="!max-w-4xl !mx-auto !p-6">
         <div className="!bg-red-50 dark:!bg-red-900/20 !border !border-red-200 dark:!border-red-800 !rounded-lg !p-6 !text-center">
-          <AlertCircle className="!w-8 !h-8 !text-red-500 !mx-auto !mb-2" />
+          <AlertCircle className="!w-8 !h-8 !text-red-500 dark:!text-red-400 !mx-auto !mb-2" />
           <p className="!text-red-700 dark:!text-red-300">{error || 'Proyecto no encontrado'}</p>
-          <Link to="/admin/proyectos" className="!text-sm !text-emerald-600 hover:!underline !mt-2 !inline-block">
+          <Link to="/admin/proyectos" className="!text-sm !text-emerald-600 dark:!text-emerald-400 hover:!underline !mt-2 !inline-block">
             Volver al inventario
           </Link>
         </div>
@@ -286,7 +286,7 @@ export default function AdminProjectDetailPage() {
   const statusInfo = statusConfig[project.status] || statusConfig.active;
   const VerticalIcon = typeInfo ? verticalIcons[typeInfo.vertical] || Leaf : Leaf;
   const stockPct = getStockPercent(project.monthly_stock_remaining, project.monthly_stock_approved);
-  const stockBarColor = stockPct > 50 ? '!bg-emerald-500' : stockPct > 20 ? '!bg-amber-500' : '!bg-red-500';
+  const stockBarColor = stockPct > 50 ? '!bg-emerald-500 dark:!bg-emerald-400' : stockPct > 20 ? '!bg-amber-500 dark:!bg-amber-400' : '!bg-red-500 dark:!bg-red-400';
 
   const photoProps = project.photos.map(p => ({
     url: p.storageUrl,
@@ -328,7 +328,7 @@ export default function AdminProjectDetailPage() {
                 {statusInfo.label}
               </span>
               {project.is_sold_out && (
-                <span className="!text-xs !px-2 !py-0.5 !rounded-full !font-bold !bg-red-100 !text-red-700">AGOTADO</span>
+                <span className="!text-xs !px-2 !py-0.5 !rounded-full !font-bold !bg-red-100 dark:!bg-red-500/10 !text-red-700 dark:!text-red-300">AGOTADO</span>
               )}
             </div>
             <div className="!flex !items-center !gap-3 !mt-1 !text-sm !text-slate-500 dark:!text-slate-400">
@@ -355,7 +355,7 @@ export default function AdminProjectDetailPage() {
             <button
               onClick={() => handleChangeStatus('paused')}
               disabled={statusLoading}
-              className="!inline-flex !items-center !gap-1.5 !px-3 !py-2 !text-sm !font-medium !rounded-lg !bg-orange-50 !text-orange-700 !border !border-orange-200 hover:!bg-orange-100 disabled:!opacity-50 !transition-colors"
+              className="!inline-flex !items-center !gap-1.5 !px-3 !py-2 !text-sm !font-medium !rounded-lg !bg-orange-50 dark:!bg-orange-500/10 !text-orange-700 dark:!text-orange-300 !border !border-orange-200 dark:!border-orange-800 hover:!bg-orange-100 dark:hover:!bg-orange-500/20 disabled:!opacity-50 !transition-colors"
             >
               <Pause className="!w-4 !h-4" /> Pausar
             </button>
@@ -364,7 +364,7 @@ export default function AdminProjectDetailPage() {
             <button
               onClick={() => handleChangeStatus('active')}
               disabled={statusLoading}
-              className="!inline-flex !items-center !gap-1.5 !px-3 !py-2 !text-sm !font-medium !rounded-lg !bg-emerald-50 !text-emerald-700 !border !border-emerald-200 hover:!bg-emerald-100 disabled:!opacity-50 !transition-colors"
+              className="!inline-flex !items-center !gap-1.5 !px-3 !py-2 !text-sm !font-medium !rounded-lg !bg-emerald-50 dark:!bg-emerald-500/10 !text-emerald-700 dark:!text-emerald-300 !border !border-emerald-200 dark:!border-emerald-800 hover:!bg-emerald-100 dark:hover:!bg-emerald-500/20 disabled:!opacity-50 !transition-colors"
             >
               <Play className="!w-4 !h-4" /> Reactivar
             </button>
@@ -476,8 +476,8 @@ export default function AdminProjectDetailPage() {
                               )}
                             </div>
                             <div className="!flex !items-center !gap-2">
-                              <span className="!text-xs !text-slate-400">{ev.filesCount} archivos</span>
-                              <span className="!text-xs !text-slate-400">{formatDate(ev.createdAt)}</span>
+                              <span className="!text-xs !text-slate-400 dark:!text-slate-500">{ev.filesCount} archivos</span>
+                              <span className="!text-xs !text-slate-400 dark:!text-slate-500">{formatDate(ev.createdAt)}</span>
                             </div>
                           </div>
                         ))}
@@ -485,7 +485,7 @@ export default function AdminProjectDetailPage() {
                     </div>
                   )}
                   {project.photos.length === 0 && project.techDocs.length === 0 && project.evidences.length === 0 && (
-                    <p className="!text-sm !text-slate-400 !text-center !py-8">Sin evidencia registrada</p>
+                    <p className="!text-sm !text-slate-400 dark:!text-slate-500 !text-center !py-8">Sin evidencia registrada</p>
                   )}
                 </div>
               )}
@@ -494,7 +494,7 @@ export default function AdminProjectDetailPage() {
               {activeTab === 'evaluations' && (
                 <div className="!space-y-3">
                   {project.evaluations.length === 0 ? (
-                    <p className="!text-sm !text-slate-400 !text-center !py-8">Sin evaluaciones de IA</p>
+                    <p className="!text-sm !text-slate-400 dark:!text-slate-500 !text-center !py-8">Sin evaluaciones de IA</p>
                   ) : (
                     project.evaluations.map(ev => (
                       <div key={ev.id}>
@@ -525,7 +525,7 @@ export default function AdminProjectDetailPage() {
               {activeTab === 'pricing' && (
                 <div className="!space-y-3">
                   {project.pricingHistory.length === 0 ? (
-                    <p className="!text-sm !text-slate-400 !text-center !py-8">Sin historial de precios</p>
+                    <p className="!text-sm !text-slate-400 dark:!text-slate-500 !text-center !py-8">Sin historial de precios</p>
                   ) : (
                     project.pricingHistory.map((pv, i) => (
                       <div
@@ -547,7 +547,7 @@ export default function AdminProjectDetailPage() {
                               </span>
                             )}
                           </div>
-                          <span className="!text-xs !text-slate-400">{formatDate(pv.effectiveFrom)}</span>
+                          <span className="!text-xs !text-slate-400 dark:!text-slate-500">{formatDate(pv.effectiveFrom)}</span>
                         </div>
                         <div className="!grid !grid-cols-3 !gap-4 !text-center">
                           <div>
@@ -567,7 +567,7 @@ export default function AdminProjectDetailPage() {
                           <p className="!text-xs !text-slate-500 dark:!text-slate-400 !mt-2 !italic">"{pv.reason}"</p>
                         )}
                         {pv.createdBy && (
-                          <p className="!text-xs !text-slate-400 !mt-1">por {pv.createdBy.name || pv.createdBy.email}</p>
+                          <p className="!text-xs !text-slate-400 dark:!text-slate-500 !mt-1">por {pv.createdBy.name || pv.createdBy.email}</p>
                         )}
                       </div>
                     ))
@@ -579,7 +579,7 @@ export default function AdminProjectDetailPage() {
               {activeTab === 'certificates' && (
                 <div className="!space-y-3">
                   {project.recentCertificates.length === 0 ? (
-                    <p className="!text-sm !text-slate-400 !text-center !py-8">Sin certificados emitidos</p>
+                    <p className="!text-sm !text-slate-400 dark:!text-slate-500 !text-center !py-8">Sin certificados emitidos</p>
                   ) : (
                     <div className="!overflow-x-auto">
                       <table className="!w-full !text-sm">
@@ -625,7 +625,7 @@ export default function AdminProjectDetailPage() {
           <InfoCard title="Informacion General" icon={VerticalIcon}>
             <div className="!space-y-0">
               <DataRow label="Tipo" value={
-                <span className={`!inline-flex !items-center !gap-1 !text-xs !px-2 !py-0.5 !rounded-full ${typeInfo?.color || '!bg-slate-100 !text-slate-600'}`}>
+                <span className={`!inline-flex !items-center !gap-1 !text-xs !px-2 !py-0.5 !rounded-full ${typeInfo?.color || '!bg-slate-100 dark:!bg-slate-700 !text-slate-600 dark:!text-slate-300'}`}>
                   {typeInfo?.label || project.projectType}
                 </span>
               } />
@@ -689,12 +689,12 @@ export default function AdminProjectDetailPage() {
                   <img src={project.partner.logo_url} alt="" className="!w-10 !h-10 !rounded-lg !object-cover !border !border-slate-200 dark:!border-slate-700" />
                 ) : (
                   <div className="!w-10 !h-10 !rounded-lg !bg-slate-100 dark:!bg-slate-700 !flex !items-center !justify-center">
-                    <Users className="!w-5 !h-5 !text-slate-400" />
+                    <Users className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
                   </div>
                 )}
                 <div>
                   <p className="!text-sm !font-semibold !text-slate-700 dark:!text-slate-200">{project.partner.name}</p>
-                  {project.partner.status && <p className="!text-xs !text-slate-400">{project.partner.status}</p>}
+                  {project.partner.status && <p className="!text-xs !text-slate-400 dark:!text-slate-500">{project.partner.status}</p>}
                 </div>
               </div>
               <div className="!space-y-0">
