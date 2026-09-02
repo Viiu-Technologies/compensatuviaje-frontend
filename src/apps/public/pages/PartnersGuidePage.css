@@ -306,7 +306,8 @@
     grid-row: 1;
     justify-self: end;
     width: 100%;
-    max-width: calc(100% - clamp(2.5rem, 5vw, 4rem));
+    /* Radio del dot (26px) + aire extra para que su borde nunca quede tapado por la esquina del card */
+    max-width: calc(100% - 26px - clamp(2.5rem, 5vw, 4rem));
     text-align: right;
   }
 
@@ -314,7 +315,7 @@
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
-    margin-left: clamp(2.5rem, 5vw, 4rem);
+    margin-left: calc(26px + clamp(2.5rem, 5vw, 4rem));
   }
 
   .pg-step--left .pg-step__bullets {
@@ -330,14 +331,14 @@
     grid-row: 1;
     justify-self: start;
     width: 100%;
-    max-width: calc(100% - clamp(2.5rem, 5vw, 4rem));
+    max-width: calc(100% - 26px - clamp(2.5rem, 5vw, 4rem));
   }
 
   .pg-step--right .pg-step__art {
     grid-column: 1;
     grid-row: 1;
     justify-self: center;
-    margin-right: clamp(2.5rem, 5vw, 4rem);
+    margin-right: calc(26px + clamp(2.5rem, 5vw, 4rem));
   }
 }
 
