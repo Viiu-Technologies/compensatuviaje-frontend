@@ -98,7 +98,7 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setSubmitting(true);
@@ -115,7 +115,7 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
 
       setCreatedData(response.data);
       setSuccess(true);
-      
+
       // Auto close after 3 seconds
       setTimeout(() => {
         onCreated();
@@ -123,7 +123,7 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
     } catch (err: any) {
       // El interceptor de API devuelve { message, status, data, error_code }
       let errorMessage = 'Error al crear el partner';
-      
+
       if (err.status === 409) {
         // Error de duplicado
         if (err.data?.code === 'DUPLICATE_EMAIL') {
@@ -136,7 +136,7 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
       } else {
         errorMessage = err.message || errorMessage;
       }
-      
+
       setApiError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -145,28 +145,28 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
 
   if (success) {
     return (
-      <div className="!fixed !inset-0 !bg-black/50 !backdrop-blur-sm !flex !items-center !justify-center !z-50 !p-4">
-        <div className="!bg-white !rounded-2xl !shadow-2xl !max-w-md !w-full !p-8 !text-center">
-          <div className="!w-20 !h-20 !mx-auto !rounded-full !bg-emerald-100 !flex !items-center !justify-center !mb-6">
-            <CheckCircle className="!w-10 !h-10 !text-emerald-600" />
+      <div className="!fixed !inset-0 bg-black/50 !backdrop-blur-sm !flex !items-center !justify-center !z-50 !p-4">
+        <div className="bg-white dark:bg-slate-800 !rounded-2xl !shadow-2xl !max-w-md !w-full !p-8 !text-center">
+          <div className="!w-20 !h-20 !mx-auto !rounded-full bg-emerald-100 dark:bg-emerald-500/10 !flex !items-center !justify-center !mb-6">
+            <CheckCircle className="!w-10 !h-10 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h3 className="!text-2xl !font-bold !text-slate-800 !mb-2">
+          <h3 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100 !mb-2">
             ¡Partner Creado!
           </h3>
-          <p className="!text-slate-600 !mb-6">
+          <p className="text-slate-600 dark:text-slate-300 !mb-6">
             Se ha creado el partner <strong>{createdData?.partner?.name}</strong> exitosamente.
           </p>
-          <div className="!bg-slate-50 !rounded-xl !p-4 !mb-6 !text-left">
-            <p className="!text-sm !text-slate-500 !mb-2">Credenciales enviadas a:</p>
-            <p className="!font-medium !text-slate-800">{createdData?.admin?.email}</p>
-            <p className="!text-xs !text-amber-600 !mt-2 !flex !items-center !gap-1">
+          <div className="bg-slate-50 dark:bg-slate-900 !rounded-xl !p-4 !mb-6 !text-left">
+            <p className="text-sm text-slate-500 dark:text-slate-400 !mb-2">Credenciales enviadas a:</p>
+            <p className="font-medium text-slate-800 dark:text-slate-100">{createdData?.admin?.email}</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 !mt-2 !flex !items-center !gap-1">
               <Mail className="!w-3 !h-3" />
               El usuario recibirá un email con su contraseña temporal
             </p>
           </div>
           <button
             onClick={onCreated}
-            className="!w-full !py-3 !bg-indigo-600 !text-white !rounded-xl !font-medium hover:!bg-indigo-700 !transition-colors"
+            className="!w-full !py-3 bg-indigo-600 dark:bg-indigo-500 text-white !rounded-xl !font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 !transition-colors"
           >
             Continuar
           </button>
@@ -176,24 +176,24 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
   }
 
   return (
-    <div className="!fixed !inset-0 !bg-black/50 !backdrop-blur-sm !flex !items-center !justify-center !z-50 !p-4">
-      <div className="!bg-white !rounded-2xl !shadow-2xl !max-w-lg !w-full !max-h-[90vh] !overflow-y-auto">
+    <div className="!fixed !inset-0 bg-black/50 !backdrop-blur-sm !flex !items-center !justify-center !z-50 !p-4">
+      <div className="bg-white dark:bg-slate-800 !rounded-2xl !shadow-2xl !max-w-lg !w-full !max-h-[90vh] !overflow-y-auto">
         {/* Header */}
-        <div className="!sticky !top-0 !bg-white !px-6 !py-4 !border-b !border-slate-100 !flex !items-center !justify-between !rounded-t-2xl">
+        <div className="!sticky !top-0 bg-white dark:bg-slate-800 !px-6 !py-4 border-b border-slate-100 dark:border-slate-700 !flex !items-center !justify-between !rounded-t-2xl">
           <div className="!flex !items-center !gap-3">
             <div className="!w-10 !h-10 !rounded-xl !bg-gradient-to-br !from-indigo-500 !to-purple-600 !flex !items-center !justify-center">
-              <Handshake className="!w-5 !h-5 !text-white" />
+              <Handshake className="!w-5 !h-5 text-white" />
             </div>
             <div>
-              <h2 className="!text-lg !font-bold !text-slate-800">Nuevo Impact Partner</h2>
-              <p className="!text-sm !text-slate-500">Crear organización y usuario admin</p>
+              <h2 className="!text-lg !font-bold text-slate-800 dark:text-slate-100">Nuevo Impact Partner</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Crear organización y usuario admin</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="!p-2 !rounded-lg hover:!bg-slate-100 !transition-colors"
+            className="!p-2 !rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 !transition-colors"
           >
-            <X className="!w-5 !h-5 !text-slate-500" />
+            <X className="!w-5 !h-5 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -201,7 +201,7 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
         <form onSubmit={handleSubmit} className="!p-6 !space-y-6">
           {/* API Error */}
           {apiError && (
-            <div className="!bg-red-50 !text-red-700 !px-4 !py-3 !rounded-xl !flex !items-center !gap-2 !text-sm">
+            <div className="bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-xl !flex !items-center !gap-2 !text-sm">
               <AlertTriangle className="!w-5 !h-5 !flex-shrink-0" />
               {apiError}
             </div>
@@ -209,139 +209,139 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
 
           {/* Partner Info Section */}
           <div className="!space-y-4">
-            <h3 className="!text-sm !font-semibold !text-slate-700 !uppercase !tracking-wider !flex !items-center !gap-2">
+            <h3 className="!text-sm !font-semibold text-slate-700 dark:text-slate-200 !uppercase !tracking-wider !flex !items-center !gap-2">
               <Building2 className="!w-4 !h-4" />
               Información del Partner
             </h3>
 
             {/* Partner Name */}
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-1.5">
-                Nombre del Partner <span className="!text-red-500">*</span>
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-1.5">
+                Nombre del Partner <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={formData.partnerName}
                 onChange={(e) => handleChange('partnerName', e.target.value)}
                 placeholder="Ej: EcoForest Chile SpA"
-                className={`!w-full !px-4 !py-2.5 !border !rounded-xl !bg-white !text-slate-800 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all ${
-                  errors.partnerName ? '!border-red-500' : '!border-slate-200'
+                className={`!w-full !px-4 !py-2.5 !border !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:!ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 !outline-none !transition-all ${
+                  errors.partnerName ? 'border-red-500 dark:border-red-400' : 'border-slate-200 dark:border-slate-700'
                 }`}
               />
               {errors.partnerName && (
-                <p className="!text-red-500 !text-xs !mt-1">{errors.partnerName}</p>
+                <p className="text-red-500 dark:text-red-400 !text-xs !mt-1">{errors.partnerName}</p>
               )}
             </div>
 
             {/* Contact Email */}
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-1.5">
-                Email de Contacto <span className="!text-red-500">*</span>
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-1.5">
+                Email de Contacto <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <div className="!relative">
-                <Mail className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-slate-400" />
+                <Mail className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 text-slate-400 dark:text-slate-500" />
                 <input
                   type="email"
                   value={formData.contactEmail}
                   onChange={(e) => handleChange('contactEmail', e.target.value)}
                   placeholder="contacto@empresa.cl"
-                  className={`!w-full !pl-10 !pr-4 !py-2.5 !border !rounded-xl !bg-white !text-slate-800 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all ${
-                    errors.contactEmail ? '!border-red-500' : '!border-slate-200'
+                  className={`!w-full !pl-10 !pr-4 !py-2.5 !border !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:!ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 !outline-none !transition-all ${
+                    errors.contactEmail ? 'border-red-500 dark:border-red-400' : 'border-slate-200 dark:border-slate-700'
                   }`}
                 />
               </div>
               {errors.contactEmail && (
-                <p className="!text-red-500 !text-xs !mt-1">{errors.contactEmail}</p>
+                <p className="text-red-500 dark:text-red-400 !text-xs !mt-1">{errors.contactEmail}</p>
               )}
             </div>
 
             {/* Website URL */}
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-1.5">
-                Sitio Web <span className="!text-slate-400">(opcional)</span>
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-1.5">
+                Sitio Web <span className="text-slate-400 dark:text-slate-500">(opcional)</span>
               </label>
               <div className="!relative">
-                <Globe className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-slate-400" />
+                <Globe className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 text-slate-400 dark:text-slate-500" />
                 <input
                   type="url"
                   value={formData.websiteUrl}
                   onChange={(e) => handleChange('websiteUrl', e.target.value)}
                   placeholder="https://www.empresa.cl"
-                  className={`!w-full !pl-10 !pr-4 !py-2.5 !border !rounded-xl !bg-white !text-slate-800 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all ${
-                    errors.websiteUrl ? '!border-red-500' : '!border-slate-200'
+                  className={`!w-full !pl-10 !pr-4 !py-2.5 !border !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:!ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 !outline-none !transition-all ${
+                    errors.websiteUrl ? 'border-red-500 dark:border-red-400' : 'border-slate-200 dark:border-slate-700'
                   }`}
                 />
               </div>
               {errors.websiteUrl && (
-                <p className="!text-red-500 !text-xs !mt-1">{errors.websiteUrl}</p>
+                <p className="text-red-500 dark:text-red-400 !text-xs !mt-1">{errors.websiteUrl}</p>
               )}
             </div>
           </div>
 
           {/* Divider */}
-          <div className="!border-t !border-slate-200"></div>
+          <div className="border-t border-slate-200 dark:border-slate-700"></div>
 
           {/* Admin User Section */}
           <div className="!space-y-4">
-            <h3 className="!text-sm !font-semibold !text-slate-700 !uppercase !tracking-wider !flex !items-center !gap-2">
+            <h3 className="!text-sm !font-semibold text-slate-700 dark:text-slate-200 !uppercase !tracking-wider !flex !items-center !gap-2">
               <User className="!w-4 !h-4" />
               Usuario Administrador
             </h3>
-            <p className="!text-xs !text-slate-500 !-mt-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400 !-mt-2">
               Se creará un usuario con rol PARTNER_ADMIN y se enviarán las credenciales por email.
             </p>
 
             {/* Admin Name */}
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-1.5">
-                Nombre Completo <span className="!text-red-500">*</span>
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-1.5">
+                Nombre Completo <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={formData.adminName}
                 onChange={(e) => handleChange('adminName', e.target.value)}
                 placeholder="Ej: Juan Pérez González"
-                className={`!w-full !px-4 !py-2.5 !border !rounded-xl !bg-white !text-slate-800 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all ${
-                  errors.adminName ? '!border-red-500' : '!border-slate-200'
+                className={`!w-full !px-4 !py-2.5 !border !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:!ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 !outline-none !transition-all ${
+                  errors.adminName ? 'border-red-500 dark:border-red-400' : 'border-slate-200 dark:border-slate-700'
                 }`}
               />
               {errors.adminName && (
-                <p className="!text-red-500 !text-xs !mt-1">{errors.adminName}</p>
+                <p className="text-red-500 dark:text-red-400 !text-xs !mt-1">{errors.adminName}</p>
               )}
             </div>
 
             {/* Admin Email */}
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-1.5">
-                Email del Administrador <span className="!text-red-500">*</span>
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-1.5">
+                Email del Administrador <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <div className="!relative">
-                <Mail className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-slate-400" />
+                <Mail className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 text-slate-400 dark:text-slate-500" />
                 <input
                   type="email"
                   value={formData.adminEmail}
                   onChange={(e) => handleChange('adminEmail', e.target.value)}
                   placeholder="admin@empresa.cl"
-                  className={`!w-full !pl-10 !pr-4 !py-2.5 !border !rounded-xl !bg-white !text-slate-800 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all ${
-                    errors.adminEmail ? '!border-red-500' : '!border-slate-200'
+                  className={`!w-full !pl-10 !pr-4 !py-2.5 !border !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:!ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 !outline-none !transition-all ${
+                    errors.adminEmail ? 'border-red-500 dark:border-red-400' : 'border-slate-200 dark:border-slate-700'
                   }`}
                 />
               </div>
               {errors.adminEmail && (
-                <p className="!text-red-500 !text-xs !mt-1">{errors.adminEmail}</p>
+                <p className="text-red-500 dark:text-red-400 !text-xs !mt-1">{errors.adminEmail}</p>
               )}
-              <p className="!text-xs !text-slate-500 !mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 !mt-1">
                 Se enviará un email con las credenciales de acceso
               </p>
             </div>
           </div>
 
           {/* Info Box */}
-          <div className="!bg-indigo-50 !rounded-xl !p-4">
-            <p className="!text-sm !text-indigo-800">
+          <div className="bg-indigo-50 dark:bg-indigo-500/10 !rounded-xl !p-4">
+            <p className="text-sm text-indigo-800 dark:text-indigo-300">
               <strong>¿Qué sucederá?</strong>
             </p>
-            <ul className="!text-sm !text-indigo-700 !mt-2 !space-y-1 !list-disc !list-inside">
+            <ul className="text-sm text-indigo-700 dark:text-indigo-300 !mt-2 !space-y-1 !list-disc !list-inside">
               <li>Se creará el Partner en estado "Onboarding"</li>
               <li>Se generará un usuario con contraseña temporal</li>
               <li>El usuario recibirá un email con sus credenciales</li>
@@ -354,14 +354,14 @@ export default function PartnerCreateModal({ onClose, onCreated }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="!flex-1 !py-3 !border !border-slate-200 !text-slate-700 !rounded-xl !font-medium hover:!bg-slate-50 !transition-colors"
+              className="!flex-1 !py-3 !border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 !rounded-xl !font-medium hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="!flex-1 !py-3 !bg-gradient-to-r !from-indigo-600 !to-purple-600 !text-white !rounded-xl !font-medium hover:!shadow-lg hover:!shadow-indigo-500/30 !transition-all disabled:!opacity-60 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+              className="!flex-1 !py-3 !bg-gradient-to-r !from-indigo-600 !to-purple-600 text-white !rounded-xl !font-medium hover:!shadow-lg hover:!shadow-indigo-500/30 !transition-all disabled:!opacity-60 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
             >
               {submitting ? (
                 <>
