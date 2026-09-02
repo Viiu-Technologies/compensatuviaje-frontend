@@ -71,21 +71,21 @@ const TabNavigation: React.FC<TabProps> = ({ active, onChange, onboardingStatus 
   ];
 
   return (
-    <div className="!flex !border-b !border-slate-200 !mb-6">
+    <div className="flex border-b border-slate-200 dark:border-slate-700 mb-6">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
           className={`!flex !items-center !gap-2 !px-4 !py-3 !border-b-2 !font-medium !text-sm !transition-colors !relative ${
             active === tab.id
-              ? '!border-emerald-500 !text-emerald-600'
-              : '!border-transparent !text-slate-500 hover:!text-slate-700 hover:!border-slate-300'
+              ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
           }`}
         >
           {tab.icon}
           {tab.label}
           {tab.needsAttention && (
-            <span className="!absolute !-top-1 !-right-1 !w-3 !h-3 !bg-amber-400 !rounded-full" />
+            <span className="!absolute !-top-1 !-right-1 !w-3 !h-3 bg-amber-400 !rounded-full" />
           )}
         </button>
       ))}
@@ -148,7 +148,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
   const handleSaveLogo = async () => {
     if (logoUploadType === 'url' && !logoUrl.trim()) return;
     if (logoUploadType === 'file' && !logoFile) return;
-    
+
     setError(null);
     setSuccess(null);
     setSaving(true);
@@ -171,10 +171,10 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
-        <div className="h-24 bg-gray-200 rounded-lg" />
+        <div className="h-24 bg-gray-200 dark:bg-slate-700 rounded-lg" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-gray-200 rounded" />
+            <div key={i} className="h-12 bg-gray-200 dark:bg-slate-700 rounded" />
           ))}
         </div>
       </div>
@@ -201,21 +201,21 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
 
       {/* Messages */}
       {error && (
-        <div className="!bg-red-50 !border !border-red-200 !text-red-700 !px-4 !py-3 !rounded-lg">
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="!bg-emerald-50 !border !border-emerald-200 !text-emerald-700 !px-4 !py-3 !rounded-lg">
+        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Logo Section */}
-      <div className="!bg-white !rounded-lg !border !p-6">
-        <h3 className="!text-lg !font-semibold !text-slate-800 !mb-4">Logo de la Organización</h3>
+      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
+        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">Logo de la Organización</h3>
         <div className="!flex !items-start !gap-6">
-          <div className="!w-24 !h-24 !bg-slate-100 !rounded-lg !overflow-hidden !flex !items-center !justify-center">
+          <div className="!w-24 !h-24 bg-slate-100 dark:bg-slate-700 !rounded-lg !overflow-hidden !flex !items-center !justify-center">
             {profile?.logo_url ? (
               <img
                 src={profile.logo_url}
@@ -223,28 +223,28 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 className="!w-full !h-full !object-cover"
               />
             ) : (
-              <svg className="!w-12 !h-12 !text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="!w-12 !h-12 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             )}
           </div>
           <div className="!flex-1">
             <div className="!flex !items-center !justify-between !mb-2">
-              <label className="!block !text-sm !font-medium !text-slate-700">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200">
                 Logo de la Organización
               </label>
-              <div className="!flex !gap-1 !bg-slate-100 !rounded-lg !p-1">
+              <div className="!flex !gap-1 bg-slate-100 dark:bg-slate-700 !rounded-lg !p-1">
                 <button
                   type="button"
                   onClick={() => setLogoUploadType('url')}
-                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'url' ? '!bg-white !text-slate-800 !shadow-sm' : '!text-slate-500 hover:!text-slate-700'}`}
+                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'url' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-slate-100 !shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                 >
                   Usar URL
                 </button>
                 <button
                   type="button"
                   onClick={() => setLogoUploadType('file')}
-                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'file' ? '!bg-white !text-slate-800 !shadow-sm' : '!text-slate-500 hover:!text-slate-700'}`}
+                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'file' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-slate-100 !shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                 >
                   Subir Archivo
                 </button>
@@ -257,14 +257,14 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                   placeholder="https://ejemplo.com/logo.png"
-                  className="!flex-1 !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               ) : (
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/svg+xml"
                   onChange={(e) => { if (e.target.files && e.target.files[0]) setLogoFile(e.target.files[0]); }}
-                  className="!flex-1 !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800 file:!mr-4 file:!py-2 file:!px-4 file:!rounded-full file:!border-0 file:!text-sm file:!font-semibold file:!bg-emerald-50 file:!text-emerald-700 hover:file:!bg-emerald-100"
+                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 file:!mr-4 file:!py-2 file:!px-4 file:!rounded-full file:!border-0 file:!text-sm file:!font-semibold file:bg-emerald-50 dark:file:bg-emerald-500/10 file:text-emerald-700 dark:file:text-emerald-300 hover:file:bg-emerald-100 dark:hover:file:bg-emerald-500/20"
                 />
               )}
               <button
@@ -275,7 +275,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
-            <p className="!text-sm !text-slate-500 !mt-1">
+            <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">
               {logoUploadType === 'url' ? 'Ingresa la URL de tu logo' : 'Sube un archivo de imagen (PNG, JPG)'}
             </p>
           </div>
@@ -283,13 +283,13 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
       </div>
 
       {/* Profile Form */}
-      <div className="!bg-white !rounded-lg !border !p-6">
+      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
         <div className="!flex !items-center !justify-between !mb-4">
-          <h3 className="!text-lg !font-semibold !text-slate-800">Información de la Organización</h3>
+          <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Información de la Organización</h3>
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="!text-sm !text-emerald-600 hover:!text-emerald-700 !font-medium"
+              className="!text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium"
             >
               Editar
             </button>
@@ -299,7 +299,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
         <form onSubmit={handleSaveProfile}>
           <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                 Nombre de la Organización *
               </label>
               <input
@@ -308,12 +308,12 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={!editing}
                 required
-                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 disabled:!bg-slate-50 disabled:!text-slate-500 !bg-white !text-slate-800"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
 
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                 Email de Contacto *
               </label>
               <input
@@ -322,12 +322,12 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                 disabled={!editing}
                 required
-                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 disabled:!bg-slate-50 disabled:!text-slate-500 !bg-white !text-slate-800"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
 
             <div className="md:!col-span-2">
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                 Sitio Web
               </label>
               <input
@@ -336,13 +336,13 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                 disabled={!editing}
                 placeholder="https://www.ejemplo.com"
-                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 disabled:!bg-slate-50 disabled:!text-slate-500 !bg-white !text-slate-800"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
           </div>
 
           {editing && (
-            <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 !border-t">
+            <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 border-t border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 onClick={() => {
@@ -355,7 +355,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                     });
                   }
                 }}
-                className="!px-4 !py-2 !border !border-slate-300 !text-slate-700 !rounded-lg hover:!bg-slate-50"
+                className="!px-4 !py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 !rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 Cancelar
               </button>
@@ -448,7 +448,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
-        <div className="h-48 bg-gray-200 rounded-lg" />
+        <div className="h-48 bg-gray-200 dark:bg-slate-700 rounded-lg" />
       </div>
     );
   }
@@ -472,27 +472,27 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
     <div className="!space-y-6">
       {/* Messages */}
       {error && (
-        <div className="!bg-red-50 !border !border-red-200 !text-red-700 !px-4 !py-3 !rounded-lg">
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="!bg-emerald-50 !border !border-emerald-200 !text-emerald-700 !px-4 !py-3 !rounded-lg">
+        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Info Banner */}
-      <div className="!bg-sky-50 !border !border-sky-200 !rounded-lg !p-4">
+      <div className="bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 !rounded-lg !p-4">
         <div className="!flex !items-start !gap-3">
-          <svg className="!w-5 !h-5 !text-sky-500 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="!w-5 !h-5 text-sky-500 dark:text-sky-400 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <p className="!text-sm !text-sky-800 !font-medium">
+            <p className="!text-sm text-sky-800 dark:text-sky-200 !font-medium">
               Información importante
             </p>
-            <p className="!text-sm !text-sky-700 !mt-1">
+            <p className="!text-sm text-sky-700 dark:text-sky-300 !mt-1">
               Los datos bancarios son necesarios para recibir los pagos por compensaciones realizadas a través de tus proyectos ESG.
             </p>
           </div>
@@ -500,14 +500,14 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
       </div>
 
       {/* Current Bank Details or Form */}
-      <div className="!bg-white !rounded-lg !border !p-6">
+      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
         {!editing && bankDetails ? (
           <>
             <div className="!flex !items-center !justify-between !mb-6">
-              <h3 className="!text-lg !font-semibold !text-slate-800">Datos Bancarios Registrados</h3>
+              <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Datos Bancarios Registrados</h3>
               <button
                 onClick={() => setEditing(true)}
-                className="!text-sm !text-emerald-600 hover:!text-emerald-700 !font-medium"
+                className="!text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium"
               >
                 Modificar
               </button>
@@ -515,56 +515,56 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
 
             <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
               <div>
-                <p className="!text-sm !text-slate-500">Banco</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.bank_name}</p>
+                <p className="!text-sm text-slate-500 dark:text-slate-400">Banco</p>
+                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.bank_name}</p>
               </div>
               <div>
-                <p className="!text-sm !text-slate-500">Tipo de Cuenta</p>
-                <p className="!font-medium !text-slate-800">
+                <p className="!text-sm text-slate-500 dark:text-slate-400">Tipo de Cuenta</p>
+                <p className="!font-medium text-slate-800 dark:text-slate-100">
                   {bankDetails.account_type === 'checking' ? 'Cuenta Corriente' : 'Cuenta de Ahorro'}
                 </p>
               </div>
               <div>
-                <p className="!text-sm !text-slate-500">Número de Cuenta</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.account_number}</p>
+                <p className="!text-sm text-slate-500 dark:text-slate-400">Número de Cuenta</p>
+                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.account_number}</p>
               </div>
               <div>
-                <p className="!text-sm !text-slate-500">Titular</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.account_holder_name}</p>
+                <p className="!text-sm text-slate-500 dark:text-slate-400">Titular</p>
+                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.account_holder_name}</p>
               </div>
               <div>
-                <p className="!text-sm !text-slate-500">RUT Titular</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.account_holder_rut}</p>
+                <p className="!text-sm text-slate-500 dark:text-slate-400">RUT Titular</p>
+                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.account_holder_rut}</p>
               </div>
               <div>
-                <p className="!text-sm !text-slate-500">Moneda</p>
-                <p className="!font-medium !text-slate-800">{bankDetails.currency}</p>
+                <p className="!text-sm text-slate-500 dark:text-slate-400">Moneda</p>
+                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.currency}</p>
               </div>
             </div>
 
             {bankDetails.updated_at && (
-              <p className="!text-sm !text-slate-500 !mt-6 !pt-4 !border-t">
+              <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-6 !pt-4 border-t border-slate-200 dark:border-slate-700">
                 Última actualización: {new Date(bankDetails.updated_at).toLocaleDateString('es-CL')}
               </p>
             )}
           </>
         ) : (
           <>
-            <h3 className="!text-lg !font-semibold !text-slate-800 !mb-6">
+            <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-6">
               {bankDetails ? 'Modificar Datos Bancarios' : 'Configurar Datos Bancarios'}
             </h3>
 
             <form onSubmit={handleSave}>
               <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
                 <div>
-                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                     Banco *
                   </label>
                   <select
                     value={formData.bank_name}
                     onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
                     required
-                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   >
                     <option value="">Seleccionar banco...</option>
                     {banks.map((bank) => (
@@ -574,14 +574,14 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 </div>
 
                 <div>
-                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                     Tipo de Cuenta *
                   </label>
                   <select
                     value={formData.account_type}
                     onChange={(e) => setFormData({ ...formData, account_type: e.target.value as 'checking' | 'savings' })}
                     required
-                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   >
                     <option value="checking">Cuenta Corriente</option>
                     <option value="savings">Cuenta de Ahorro</option>
@@ -589,7 +589,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 </div>
 
                 <div>
-                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                     Número de Cuenta *
                   </label>
                   <input
@@ -598,12 +598,12 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     onChange={(e) => setFormData({ ...formData, account_number: e.target.value.replace(/[^0-9]/g, '') })}
                     required
                     placeholder="Ej: 12345678"
-                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                     Nombre del Titular *
                   </label>
                   <input
@@ -612,12 +612,12 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
                     required
                     placeholder="Nombre completo"
-                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                     RUT del Titular *
                   </label>
                   <input
@@ -627,31 +627,31 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     required
                     placeholder="12.345.678-9"
                     maxLength={12}
-                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                     Moneda *
                   </label>
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'CLP' })}
                     required
-                    className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   >
                     <option value="CLP">Peso Chileno (CLP)</option>
                   </select>
                 </div>
               </div>
 
-              <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 !border-t">
+              <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 border-t border-slate-200 dark:border-slate-700">
                 {bankDetails && (
                   <button
                     type="button"
                     onClick={() => setEditing(false)}
-                    className="!px-4 !py-2 !border !border-slate-300 !text-slate-700 !rounded-lg hover:!bg-slate-50"
+                    className="!px-4 !py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 !rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"
                   >
                     Cancelar
                   </button>
@@ -725,24 +725,24 @@ const SecurityTab: React.FC = () => {
     <div className="!space-y-6">
       {/* Messages */}
       {error && (
-        <div className="!bg-red-50 !border !border-red-200 !text-red-700 !px-4 !py-3 !rounded-lg">
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="!bg-emerald-50 !border !border-emerald-200 !text-emerald-700 !px-4 !py-3 !rounded-lg">
+        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Change Password Form */}
-      <div className="!bg-white !rounded-lg !border !p-6">
-        <h3 className="!text-lg !font-semibold !text-slate-800 !mb-6">Cambiar Contraseña</h3>
+      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
+        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-6">Cambiar Contraseña</h3>
 
         <form onSubmit={handleChangePassword} className="!max-w-md">
           <div className="!space-y-4">
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                 Contraseña Actual *
               </label>
               <input
@@ -750,12 +750,12 @@ const SecurityTab: React.FC = () => {
                 value={formData.current_password}
                 onChange={(e) => setFormData({ ...formData, current_password: e.target.value })}
                 required
-                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
 
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                 Nueva Contraseña *
               </label>
               <input
@@ -764,13 +764,13 @@ const SecurityTab: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, new_password: e.target.value })}
                 required
                 minLength={8}
-                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
-              <p className="!text-sm !text-slate-500 !mt-1">Mínimo 8 caracteres</p>
+              <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">Mínimo 8 caracteres</p>
             </div>
 
             <div>
-              <label className="!block !text-sm !font-medium !text-slate-700 !mb-2">
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
                 Confirmar Nueva Contraseña *
               </label>
               <input
@@ -778,7 +778,7 @@ const SecurityTab: React.FC = () => {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
-                className="!w-full !px-4 !py-2 !border !border-slate-300 !rounded-lg focus:!ring-2 focus:!ring-emerald-500 focus:!border-emerald-500 !bg-white !text-slate-800"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
           </div>
@@ -817,7 +817,7 @@ const PartnerProfilePage: React.FC = () => {
         getPartnerProfile(),
         getOnboardingStatus()
       ]);
-      
+
       if (results[0].status === 'fulfilled') setProfile(results[0].value);
       if (results[1].status === 'fulfilled') setOnboarding(results[1].value || undefined);
     } catch (error) {
@@ -833,20 +833,20 @@ const PartnerProfilePage: React.FC = () => {
       <div className="!flex !items-center !gap-4">
         <Link
           to="/partner"
-          className="!p-2 !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !rounded-lg !transition-colors !no-underline"
+          className="!p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 !rounded-lg !transition-colors !no-underline"
         >
           <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
         <div>
-          <h1 className="!text-2xl !font-bold !text-slate-800">Mi Perfil</h1>
-          <p className="!text-slate-500 !mt-1">Configura tu cuenta y datos de la organización</p>
+          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100">Mi Perfil</h1>
+          <p className="text-slate-500 dark:text-slate-400 !mt-1">Configura tu cuenta y datos de la organización</p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="!bg-white !rounded-xl !shadow-sm !border !overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 !rounded-xl !shadow-sm border border-slate-200 dark:border-slate-700 !overflow-hidden">
         <div className="!p-6">
           <TabNavigation
             active={activeTab}
