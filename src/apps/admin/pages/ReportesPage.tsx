@@ -158,10 +158,10 @@ export default function ReportesPage() {
       {/* Header Section */}
       <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
         <div>
-          <h1 className="!text-4xl !font-black !text-slate-900 !tracking-tight !mb-2">
-            Centro de <span className="!text-emerald-600">Reportes</span>
+          <h1 className="!text-4xl !font-black text-slate-900 dark:text-slate-100 !tracking-tight !mb-2">
+            Centro de <span className="text-emerald-600 dark:text-emerald-400">Reportes</span>
           </h1>
-          <p className="!text-slate-500 !font-medium">
+          <p className="text-slate-500 dark:text-slate-400 !font-medium">
             Analiza el impacto ambiental y el rendimiento financiero de la plataforma.
           </p>
         </div>
@@ -169,32 +169,32 @@ export default function ReportesPage() {
           <div className="!relative !group">
             <button
               disabled={exporting}
-              className="!flex !items-center !gap-2 !bg-slate-900 !hover:bg-slate-800 !text-white !px-6 !py-3 !rounded-2xl !font-bold !transition-all !shadow-lg !shadow-slate-200 !active:scale-95"
+              className="!flex !items-center !gap-2 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white !px-6 !py-3 !rounded-2xl !font-bold !transition-all !shadow-lg !shadow-slate-200 dark:!shadow-none !active:scale-95"
             >
               <Download className="!w-5 !h-5" />
               {exporting ? 'Exportando...' : 'Exportar Datos'}
               <ChevronDown className="!w-4 !h-4" />
             </button>
-            <div className="!absolute !right-0 !mt-2 !w-56 !bg-white !rounded-2xl !shadow-2xl !border !border-slate-100 !py-2 !z-50 !opacity-0 !invisible !group-hover:opacity-100 !group-hover:visible !transition-all !translate-y-2 !group-hover:translate-y-0">
+            <div className="!absolute !right-0 !mt-2 !w-56 bg-white dark:bg-slate-800 !rounded-2xl !shadow-2xl !border border-slate-100 dark:border-slate-700 !py-2 !z-50 !opacity-0 !invisible !group-hover:opacity-100 !group-hover:visible !transition-all !translate-y-2 !group-hover:translate-y-0">
               <button
                 onClick={() => handleExport('csv')}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold !text-slate-700 !hover:bg-slate-50 !transition-colors"
+                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
               >
-                <TableIcon className="!w-4 !h-4 !text-emerald-500" />
+                <TableIcon className="!w-4 !h-4 text-emerald-500 dark:text-emerald-400" />
                 Exportar CSV
               </button>
               <button
                 onClick={() => handleExport('excel')}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold !text-slate-700 !hover:bg-slate-50 !transition-colors"
+                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
               >
-                <FileText className="!w-4 !h-4 !text-blue-500" />
+                <FileText className="!w-4 !h-4 text-blue-500 dark:text-blue-400" />
                 Exportar Excel
               </button>
               <button
                 onClick={() => handleExport('pdf')}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold !text-slate-700 !hover:bg-slate-50 !transition-colors"
+                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
               >
-                <FileBarChart className="!w-4 !h-4 !text-red-500" />
+                <FileBarChart className="!w-4 !h-4 text-red-500 dark:text-red-400" />
                 Exportar PDF
               </button>
             </div>
@@ -203,15 +203,15 @@ export default function ReportesPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="!bg-white !p-2 !rounded-3xl !shadow-sm !border !border-slate-100 !flex !flex-wrap !gap-2">
+      <div className="bg-white dark:bg-slate-800 !p-2 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !flex !flex-wrap !gap-2">
         {reportTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`!flex !items-center !gap-2 !px-6 !py-3 !rounded-2xl !font-bold !transition-all ${
               activeTab === tab.id
-                ? '!bg-emerald-600 !text-white !shadow-lg !shadow-emerald-100'
-                : '!text-slate-500 !hover:bg-slate-50 !hover:text-slate-900'
+                ? 'bg-emerald-600 text-white !shadow-lg !shadow-emerald-100 dark:!shadow-none'
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <tab.icon className="!w-5 !h-5" />
@@ -221,11 +221,11 @@ export default function ReportesPage() {
       </div>
 
       {/* Filters Bar */}
-      <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
+      <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700">
         <div className="!flex !flex-col lg:!flex-row !gap-6 !items-center">
           <div className="!flex !items-center !gap-3 !w-full lg:!w-auto">
-            <div className="!w-10 !h-10 !bg-slate-100 !rounded-xl !flex !items-center !justify-center">
-              <Calendar className="!w-5 !h-5 !text-slate-500" />
+            <div className="!w-10 !h-10 bg-slate-100 dark:bg-slate-700 !rounded-xl !flex !items-center !justify-center">
+              <Calendar className="!w-5 !h-5 text-slate-500 dark:text-slate-400" />
             </div>
             <select
               value={period}
@@ -233,7 +233,7 @@ export default function ReportesPage() {
                 setPeriod(e.target.value);
                 if (e.target.value !== 'custom') setShowCustomDates(false);
               }}
-              className="!flex-1 lg:!w-48 !bg-slate-50 !border-none !rounded-2xl !px-4 !py-3 !font-bold !text-slate-700 !focus:ring-2 !focus:ring-emerald-500 !cursor-pointer"
+              className="!flex-1 lg:!w-48 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500 !cursor-pointer"
             >
               <option value="all">Todos</option>
               <option value="7d">Últimos 7 días</option>
@@ -251,18 +251,18 @@ export default function ReportesPage() {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="!flex-1 !bg-slate-50 !border-none !rounded-2xl !px-4 !py-3 !font-bold !text-slate-700 !focus:ring-2 !focus:ring-emerald-500"
+                className="!flex-1 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500"
               />
-              <span className="!text-slate-400 !font-black">/</span>
+              <span className="text-slate-400 dark:text-slate-500 !font-black">/</span>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="!flex-1 !bg-slate-50 !border-none !rounded-2xl !px-4 !py-3 !font-bold !text-slate-700 !focus:ring-2 !focus:ring-emerald-500"
+                className="!flex-1 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500"
               />
               <button
                 onClick={() => { setShowCustomDates(true); loadReport(); }}
-                className="!bg-emerald-600 !text-white !px-6 !py-3 !rounded-2xl !font-bold !hover:bg-emerald-700 !transition-all"
+                className="bg-emerald-600 text-white !px-6 !py-3 !rounded-2xl !font-bold hover:bg-emerald-700 !transition-all"
               >
                 Aplicar
               </button>
@@ -271,13 +271,13 @@ export default function ReportesPage() {
 
           {(activeTab === 'emissions' || activeTab === 'financial') && (
             <div className="!flex !items-center !gap-3 !w-full lg:!w-auto">
-              <div className="!w-10 !h-10 !bg-slate-100 !rounded-xl !flex !items-center !justify-center">
-                <Filter className="!w-5 !h-5 !text-slate-500" />
+              <div className="!w-10 !h-10 bg-slate-100 dark:bg-slate-700 !rounded-xl !flex !items-center !justify-center">
+                <Filter className="!w-5 !h-5 text-slate-500 dark:text-slate-400" />
               </div>
               <select
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value)}
-                className="!flex-1 lg:!w-48 !bg-slate-50 !border-none !rounded-2xl !px-4 !py-3 !font-bold !text-slate-700 !focus:ring-2 !focus:ring-emerald-500 !cursor-pointer"
+                className="!flex-1 lg:!w-48 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500 !cursor-pointer"
               >
                 <option value="time">Por Tiempo</option>
                 <option value="company">Por Empresa</option>
@@ -295,10 +295,10 @@ export default function ReportesPage() {
         <div className="!space-y-8">
           <div className="!grid !grid-cols-1 md:!grid-cols-3 !gap-6">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="!h-32 !bg-slate-100 !rounded-3xl !animate-pulse" />
+              <div key={i} className="!h-32 bg-slate-100 dark:bg-slate-800 !rounded-3xl !animate-pulse" />
             ))}
           </div>
-          <div className="!h-[400px] !bg-slate-100 !rounded-3xl !animate-pulse" />
+          <div className="!h-[400px] bg-slate-100 dark:bg-slate-800 !rounded-3xl !animate-pulse" />
         </div>
       ) : (
         <div className="!space-y-8">
@@ -307,46 +307,46 @@ export default function ReportesPage() {
             <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-4 !gap-6">
               {activeTab === 'emissions' && (
                 <>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-emerald-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-emerald-50 dark:bg-emerald-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-emerald-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Leaf className="!w-6 !h-6 !text-emerald-600" />
+                      <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Leaf className="!w-6 !h-6 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Emisiones Totales</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">
-                        {formatNumber(reportData.totals.totalEmissionsKg)} <span className="!text-sm !font-medium !text-slate-400">kg</span>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Emisiones Totales</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">
+                        {formatNumber(reportData.totals.totalEmissionsKg)} <span className="!text-sm !font-medium text-slate-400 dark:text-slate-500">kg</span>
                       </h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-blue-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-blue-50 dark:bg-blue-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-blue-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <FileBarChart className="!w-6 !h-6 !text-blue-600" />
+                      <div className="!w-12 !h-12 bg-blue-100 dark:bg-blue-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <FileBarChart className="!w-6 !h-6 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Certificados</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData.totals.totalCertificates}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Certificados</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData.totals.totalCertificates}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-amber-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-amber-50 dark:bg-amber-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-amber-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <DollarSign className="!w-6 !h-6 !text-amber-600" />
+                      <div className="!w-12 !h-12 bg-amber-100 dark:bg-amber-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <DollarSign className="!w-6 !h-6 text-amber-600 dark:text-amber-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Ingresos</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{formatCurrency(reportData.totals.totalRevenueCLP)}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ingresos</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{formatCurrency(reportData.totals.totalRevenueCLP)}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-purple-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-purple-50 dark:bg-purple-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-purple-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <TrendingUp className="!w-6 !h-6 !text-purple-600" />
+                      <div className="!w-12 !h-12 bg-purple-100 dark:bg-purple-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <TrendingUp className="!w-6 !h-6 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Impacto</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">High</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Impacto</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">High</h3>
                     </div>
                   </div>
                 </>
@@ -354,44 +354,44 @@ export default function ReportesPage() {
               
               {activeTab === 'financial' && (
                 <>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-emerald-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-emerald-50 dark:bg-emerald-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-emerald-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <DollarSign className="!w-6 !h-6 !text-emerald-600" />
+                      <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <DollarSign className="!w-6 !h-6 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{formatCurrency(reportData.totals.totalRevenueCLP)}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{formatCurrency(reportData.totals.totalRevenueCLP)}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-blue-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-blue-50 dark:bg-blue-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-blue-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Globe className="!w-6 !h-6 !text-blue-600" />
+                      <div className="!w-12 !h-12 bg-blue-100 dark:bg-blue-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Globe className="!w-6 !h-6 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">${formatNumber(reportData.totals.totalRevenueCLP)}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">${formatNumber(reportData.totals.totalRevenueCLP)}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-purple-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-purple-50 dark:bg-purple-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-purple-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Activity className="!w-6 !h-6 !text-purple-600" />
+                      <div className="!w-12 !h-12 bg-purple-100 dark:bg-purple-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Activity className="!w-6 !h-6 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Transacciones</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData.totals.totalTransactions}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Transacciones</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData.totals.totalTransactions}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-amber-50 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-amber-50 dark:bg-amber-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-amber-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <TrendingUp className="!w-6 !h-6 !text-amber-600" />
+                      <div className="!w-12 !h-12 bg-amber-100 dark:bg-amber-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <TrendingUp className="!w-6 !h-6 text-amber-600 dark:text-amber-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Ticket Promedio</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{formatCurrency(reportData.totals.averageTransactionCLP)}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ticket Promedio</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{formatCurrency(reportData.totals.averageTransactionCLP)}</h3>
                     </div>
                   </div>
                 </>
@@ -399,44 +399,44 @@ export default function ReportesPage() {
               
               {activeTab === 'companies' && (
                 <>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-indigo-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-indigo-50 dark:bg-indigo-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-indigo-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Building2 className="!w-6 !h-6 !text-indigo-600" />
+                      <div className="!w-12 !h-12 bg-indigo-100 dark:bg-indigo-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Building2 className="!w-6 !h-6 text-indigo-600 dark:text-indigo-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Total Empresas</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.total ?? 0}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Total Empresas</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.total ?? 0}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-emerald-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-emerald-50 dark:bg-emerald-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-emerald-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <TrendingUp className="!w-6 !h-6 !text-emerald-600" />
+                      <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <TrendingUp className="!w-6 !h-6 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Activas</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.byStatus?.active ?? 0}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Activas</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.byStatus?.active ?? 0}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-amber-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-amber-50 dark:bg-amber-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-amber-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Activity className="!w-6 !h-6 !text-amber-600" />
+                      <div className="!w-12 !h-12 bg-amber-100 dark:bg-amber-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Activity className="!w-6 !h-6 text-amber-600 dark:text-amber-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Pendientes</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{(reportData?.stats?.byStatus?.registered ?? 0) + (reportData?.stats?.byStatus?.pending_contract ?? 0)}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Pendientes</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{(reportData?.stats?.byStatus?.registered ?? 0) + (reportData?.stats?.byStatus?.pending_contract ?? 0)}</h3>
                     </div>
                   </div>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-red-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-red-50 dark:bg-red-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-red-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Globe className="!w-6 !h-6 !text-red-600" />
+                      <div className="!w-12 !h-12 bg-red-100 dark:bg-red-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Globe className="!w-6 !h-6 text-red-600 dark:text-red-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Suspendidas</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.byStatus?.suspended ?? 0}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Suspendidas</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.byStatus?.suspended ?? 0}</h3>
                     </div>
                   </div>
                 </>
@@ -444,25 +444,25 @@ export default function ReportesPage() {
 
               {activeTab === 'b2c' && (
                 <>
-                  <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-purple-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-purple-50 dark:bg-purple-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
                     <div className="!relative">
-                      <div className="!w-12 !h-12 !bg-purple-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Users className="!w-6 !h-6 !text-purple-600" />
+                      <div className="!w-12 !h-12 bg-purple-100 dark:bg-purple-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                        <Users className="!w-6 !h-6 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">Total Usuarios</p>
-                      <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{reportData?.stats?.total ?? 0}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Total Usuarios</p>
+                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.total ?? 0}</h3>
                     </div>
                   </div>
                   {Object.entries(reportData?.stats?.byAuthProvider || {}).map(([provider, count]) => (
-                    <div key={provider} className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100 !relative !overflow-hidden !group">
-                      <div className="!absolute !top-0 !right-0 !w-24 !h-24 !bg-blue-50 !rounded-bl-full !-mr-8 !-mt-8" />
+                    <div key={provider} className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
+                      <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-blue-50 dark:bg-blue-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
                       <div className="!relative">
-                        <div className="!w-12 !h-12 !bg-blue-100 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                          <Globe className="!w-6 !h-6 !text-blue-600" />
+                        <div className="!w-12 !h-12 bg-blue-100 dark:bg-blue-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
+                          <Globe className="!w-6 !h-6 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <p className="!text-slate-500 !text-sm !font-bold !uppercase !tracking-wider">{provider}</p>
-                        <h3 className="!text-3xl !font-black !text-slate-900 !mt-1">{count as number}</h3>
+                        <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">{provider}</p>
+                        <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{count as number}</h3>
                       </div>
                     </div>
                   ))}
@@ -474,10 +474,10 @@ export default function ReportesPage() {
           {/* Charts Section - Emissions/Financial */}
           {(activeTab === 'emissions' || activeTab === 'financial') && reportData?.report?.length > 0 && (
           <div className="!grid lg:!grid-cols-3 !gap-8">
-            <div className="lg:!col-span-2 !bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
+            <div className="lg:!col-span-2 bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
               <div className="!mb-8">
-                <h3 className="!text-xl !font-black !text-slate-900">Tendencia Temporal</h3>
-                <p className="!text-slate-500 !text-sm !font-medium">Visualización de datos por período seleccionado.</p>
+                <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100">Tendencia Temporal</h3>
+                <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium">Visualización de datos por período seleccionado.</p>
               </div>
               <div className="!h-[350px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -510,9 +510,9 @@ export default function ReportesPage() {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Distribución</h3>
-              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Reparto porcentual por categoría.</p>
+            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
+              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Distribución</h3>
+              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Reparto porcentual por categoría.</p>
               <div className="!h-[300px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -533,9 +533,9 @@ export default function ReportesPage() {
           {/* Charts Section - Companies */}
           {activeTab === 'companies' && reportData?.stats && Object.keys(reportData.stats.byStatus || {}).length > 0 && (
           <div className="!grid lg:!grid-cols-2 !gap-8">
-            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por Estado</h3>
-              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución de empresas por estado.</p>
+            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
+              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por Estado</h3>
+              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución de empresas por estado.</p>
               <div className="!h-[300px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -550,9 +550,9 @@ export default function ReportesPage() {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por Industria</h3>
-              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución de empresas por sector.</p>
+            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
+              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por Industria</h3>
+              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución de empresas por sector.</p>
               <div className="!h-[300px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={Object.entries(reportData?.stats?.byIndustry || {}).map(([name, value]) => ({ name, value }))}>
@@ -571,9 +571,9 @@ export default function ReportesPage() {
           {/* Charts Section - B2C */}
           {activeTab === 'b2c' && reportData?.stats && Object.keys(reportData.stats.byAuthProvider || {}).length > 0 && (
           <div className="!grid lg:!grid-cols-2 !gap-8">
-            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por Proveedor</h3>
-              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución por método de autenticación.</p>
+            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
+              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por Proveedor</h3>
+              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución por método de autenticación.</p>
               <div className="!h-[300px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -588,9 +588,9 @@ export default function ReportesPage() {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="!bg-white !p-8 !rounded-[2.5rem] !shadow-sm !border !border-slate-100">
-              <h3 className="!text-xl !font-black !text-slate-900 !mb-2">Por País</h3>
-              <p className="!text-slate-500 !text-sm !font-medium !mb-8">Distribución de usuarios por país.</p>
+            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
+              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por País</h3>
+              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución de usuarios por país.</p>
               <div className="!h-[300px] !w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={Object.entries(reportData?.stats?.byCountry || {}).map(([name, value]) => ({ name, value }))}>
@@ -607,85 +607,85 @@ export default function ReportesPage() {
           )}
 
           {/* Detailed Data Table */}
-          <div className="!bg-white !rounded-[2.5rem] !shadow-sm !border !border-slate-100 !overflow-hidden">
-            <div className="!p-8 !border-b !border-slate-100 !flex !items-center !justify-between !bg-slate-50/50">
+          <div className="bg-white dark:bg-slate-800 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700 !overflow-hidden">
+            <div className="!p-8 border-b border-slate-100 dark:border-slate-700 !flex !items-center !justify-between bg-slate-50/50 dark:bg-slate-800/50">
               <div>
-                <h3 className="!text-xl !font-black !text-slate-900">Desglose Detallado</h3>
-                <p className="!text-slate-500 !text-sm !font-medium">Listado completo de registros para el período.</p>
+                <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100">Desglose Detallado</h3>
+                <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium">Listado completo de registros para el período.</p>
               </div>
             </div>
             <div className="!overflow-x-auto">
               <table className="!w-full !text-left !border-collapse">
                 <thead>
-                  <tr className="!bg-slate-50/30">
+                  <tr className="bg-slate-50/30 dark:bg-slate-800">
                     {(activeTab === 'emissions' || activeTab === 'financial') && (
                       <>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">
                           {groupBy === 'time' ? 'Fecha' : groupBy === 'company' ? 'Empresa' : 'Proyecto'}
                         </th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">
                           {activeTab === 'emissions' ? 'Emisiones (kg)' : 'Ingresos (CLP)'}
                         </th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">
                           {activeTab === 'emissions' ? 'Certificados' : 'Transacciones'}
                         </th>
                       </>
                     )}
                     {activeTab === 'companies' && (
                       <>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Empresa</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">RUT</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Industria</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Tamaño</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">Estado</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Empresa</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">RUT</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Industria</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Tamaño</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">Estado</th>
                       </>
                     )}
                     {activeTab === 'b2c' && (
                       <>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Nombre</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Email</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest">Proveedor</th>
-                        <th className="!px-8 !py-4 !text-slate-500 !font-bold !text-xs !uppercase !tracking-widest !text-right">Registro</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Nombre</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Email</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Proveedor</th>
+                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">Registro</th>
                       </>
                     )}
                   </tr>
                 </thead>
-                <tbody className="!divide-y !divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                   {(activeTab === 'emissions' || activeTab === 'financial') && (reportData?.report || []).slice(0, 10).map((item: any, index: number) => (
-                    <tr key={index} className="hover:!bg-slate-50/50 !transition-colors">
-                      <td className="!px-8 !py-5 !font-bold !text-slate-900">
+                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
+                      <td className="!px-8 !py-5 !font-bold text-slate-900 dark:text-slate-100">
                         {groupBy === 'time' ? (item.date ? new Date(item.date).toLocaleDateString('es-CL') : '-') : groupBy === 'company' ? item.companyName : item.projectName}
                       </td>
-                      <td className="!px-8 !py-5 !text-right !font-black !text-slate-700">
+                      <td className="!px-8 !py-5 !text-right !font-black text-slate-700 dark:text-slate-200">
                         {activeTab === 'emissions' ? formatNumber(item.emissionsKg || item.totalEmissionsKg || 0) : formatCurrency(item.revenueCLP || 0)}
                       </td>
-                      <td className="!px-8 !py-5 !text-right !font-bold !text-slate-500">
+                      <td className="!px-8 !py-5 !text-right !font-bold text-slate-500 dark:text-slate-400">
                         {activeTab === 'emissions' ? (item.count || item.certificatesCount || 0) : (item.transactions || 0)}
                       </td>
                     </tr>
                   ))}
                   {activeTab === 'companies' && (reportData?.companies || []).slice(0, 15).map((c: any, index: number) => {
-                    const sc: Record<string, string> = { active: '!bg-emerald-100 !text-emerald-700', registered: '!bg-blue-100 !text-blue-700', pending_contract: '!bg-amber-100 !text-amber-700', signed: '!bg-indigo-100 !text-indigo-700', suspended: '!bg-red-100 !text-red-700' };
+                    const sc: Record<string, string> = { active: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300', registered: 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300', pending_contract: 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300', signed: 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300', suspended: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300' };
                     return (
-                      <tr key={index} className="hover:!bg-slate-50/50 !transition-colors">
-                        <td className="!px-8 !py-5 !font-bold !text-slate-900">{c.companyName || c.name || '-'}</td>
-                        <td className="!px-8 !py-5 !text-slate-700 !font-medium">{c.rut || '-'}</td>
-                        <td className="!px-8 !py-5 !text-slate-700 !font-medium">{c.industry || '-'}</td>
-                        <td className="!px-8 !py-5 !text-slate-700 !font-medium">{c.companySize || c.size || '-'}</td>
+                      <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
+                        <td className="!px-8 !py-5 !font-bold text-slate-900 dark:text-slate-100">{c.companyName || c.name || '-'}</td>
+                        <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{c.rut || '-'}</td>
+                        <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{c.industry || '-'}</td>
+                        <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{c.companySize || c.size || '-'}</td>
                         <td className="!px-8 !py-5 !text-right">
-                          <span className={`!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider ${sc[c.status] || '!bg-slate-100 !text-slate-700'}`}>{c.status || '-'}</span>
+                          <span className={`!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider ${sc[c.status] || 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>{c.status || '-'}</span>
                         </td>
                       </tr>
                     );
                   })}
                   {activeTab === 'b2c' && (reportData?.users || []).slice(0, 15).map((u: any, index: number) => (
-                    <tr key={index} className="hover:!bg-slate-50/50 !transition-colors">
-                      <td className="!px-8 !py-5 !font-bold !text-slate-900">{u.name || u.displayName || '-'}</td>
-                      <td className="!px-8 !py-5 !text-slate-700 !font-medium">{u.email || '-'}</td>
+                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
+                      <td className="!px-8 !py-5 !font-bold text-slate-900 dark:text-slate-100">{u.name || u.displayName || '-'}</td>
+                      <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{u.email || '-'}</td>
                       <td className="!px-8 !py-5">
-                        <span className="!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider !bg-blue-100 !text-blue-700">{u.authProvider || u.provider || '-'}</span>
+                        <span className="!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300">{u.authProvider || u.provider || '-'}</span>
                       </td>
-                      <td className="!px-8 !py-5 !text-right !text-slate-500 !font-medium">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-CL') : '-'}</td>
+                      <td className="!px-8 !py-5 !text-right text-slate-500 dark:text-slate-400 !font-medium">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-CL') : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
