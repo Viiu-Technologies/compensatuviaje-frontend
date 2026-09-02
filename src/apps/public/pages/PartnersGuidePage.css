@@ -304,15 +304,17 @@
   .pg-step--left .pg-step__card {
     grid-column: 1;
     grid-row: 1;
-    padding-right: clamp(3.5rem, 6vw, 5rem);
+    justify-self: end;
+    width: 100%;
+    max-width: calc(100% - clamp(2.5rem, 5vw, 4rem));
     text-align: right;
   }
 
   .pg-step--left .pg-step__art {
     grid-column: 2;
     grid-row: 1;
-    padding-left: clamp(3.5rem, 6vw, 5rem);
     justify-self: center;
+    margin-left: clamp(2.5rem, 5vw, 4rem);
   }
 
   .pg-step--left .pg-step__bullets {
@@ -326,14 +328,16 @@
   .pg-step--right .pg-step__card {
     grid-column: 2;
     grid-row: 1;
-    padding-left: clamp(3.5rem, 6vw, 5rem);
+    justify-self: start;
+    width: 100%;
+    max-width: calc(100% - clamp(2.5rem, 5vw, 4rem));
   }
 
   .pg-step--right .pg-step__art {
     grid-column: 1;
     grid-row: 1;
-    padding-right: clamp(3.5rem, 6vw, 5rem);
     justify-self: center;
+    margin-right: clamp(2.5rem, 5vw, 4rem);
   }
 }
 
