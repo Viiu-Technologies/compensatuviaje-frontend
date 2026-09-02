@@ -80,15 +80,15 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
   };
 
   return (
-    <div className="!min-h-screen !bg-gray-50 !flex !font-sans !text-gray-800 !w-full !box-border">
-      
+    <div className="!min-h-screen bg-gray-50 dark:bg-slate-950 !flex !font-sans text-gray-800 dark:text-slate-100 !w-full !box-border">
+
       {/* --- SIDEBAR DESKTOP --- */}
-      <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen !bg-white !border-r !border-gray-200 !shadow-sm !fixed !left-0 !top-0 !z-50 !overflow-y-auto">
+      <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen bg-white dark:bg-slate-900 !border-r border-gray-200 dark:border-slate-700 !shadow-sm !fixed !left-0 !top-0 !z-50 !overflow-y-auto">
         {/* Logo Area */}
-        <Link to="/b2c/dashboard" className="!flex !items-center !h-20 !px-5 !border-b !border-gray-100 !flex-shrink-0 !no-underline">
+        <Link to="/b2c/dashboard" className="!flex !items-center !h-20 !px-5 !border-b border-gray-100 dark:border-slate-700 !flex-shrink-0 !no-underline">
           <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
         </Link>
-        
+
         {/* Nav Links */}
         <nav className="!flex-1 !px-4 !py-6 !space-y-1">
           {navItems.map((item) => (
@@ -97,8 +97,8 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
               to={item.path}
               className={`!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-all !font-medium !no-underline ${
                 isActive(item.path)
-                  ? '!bg-green-100 !text-green-700' 
-                  : '!bg-transparent !text-gray-700 hover:!bg-green-50 hover:!text-green-700'
+                  ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
+                  : 'bg-transparent text-gray-700 dark:text-slate-200 hover:bg-green-50 dark:hover:bg-green-500/10 hover:text-green-700 dark:hover:text-green-300'
               }`}
             >
               <item.icon className="!text-xl" />
@@ -125,15 +125,15 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
 
         {/* Footer Sidebar */}
         <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0">
-          <Link 
-            to="/b2c/settings" 
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg !text-gray-600 hover:!bg-gray-100 !no-underline"
+          <Link
+            to="/b2c/settings"
+            className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 !no-underline"
           >
             <FaCog className="!text-lg" /> Configuración
           </Link>
-          <button 
-            onClick={handleLogout} 
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg !text-red-500 hover:!bg-red-50 !bg-transparent !border-0 !cursor-pointer"
+          <button
+            onClick={handleLogout}
+            className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 bg-transparent !border-0 !cursor-pointer"
           >
             <FaSignOutAlt className="!text-lg" /> Cerrar Sesión
           </button>
@@ -156,20 +156,20 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="!fixed !left-0 !top-0 !h-full !w-64 !bg-white !border-r !border-gray-200 !shadow-2xl !flex !flex-col !z-[70] lg:!hidden"
+              className="!fixed !left-0 !top-0 !h-full !w-64 bg-white dark:bg-slate-900 !border-r border-gray-200 dark:border-slate-700 !shadow-2xl !flex !flex-col !z-[70] lg:!hidden"
             >
-              <div className="!flex !items-center !justify-between !h-20 !px-6 !border-b !border-gray-100">
+              <div className="!flex !items-center !justify-between !h-20 !px-6 !border-b border-gray-100 dark:border-slate-700">
                 <Link to="/b2c/dashboard" className="!flex !items-center !no-underline" onClick={() => setSidebarOpen(false)}>
                   <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
                 </Link>
-                <button 
+                <button
                   onClick={() => setSidebarOpen(false)}
-                  className="!p-2 !rounded-lg !text-gray-400 hover:!text-gray-600 hover:!bg-gray-100 !bg-transparent !border-0"
+                  className="!p-2 !rounded-lg text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 bg-transparent !border-0"
                 >
                   <FaTimes className="!text-xl" />
                 </button>
               </div>
-              
+
               <nav className="!flex-1 !px-4 !py-6 !space-y-1 !overflow-y-auto">
                 {navItems.map((item) => (
                   <Link
@@ -177,9 +177,9 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
                     to={item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={`!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-all !font-medium !no-underline ${
-                      isActive(item.path) 
-                        ? '!bg-green-100 !text-green-700' 
-                        : '!text-gray-700 hover:!bg-green-50'
+                      isActive(item.path)
+                        ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
+                        : 'text-gray-700 dark:text-slate-200 hover:bg-green-50 dark:hover:bg-green-500/10'
                     }`}
                   >
                     <item.icon className="!text-xl" />
@@ -204,16 +204,16 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
               <MiniBadgesPanel totalCompensatedKg={sidebarStats.totalCompensatedTons * 1000} />
 
               <div className="!px-4 !pb-6 !space-y-1">
-                <Link 
-                  to="/b2c/settings" 
+                <Link
+                  to="/b2c/settings"
                   onClick={() => setSidebarOpen(false)}
-                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg !text-gray-600 hover:!bg-gray-100 !no-underline"
+                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 !no-underline"
                 >
                   <FaCog className="!text-lg" /> Configuración
                 </Link>
-                <button 
-                  onClick={handleLogout} 
-                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg !text-red-500 hover:!bg-red-50 !bg-transparent !border-0"
+                <button
+                  onClick={handleLogout}
+                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 bg-transparent !border-0"
                 >
                   <FaSignOutAlt className="!text-lg" /> Cerrar Sesión
                 </button>
@@ -224,16 +224,16 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
       </AnimatePresence>
 
       {/* --- MAIN CONTENT WRAPPER --- */}
-      <main className="!flex-1 !min-h-screen lg:!ml-64 !transition-all !duration-300 !relative !bg-gray-50 !w-full">
-        
+      <main className="!flex-1 !min-h-screen lg:!ml-64 !transition-all !duration-300 !relative bg-gray-50 dark:bg-slate-950 !w-full">
+
         {/* Header Top Bar */}
-        <div className="!bg-white/80 !backdrop-blur-md !border-b !border-gray-200 !sticky !top-0 !z-40 !w-full">
+        <div className="bg-white/80 dark:bg-slate-900/80 !backdrop-blur-md !border-b border-gray-200 dark:border-slate-700 !sticky !top-0 !z-40 !w-full">
           <div className="!max-w-7xl !mx-auto !px-4 sm:!px-6 lg:!px-8 !py-4">
             <div className="!flex !items-center !justify-between">
               <div className="!flex !items-center !gap-4">
                 {/* Burger Button Mobile */}
-                <button 
-                  className="lg:!hidden !p-2 !rounded-lg !bg-gray-100 !text-gray-600 hover:!bg-gray-200 !border-0 !cursor-pointer" 
+                <button
+                  className="lg:!hidden !p-2 !rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 !border-0 !cursor-pointer"
                   onClick={() => setSidebarOpen(true)}
                 >
                   <FaBars className="!text-xl" />
@@ -241,41 +241,41 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
                 <div>
                   {title ? (
                     <>
-                      <h1 className="!text-xl sm:!text-2xl !font-bold !text-gray-900 !m-0 !leading-tight">
+                      <h1 className="!text-xl sm:!text-2xl !font-bold text-gray-900 dark:text-slate-100 !m-0 !leading-tight">
                         {title}
                       </h1>
                       {subtitle && (
-                        <p className="!text-gray-500 !text-sm !mt-1">{subtitle}</p>
+                        <p className="text-gray-500 dark:text-slate-400 !text-sm !mt-1">{subtitle}</p>
                       )}
                     </>
                   ) : (
                     <>
-                      <h1 className="!text-xl sm:!text-2xl !font-bold !text-gray-900 !m-0 !leading-tight">
+                      <h1 className="!text-xl sm:!text-2xl !font-bold text-gray-900 dark:text-slate-100 !m-0 !leading-tight">
                         Hola, {user?.nombre || user?.email?.split('@')[0] || 'Usuario'}
                       </h1>
-                      <p className="!text-gray-500 !text-sm !hidden sm:!block !mt-1">
+                      <p className="text-gray-500 dark:text-slate-400 !text-sm !hidden sm:!block !mt-1">
                         Bienvenido a tu panel de impacto ambiental
                       </p>
                     </>
                   )}
                 </div>
               </div>
-              
+
               <div className="!flex !items-center !gap-3">
-                <motion.button 
-                  whileHover={{ scale: 1.05 }} 
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="!relative !p-2.5 !rounded-full !bg-gray-100 hover:!bg-gray-200 !transition-colors !border-0 !cursor-pointer"
+                  className="!relative !p-2.5 !rounded-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 !transition-colors !border-0 !cursor-pointer"
                 >
-                  <FaBell className="!text-lg !text-gray-600" />
-                  <span className="!absolute !top-1.5 !right-1.5 !w-2.5 !h-2.5 !bg-red-500 !rounded-full !border-2 !border-white"></span>
+                  <FaBell className="!text-lg text-gray-600 dark:text-slate-300" />
+                  <span className="!absolute !top-1.5 !right-1.5 !w-2.5 !h-2.5 bg-red-500 dark:bg-red-400 !rounded-full !border-2 border-white dark:border-slate-900"></span>
                 </motion.button>
-                
+
                 {user?.avatarUrl ? (
-                  <img 
-                    src={user.avatarUrl} 
-                    alt="Avatar" 
-                    className="!w-10 !h-10 !rounded-full !shadow-lg !object-cover !border-2 !border-green-200"
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    className="!w-10 !h-10 !rounded-full !shadow-lg !object-cover !border-2 border-green-200 dark:border-green-700"
                   />
                 ) : (
                   <div className="!w-10 !h-10 !rounded-full !bg-gradient-to-br !from-green-500 !to-emerald-600 !flex !items-center !justify-center !text-white !font-bold !shadow-lg !text-sm">

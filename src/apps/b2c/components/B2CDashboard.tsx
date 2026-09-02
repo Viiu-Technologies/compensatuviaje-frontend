@@ -71,8 +71,8 @@ const B2CDashboard = () => {
       <B2CLayout>
         <div className="!flex !items-center !justify-center !py-20">
           <div className="!text-center">
-            <div className="!w-16 !h-16 !border-4 !border-green-200 !border-t-green-600 !rounded-full !animate-spin !mx-auto !mb-4"></div>
-            <p className="!text-gray-500">Cargando tu dashboard...</p>
+            <div className="!w-16 !h-16 !border-4 border-green-200 dark:border-green-800 !border-t-green-600 !rounded-full !animate-spin !mx-auto !mb-4"></div>
+            <p className="text-gray-500 dark:text-slate-400">Cargando tu dashboard...</p>
           </div>
         </div>
       </B2CLayout>
@@ -86,9 +86,9 @@ const B2CDashboard = () => {
       return (
         <B2CLayout>
           <div className="!text-center !py-20">
-            <p className="!text-red-500 !mb-4">{error || 'Error cargando datos'}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <p className="text-red-500 dark:text-red-400 !mb-4">{error || 'Error cargando datos'}</p>
+            <button
+              onClick={() => window.location.reload()}
               className="!px-4 !py-2 !bg-green-600 !text-white !rounded-lg !border-0 !cursor-pointer"
             >
               Reintentar
@@ -113,12 +113,12 @@ const B2CDashboard = () => {
       <div className="!space-y-8">
         {/* ERROR BANNER (subtle, when API failed but we show empty state) */}
         {error && (
-          <div className="!flex !items-center !gap-3 !bg-yellow-50 !border !border-yellow-200 !rounded-xl !px-4 !py-3 !text-sm !text-yellow-800">
+          <div className="!flex !items-center !gap-3 bg-yellow-50 dark:bg-yellow-500/10 !border border-yellow-200 dark:border-yellow-700 !rounded-xl !px-4 !py-3 !text-sm text-yellow-800 dark:text-yellow-300">
             <span>⚠️</span>
             <span>No pudimos cargar tus datos en este momento. Mostrando estado vacío.</span>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="!ml-auto !px-3 !py-1 !bg-yellow-200 !text-yellow-800 !rounded-lg !border-0 !cursor-pointer !text-xs !font-semibold hover:!bg-yellow-300"
+            <button
+              onClick={() => window.location.reload()}
+              className="!ml-auto !px-3 !py-1 bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 !rounded-lg !border-0 !cursor-pointer !text-xs !font-semibold hover:bg-yellow-300 dark:hover:bg-yellow-500/30"
             >
               Reintentar
             </button>
@@ -217,10 +217,10 @@ const B2CDashboard = () => {
         >
           <div className="!flex !items-center !justify-between !mb-6">
             <div>
-              <div className="!inline-flex !items-center !gap-2 !px-3 !py-1 !rounded-full !bg-blue-50 !text-blue-700 !text-xs !font-semibold !mb-2 !border !border-blue-100">
+              <div className="!inline-flex !items-center !gap-2 !px-3 !py-1 !rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 !text-xs !font-semibold !mb-2 !border border-blue-100 dark:border-blue-800">
                 <HiSparkles /> <span>Tu Impacto</span>
               </div>
-              <h2 className="!text-xl !font-bold !text-gray-900">Resumen de Impacto</h2>
+              <h2 className="!text-xl !font-bold text-gray-900 dark:text-slate-100">Resumen de Impacto</h2>
             </div>
           </div>
 
@@ -231,7 +231,7 @@ const B2CDashboard = () => {
                 variants={itemVariants}
                 whileHover={{ y: -8, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="!bg-white !rounded-2xl !p-6 !border !border-gray-100 !shadow-sm !relative !overflow-hidden group !flex !flex-col !justify-between !h-full !cursor-pointer"
+                className="bg-white dark:bg-slate-900 !rounded-2xl !p-6 !border border-gray-100 dark:border-slate-700 !shadow-sm !relative !overflow-hidden group !flex !flex-col !justify-between !h-full !cursor-pointer"
               >
                 <div className="!absolute !inset-0 !bg-gradient-to-br !from-green-50/0 group-hover:!from-green-50/100 !to-transparent !opacity-0 group-hover:!opacity-100 !transition-opacity !duration-300"></div>
                 <div className="!absolute !top-0 !right-0 !p-4 !opacity-10 group-hover:!opacity-20 !transition-all !duration-300 !transform group-hover:!scale-125 !pointer-events-none">
@@ -241,10 +241,10 @@ const B2CDashboard = () => {
                   <div className="!w-12 !h-12 !rounded-full !bg-gradient-to-br !from-green-100 !to-green-50 !flex !items-center !justify-center !text-2xl !mb-4 !shadow-sm">
                     {stat.emoji}
                   </div>
-                  <div className="!text-3xl !font-bold !text-gray-900 !mb-1 group-hover:!text-green-600 !transition-colors">
+                  <div className="!text-3xl !font-bold text-gray-900 dark:text-slate-100 !mb-1 group-hover:!text-green-600 !transition-colors">
                     {stat.value}
                   </div>
-                  <p className="!text-xs !font-bold !text-gray-400 !uppercase !tracking-wider">{stat.label}</p>
+                  <p className="!text-xs !font-bold text-gray-400 dark:text-slate-500 !uppercase !tracking-wider">{stat.label}</p>
                 </div>
               </motion.div>
             ))}
@@ -268,46 +268,46 @@ const B2CDashboard = () => {
           viewport={{ once: true }}
           className="!w-full"
         >
-          <div className="!bg-white !rounded-2xl !border !border-gray-200 !shadow-sm !p-6">
+          <div className="bg-white dark:bg-slate-900 !rounded-2xl !border border-gray-200 dark:border-slate-700 !shadow-sm !p-6">
             <div className="!flex !items-center !justify-between !mb-6">
               <div>
-                <h3 className="!text-lg !font-bold !text-gray-800 !mb-1">Vuelos Recientes</h3>
-                <p className="!text-sm !text-gray-500">Tus últimos cálculos de emisiones</p>
+                <h3 className="!text-lg !font-bold text-gray-800 dark:text-slate-100 !mb-1">Vuelos Recientes</h3>
+                <p className="!text-sm text-gray-500 dark:text-slate-400">Tus últimos cálculos de emisiones</p>
               </div>
-              <Link to="/b2c/flights" className="!text-green-600 !text-sm !font-semibold hover:!text-green-700 !no-underline">
+              <Link to="/b2c/flights" className="text-green-600 dark:text-green-400 !text-sm !font-semibold hover:text-green-700 dark:hover:text-green-300 !no-underline">
                 Ver todos →
               </Link>
             </div>
-            
+
             {recentFlights.length > 0 ? (
               <div className="!overflow-x-auto">
                 <table className="!min-w-full !text-sm !text-left">
-                  <thead className="!bg-gray-50/50">
-                    <tr className="!text-gray-500 !border-b !border-gray-200">
+                  <thead className="bg-gray-50/50 dark:bg-slate-800/50">
+                    <tr className="text-gray-500 dark:text-slate-400 !border-b border-gray-200 dark:border-slate-700">
                       <th className="!py-3 !px-4 !font-semibold">Ruta</th>
                       <th className="!py-3 !px-4 !font-semibold">Fecha</th>
                       <th className="!py-3 !px-4 !font-semibold">Emisiones (t CO₂)</th>
                       <th className="!py-3 !px-4 !font-semibold">Estado</th>
                     </tr>
                   </thead>
-                  <tbody className="!divide-y !divide-gray-100">
+                  <tbody className="!divide-y divide-gray-100 dark:divide-slate-800">
                     {recentFlights.map((flight) => (
-                      <tr key={flight.id} className="hover:!bg-gray-50 !transition-colors">
+                      <tr key={flight.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/60 !transition-colors">
                         <td className="!py-3 !px-4 !flex !items-center !gap-2">
-                          <FaPlane className="!text-xs !text-gray-400"/>
-                          {flight.origin} <span className="!text-gray-400">→</span> {flight.destination}
+                          <FaPlane className="!text-xs text-gray-400 dark:text-slate-500"/>
+                          {flight.origin} <span className="text-gray-400 dark:text-slate-500">→</span> {flight.destination}
                         </td>
-                        <td className="!py-3 !px-4 !text-gray-600">
+                        <td className="!py-3 !px-4 text-gray-600 dark:text-slate-300">
                           {new Date(flight.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                         </td>
                         <td className="!py-3 !px-4 !font-medium">{flight.co2Tons.toFixed(2)}</td>
                         <td className="!py-3 !px-4">
                           {flight.isCompensated ? (
-                            <span className="!inline-flex !items-center !gap-1 !px-2.5 !py-0.5 !rounded-full !bg-green-100 !text-green-700 !text-xs !font-semibold">
+                            <span className="!inline-flex !items-center !gap-1 !px-2.5 !py-0.5 !rounded-full bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 !text-xs !font-semibold">
                               <FaCheckCircle className="!text-xs" /> Compensado
                             </span>
                           ) : (
-                            <span className="!inline-flex !items-center !gap-1 !px-2.5 !py-0.5 !rounded-full !bg-orange-100 !text-orange-700 !text-xs !font-semibold">
+                            <span className="!inline-flex !items-center !gap-1 !px-2.5 !py-0.5 !rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 !text-xs !font-semibold">
                               <FaClock className="!text-xs" /> Pendiente
                             </span>
                           )}
@@ -318,8 +318,8 @@ const B2CDashboard = () => {
                 </table>
               </div>
             ) : (
-              <div className="!text-center !py-8 !text-gray-500">
-                <FaPlane className="!text-4xl !text-gray-300 !mx-auto !mb-3" />
+              <div className="!text-center !py-8 text-gray-500 dark:text-slate-400">
+                <FaPlane className="!text-4xl text-gray-300 dark:text-slate-600 !mx-auto !mb-3" />
                 <p>Aún no tienes vuelos. ¡Calcula tu primer vuelo!</p>
               </div>
             )}
@@ -334,27 +334,27 @@ const B2CDashboard = () => {
             viewport={{ once: true }}
             className="!w-full"
           >
-            <div className="!bg-white !rounded-2xl !border !border-gray-200 !shadow-sm !p-6">
+            <div className="bg-white dark:bg-slate-900 !rounded-2xl !border border-gray-200 dark:border-slate-700 !shadow-sm !p-6">
               <div className="!flex !items-center !justify-between !mb-6">
                 <div>
-                  <h3 className="!text-lg !font-bold !text-gray-800 !mb-1">Certificados Recientes</h3>
-                  <p className="!text-sm !text-gray-500">Tus últimos certificados de compensación</p>
+                  <h3 className="!text-lg !font-bold text-gray-800 dark:text-slate-100 !mb-1">Certificados Recientes</h3>
+                  <p className="!text-sm text-gray-500 dark:text-slate-400">Tus últimos certificados de compensación</p>
                 </div>
-                <Link to="/b2c/certificates" className="!text-green-600 !text-sm !font-semibold hover:!text-green-700 !no-underline">
+                <Link to="/b2c/certificates" className="text-green-600 dark:text-green-400 !text-sm !font-semibold hover:text-green-700 dark:hover:text-green-300 !no-underline">
                   Ver todos →
                 </Link>
               </div>
               <div className="!grid !grid-cols-1 md:!grid-cols-3 !gap-4">
                 {recentCertificates.map((cert) => (
                   <Link key={cert.id} to="/b2c/certificates" className="!no-underline">
-                    <div className="!bg-gradient-to-br !from-green-50 !to-white !rounded-xl !p-4 !border !border-green-100 hover:!shadow-md !transition-all">
+                    <div className="!bg-gradient-to-br from-green-50 dark:from-green-500/10 to-white dark:to-slate-900 !rounded-xl !p-4 !border border-green-100 dark:border-green-800 hover:!shadow-md !transition-all">
                       <div className="!flex !items-center !gap-2 !mb-2">
-                        <FaCertificate className="!text-green-600" />
-                        <span className="!font-mono !text-xs !text-gray-500">{cert.number}</span>
+                        <FaCertificate className="text-green-600 dark:text-green-400" />
+                        <span className="!font-mono !text-xs text-gray-500 dark:text-slate-400">{cert.number}</span>
                       </div>
-                      <div className="!text-2xl !font-bold !text-green-700 !mb-1">{cert.tons.toFixed(2)} t</div>
-                      <div className="!text-sm !text-gray-600">{cert.project}</div>
-                      <div className="!text-xs !text-gray-400 !mt-1">
+                      <div className="!text-2xl !font-bold text-green-700 dark:text-green-300 !mb-1">{cert.tons.toFixed(2)} t</div>
+                      <div className="!text-sm text-gray-600 dark:text-slate-300">{cert.project}</div>
+                      <div className="!text-xs text-gray-400 dark:text-slate-500 !mt-1">
                         {new Date(cert.date).toLocaleDateString('es-ES')}
                       </div>
                     </div>
@@ -372,22 +372,22 @@ const B2CDashboard = () => {
           viewport={{ once: true }}
           className="!w-full"
         >
-          <h2 className="!text-xl !font-bold !text-gray-900 !mb-6">Acciones Rápidas</h2>
+          <h2 className="!text-xl !font-bold text-gray-900 dark:text-slate-100 !mb-6">Acciones Rápidas</h2>
           <div className="!grid md:!grid-cols-2 !gap-6 !pb-8">
             <Link to="/b2c/flights" className="!block !no-underline">
               <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="!bg-gradient-to-br !from-blue-50 !to-white !rounded-2xl !p-6 !shadow-sm !border !border-blue-200 hover:!shadow-lg !transition-all !cursor-pointer group !h-full"
+                className="!bg-gradient-to-br from-blue-50 dark:from-blue-500/10 to-white dark:to-slate-900 !rounded-2xl !p-6 !shadow-sm !border border-blue-200 dark:border-blue-800 hover:!shadow-lg !transition-all !cursor-pointer group !h-full"
               >
                 <div className="!flex !items-start !justify-between !mb-4">
                   <div className="!w-12 !h-12 !rounded-xl !bg-gradient-to-br !from-blue-500 !to-blue-600 !flex !items-center !justify-center !text-white !text-2xl !shadow-lg !shadow-blue-200">
                     <FaPlane />
                   </div>
-                  <span className="!text-blue-400 group-hover:!text-blue-500 !transition-colors !text-xl">→</span>
+                  <span className="text-blue-400 dark:text-blue-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 !transition-colors !text-xl">→</span>
                 </div>
-                <h3 className="!text-lg !font-bold !text-gray-900 !mb-1 group-hover:!text-blue-700 !transition-colors">Mis Viajes</h3>
-                <p className="!text-gray-500 !text-sm">Ver historial de compensaciones</p>
+                <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !mb-1 group-hover:text-blue-700 dark:group-hover:text-blue-400 !transition-colors">Mis Viajes</h3>
+                <p className="text-gray-500 dark:text-slate-400 !text-sm">Ver historial de compensaciones</p>
               </motion.div>
             </Link>
 
