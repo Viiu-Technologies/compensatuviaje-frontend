@@ -16,7 +16,9 @@ const AIKybDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -46,13 +48,15 @@ const AIKybDetailPage: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (!evaluation || !window.confirm('¿Estás seguro de aprobar esta verificación KYB?')) return;
+    if (!evaluation) return;
     try {
       setActionLoading(true);
+      setActionError(null);
       await adminAIApi.approveKybEvaluation(evaluation.id);
+      setShowApproveModal(false);
       await loadData(); // Reload to get updated status
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al aprobar');
+      setActionError(err.response?.data?.message || 'Error al aprobar');
     } finally {
       setActionLoading(false);
     }
@@ -62,11 +66,12 @@ const AIKybDetailPage: React.FC = () => {
     if (!evaluation) return;
     try {
       setActionLoading(true);
+      setActionError(null);
       await adminAIApi.rejectKybEvaluation(evaluation.id, reason);
       setShowRejectModal(false);
       await loadData(); // Reload to get updated status
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al rechazar');
+      setActionError(err.response?.data?.message || 'Error al rechazar');
     } finally {
       setActionLoading(false);
     }
@@ -117,7 +122,7 @@ const AIKybDetailPage: React.FC = () => {
               Rechazar
             </button>
             <button
-              onClick={handleApprove}
+              onClick={() => setShowApproveModal(true)}
               disabled={actionLoading}
               className="!px-4 !py-2 !bg-green-600 !text-white hover:!bg-green-700 !rounded-lg !font-medium !transition-colors !flex !items-center !gap-2 disabled:!opacity-50"
             >
@@ -127,6 +132,23 @@ const AIKybDetailPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {actionError && (
+        <div className="!flex !items-start !gap-3 !p-4 !rounded-xl !border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          <XCircle className="!w-5 !h-5 text-red-600 dark:text-red-400 !mt-0.5 !flex-shrink-0" />
+          <div className="!flex-1">
+            <p className="!text-sm !font-medium text-red-800 dark:text-red-300">{actionError}</p>
+          </div>
+          <button
+            onClick={() => setActionError(null)}
+            className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 !transition-colors"
+          >
+            <svg className="!w-4 !h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {isDecided && (
         <div className={`!p-4 !rounded-xl !border ${evaluation.admin_decision === 'approved' ? '!bg-green-50 dark:!bg-green-900/20 !border-green-200 dark:!border-green-800' : '!bg-red-50 dark:!bg-red-900/20 !border-red-200 dark:!border-red-800'}`}>
@@ -242,6 +264,19 @@ const AIKybDetailPage: React.FC = () => {
         title="Rechazar Verificación KYB"
         itemName={evaluation.organization_name}
         loading={actionLoading}
+      />
+
+      <RejectModal
+        isOpen={showApproveModal}
+        onClose={() => setShowApproveModal(false)}
+        onConfirm={handleApprove}
+        title="Aprobar Verificación KYB"
+        itemName={evaluation.organization_name}
+        loading={actionLoading}
+        requireReason={false}
+        confirmMessage="¿Estás seguro de aprobar la verificación KYB de"
+        confirmLabel="Aprobar Verificación"
+        variant="primary"
       />
     </div>
   );

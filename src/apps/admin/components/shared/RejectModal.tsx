@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { XCircle, AlertCircle } from 'lucide-react';
+import { XCircle, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface RejectModalProps {
   isOpen: boolean;
@@ -8,28 +8,44 @@ interface RejectModalProps {
   title: string;
   itemName: string;
   loading?: boolean;
+  /** Cuando es false, se omite el campo de motivo y se pide solo confirmación (para acciones tipo "aprobar"). Default: true. */
+  requireReason?: boolean;
+  /** Texto de la pregunta de confirmación cuando requireReason es false. */
+  confirmMessage?: string;
+  /** Texto del botón de confirmar. Default: "Confirmar Rechazo" / "Confirmar". */
+  confirmLabel?: string;
+  /** Estilo visual del modal. Default: 'danger' (rojo, para rechazar). 'primary' usa verde, para aprobar/confirmar. */
+  variant?: 'danger' | 'primary';
 }
 
-const RejectModal: React.FC<RejectModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
+const RejectModal: React.FC<RejectModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
   title,
   itemName,
-  loading = false
+  loading = false,
+  requireReason = true,
+  confirmMessage,
+  confirmLabel,
+  variant = 'danger',
 }) => {
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
+  const isPrimary = variant === 'primary';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (reason.trim().length < 10) {
-      setError('El motivo debe tener al menos 10 caracteres');
-      return;
+    if (requireReason) {
+      if (reason.trim().length < 10) {
+        setError('El motivo debe tener al menos 10 caracteres');
+        return;
+      }
+      setError('');
     }
-    setError('');
     await onConfirm(reason);
   };
 
@@ -37,9 +53,9 @@ const RejectModal: React.FC<RejectModalProps> = ({
     <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !p-4 !bg-black/50 !backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-xl !max-w-md !w-full !overflow-hidden">
         {/* Header */}
-        <div className="!flex !items-center !justify-between !p-4 !border-b border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30">
-          <div className="!flex !items-center !gap-2 text-red-700 dark:text-red-400">
-            <XCircle className="!w-5 !h-5" />
+        <div className={`!flex !items-center !justify-between !p-4 !border-b ${isPrimary ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30'}`}>
+          <div className={`!flex !items-center !gap-2 ${isPrimary ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+            {isPrimary ? <CheckCircle className="!w-5 !h-5" /> : <XCircle className="!w-5 !h-5" />}
             <h3 className="!font-semibold">{title}</h3>
           </div>
           <button
@@ -56,38 +72,41 @@ const RejectModal: React.FC<RejectModalProps> = ({
         {/* Content */}
         <form onSubmit={handleSubmit} className="!p-6 !space-y-4">
           <p className="!text-sm text-slate-600 dark:text-slate-400">
-            Estás a punto de rechazar: <span className="!font-medium text-slate-900 dark:text-slate-100">{itemName}</span>
+            {requireReason ? 'Estás a punto de rechazar: ' : (confirmMessage ? confirmMessage + ' ' : 'Vas a confirmar esta acción para: ')}
+            <span className="!font-medium text-slate-900 dark:text-slate-100">{itemName}</span>
           </p>
 
-          <div>
-            <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-300 !mb-1">
-              Motivo del rechazo <span className="text-red-500">*</span>
-            </label>
-            <p className="!text-xs text-slate-500 dark:text-slate-400 !mb-2">
-              Este mensaje será enviado al partner para que pueda corregir el problema.
-            </p>
-            <textarea
-              value={reason}
-              onChange={(e) => {
-                setReason(e.target.value);
-                if (e.target.value.length >= 10) setError('');
-              }}
-              placeholder="Explica detalladamente por qué se rechaza esta evaluación..."
-              className={`!w-full !p-3 !border !rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:!ring-2 focus:ring-red-500 focus:border-red-500 !min-h-[120px] ${
-                error ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-slate-600'
-              }`}
-              disabled={loading}
-            />
-            {error && (
-              <div className="!flex !items-center !gap-1 !mt-1 text-red-600 dark:text-red-400 !text-xs">
-                <AlertCircle className="!w-3 !h-3" />
-                <span>{error}</span>
+          {requireReason && (
+            <div>
+              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-300 !mb-1">
+                Motivo del rechazo <span className="text-red-500">*</span>
+              </label>
+              <p className="!text-xs text-slate-500 dark:text-slate-400 !mb-2">
+                Este mensaje será enviado al partner para que pueda corregir el problema.
+              </p>
+              <textarea
+                value={reason}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  if (e.target.value.length >= 10) setError('');
+                }}
+                placeholder="Explica detalladamente por qué se rechaza esta evaluación..."
+                className={`!w-full !p-3 !border !rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:!ring-2 focus:ring-red-500 focus:border-red-500 !min-h-[120px] ${
+                  error ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-slate-600'
+                }`}
+                disabled={loading}
+              />
+              {error && (
+                <div className="!flex !items-center !gap-1 !mt-1 text-red-600 dark:text-red-400 !text-xs">
+                  <AlertCircle className="!w-3 !h-3" />
+                  <span>{error}</span>
+                </div>
+              )}
+              <div className={`!text-right !text-xs !mt-1 ${reason.length < 10 ? 'text-red-500 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                {reason.length}/10 caracteres mínimo
               </div>
-            )}
-            <div className={`!text-right !text-xs !mt-1 ${reason.length < 10 ? 'text-red-500 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
-              {reason.length}/10 caracteres mínimo
             </div>
-          </div>
+          )}
 
           {/* Footer */}
           <div className="!flex !items-center !justify-end !gap-3 !pt-4 !border-t border-slate-200 dark:border-slate-700">
@@ -101,8 +120,10 @@ const RejectModal: React.FC<RejectModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={loading || reason.trim().length < 10}
-              className="!px-4 !py-2 !text-white !bg-red-600 hover:!bg-red-700 !rounded-lg !transition-colors !font-medium !flex !items-center !gap-2 disabled:!opacity-50 disabled:!cursor-not-allowed"
+              disabled={loading || (requireReason && reason.trim().length < 10)}
+              className={`!px-4 !py-2 !text-white !rounded-lg !transition-colors !font-medium !flex !items-center !gap-2 disabled:!opacity-50 disabled:!cursor-not-allowed ${
+                isPrimary ? '!bg-green-600 hover:!bg-green-700' : '!bg-red-600 hover:!bg-red-700'
+              }`}
             >
               {loading ? (
                 <>
@@ -110,10 +131,10 @@ const RejectModal: React.FC<RejectModalProps> = ({
                     <circle className="!opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="!opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Rechazando...
+                  {requireReason ? 'Rechazando...' : 'Procesando...'}
                 </>
               ) : (
-                'Confirmar Rechazo'
+                confirmLabel || (requireReason ? 'Confirmar Rechazo' : 'Confirmar')
               )}
             </button>
           </div>

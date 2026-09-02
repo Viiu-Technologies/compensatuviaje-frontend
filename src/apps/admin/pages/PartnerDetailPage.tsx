@@ -34,14 +34,15 @@ import {
   DollarSign,
   Leaf
 } from 'lucide-react';
-import { 
-  getPartnerDetail, 
-  updatePartnerStatus, 
-  verifyPartner, 
+import {
+  getPartnerDetail,
+  updatePartnerStatus,
+  verifyPartner,
   approvePartnerProject,
   rejectPartnerProject,
-  PartnerDetail as PartnerDetailType 
+  PartnerDetail as PartnerDetailType
 } from '../services/adminApi';
+import RejectModal from '../components/shared/RejectModal';
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
   active: { label: 'Activo', color: 'text-emerald-700 dark:text-emerald-400', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', icon: CheckCircle },
@@ -69,7 +70,9 @@ export default function PartnerDetailPage() {
   const [activeTab, setActiveTab] = useState<'info' | 'users' | 'projects'>('info');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [confirmAction, setConfirmAction] = useState<null | 'verify' | 'activate' | 'suspend'>(null);
+  const [confirmApproveProjectId, setConfirmApproveProjectId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPartner();
@@ -95,58 +98,64 @@ export default function PartnerDetailPage() {
   };
 
   const handleStatusChange = async (newStatus: 'active' | 'suspended' | 'inactive') => {
-    if (!partner || !confirm(`¿Cambiar estado a "${statusConfig[newStatus]?.label}"?`)) return;
+    if (!partner) return;
 
     setActionLoading('status');
+    setActionError(null);
     try {
       await updatePartnerStatus(partner.id, newStatus);
+      setConfirmAction(null);
       fetchPartner();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al actualizar estado');
+      setActionError(err.response?.data?.message || 'Error al actualizar estado');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleVerify = async () => {
-    if (!partner || !confirm('¿Marcar este partner como verificado?')) return;
+    if (!partner) return;
 
     setActionLoading('verify');
+    setActionError(null);
     try {
       await verifyPartner(partner.id);
+      setConfirmAction(null);
       fetchPartner();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al verificar partner');
+      setActionError(err.response?.data?.message || 'Error al verificar partner');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleApproveProject = async (projectId: string) => {
-    if (!partner || !confirm('¿Aprobar este proyecto?')) return;
+    if (!partner) return;
 
     setActionLoading(projectId);
+    setActionError(null);
     try {
       await approvePartnerProject(partner.id, projectId);
+      setConfirmApproveProjectId(null);
       fetchPartner();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al aprobar proyecto');
+      setActionError(err.response?.data?.message || 'Error al aprobar proyecto');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleRejectProject = async () => {
-    if (!partner || !showRejectModal || !rejectReason.trim()) return;
+  const handleRejectProject = async (reason: string) => {
+    if (!partner || !showRejectModal) return;
 
     setActionLoading(showRejectModal);
+    setActionError(null);
     try {
-      await rejectPartnerProject(partner.id, showRejectModal, rejectReason);
+      await rejectPartnerProject(partner.id, showRejectModal, reason);
       setShowRejectModal(null);
-      setRejectReason('');
       fetchPartner();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al rechazar proyecto');
+      setActionError(err.response?.data?.message || 'Error al rechazar proyecto');
     } finally {
       setActionLoading(null);
     }
@@ -223,7 +232,7 @@ export default function PartnerDetailPage() {
         <div className="flex items-center gap-2">
           {!partner.verified_at && (
             <button
-              onClick={handleVerify}
+              onClick={() => setConfirmAction('verify')}
               disabled={actionLoading === 'verify'}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
             >
@@ -238,7 +247,7 @@ export default function PartnerDetailPage() {
 
           {partner.status !== 'active' && (
             <button
-              onClick={() => handleStatusChange('active')}
+              onClick={() => setConfirmAction('activate')}
               disabled={actionLoading === 'status'}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"
             >
@@ -249,7 +258,7 @@ export default function PartnerDetailPage() {
 
           {partner.status === 'active' && (
             <button
-              onClick={() => handleStatusChange('suspended')}
+              onClick={() => setConfirmAction('suspend')}
               disabled={actionLoading === 'status'}
               className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-700 transition-colors disabled:opacity-60"
             >
@@ -259,6 +268,21 @@ export default function PartnerDetailPage() {
           )}
         </div>
       </div>
+
+      {actionError && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-red-800 dark:text-red-300">{actionError}</p>
+          </div>
+          <button
+            onClick={() => setActionError(null)}
+            className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b border-slate-200 dark:border-slate-700">
@@ -533,7 +557,7 @@ export default function PartnerDetailPage() {
                     {isPendingReview && (
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleApproveProject(project.id)}
+                          onClick={() => setConfirmApproveProjectId(project.id)}
                           disabled={actionLoading === project.id}
                           className="flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-60"
                         >
@@ -567,39 +591,57 @@ export default function PartnerDetailPage() {
         </div>
       )}
 
-      {/* Reject Modal */}
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Rechazar Proyecto</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-              Por favor, indica el motivo del rechazo. El partner recibirá esta información.
-            </p>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Motivo del rechazo..."
-              rows={4}
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none resize-none"
-            />
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => { setShowRejectModal(null); setRejectReason(''); }}
-                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-700"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleRejectProject}
-                disabled={!rejectReason.trim() || actionLoading === showRejectModal}
-                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 disabled:opacity-60"
-              >
-                {actionLoading === showRejectModal ? 'Rechazando...' : 'Confirmar Rechazo'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Reject Project Modal */}
+      <RejectModal
+        isOpen={!!showRejectModal}
+        onClose={() => setShowRejectModal(null)}
+        onConfirm={handleRejectProject}
+        title="Rechazar Proyecto"
+        itemName={partner.projects?.find((p) => p.id === showRejectModal)?.name || 'este proyecto'}
+        loading={actionLoading === showRejectModal}
+      />
+
+      {/* Approve Project Modal */}
+      <RejectModal
+        isOpen={!!confirmApproveProjectId}
+        onClose={() => setConfirmApproveProjectId(null)}
+        onConfirm={() => handleApproveProject(confirmApproveProjectId!)}
+        title="Aprobar Proyecto"
+        itemName={partner.projects?.find((p) => p.id === confirmApproveProjectId)?.name || 'este proyecto'}
+        loading={actionLoading === confirmApproveProjectId}
+        requireReason={false}
+        confirmMessage="¿Aprobar el proyecto"
+        confirmLabel="Aprobar"
+        variant="primary"
+      />
+
+      {/* Verify Partner Modal */}
+      <RejectModal
+        isOpen={confirmAction === 'verify'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleVerify}
+        title="Verificar Partner"
+        itemName={partner.name}
+        loading={actionLoading === 'verify'}
+        requireReason={false}
+        confirmMessage="¿Marcar como verificado a"
+        confirmLabel="Verificar Partner"
+        variant="primary"
+      />
+
+      {/* Activate/Suspend Partner Modal */}
+      <RejectModal
+        isOpen={confirmAction === 'activate' || confirmAction === 'suspend'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={() => handleStatusChange(confirmAction === 'activate' ? 'active' : 'suspended')}
+        title={confirmAction === 'activate' ? 'Activar Partner' : 'Suspender Partner'}
+        itemName={partner.name}
+        loading={actionLoading === 'status'}
+        requireReason={false}
+        confirmMessage={confirmAction === 'activate' ? '¿Cambiar el estado a "Activo" para' : '¿Cambiar el estado a "Suspendido" para'}
+        confirmLabel={confirmAction === 'activate' ? 'Activar' : 'Suspender'}
+        variant={confirmAction === 'activate' ? 'primary' : 'danger'}
+      />
     </div>
   );
 }
