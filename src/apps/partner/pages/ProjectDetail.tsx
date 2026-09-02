@@ -31,8 +31,8 @@ interface InfoCardProps {
 }
 
 const InfoCard: React.FC<InfoCardProps> = ({ title, children }) => (
-  <div className="!bg-white dark:bg-slate-800 dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6">
-    <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-4">{title}</h3>
+  <div className="bg-white dark:bg-slate-800 !rounded-xl !border !shadow-sm !p-6">
+    <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">{title}</h3>
     {children}
   </div>
 );
@@ -50,10 +50,10 @@ interface StatItemProps {
 
 const StatItem: React.FC<StatItemProps> = ({ label, value, icon, color }) => {
   const colorClasses = {
-    green: '!bg-emerald-50 !text-emerald-700',
-    blue: '!bg-sky-50 !text-sky-700',
-    purple: '!bg-violet-50 !text-violet-700',
-    yellow: '!bg-amber-50 !text-amber-700'
+    green: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    blue: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300',
+    purple: 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300',
+    yellow: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'
   };
 
   return (
@@ -220,16 +220,16 @@ const ProjectDetail: React.FC = () => {
     return (
       <div className="!flex !items-center !justify-center !py-20">
         <div className="!text-center">
-          <div className="!w-20 !h-20 !bg-slate-100 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
-            <svg className="!w-10 !h-10 !text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="!w-20 !h-20 bg-slate-100 dark:bg-slate-800 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
+            <svg className="!w-10 !h-10 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="!text-xl !font-semibold !text-slate-800 !mb-2">Proyecto no encontrado</h2>
-          <p className="!text-slate-500 !mb-4">El proyecto que buscas no existe o fue eliminado</p>
+          <h2 className="!text-xl !font-semibold text-slate-800 dark:text-slate-100 !mb-2">Proyecto no encontrado</h2>
+          <p className="text-slate-500 dark:text-slate-400 !mb-4">El proyecto que buscas no existe o fue eliminado</p>
           <Link
             to="/partner/projects"
-            className="!text-emerald-600 hover:!text-emerald-700 !font-medium !no-underline"
+            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium !no-underline"
           >
             ← Volver a mis proyectos
           </Link>
@@ -249,7 +249,7 @@ const ProjectDetail: React.FC = () => {
         <div className="!flex !items-center !gap-4">
           <Link
             to="/partner/projects"
-            className="!p-2 !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !rounded-lg !transition-colors !no-underline"
+            className="!p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 !rounded-lg !transition-colors !no-underline"
           >
             <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -257,12 +257,12 @@ const ProjectDetail: React.FC = () => {
           </Link>
           <div>
             <div className="!flex !items-center !gap-3 !mb-1">
-              <span className="!text-sm !font-mono !text-slate-500">{project.code}</span>
+              <span className="!text-sm !font-mono text-slate-500 dark:text-slate-400">{project.code}</span>
               <span className={`!px-2.5 !py-1 !text-xs !font-medium !rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>
                 {PROJECT_STATUS_LABELS[project.status]}
               </span>
             </div>
-            <h1 className="!text-2xl !font-bold !text-slate-800">{project.name}</h1>
+            <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100">{project.name}</h1>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ const ProjectDetail: React.FC = () => {
           {canDelete && (
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="!p-2 !text-slate-400 hover:!text-red-600 dark:!text-red-400 hover:!bg-red-50 dark:!bg-red-900/30 !rounded-lg !transition-colors"
+              className="!p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 !rounded-lg !transition-colors"
               title="Eliminar"
             >
               <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,7 +281,7 @@ const ProjectDetail: React.FC = () => {
           {canEdit && (
             <Link
               to={`/partner/projects/${project.id}/edit`}
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !border !border-slate-300 !text-slate-700 !rounded-xl hover:!bg-slate-50 !transition-colors !no-underline"
+              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 !rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 !transition-colors !no-underline"
             >
               <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -317,7 +317,7 @@ const ProjectDetail: React.FC = () => {
           {['active', 'approved', 'pending_review'].includes(project.status) && (
             <Link
               to={`/partner/projects/${project.id}/certification`}
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !bg-indigo-50 dark:!bg-indigo-900/30 !border !border-indigo-200 dark:!border-indigo-700 !text-indigo-700 dark:!text-indigo-300 !text-sm !font-medium hover:!bg-indigo-100 dark:hover:!bg-indigo-900/50 !transition-colors !no-underline"
+              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-xl bg-indigo-50 dark:bg-indigo-900/30 !border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 !text-sm !font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50 !transition-colors !no-underline"
             >
               <Bot className="!w-4 !h-4" />
               Ver Evaluación IA
@@ -594,11 +594,11 @@ const ProjectDetail: React.FC = () => {
               {/* Photos */}
               {evidencePhotos.length > 0 && (
                 <div>
-                  <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold !text-slate-700 dark:!text-slate-300 !mb-3">
-                    <Camera className="!w-4 !h-4 !text-emerald-600" />
+                  <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold text-slate-700 dark:text-slate-300 !mb-3">
+                    <Camera className="!w-4 !h-4 text-emerald-600 dark:text-emerald-400" />
                     Fotos ({evidencePhotos.length})
                   </h4>
-                  <div className="!bg-slate-50 dark:!bg-slate-900 !rounded-xl !p-2">
+                  <div className="bg-slate-50 dark:bg-slate-900 !rounded-xl !p-2">
                     <PhotoCarousel photos={evidencePhotos} />
                   </div>
                 </div>
@@ -607,8 +607,8 @@ const ProjectDetail: React.FC = () => {
               {/* Documents */}
               {evidenceDocs.length > 0 && (
                 <div>
-                  <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold !text-slate-700 dark:!text-slate-300 !mb-3">
-                    <FileText className="!w-4 !h-4 !text-blue-600" />
+                  <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold text-slate-700 dark:text-slate-300 !mb-3">
+                    <FileText className="!w-4 !h-4 text-blue-600 dark:text-blue-400" />
                     Documentos ({evidenceDocs.length})
                   </h4>
                   <DocumentViewer documents={evidenceDocs} />
@@ -619,9 +619,9 @@ const ProjectDetail: React.FC = () => {
         )}
 
         {evidenceLoading && (
-          <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !shadow-sm !p-6">
-            <div className="!flex !items-center !gap-3 !text-slate-500">
-              <div className="!w-5 !h-5 !border-2 !border-slate-300 !border-t-emerald-500 !rounded-full !animate-spin" />
+          <div className="bg-white dark:bg-slate-800 !rounded-xl !border !shadow-sm !p-6">
+            <div className="!flex !items-center !gap-3 text-slate-500 dark:text-slate-400">
+              <div className="!w-5 !h-5 !border-2 border-slate-300 dark:border-slate-600 !border-t-emerald-500 !rounded-full !animate-spin" />
               Cargando archivos...
             </div>
           </div>
@@ -629,13 +629,13 @@ const ProjectDetail: React.FC = () => {
 
         {/* Restock Button - only for active projects */}
         {project.status === 'active' && (
-          <div className="!bg-gradient-to-r !from-emerald-50 !to-teal-50 dark:!from-emerald-900/20 dark:!to-teal-900/20 !rounded-xl !border !border-emerald-200 dark:!border-emerald-800 !p-6">
+          <div className="!bg-gradient-to-r !from-emerald-50 !to-teal-50 dark:!from-emerald-900/20 dark:!to-teal-900/20 !rounded-xl !border border-emerald-200 dark:border-emerald-800 !p-6">
             <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-4">
               <div>
-                <h3 className="!text-lg !font-semibold !text-emerald-800 dark:!text-emerald-200">
+                <h3 className="!text-lg !font-semibold text-emerald-800 dark:text-emerald-200">
                   Evidencia Mensual
                 </h3>
-                <p className="!text-sm !text-emerald-700/70 dark:!text-emerald-300/70 !mt-1">
+                <p className="!text-sm text-emerald-700/70 dark:text-emerald-300/70 !mt-1">
                   Sube fotos y documentos de avance para solicitar reposición de stock
                 </p>
               </div>
@@ -673,7 +673,7 @@ const ProjectDetail: React.FC = () => {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:bg-slate-900 disabled:opacity-50"
+                className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50"
               >
                 Cancelar
               </button>

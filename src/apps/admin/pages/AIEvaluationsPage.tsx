@@ -45,26 +45,26 @@ const AIEvaluationsPage: React.FC = () => {
   };
 
   return (
-    <div className="!space-y-6 !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
+    <div className="!space-y-6 bg-slate-50 dark:bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
       <div className="!flex !items-center !justify-between">
         <div>
-          <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100 !flex !items-center !gap-2">
-            <Bot className="!w-7 !h-7 !text-indigo-600 dark:!text-indigo-400" />
+          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100 !flex !items-center !gap-2">
+            <Bot className="!w-7 !h-7 text-indigo-600 dark:text-indigo-400" />
             Solicitudes KYB
           </h1>
-          <p className="!text-slate-500 dark:!text-slate-400 !mt-1">
+          <p className="text-slate-500 dark:text-slate-400 !mt-1">
             Revisa las verificaciones KYB de Impact Partners evaluadas por IA y toma la decisión final.
           </p>
         </div>
       </div>
 
-      <div className="!flex !justify-end !items-center !gap-4 !bg-white dark:!bg-slate-800 !p-4 !rounded-xl !shadow-sm !border !border-slate-200 dark:!border-slate-700">
+      <div className="!flex !justify-end !items-center !gap-4 bg-white dark:bg-slate-800 !p-4 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700">
         <div className="!flex !items-center !gap-2">
-          <span className="!text-sm !text-slate-500 dark:!text-slate-400">Filtrar por:</span>
+          <span className="!text-sm text-slate-500 dark:text-slate-400">Filtrar por:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="!border-slate-300 dark:!border-slate-600 !bg-white dark:!bg-slate-700 !text-slate-900 dark:!text-slate-100 !rounded-lg !text-sm !py-2 !pl-3 !pr-8 focus:!ring-indigo-500 focus:!border-indigo-500"
+            className="border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 !rounded-lg !text-sm !py-2 !pl-3 !pr-8 focus:!ring-indigo-500 focus:border-indigo-500 dark:focus:border-indigo-400"
           >
             <option value="all">Todos</option>
             <option value="pending_review">Pendientes de Revisión</option>
@@ -75,23 +75,23 @@ const AIEvaluationsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="!bg-white dark:!bg-slate-800 !rounded-xl !shadow-sm !border !border-slate-200 dark:!border-slate-700 !overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !overflow-hidden">
         {kybLoading ? (
-          <div className="!p-12 !text-center !text-slate-500 dark:!text-slate-400">
+          <div className="!p-12 !text-center text-slate-500 dark:text-slate-400">
             <Clock className="!w-8 !h-8 !animate-spin !mx-auto !mb-4" />
             Cargando evaluaciones...
           </div>
         ) : kybEvaluations.length === 0 ? (
-          <div className="!p-12 !text-center !text-slate-500 dark:!text-slate-400">
-            <Bot className="!w-12 !h-12 !mx-auto !mb-4 !text-slate-300 dark:!text-slate-600" />
-            <h3 className="!text-lg !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">No hay verificaciones KYB</h3>
+          <div className="!p-12 !text-center text-slate-500 dark:text-slate-400">
+            <Bot className="!w-12 !h-12 !mx-auto !mb-4 text-slate-300 dark:text-slate-600" />
+            <h3 className="!text-lg !font-medium text-slate-700 dark:text-slate-300 !mb-1">No hay verificaciones KYB</h3>
             <p>No se encontraron evaluaciones para el filtro seleccionado.</p>
           </div>
         ) : (
           <div className="!overflow-x-auto">
             <table className="!w-full !text-left !border-collapse">
               <thead>
-                <tr className="!bg-slate-50 dark:!bg-slate-700/50 !border-b !border-slate-200 dark:!border-slate-600 !text-xs !uppercase !text-slate-500 dark:!text-slate-400">
+                <tr className="bg-slate-50 dark:bg-slate-700/50 !border-b border-slate-200 dark:border-slate-600 !text-xs !uppercase text-slate-500 dark:text-slate-400">
                   <th className="!py-3 !px-4 !font-medium">Empresa</th>
                   <th className="!py-3 !px-4 !font-medium">RUT / Tax ID</th>
                   <th className="!py-3 !px-4 !font-medium">Evaluación IA</th>
@@ -99,14 +99,14 @@ const AIEvaluationsPage: React.FC = () => {
                   <th className="!py-3 !px-4 !font-medium !text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="!divide-y !divide-slate-200 dark:!divide-slate-700">
+              <tbody className="!divide-y divide-slate-200 dark:divide-slate-700">
                 {kybEvaluations.map((evalItem) => (
-                  <tr key={evalItem.id} className="hover:!bg-slate-50 dark:hover:!bg-slate-700/30 !transition-colors">
+                  <tr key={evalItem.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 !transition-colors">
                     <td className="!py-3 !px-4">
-                      <div className="!font-medium !text-slate-900 dark:!text-slate-100">{evalItem.organization_name}</div>
-                      <div className="!text-xs !text-slate-500 dark:!text-slate-400">Partner ID: {evalItem.partner?.id?.slice(0, 8) || 'N/A'}</div>
+                      <div className="!font-medium text-slate-900 dark:text-slate-100">{evalItem.organization_name}</div>
+                      <div className="!text-xs text-slate-500 dark:text-slate-400">Partner ID: {evalItem.partner?.id?.slice(0, 8) || 'N/A'}</div>
                     </td>
-                    <td className="!py-3 !px-4 !text-sm !text-slate-600 dark:!text-slate-300">
+                    <td className="!py-3 !px-4 !text-sm text-slate-600 dark:text-slate-300">
                       {evalItem.rut_tax_id || 'N/A'}
                     </td>
                     <td className="!py-3 !px-4">
@@ -119,13 +119,13 @@ const AIEvaluationsPage: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td className="!py-3 !px-4 !text-sm !text-slate-500 dark:!text-slate-400">
+                    <td className="!py-3 !px-4 !text-sm text-slate-500 dark:text-slate-400">
                       {formatDate(evalItem.n8n_processed_at || evalItem.created_at)}
                     </td>
                     <td className="!py-3 !px-4 !text-right">
-                      <Link 
+                      <Link
                         to={`/admin/partners/kyb-evaluations/${evalItem.id}`}
-                        className="!inline-flex !items-center !gap-1 !px-3 !py-1.5 !text-sm !font-medium !text-white !bg-indigo-600 dark:!bg-indigo-500 hover:!bg-indigo-700 dark:hover:!bg-indigo-600 !rounded-lg !transition-colors"
+                        className="!inline-flex !items-center !gap-1 !px-3 !py-1.5 !text-sm !font-medium !text-white bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 !rounded-lg !transition-colors"
                       >
                         Revisar
                         <ArrowRight className="!w-4 !h-4" />
