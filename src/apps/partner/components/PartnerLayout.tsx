@@ -12,6 +12,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { usePartnerContext } from '../context/PartnerContext';
+import { useTheme } from '../../../shared/context/ThemeContext';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -24,7 +25,9 @@ import {
   Building2,
   Shield,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 // ============================================
@@ -38,6 +41,7 @@ const PartnerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, onboarding, kybStatus, isDataLoaded, isProfileComplete, isKybVerified } = usePartnerContext();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   // TRIPLE CANDADO: Control estricto de flujo Onboarding
   useEffect(() => {
@@ -388,6 +392,14 @@ const PartnerLayout: React.FC = () => {
               </div>
 
               <div className="!flex !items-center !gap-3">
+                <button
+                  onClick={toggleTheme}
+                  className="!p-2.5 !rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 !border-0 !cursor-pointer !transition-colors"
+                  title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  aria-label={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                >
+                  {resolvedTheme === 'dark' ? <Sun className="!w-5 !h-5" /> : <Moon className="!w-5 !h-5" />}
+                </button>
                 <NavLink
                   to="/partner/profile"
                   className="!hidden sm:!flex !items-center !gap-3 !pl-3 border-l border-slate-200 dark:border-slate-700 !no-underline"
