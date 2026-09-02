@@ -38,15 +38,15 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, icon, color }) => {
   const colorClasses = {
-    green: '!bg-emerald-50 !text-emerald-700 !border-emerald-200',
-    blue: '!bg-sky-50 !text-sky-700 !border-sky-200',
-    yellow: '!bg-amber-50 !text-amber-700 !border-amber-200',
-    purple: '!bg-violet-50 !text-violet-700 !border-violet-200',
-    orange: '!bg-orange-50 !text-orange-700 !border-orange-200'
+    green: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+    blue: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+    yellow: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+    purple: 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800',
+    orange: 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800'
   };
 
   return (
-    <div className={`!rounded-xl !border-2 !p-6 ${colorClasses[color]}`}>
+    <div className={`!rounded-xl border-2 !p-6 ${colorClasses[color]}`}>
       <div className="!flex !items-center !justify-between">
         <div>
           <p className="!text-sm !font-medium !opacity-80">{title}</p>
@@ -77,23 +77,23 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ status }) => {
   ];
 
   return (
-    <div className="!bg-gradient-to-r !from-blue-500 !to-blue-600 !rounded-xl !p-6 !text-white !mb-6">
+    <div className="bg-gradient-to-r from-blue-500 to-blue-600 !rounded-xl !p-6 text-white !mb-6">
       <div className="!flex !items-center !justify-between !mb-4">
         <div>
           <h3 className="!text-lg !font-semibold">Completa tu onboarding</h3>
-          <p className="!text-blue-100 !text-sm">
+          <p className="text-blue-100 !text-sm">
             Configura tu cuenta para comenzar a crear proyectos
           </p>
         </div>
         <div className="!text-right">
           <span className="!text-3xl !font-bold">{status.percentage}%</span>
-          <p className="!text-blue-100 !text-sm">completado</p>
+          <p className="text-blue-100 !text-sm">completado</p>
         </div>
       </div>
-      
-      <div className="!w-full !bg-blue-400 !rounded-full !h-2 !mb-4">
+
+      <div className="!w-full bg-blue-400 !rounded-full !h-2 !mb-4">
         <div
-          className="!bg-white !rounded-full !h-2 !transition-all !duration-500"
+          className="bg-white !rounded-full !h-2 !transition-all !duration-500"
           style={{ width: `${status.percentage}%` }}
         />
       </div>
@@ -103,7 +103,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ status }) => {
           <div
             key={step.key}
             className={`!flex !items-center !gap-2 !px-3 !py-2 !rounded-lg ${
-              step.completed ? '!bg-blue-400/50' : '!bg-blue-700/50'
+              step.completed ? 'bg-blue-400/50' : 'bg-blue-700/50'
             }`}
           >
             {step.completed ? (
@@ -126,7 +126,7 @@ const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ status }) => {
 
       <Link
         to="/partner/profile"
-        className="!inline-flex !items-center !gap-2 !mt-4 !px-4 !py-2 !bg-white !text-blue-600 !rounded-lg !font-medium hover:!bg-blue-50 !transition-colors"
+        className="!inline-flex !items-center !gap-2 !mt-4 !px-4 !py-2 bg-white text-blue-600 !rounded-lg !font-medium hover:bg-blue-50 !transition-colors"
       >
         Continuar configuración
         <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,15 +149,15 @@ interface RecentProjectsProps {
 const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) => {
   if (loading) {
     return (
-      <div className="!bg-white !rounded-xl !shadow-sm !border !p-6">
-        <h3 className="!text-lg !font-semibold !text-slate-800 !mb-4">Proyectos Recientes</h3>
+      <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6">
+        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">Proyectos Recientes</h3>
         <div className="!space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="!animate-pulse !flex !items-center !gap-4">
-              <div className="!w-12 !h-12 !bg-gray-200 !rounded-lg" />
+              <div className="!w-12 !h-12 bg-gray-200 dark:bg-slate-700 !rounded-lg" />
               <div className="!flex-1">
-                <div className="!h-4 !bg-gray-200 !rounded !w-3/4 !mb-2" />
-                <div className="!h-3 !bg-gray-200 !rounded !w-1/2" />
+                <div className="!h-4 bg-gray-200 dark:bg-slate-700 !rounded !w-3/4 !mb-2" />
+                <div className="!h-3 bg-gray-200 dark:bg-slate-700 !rounded !w-1/2" />
               </div>
             </div>
           ))}
@@ -167,12 +167,12 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
   }
 
   return (
-    <div className="!bg-white !rounded-xl !shadow-sm !border !p-6">
+    <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6">
       <div className="!flex !items-center !justify-between !mb-4">
-        <h3 className="!text-lg !font-semibold !text-gray-800">Proyectos Recientes</h3>
+        <h3 className="!text-lg !font-semibold text-gray-800 dark:text-slate-100">Proyectos Recientes</h3>
         <Link
           to="/partner/projects"
-          className="!text-sm !text-emerald-600 hover:!text-emerald-700 !font-medium !no-underline"
+          className="!text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium !no-underline"
         >
           Ver todos →
         </Link>
@@ -180,8 +180,8 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
 
       {projects.length === 0 ? (
         <div className="!text-center !py-8">
-          <div className="!w-16 !h-16 !bg-gray-100 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
-            <svg className="!w-8 !h-8 !text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="!w-16 !h-16 bg-gray-100 dark:bg-slate-700 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
+            <svg className="!w-8 !h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -190,10 +190,10 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
               />
             </svg>
           </div>
-          <p className="!text-gray-500 !mb-4">No tienes proyectos aún</p>
+          <p className="text-gray-500 dark:text-slate-400 !mb-4">No tienes proyectos aún</p>
           <Link
             to="/partner/projects/create"
-            className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 !transition-all !no-underline"
+            className="!inline-flex !items-center !gap-2 !px-4 !py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white !rounded-lg hover:from-emerald-600 hover:to-teal-700 !transition-all !no-underline"
           >
             <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -207,9 +207,9 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
             <Link
               key={project.id}
               to={`/partner/projects/${project.id}`}
-              className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:!bg-gray-50 !transition-colors !group"
+              className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 !transition-colors !group"
             >
-              <div className="!w-12 !h-12 !bg-emerald-100 !rounded-lg !flex !items-center !justify-center !text-emerald-600">
+              <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/10 !rounded-lg !flex !items-center !justify-center text-emerald-600 dark:text-emerald-400">
                 <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -220,10 +220,10 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) =>
                 </svg>
               </div>
               <div className="!flex-1 !min-w-0">
-                <p className="!font-medium !text-slate-800 !truncate group-hover:!text-emerald-600">
+                <p className="!font-medium text-slate-800 dark:text-slate-100 !truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
                   {project.name}
                 </p>
-                <p className="!text-sm !text-gray-500">
+                <p className="!text-sm text-gray-500 dark:text-slate-400">
                   {project.code} • {project.location_country}
                 </p>
               </div>
@@ -254,10 +254,10 @@ interface KybStatusCardProps {
 const KybStatusCard: React.FC<KybStatusCardProps> = ({ kybStatus, loading }) => {
   if (loading) {
     return (
-      <div className="!bg-white !rounded-xl !shadow-sm !border !p-6 !animate-pulse">
-        <div className="!h-6 !bg-gray-200 !rounded !w-1/2 !mb-4" />
-        <div className="!h-16 !bg-gray-200 !rounded !mb-4" />
-        <div className="!h-10 !bg-gray-200 !rounded !w-1/3" />
+      <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6 !animate-pulse">
+        <div className="!h-6 bg-gray-200 dark:bg-slate-700 !rounded !w-1/2 !mb-4" />
+        <div className="!h-16 bg-gray-200 dark:bg-slate-700 !rounded !mb-4" />
+        <div className="!h-10 bg-gray-200 dark:bg-slate-700 !rounded !w-1/3" />
       </div>
     );
   }
@@ -270,66 +270,66 @@ const KybStatusCard: React.FC<KybStatusCardProps> = ({ kybStatus, loading }) => 
     switch (visualStatus) {
       case 'approved':
         return {
-          bgGradient: '!bg-gradient-to-r !from-green-50 !to-emerald-50',
-          borderColor: '!border-green-200',
-          icon: <CheckCircle className="!w-8 !h-8 !text-green-600" />,
+          bgGradient: 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10',
+          borderColor: 'border-green-200 dark:border-green-800',
+          icon: <CheckCircle className="!w-8 !h-8 text-green-600 dark:text-green-400" />,
           title: 'Empresa Verificada',
-          description: evaluation?.partner_tier 
-            ? `Nivel ${KYB_TIER_LABELS[evaluation.partner_tier]} ${KYB_TIER_ICONS[evaluation.partner_tier]}` 
+          description: evaluation?.partner_tier
+            ? `Nivel ${KYB_TIER_LABELS[evaluation.partner_tier]} ${KYB_TIER_ICONS[evaluation.partner_tier]}`
             : 'Tu cuenta está activa',
           buttonText: 'Ver Detalles',
-          buttonStyle: '!bg-green-100 !text-green-700 hover:!bg-green-200'
+          buttonStyle: 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-500/20'
         };
       case 'pending':
         return {
-          bgGradient: '!bg-gradient-to-r !from-blue-50 !to-sky-50',
-          borderColor: '!border-blue-200',
-          icon: <Clock className="!w-8 !h-8 !text-blue-600 !animate-pulse" />,
+          bgGradient: 'bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-500/10 dark:to-sky-500/10',
+          borderColor: 'border-blue-200 dark:border-blue-800',
+          icon: <Clock className="!w-8 !h-8 text-blue-600 dark:text-blue-400 !animate-pulse" />,
           title: 'Verificación en Proceso',
           description: 'Nuestra IA está evaluando tu dossier empresarial',
           buttonText: 'Ver Estado',
-          buttonStyle: '!bg-blue-100 !text-blue-700 hover:!bg-blue-200'
+          buttonStyle: 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-500/20'
         };
       case 'ai_approved_pending':
       case 'ai_rejected_pending':
         return {
-          bgGradient: '!bg-gradient-to-r !from-amber-50 !to-yellow-50',
-          borderColor: '!border-amber-200',
-          icon: <Clock className="!w-8 !h-8 !text-amber-600" />,
+          bgGradient: 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-500/10 dark:to-yellow-500/10',
+          borderColor: 'border-amber-200 dark:border-amber-800',
+          icon: <Clock className="!w-8 !h-8 text-amber-600 dark:text-amber-400" />,
           title: 'Pendiente Revisión Admin',
           description: 'La IA completó la evaluación, esperando decisión final',
           buttonText: 'Ver Resultados',
-          buttonStyle: '!bg-amber-100 !text-amber-700 hover:!bg-amber-200'
+          buttonStyle: 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/20'
         };
       case 'rejected':
         return {
-          bgGradient: '!bg-gradient-to-r !from-red-50 !to-rose-50',
-          borderColor: '!border-red-200',
-          icon: <XCircle className="!w-8 !h-8 !text-red-600" />,
+          bgGradient: 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-500/10 dark:to-rose-500/10',
+          borderColor: 'border-red-200 dark:border-red-800',
+          icon: <XCircle className="!w-8 !h-8 text-red-600 dark:text-red-400" />,
           title: 'Verificación Rechazada',
           description: 'Puedes enviar nueva documentación',
           buttonText: 'Ver Motivo',
-          buttonStyle: '!bg-red-100 !text-red-700 hover:!bg-red-200'
+          buttonStyle: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-500/20'
         };
       case 'error':
         return {
-          bgGradient: '!bg-gradient-to-r !from-red-50 !to-rose-50',
-          borderColor: '!border-red-200',
-          icon: <AlertTriangle className="!w-8 !h-8 !text-red-600" />,
+          bgGradient: 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-500/10 dark:to-rose-500/10',
+          borderColor: 'border-red-200 dark:border-red-800',
+          icon: <AlertTriangle className="!w-8 !h-8 text-red-600 dark:text-red-400" />,
           title: 'Error en Evaluación',
           description: 'Hubo un problema, intenta nuevamente',
           buttonText: 'Reintentar',
-          buttonStyle: '!bg-red-100 !text-red-700 hover:!bg-red-200'
+          buttonStyle: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-500/20'
         };
       default: // 'none'
         return {
-          bgGradient: '!bg-gradient-to-r !from-slate-50 !to-gray-50',
-          borderColor: '!border-slate-200',
-          icon: <Shield className="!w-8 !h-8 !text-slate-400" />,
+          bgGradient: 'bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-800',
+          borderColor: 'border-slate-200 dark:border-slate-700',
+          icon: <Shield className="!w-8 !h-8 text-slate-400 dark:text-slate-500" />,
           title: 'Verificación Pendiente',
           description: 'Verifica tu empresa para activar tu cuenta',
           buttonText: 'Iniciar Verificación',
-          buttonStyle: '!bg-emerald-600 !text-white hover:!bg-emerald-700'
+          buttonStyle: 'bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700'
         };
     }
   };
@@ -343,10 +343,10 @@ const KybStatusCard: React.FC<KybStatusCardProps> = ({ kybStatus, loading }) => 
           {config.icon}
         </div>
         <div className="!flex-grow">
-          <h3 className="!text-lg !font-semibold !text-slate-800 !mb-1">
+          <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-1">
             {config.title}
           </h3>
-          <p className="!text-sm !text-slate-600 !mb-4">
+          <p className="!text-sm text-slate-600 dark:text-slate-300 !mb-4">
             {config.description}
           </p>
           <Link
@@ -414,21 +414,21 @@ const QuickActions: React.FC = () => {
   ];
 
   return (
-    <div className="!bg-white !rounded-xl !shadow-sm !border !p-6">
-      <h3 className="!text-lg !font-semibold !text-gray-800 !mb-4">Acciones Rápidas</h3>
+    <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6">
+      <h3 className="!text-lg !font-semibold text-gray-800 dark:text-slate-100 !mb-4">Acciones Rápidas</h3>
       <div className="!space-y-3">
         {actions.map((action, index) => (
           <Link
             key={index}
             to={action.link}
-            className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:!bg-gray-50 hover:!scale-[1.02] active:!scale-[0.98] !transition-all !group"
+            className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 hover:!scale-[1.02] active:!scale-[0.98] !transition-all !group"
           >
-            <div className={`!w-12 !h-12 ${action.color} !rounded-lg !flex !items-center !justify-center !text-white !transition-colors`}>
+            <div className={`!w-12 !h-12 ${action.color} !rounded-lg !flex !items-center !justify-center text-white !transition-colors`}>
               {action.icon}
             </div>
             <div>
-              <p className="!font-medium !text-slate-800 group-hover:!text-emerald-600">{action.title}</p>
-              <p className="!text-sm !text-slate-500">{action.description}</p>
+              <p className="!font-medium text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">{action.title}</p>
+              <p className="!text-sm text-slate-500 dark:text-slate-400">{action.description}</p>
             </div>
           </Link>
         ))}
@@ -512,22 +512,22 @@ const PartnerDashboard: React.FC = () => {
   return (
     <div className="!space-y-6">
       {/* Welcome Header */}
-      <div className="!bg-gradient-to-r !from-emerald-600 !to-teal-600 !rounded-2xl !p-8 !text-white !shadow-lg !shadow-emerald-500/20">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 !rounded-2xl !p-8 text-white !shadow-lg !shadow-emerald-500/20">
         <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-6">
           <div>
             {loading ? (
               <>
-                <div className="!h-8 !bg-emerald-500/50 !rounded !w-64 !mb-3 !animate-pulse" />
-                <div className="!h-5 !bg-emerald-500/30 !rounded !w-80 !animate-pulse" />
+                <div className="!h-8 bg-emerald-500/50 !rounded !w-64 !mb-3 !animate-pulse" />
+                <div className="!h-5 bg-emerald-500/30 !rounded !w-80 !animate-pulse" />
               </>
             ) : (
               <>
-                <h1 className="!text-2xl !font-bold !text-white">
+                <h1 className="!text-2xl !font-bold text-white">
                   ¡Bienvenido, {profile?.name || 'Partner'}!
                 </h1>
-                <p className="!text-emerald-100 !mt-1">
-                  {stats?.projects.total === 0 
-                    ? '¡Completa tu KyB y publica tu primer proyecto para empezar!' 
+                <p className="text-emerald-100 !mt-1">
+                  {stats?.projects.total === 0
+                    ? '¡Completa tu KyB y publica tu primer proyecto para empezar!'
                     : 'Panel de control de tu organización ESG'}
                 </p>
               </>
@@ -535,7 +535,7 @@ const PartnerDashboard: React.FC = () => {
           </div>
           <Link
             to="/partner/projects/create"
-            className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-white !text-emerald-700 !rounded-xl hover:!bg-emerald-50 !transition-colors !font-semibold !shadow-lg !no-underline"
+            className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 bg-white text-emerald-700 !rounded-xl hover:bg-emerald-50 !transition-colors !font-semibold !shadow-lg !no-underline"
           >
             <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -549,7 +549,7 @@ const PartnerDashboard: React.FC = () => {
       <div className="!space-y-6">
         {/* Onboarding Progress */}
         {loading && !onboarding ? (
-          <div className="!h-36 !bg-blue-100 !rounded-xl !animate-pulse !mb-6" />
+          <div className="!h-36 bg-blue-100 dark:bg-blue-500/10 !rounded-xl !animate-pulse !mb-6" />
         ) : onboarding && !onboarding.completed && (
           <OnboardingProgress status={onboarding} />
         )}
@@ -561,7 +561,7 @@ const PartnerDashboard: React.FC = () => {
         {loading ? (
           <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="!h-32 !bg-gray-100 !rounded-xl !border-2 !border-gray-200 !animate-pulse" />
+              <div key={i} className="!h-32 bg-gray-100 dark:bg-slate-800 !rounded-xl !border-2 border-gray-200 dark:border-slate-700 !animate-pulse" />
             ))}
           </div>
         ) : (
