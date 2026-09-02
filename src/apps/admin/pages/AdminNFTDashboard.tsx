@@ -79,37 +79,37 @@ const AdminNFTDashboard: React.FC = () => {
       label: 'Certificados NFT',
       value: stats?.totalCertificates ?? 0,
       icon: FaCertificate,
-      bg: '!bg-purple-50',
-      iconBg: '!bg-purple-100',
-      iconColor: '!text-purple-600',
-      valueColor: '!text-purple-700',
+      bg: 'bg-purple-50 dark:bg-purple-500/10',
+      iconBg: 'bg-purple-100 dark:bg-purple-500/20',
+      iconColor: 'text-purple-600 dark:text-purple-300',
+      valueColor: 'text-purple-700 dark:text-purple-300',
     },
     {
       label: 'CO₂ Total (ton)',
       value: typeof stats?.totalCO2Tons === 'number' ? stats.totalCO2Tons.toFixed(2) : '0.00',
       icon: FaLeaf,
-      bg: '!bg-green-50',
-      iconBg: '!bg-green-100',
-      iconColor: '!text-green-600',
-      valueColor: '!text-green-700',
+      bg: 'bg-green-50 dark:bg-green-500/10',
+      iconBg: 'bg-green-100 dark:bg-green-500/20',
+      iconColor: 'text-green-600 dark:text-green-300',
+      valueColor: 'text-green-700 dark:text-green-300',
     },
     {
       label: 'Holders Únicos',
       value: stats?.uniqueHolders ?? 0,
       icon: FaUsers,
-      bg: '!bg-blue-50',
-      iconBg: '!bg-blue-100',
-      iconColor: '!text-blue-600',
-      valueColor: '!text-blue-700',
+      bg: 'bg-blue-50 dark:bg-blue-500/10',
+      iconBg: 'bg-blue-100 dark:bg-blue-500/20',
+      iconColor: 'text-blue-600 dark:text-blue-300',
+      valueColor: 'text-blue-700 dark:text-blue-300',
     },
     {
       label: 'Verificados',
       value: stats?.verifiedCount ?? 0,
       icon: FaCheckCircle,
-      bg: '!bg-emerald-50',
-      iconBg: '!bg-emerald-100',
-      iconColor: '!text-emerald-600',
-      valueColor: '!text-emerald-700',
+      bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+      iconBg: 'bg-emerald-100 dark:bg-emerald-500/20',
+      iconColor: 'text-emerald-600 dark:text-emerald-300',
+      valueColor: 'text-emerald-700 dark:text-emerald-300',
     },
   ];
 
@@ -118,22 +118,22 @@ const AdminNFTDashboard: React.FC = () => {
       {/* Header */}
       <div className="!flex !flex-col md:!flex-row !items-start md:!items-center !justify-between !gap-4">
         <div>
-          <h1 className="!text-2xl !font-bold !text-gray-900 !flex !items-center !gap-3">
+          <h1 className="!text-2xl !font-bold text-gray-900 dark:text-slate-100 !flex !items-center !gap-3">
             <FaCubes className="!text-purple-600" />
             Gestión NFT Blockchain
           </h1>
-          <p className="!text-gray-500 !text-sm !mt-1">
+          <p className="text-gray-500 dark:text-slate-400 !text-sm !mt-1">
             Monitoreo de certificados NFT en la red Polygon
           </p>
         </div>
         <div className="!flex !items-center !gap-3">
           {lastUpdated && (
-            <span className="!text-xs !text-gray-400 !flex !items-center !gap-1">
+            <span className="!text-xs text-gray-400 dark:text-slate-500 !flex !items-center !gap-1">
               <FaClock className="!text-[10px]" />
               {lastUpdated.toLocaleTimeString('es-CL')}
             </span>
           )}
-          <label className="!flex !items-center !gap-2 !text-xs !text-gray-500 !cursor-pointer !select-none">
+          <label className="!flex !items-center !gap-2 !text-xs text-gray-500 dark:text-slate-400 !cursor-pointer !select-none">
             <input
               type="checkbox"
               checked={autoRefresh}
@@ -154,23 +154,23 @@ const AdminNFTDashboard: React.FC = () => {
       </div>
 
       {/* Network Status */}
-      <div className="!bg-white !rounded-xl !border !border-gray-200 !p-4 !shadow-sm">
+      <div className="bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !p-4 !shadow-sm">
         <div className="!flex !items-center !gap-4 !flex-wrap">
           <div className="!flex !items-center !gap-2">
             <div className={`!w-3 !h-3 !rounded-full ${status?.available ? '!bg-green-500 !animate-pulse' : '!bg-red-500'}`} />
-            <span className="!text-sm !font-medium !text-gray-700">
+            <span className="!text-sm !font-medium text-gray-700 dark:text-slate-200">
               {status?.available ? 'Blockchain Activa' : 'Blockchain Inactiva'}
             </span>
           </div>
-          <div className="!h-4 !w-px !bg-gray-300" />
+          <div className="!h-4 !w-px bg-gray-300 dark:bg-slate-600" />
           <div className="!flex !items-center !gap-2">
-            <FaNetworkWired className="!text-gray-400" />
-            <span className="!text-sm !text-gray-600">Red: {status?.network || '—'}</span>
+            <FaNetworkWired className="text-gray-400 dark:text-slate-500" />
+            <span className="!text-sm text-gray-600 dark:text-slate-300">Red: {status?.network || '—'}</span>
           </div>
-          <div className="!h-4 !w-px !bg-gray-300" />
+          <div className="!h-4 !w-px bg-gray-300 dark:bg-slate-600" />
           <div className="!flex !items-center !gap-2">
-            <FaCubes className="!text-gray-400" />
-            <span className="!text-sm !text-gray-600 !font-mono !text-xs">
+            <FaCubes className="text-gray-400 dark:text-slate-500" />
+            <span className="!text-sm text-gray-600 dark:text-slate-300 !font-mono !text-xs">
               Contrato: {status?.contractAddress ? shortAddress(status.contractAddress) : '—'}
             </span>
           </div>
@@ -191,14 +191,14 @@ const AdminNFTDashboard: React.FC = () => {
       {loading && !stats && (
         <div className="!text-center !py-12">
           <div className="!w-10 !h-10 !border-3 !border-purple-200 !border-t-purple-600 !rounded-full !animate-spin !mx-auto !mb-3" />
-          <p className="!text-gray-500 !text-sm">Consultando blockchain...</p>
+          <p className="text-gray-500 dark:text-slate-400 !text-sm">Consultando blockchain...</p>
         </div>
       )}
 
       {/* Error */}
       {error && !loading && (
-        <div className="!bg-red-50 !border !border-red-200 !rounded-xl !p-4 !text-center">
-          <p className="!text-red-600 !text-sm">{error}</p>
+        <div className="bg-red-50 dark:bg-red-500/10 !border border-red-200 dark:border-red-500/30 !rounded-xl !p-4 !text-center">
+          <p className="text-red-600 dark:text-red-300 !text-sm">{error}</p>
           <button
             onClick={() => fetchData()}
             className="!mt-2 !text-red-500 !underline !text-sm !bg-transparent !border-0 !cursor-pointer"
@@ -214,14 +214,14 @@ const AdminNFTDashboard: React.FC = () => {
           {kpiCards.map((kpi) => (
             <div
               key={kpi.label}
-              className={`!rounded-xl !border !border-gray-200 !p-5 !shadow-sm ${kpi.bg}`}
+              className={`!rounded-xl border border-gray-200 dark:border-slate-700 !p-5 !shadow-sm ${kpi.bg}`}
             >
               <div className="!flex !items-center !gap-3">
                 <div className={`!w-11 !h-11 ${kpi.iconBg} !rounded-lg !flex !items-center !justify-center`}>
                   <kpi.icon className={`!text-xl ${kpi.iconColor}`} />
                 </div>
                 <div>
-                  <p className="!text-xs !text-gray-500 !font-medium">{kpi.label}</p>
+                  <p className="!text-xs text-gray-500 dark:text-slate-400 !font-medium">{kpi.label}</p>
                   <p className={`!text-2xl !font-bold ${kpi.valueColor}`}>{kpi.value}</p>
                 </div>
               </div>
@@ -234,57 +234,57 @@ const AdminNFTDashboard: React.FC = () => {
       {stats && (
         <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-6">
           {/* Recent Mints */}
-          <div className="lg:!col-span-2 !bg-white !rounded-xl !border !border-gray-200 !shadow-sm !overflow-hidden">
-            <div className="!px-6 !py-4 !border-b !border-gray-100 !flex !items-center !justify-between">
-              <h3 className="!text-lg !font-bold !text-gray-900 !flex !items-center !gap-2">
+          <div className="lg:!col-span-2 bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !shadow-sm !overflow-hidden">
+            <div className="!px-6 !py-4 !border-b border-gray-100 dark:border-slate-700 !flex !items-center !justify-between">
+              <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !flex !items-center !gap-2">
                 <FaClock className="!text-purple-600" />
                 Últimos NFTs Minteados
               </h3>
-              <span className="!text-xs !text-gray-400">{stats.recentMints?.length || 0} registros</span>
+              <span className="!text-xs text-gray-400 dark:text-slate-500">{stats.recentMints?.length || 0} registros</span>
             </div>
-            
+
             {(!stats.recentMints || stats.recentMints.length === 0) ? (
               <div className="!p-8 !text-center">
-                <FaCertificate className="!text-4xl !text-gray-300 !mx-auto !mb-3" />
-                <p className="!text-gray-500 !text-sm">Aún no hay certificados NFT minteados</p>
+                <FaCertificate className="!text-4xl text-gray-300 dark:text-slate-600 !mx-auto !mb-3" />
+                <p className="text-gray-500 dark:text-slate-400 !text-sm">Aún no hay certificados NFT minteados</p>
               </div>
             ) : (
               <div className="!overflow-x-auto">
                 <table className="!w-full">
                   <thead>
-                    <tr className="!bg-gray-50 !text-left">
-                      <th className="!px-4 !py-3 !text-xs !font-semibold !text-gray-500 !uppercase">
+                    <tr className="bg-gray-50 dark:bg-slate-900 !text-left">
+                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">
                         <FaHashtag className="!inline !mr-1 !text-[10px]" />Token
                       </th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold !text-gray-500 !uppercase">Certificado</th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold !text-gray-500 !uppercase">CO₂ (ton)</th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold !text-gray-500 !uppercase">
+                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">Certificado</th>
+                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">CO₂ (ton)</th>
+                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">
                         <FaWallet className="!inline !mr-1 !text-[10px]" />Wallet
                       </th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold !text-gray-500 !uppercase">Fecha</th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold !text-gray-500 !uppercase"></th>
+                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">Fecha</th>
+                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase"></th>
                     </tr>
                   </thead>
-                  <tbody className="!divide-y !divide-gray-100">
+                  <tbody className="!divide-y divide-gray-100 dark:divide-slate-700">
                     {stats.recentMints!.map((mint: RecentMint, i: number) => (
-                      <tr key={i} className="hover:!bg-gray-50 !transition-colors">
+                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 !transition-colors">
                         <td className="!px-4 !py-3">
-                          <span className="!inline-flex !items-center !gap-1 !bg-purple-100 !text-purple-700 !text-xs !font-bold !px-2.5 !py-1 !rounded-full">
+                          <span className="!inline-flex !items-center !gap-1 bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 !text-xs !font-bold !px-2.5 !py-1 !rounded-full">
                             #{mint.tokenId}
                           </span>
                         </td>
-                        <td className="!px-4 !py-3 !text-sm !font-mono !text-gray-700">
+                        <td className="!px-4 !py-3 !text-sm !font-mono text-gray-700 dark:text-slate-300">
                           {mint.certificateNumber}
                         </td>
                         <td className="!px-4 !py-3">
-                          <span className="!text-sm !font-bold !text-green-700">
+                          <span className="!text-sm !font-bold text-green-700 dark:text-green-300">
                             {mint.tonsCompensated?.toFixed(2)}
                           </span>
                         </td>
-                        <td className="!px-4 !py-3 !text-xs !font-mono !text-gray-500">
+                        <td className="!px-4 !py-3 !text-xs !font-mono text-gray-500 dark:text-slate-400">
                           {mint.walletAddress ? shortAddress(mint.walletAddress) : '—'}
                         </td>
-                        <td className="!px-4 !py-3 !text-xs !text-gray-500">
+                        <td className="!px-4 !py-3 !text-xs text-gray-500 dark:text-slate-400">
                           {formatDate(mint.mintedAt)}
                         </td>
                         <td className="!px-4 !py-3">
@@ -311,8 +311,8 @@ const AdminNFTDashboard: React.FC = () => {
           {/* Right column: Contract Info + Features */}
           <div className="!space-y-6">
             {/* Contract Info */}
-            <div className="!bg-white !rounded-xl !border !border-gray-200 !p-6 !shadow-sm">
-              <h3 className="!text-lg !font-bold !text-gray-900 !mb-4 !flex !items-center !gap-2">
+            <div className="bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !p-6 !shadow-sm">
+              <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !mb-4 !flex !items-center !gap-2">
                 <FaCubes className="!text-purple-600" />
                 Smart Contract
               </h3>
@@ -323,9 +323,9 @@ const AdminNFTDashboard: React.FC = () => {
                   { label: 'Chain ID', value: status?.chainId || '137' },
                   { label: 'Contrato', value: status?.contractAddress ? `${status.contractAddress.slice(0, 12)}...` : '—', mono: true },
                 ].map((row) => (
-                  <div key={row.label} className="!flex !justify-between !items-center !py-2 !border-b !border-gray-100 last:!border-0">
-                    <span className="!text-sm !text-gray-500">{row.label}</span>
-                    <span className={`!text-sm !text-gray-900 !font-medium ${row.mono ? '!font-mono !text-xs !bg-gray-100 !px-2 !py-1 !rounded' : ''}`}>
+                  <div key={row.label} className="!flex !justify-between !items-center !py-2 !border-b border-gray-100 dark:border-slate-700 last:!border-0">
+                    <span className="!text-sm text-gray-500 dark:text-slate-400">{row.label}</span>
+                    <span className={`!text-sm text-gray-900 dark:text-slate-100 !font-medium ${row.mono ? '!font-mono !text-xs bg-gray-100 dark:bg-slate-700 !px-2 !py-1 !rounded' : ''}`}>
                       {row.value}
                     </span>
                   </div>
@@ -334,8 +334,8 @@ const AdminNFTDashboard: React.FC = () => {
             </div>
 
             {/* Features */}
-            <div className="!bg-white !rounded-xl !border !border-gray-200 !p-6 !shadow-sm">
-              <h3 className="!text-lg !font-bold !text-gray-900 !mb-4 !flex !items-center !gap-2">
+            <div className="bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !p-6 !shadow-sm">
+              <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !mb-4 !flex !items-center !gap-2">
                 <HiSparkles className="!text-purple-600" />
                 Características
               </h3>
@@ -349,7 +349,7 @@ const AdminNFTDashboard: React.FC = () => {
                 ].map((feat, i) => (
                   <div key={i} className="!flex !items-center !gap-3">
                     <feat.icon className={`!text-sm ${feat.color}`} />
-                    <span className="!text-sm !text-gray-700">{feat.text}</span>
+                    <span className="!text-sm text-gray-700 dark:text-slate-300">{feat.text}</span>
                   </div>
                 ))}
               </div>

@@ -44,10 +44,10 @@ interface PartnerStats {
 }
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
-  active: { label: 'Activo', color: 'text-emerald-700', bgColor: 'bg-emerald-100', icon: CheckCircle },
-  onboarding: { label: 'Onboarding', color: 'text-amber-700', bgColor: 'bg-amber-100', icon: Clock },
-  suspended: { label: 'Suspendido', color: 'text-red-700', bgColor: 'bg-red-100', icon: Pause },
-  inactive: { label: 'Inactivo', color: 'text-slate-700', bgColor: 'bg-slate-100', icon: XCircle },
+  active: { label: 'Activo', color: 'text-emerald-700 dark:text-emerald-300', bgColor: 'bg-emerald-100 dark:bg-emerald-500/10', icon: CheckCircle },
+  onboarding: { label: 'Onboarding', color: 'text-amber-700 dark:text-amber-300', bgColor: 'bg-amber-100 dark:bg-amber-500/10', icon: Clock },
+  suspended: { label: 'Suspendido', color: 'text-red-700 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-500/10', icon: Pause },
+  inactive: { label: 'Inactivo', color: 'text-slate-700 dark:text-slate-300', bgColor: 'bg-slate-100 dark:bg-slate-700', icon: XCircle },
 };
 
 export default function PartnersPage() {
@@ -163,10 +163,10 @@ export default function PartnersPage() {
     color: string; 
     bgColor: string;
   }) => (
-    <div className="!bg-white !rounded-2xl !p-6 !shadow-sm !border !border-slate-100 hover:!shadow-md !transition-shadow">
+    <div className="bg-white dark:bg-slate-800 !rounded-2xl !p-6 !shadow-sm border border-slate-100 dark:border-slate-700 hover:!shadow-md !transition-shadow">
       <div className="!flex !items-center !justify-between">
         <div>
-          <p className="!text-sm !text-slate-500 !font-medium">{title}</p>
+          <p className="!text-sm text-slate-500 dark:text-slate-400 !font-medium">{title}</p>
           <p className={`!text-3xl !font-bold !mt-1 ${color}`}>
             {statsLoading ? '...' : value}
           </p>
@@ -183,11 +183,11 @@ export default function PartnersPage() {
       {/* Header */}
       <div className="!flex !flex-col md:!flex-row !justify-between !items-start md:!items-center !gap-4">
         <div>
-          <h1 className="!text-3xl !font-bold !text-slate-800 !flex !items-center !gap-3">
+          <h1 className="!text-3xl !font-bold text-slate-800 dark:text-slate-100 !flex !items-center !gap-3">
             <Handshake className="!w-8 !h-8 !text-indigo-600" />
             Impact Partners
           </h1>
-          <p className="!text-slate-500 !mt-1">
+          <p className="text-slate-500 dark:text-slate-400 !mt-1">
             Gestión de organizaciones de proyectos ESG
           </p>
         </div>
@@ -233,28 +233,28 @@ export default function PartnersPage() {
       </div>
 
       {/* Filters */}
-      <div className="!bg-white !rounded-2xl !p-4 !shadow-sm !border !border-slate-100">
+      <div className="bg-white dark:bg-slate-800 !rounded-2xl !p-4 !shadow-sm border border-slate-100 dark:border-slate-700">
         <div className="!flex !flex-col lg:!flex-row !gap-4">
           <form onSubmit={handleSearch} className="!flex-1">
             <div className="!relative">
-              <Search className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 !text-slate-400" />
+              <Search className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !w-5 !h-5 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Buscar por nombre o email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="!w-full !pl-10 !pr-4 !py-2.5 !border !border-slate-200 !rounded-xl !bg-white !text-slate-800 placeholder:!text-slate-400 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all"
+                className="!w-full !pl-10 !pr-4 !py-2.5 border border-slate-200 dark:border-slate-700 !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none !transition-all"
               />
             </div>
           </form>
 
           <div className="!flex !items-center !gap-3">
             <div className="!flex !items-center !gap-2">
-              <Filter className="!w-4 !h-4 !text-slate-400" />
+              <Filter className="!w-4 !h-4 text-slate-400 dark:text-slate-500" />
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                className="!px-3 !py-2.5 !border !border-slate-200 !rounded-xl !bg-white !text-slate-800 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none"
+                className="!px-3 !py-2.5 border border-slate-200 dark:border-slate-700 !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none"
               >
                 <option value="">Todos los estados</option>
                 <option value="active">Activos</option>
@@ -272,7 +272,7 @@ export default function PartnersPage() {
                 setSortOrder(order as 'asc' | 'desc');
                 setPage(1);
               }}
-              className="!px-3 !py-2.5 !border !border-slate-200 !rounded-xl !bg-white !text-slate-800 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none"
+              className="!px-3 !py-2.5 border border-slate-200 dark:border-slate-700 !rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:!ring-2 focus:!ring-indigo-500/20 focus:!border-indigo-500 !outline-none"
             >
               <option value="created_at-desc">Más recientes</option>
               <option value="created_at-asc">Más antiguos</option>
@@ -282,10 +282,10 @@ export default function PartnersPage() {
 
             <button
               onClick={() => { fetchPartners(); fetchStats(); }}
-              className="!p-2.5 !border !border-slate-200 !rounded-xl hover:!bg-slate-50 !transition-colors"
+              className="!p-2.5 border border-slate-200 dark:border-slate-700 !rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
               title="Refrescar"
             >
-              <RefreshCw className={`!w-5 !h-5 !text-slate-600 ${loading ? '!animate-spin' : ''}`} />
+              <RefreshCw className={`!w-5 !h-5 text-slate-600 dark:text-slate-300 ${loading ? '!animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -293,51 +293,51 @@ export default function PartnersPage() {
 
       {/* Error */}
       {error && (
-        <div className="!bg-red-50 !text-red-700 !px-4 !py-3 !rounded-xl !flex !items-center !gap-2">
+        <div className="bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-xl !flex !items-center !gap-2">
           <AlertTriangle className="!w-5 !h-5" />
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="!bg-white !rounded-2xl !shadow-sm !border !border-slate-100 !overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 !rounded-2xl !shadow-sm border border-slate-100 dark:border-slate-700 !overflow-hidden">
         <div className="!overflow-x-auto">
           <table className="!w-full">
-            <thead className="!bg-slate-50 !border-b !border-slate-100">
+            <thead className="bg-slate-50 dark:bg-slate-900 !border-b border-slate-100 dark:border-slate-700">
               <tr>
-                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
+                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold text-slate-600 dark:text-slate-300 !uppercase !tracking-wider">
                   Partner
                 </th>
-                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
+                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold text-slate-600 dark:text-slate-300 !uppercase !tracking-wider">
                   Contacto
                 </th>
-                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
+                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold text-slate-600 dark:text-slate-300 !uppercase !tracking-wider">
                   Estado
                 </th>
-                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
+                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold text-slate-600 dark:text-slate-300 !uppercase !tracking-wider">
                   Proyectos
                 </th>
-                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
+                <th className="!px-6 !py-4 !text-left !text-xs !font-semibold text-slate-600 dark:text-slate-300 !uppercase !tracking-wider">
                   Fecha Registro
                 </th>
-                <th className="!px-6 !py-4 !text-right !text-xs !font-semibold !text-slate-600 !uppercase !tracking-wider">
+                <th className="!px-6 !py-4 !text-right !text-xs !font-semibold text-slate-600 dark:text-slate-300 !uppercase !tracking-wider">
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody className="!divide-y !divide-slate-100">
+            <tbody className="!divide-y divide-slate-100 dark:divide-slate-700">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="!px-6 !py-12 !text-center">
                     <RefreshCw className="!w-8 !h-8 !animate-spin !text-indigo-500 !mx-auto" />
-                    <p className="!text-slate-500 !mt-2">Cargando partners...</p>
+                    <p className="text-slate-500 dark:text-slate-400 !mt-2">Cargando partners...</p>
                   </td>
                 </tr>
               ) : partners.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="!px-6 !py-12 !text-center">
-                    <Handshake className="!w-12 !h-12 !text-slate-300 !mx-auto" />
-                    <p className="!text-slate-500 !mt-2">No se encontraron partners</p>
+                    <Handshake className="!w-12 !h-12 text-slate-300 dark:text-slate-600 !mx-auto" />
+                    <p className="text-slate-500 dark:text-slate-400 !mt-2">No se encontraron partners</p>
                     <button
                       onClick={() => setShowCreateModal(true)}
                       className="!mt-4 !text-indigo-600 hover:!text-indigo-700 !font-medium"
@@ -350,16 +350,16 @@ export default function PartnersPage() {
                 partners.map((partner) => {
                   const statusInfo = statusConfig[partner.status] || statusConfig.inactive;
                   const StatusIcon = statusInfo.icon;
-                  
+
                   return (
-                    <tr key={partner.id} className="hover:!bg-slate-50/50 !transition-colors">
+                    <tr key={partner.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
                       <td className="!px-6 !py-4">
                         <div className="!flex !items-center !gap-3">
                           {partner.logo_url ? (
                             <img
                               src={partner.logo_url}
                               alt={partner.name}
-                              className="!w-10 !h-10 !rounded-xl !object-cover !border !border-slate-200"
+                              className="!w-10 !h-10 !rounded-xl !object-cover border border-slate-200 dark:border-slate-700"
                             />
                           ) : (
                             <div className="!w-10 !h-10 !rounded-xl !bg-gradient-to-br !from-indigo-500 !to-purple-600 !flex !items-center !justify-center !text-white !font-bold">
@@ -367,7 +367,7 @@ export default function PartnersPage() {
                             </div>
                           )}
                           <div>
-                            <p className="!font-semibold !text-slate-800">{partner.name}</p>
+                            <p className="!font-semibold text-slate-800 dark:text-slate-100">{partner.name}</p>
                             {partner.website_url && (
                               <a
                                 href={partner.website_url}
@@ -383,8 +383,8 @@ export default function PartnersPage() {
                         </div>
                       </td>
                       <td className="!px-6 !py-4">
-                        <div className="!flex !items-center !gap-2 !text-sm !text-slate-600">
-                          <Mail className="!w-4 !h-4 !text-slate-400" />
+                        <div className="!flex !items-center !gap-2 !text-sm text-slate-600 dark:text-slate-300">
+                          <Mail className="!w-4 !h-4 text-slate-400 dark:text-slate-500" />
                           {partner.contact_email}
                         </div>
                       </td>
@@ -394,19 +394,19 @@ export default function PartnersPage() {
                           {statusInfo.label}
                         </span>
                         {partner.verified_at && (
-                          <span className="!ml-2 !inline-flex !items-center !gap-1 !text-xs !text-blue-600">
+                          <span className="!ml-2 !inline-flex !items-center !gap-1 !text-xs text-blue-600 dark:text-blue-400">
                             <Shield className="!w-3 !h-3" />
                             Verificado
                           </span>
                         )}
                       </td>
                       <td className="!px-6 !py-4">
-                        <span className="!text-sm !text-slate-600">
+                        <span className="!text-sm text-slate-600 dark:text-slate-300">
                           {partner.projects_count || 0} proyectos
                         </span>
                       </td>
                       <td className="!px-6 !py-4">
-                        <div className="!flex !items-center !gap-2 !text-sm !text-slate-500">
+                        <div className="!flex !items-center !gap-2 !text-sm text-slate-500 dark:text-slate-400">
                           <Calendar className="!w-4 !h-4" />
                           {new Date(partner.created_at).toLocaleDateString('es-CL')}
                         </div>
@@ -430,9 +430,9 @@ export default function PartnersPage() {
                               setActionMenuOpen(partner.id);
                             }
                           }}
-                          className="!p-2 !rounded-lg hover:!bg-slate-100 !transition-colors"
+                          className="!p-2 !rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 !transition-colors"
                         >
-                          <MoreVertical className="!w-5 !h-5 !text-slate-500" />
+                          <MoreVertical className="!w-5 !h-5 text-slate-500 dark:text-slate-400" />
                         </button>
                       </td>
                     </tr>
@@ -445,25 +445,25 @@ export default function PartnersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="!px-6 !py-4 !border-t !border-slate-100 !flex !items-center !justify-between">
-            <p className="!text-sm !text-slate-500">
+          <div className="!px-6 !py-4 !border-t border-slate-100 dark:border-slate-700 !flex !items-center !justify-between">
+            <p className="!text-sm text-slate-500 dark:text-slate-400">
               Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} partners
             </p>
             <div className="!flex !items-center !gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="!p-2 !rounded-lg !border !border-slate-200 hover:!bg-slate-50 disabled:!opacity-50 disabled:!cursor-not-allowed !transition-colors"
+                className="!p-2 !rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:!opacity-50 disabled:!cursor-not-allowed !transition-colors"
               >
                 <ChevronLeft className="!w-5 !h-5" />
               </button>
-              <span className="!px-4 !py-2 !text-sm !font-medium !text-slate-600">
+              <span className="!px-4 !py-2 !text-sm !font-medium text-slate-600 dark:text-slate-300">
                 {page} / {totalPages}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="!p-2 !rounded-lg !border !border-slate-200 hover:!bg-slate-50 disabled:!opacity-50 disabled:!cursor-not-allowed !transition-colors"
+                className="!p-2 !rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:!opacity-50 disabled:!cursor-not-allowed !transition-colors"
               >
                 <ChevronRight className="!w-5 !h-5" />
               </button>
@@ -491,52 +491,52 @@ export default function PartnersPage() {
             const partner = partners.find(p => p.id === actionMenuOpen);
             if (!partner) return null;
             return (
-              <div className="!fixed !bg-white !rounded-xl !shadow-2xl !border !border-slate-200 !py-2 !z-[101] !w-48"
+              <div className="!fixed bg-white dark:bg-slate-800 !rounded-xl !shadow-2xl border border-slate-200 dark:border-slate-700 !py-2 !z-[101] !w-48"
                 style={{ top: menuPos.top, left: menuPos.left }}
               >
                 <button
                   onClick={() => { navigate(`/admin/partners/${partner.id}`); setActionMenuOpen(null); }}
-                  className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-slate-700 hover:!bg-slate-50 !flex !items-center !gap-2 !transition-colors"
+                  className="!w-full !px-4 !py-2.5 !text-left !text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !flex !items-center !gap-2 !transition-colors"
                 >
                   <Eye className="!w-4 !h-4" />
                   Ver detalle
                 </button>
-                
+
                 {!partner.verified_at && (
                   <button
                     onClick={() => { navigate(`/admin/partners/${partner.id}?action=verify`); setActionMenuOpen(null); }}
-                    className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-blue-700 hover:!bg-blue-50 !flex !items-center !gap-2 !transition-colors"
+                    className="!w-full !px-4 !py-2.5 !text-left !text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 !flex !items-center !gap-2 !transition-colors"
                   >
                     <Shield className="!w-4 !h-4" />
                     Verificar
                   </button>
                 )}
-                
-                <div className="!border-t !border-slate-100 !my-1"></div>
-                
+
+                <div className="!border-t border-slate-100 dark:border-slate-700 !my-1"></div>
+
                 {partner.status !== 'active' && (
                   <button
                     onClick={() => handleStatusChange(partner.id, 'active')}
-                    className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-emerald-700 hover:!bg-emerald-50 !flex !items-center !gap-2 !transition-colors !font-medium"
+                    className="!w-full !px-4 !py-2.5 !text-left !text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 !flex !items-center !gap-2 !transition-colors !font-medium"
                   >
                     <Play className="!w-4 !h-4" />
                     Activar
                   </button>
                 )}
-                
+
                 {partner.status === 'active' && (
                   <button
                     onClick={() => handleStatusChange(partner.id, 'suspended')}
-                    className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-amber-700 hover:!bg-amber-50 !flex !items-center !gap-2 !transition-colors !font-medium"
+                    className="!w-full !px-4 !py-2.5 !text-left !text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10 !flex !items-center !gap-2 !transition-colors !font-medium"
                   >
                     <Pause className="!w-4 !h-4" />
                     Suspender
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => handleStatusChange(partner.id, 'inactive')}
-                  className="!w-full !px-4 !py-2.5 !text-left !text-sm !text-red-700 hover:!bg-red-50 !flex !items-center !gap-2 !transition-colors !font-medium"
+                  className="!w-full !px-4 !py-2.5 !text-left !text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 !flex !items-center !gap-2 !transition-colors !font-medium"
                 >
                   <Trash2 className="!w-4 !h-4" />
                   Desactivar
