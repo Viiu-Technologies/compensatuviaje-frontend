@@ -24,6 +24,7 @@ import {
   updateBankDetails,
   changePassword
 } from '../services/partnerApi';
+import { usePartnerContext } from '../context/PartnerContext';
 
 // ============================================
 // TAB NAVIGATION
@@ -805,6 +806,7 @@ const PartnerProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<PartnerProfileType | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingStatus | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const { refetch: refetchPartnerContext } = usePartnerContext();
 
   useEffect(() => {
     loadData();
@@ -820,6 +822,10 @@ const PartnerProfilePage: React.FC = () => {
 
       if (results[0].status === 'fulfilled') setProfile(results[0].value);
       if (results[1].status === 'fulfilled') setOnboarding(results[1].value || undefined);
+
+      // Avisar al PartnerLayout (y cualquier otra pantalla) del cambio,
+      // para que el "doble candado" de navegación se actualice sin F5.
+      refetchPartnerContext();
     } catch (error) {
       console.error('Error loading profile data:', error);
     } finally {

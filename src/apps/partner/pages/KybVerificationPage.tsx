@@ -55,6 +55,7 @@ import kybApi from '../services/kybApi';
 
 // Hooks
 import { usePolling } from '../hooks/usePolling';
+import { usePartnerContext } from '../context/PartnerContext';
 
 // Shared Components
 import PdfUploader from '../components/shared/PdfUploader';
@@ -562,7 +563,8 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
 
 const KybVerificationPage: React.FC = () => {
   const navigate = useNavigate();
-  
+  const { refetch: refetchPartnerContext } = usePartnerContext();
+
   // State
   const [pageState, setPageState] = useState<PageState>('loading');
   const [evaluation, setEvaluation] = useState<KybEvaluation | null>(null);
@@ -602,11 +604,17 @@ const KybVerificationPage: React.FC = () => {
     setPartnerName(status.partner.name);
     const newState = determinePageState(status);
     setPageState(newState);
-    
+
     // If we just got approved/rejected, fetch history
     if (newState === 'approved' || newState === 'rejected') {
       kybApi.getHistory().then(setHistory).catch(console.error);
     }
+
+    // Avisar al PartnerLayout (doble candado de navegación) del cambio de
+    // estado — cubre tanto la subida inicial del dossier como la detección
+    // por polling de una decisión del admin, sin esperar al ciclo propio
+    // del PartnerContext.
+    refetchPartnerContext();
   }, [determinePageState]);
 
   /**

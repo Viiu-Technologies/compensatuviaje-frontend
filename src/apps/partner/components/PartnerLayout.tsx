@@ -11,11 +11,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
-import { getPartnerProfile, getOnboardingStatus } from '../services/partnerApi';
-import kybApi from '../services/kybApi';
-import { getKybVisualStatus } from '../../../types/kyb.types';
-import type { KybStatusResponse } from '../../../types/kyb.types';
-import { PartnerProfile, OnboardingStatus } from '../../../types/partner.types';
+import { usePartnerContext } from '../context/PartnerContext';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -38,23 +34,10 @@ import {
 const PartnerLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profile, setProfile] = useState<PartnerProfile | null>(null);
-  const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
-  const [kybStatus, setKybStatus] = useState<KybStatusResponse | null>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // NIVEL 1: Perfil completo cuando el onboarding reporta todos los pasos finalizados
-  const isProfileComplete = onboarding?.completed === true;
-
-  // NIVEL 2: KYB verificado SOLO cuando el admin ha aprobado explícitamente (admin_decision === 'approved')
-  const isKybVerified = getKybVisualStatus(kybStatus?.latest_evaluation ?? null) === 'approved';
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  const { profile, onboarding, kybStatus, isDataLoaded, isProfileComplete, isKybVerified } = usePartnerContext();
 
   // TRIPLE CANDADO: Control estricto de flujo Onboarding
   useEffect(() => {
@@ -76,23 +59,6 @@ const PartnerLayout: React.FC = () => {
       }
     }
   }, [profile, onboarding, kybStatus, isProfileComplete, isKybVerified, location.pathname, navigate, isDataLoaded]);
-
-  const loadData = async () => {
-    try {
-      const results = await Promise.allSettled([
-        getPartnerProfile(),
-        getOnboardingStatus(),
-        kybApi.getStatus()
-      ]);
-      if (results[0].status === 'fulfilled') setProfile(results[0].value);
-      if (results[1].status === 'fulfilled') setOnboarding(results[1].value);
-      if (results[2].status === 'fulfilled') setKybStatus(results[2].value);
-    } catch (error) {
-      console.error('Error loading partner data:', error);
-    } finally {
-      setIsDataLoaded(true);
-    }
-  };
 
   const handleLogout = async () => {
     await logout();

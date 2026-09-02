@@ -7,7 +7,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   PartnerStats,
-  PartnerProfile,
   OnboardingStatus,
   EsgProject,
   PROJECT_STATUS_LABELS,
@@ -15,13 +14,8 @@ import {
 } from '../../../types/partner.types';
 import type { KybStatusResponse } from '../../../types/kyb.types';
 import { getKybVisualStatus, KYB_TIER_LABELS, KYB_TIER_ICONS } from '../../../types/kyb.types';
-import {
-  getPartnerProfile,
-  getPartnerStats,
-  getOnboardingStatus,
-  getPartnerProjects
-} from '../services/partnerApi';
-import kybApi from '../services/kybApi';
+import { getPartnerStats, getPartnerProjects } from '../services/partnerApi';
+import { usePartnerContext } from '../context/PartnerContext';
 import { Shield, ArrowRight, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
 
 // ============================================
@@ -442,12 +436,9 @@ const QuickActions: React.FC = () => {
 // ============================================
 
 const PartnerDashboard: React.FC = () => {
-  const [profile, setProfile] = useState<PartnerProfile | null>(null);
+  const { profile, onboarding, kybStatus, loading: kybLoading } = usePartnerContext();
   const [stats, setStats] = useState<PartnerStats | null>(null);
-  const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
   const [recentProjects, setRecentProjects] = useState<EsgProject[]>([]);
-  const [kybStatus, setKybStatus] = useState<KybStatusResponse | null>(null);
-  const [kybLoading, setKybLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -457,35 +448,23 @@ const PartnerDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      setKybLoading(true);
-      
-      // Cargar datos en paralelo con manejo de errores individual
-      // Usamos Promise.allSettled para que un error no bloquee los demás
+
+      // stats y proyectos recientes no forman parte del estado compartido
+      // de onboarding/KYB (PartnerContext) — se cargan localmente aquí.
       const results = await Promise.allSettled([
-        getPartnerProfile(),
         getPartnerStats(),
-        getOnboardingStatus(),
         getPartnerProjects({ limit: 5 }),
-        kybApi.getStatus()
       ]);
 
-      // Extraer resultados solo si fueron exitosos
-      const profileData = results[0].status === 'fulfilled' ? results[0].value : null;
-      const statsData = results[1].status === 'fulfilled' ? results[1].value : null;
-      const onboardingData = results[2].status === 'fulfilled' ? results[2].value : null;
-      const projectsData = results[3].status === 'fulfilled' ? results[3].value : null;
-      const kybData = results[4].status === 'fulfilled' ? results[4].value : null;
+      const statsData = results[0].status === 'fulfilled' ? results[0].value : null;
+      const projectsData = results[1].status === 'fulfilled' ? results[1].value : null;
 
-      setProfile(profileData);
       setStats(statsData);
-      setOnboarding(onboardingData);
       setRecentProjects(projectsData?.projects || []);
-      setKybStatus(kybData);
-      
-      // Log errores para debugging
+
       results.forEach((result, index) => {
         if (result.status === 'rejected') {
-          const endpoints = ['profile', 'stats', 'onboarding', 'projects', 'kybStatus'];
+          const endpoints = ['stats', 'projects'];
           console.warn(`Error loading ${endpoints[index]}:`, result.reason);
         }
       });
@@ -493,7 +472,6 @@ const PartnerDashboard: React.FC = () => {
       console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
-      setKybLoading(false);
     }
   };
 
