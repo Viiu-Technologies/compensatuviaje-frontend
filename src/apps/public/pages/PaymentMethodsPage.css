@@ -33,12 +33,12 @@
 .pmp-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--ctv-ink-soft);
   text-decoration: none;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
@@ -50,13 +50,13 @@
 .pmp-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--ctv-brand);
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
   background: rgba(8, 174, 6, 0.08);
   padding: 0.35rem 0.85rem;
   border-radius: var(--ctv-radius-pill);
@@ -69,7 +69,7 @@
   font-size: clamp(2.2rem, 5vw, 3.8rem);
   line-height: 1.08;
   color: var(--ctv-brand-deep);
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
   max-width: 20ch;
   letter-spacing: -0.02em;
 }
@@ -79,7 +79,7 @@
   line-height: 1.6;
   color: var(--ctv-ink-soft);
   max-width: 62ch;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
 }
 
 /* ── Métodos de Pago Grid ────────────────────────── */
@@ -91,21 +91,21 @@
   font-family: var(--ctv-font-display);
   font-size: clamp(1.6rem, 3vw, 2.2rem);
   color: var(--ctv-brand-deep);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ctv-space-2);
   letter-spacing: -0.015em;
 }
 
 .pmp-section-sub {
   font-size: 1rem;
   color: var(--ctv-ink-soft);
-  margin-bottom: 2.5rem;
+  margin-bottom: var(--ctv-space-10);
   max-width: 55ch;
 }
 
 .pmp-cards-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
 }
 
 @media (min-width: 1024px) {
@@ -143,7 +143,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ctv-space-6);
 }
 
 .pmp-webpay-badge-large {
@@ -186,7 +186,7 @@
 .pmp-credit-badge-large {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   background: #073D3D;
   color: #ffffff;
   font-weight: 700;
@@ -221,14 +221,14 @@
   font-family: var(--ctv-font-display);
   font-size: 1.35rem;
   color: var(--ctv-brand-deep);
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--ctv-space-3);
 }
 
 .pmp-card__desc {
   font-size: 0.92rem;
   line-height: 1.55;
   color: var(--ctv-ink-soft);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ctv-space-6);
 }
 
 .pmp-card__list {
@@ -237,7 +237,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.88rem;
   color: var(--ctv-ink);
   line-height: 1.45;
@@ -247,7 +247,7 @@
 .pmp-card__list li {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .pmp-card__list svg {
@@ -275,8 +275,8 @@
 .pmp-security-header {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 2.5rem;
+  gap: var(--ctv-space-5);
+  margin-bottom: var(--ctv-space-10);
   padding-bottom: 1.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -299,7 +299,7 @@
   font-family: var(--ctv-font-display);
   font-size: clamp(1.4rem, 2.5vw, 1.85rem);
   color: #ffffff;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--ctv-space-1);
 }
 
 .pmp-security-desc {
@@ -310,7 +310,7 @@
 .pmp-security-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: var(--ctv-space-8);
 }
 
 @media (min-width: 768px) {
@@ -321,7 +321,7 @@
 
 .pmp-sec-item {
   display: flex;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
 }
 
 .pmp-sec-item__icon {
@@ -358,7 +358,7 @@
   font-family: var(--ctv-font-display);
   font-size: clamp(1.5rem, 2.5vw, 2rem);
   color: var(--ctv-brand-deep);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ctv-space-2);
 }
 
 .pmp-cta-wrap p {
@@ -369,7 +369,7 @@
 
 .pmp-cta-btns {
   display: inline-flex;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   flex-wrap: wrap;
   justify-content: center;
 }

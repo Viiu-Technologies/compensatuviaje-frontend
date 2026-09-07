@@ -23,13 +23,13 @@
 .blog-hero__eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ctv-brand);
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ctv-space-4);
 }
 
 .blog-hero__eyebrow::before {
@@ -67,7 +67,7 @@
   margin-top: 2.25rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
 }
 
 .blog-insights {
@@ -76,14 +76,14 @@
   padding: 0 var(--ctv-gutter) 4rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
 }
 
 .blog-insights__card {
   background: var(--ctv-canvas);
   border: 1px solid var(--ctv-rule);
   border-radius: var(--ctv-radius-xl);
-  padding: 2rem;
+  padding: var(--ctv-space-8);
   box-shadow: 0 1px 0 rgba(7, 61, 61, 0.04), 0 20px 45px -30px rgba(7, 61, 61, 0.18);
 }
 
@@ -95,7 +95,7 @@
   color: var(--ctv-brand-deep);
   font-size: 0.8rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ctv-space-4);
 }
 
 .blog-insights__text {
@@ -110,7 +110,7 @@
   padding: 0 var(--ctv-gutter);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
 }
 
 .blog-card {
@@ -134,7 +134,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.85rem;
   color: var(--ctv-ink-soft);
 }
@@ -142,7 +142,7 @@
 .blog-card__badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   padding: 0.55rem 0.9rem;
   border-radius: var(--ctv-radius-pill);
   background: rgba(8, 174, 6, 0.12);
@@ -238,7 +238,7 @@
 
 .blog-card__placeholder-block {
   height: 1rem;
-  margin-top: 1rem;
+  margin-top: var(--ctv-space-4);
 }
 
 .blog-card__placeholder-block--title {
@@ -253,7 +253,7 @@
 .blog-card__placeholder-block--button {
   width: 35%;
   height: 1.25rem;
-  margin-top: 1.5rem;
+  margin-top: var(--ctv-space-6);
 }
 
 .blog-empty {

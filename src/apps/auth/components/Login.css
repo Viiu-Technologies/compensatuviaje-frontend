@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: var(--ctv-space-8);
   background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
 }
 
@@ -13,26 +13,26 @@
   background: white;
   border-radius: var(--ctv-radius-lg);
   box-shadow: var(--ctv-elev-4);
-  padding: 2.5rem;
+  padding: var(--ctv-space-10);
   width: 100%;
   max-width: 440px;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
   position: relative;
 }
 
 .back-to-home {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   color: #22C55E;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ctv-space-4);
   transition: all 0.2s;
   padding: 0.5rem 1rem;
   border-radius: var(--ctv-radius-sm);
@@ -53,7 +53,7 @@
   font-size: 2rem;
   font-weight: bold;
   color: #1F2937;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ctv-space-2);
 }
 
 .login-header p {
@@ -64,12 +64,12 @@
 .error-message {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   background-color: #FEE2E2;
   color: #991B1B;
-  padding: 1rem;
+  padding: var(--ctv-space-4);
   border-radius: var(--ctv-radius-sm);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ctv-space-6);
   border: 1px solid #FCA5A5;
 }
 
@@ -82,13 +82,13 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .form-group label {
@@ -124,7 +124,7 @@
 
 .password-input input {
   width: 100%;
-  padding-right: 3rem;
+  padding-right: var(--ctv-space-12);
 }
 
 .toggle-password {
@@ -133,7 +133,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: var(--ctv-space-2);
   color: #6B7280;
   transition: color 0.2s;
 }
@@ -183,7 +183,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .btn-login:hover:not(:disabled) {
@@ -216,7 +216,7 @@
 }
 
 .login-footer {
-  margin-top: 1.5rem;
+  margin-top: var(--ctv-space-6);
   text-align: center;
   color: #6B7280;
   font-size: 0.95rem;
@@ -236,11 +236,11 @@
 
 @media (max-width: 640px) {
   .login-container {
-    padding: 1rem;
+    padding: var(--ctv-space-4);
   }
 
   .login-card {
-    padding: 1.5rem;
+    padding: var(--ctv-space-6);
   }
 
   .login-header h1 {

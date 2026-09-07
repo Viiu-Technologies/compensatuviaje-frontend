@@ -167,7 +167,7 @@
 .hgf-loader-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.75rem;
   color: #ffffff;
   font-weight: 500;

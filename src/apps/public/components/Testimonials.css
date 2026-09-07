@@ -51,12 +51,12 @@
   background: #ffffff;
   border: 1px solid rgba(1, 57, 56, 0.1);
   border-radius: var(--ctv-radius-xl);
-  padding: 1rem;
+  padding: var(--ctv-space-4);
   box-shadow: 0 1px 0 rgba(1, 57, 56, 0.02),
               0 32px 64px -28px rgba(1, 57, 56, 0.25);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   transition: transform 0.4s var(--ctv-ease-out), box-shadow 0.4s var(--ctv-ease-out);
 }
 
@@ -96,13 +96,13 @@
 .ts-photo-badges {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .ts-photo-badge {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   padding: 0.5rem 0.85rem;
   border-radius: var(--ctv-radius-md);
   font-size: 0.82rem;
@@ -155,7 +155,7 @@
 .ts-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -221,7 +221,7 @@
 .ts-author {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: var(--ctv-space-5);
   padding-left: clamp(2rem, 4vw, 3.5rem);
 }
 
@@ -286,14 +286,14 @@
   padding: 0.25rem 0.75rem;
   border-radius: var(--ctv-radius-pill);
   width: fit-content;
-  margin-top: 0.25rem;
+  margin-top: var(--ctv-space-1);
 }
 
 /* ── Ticker Infinito de Aliados ───────────────────────────────── */
 .ts-ticker {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   margin-bottom: clamp(2.5rem, 5vw, 4rem);
   padding: 0.65rem 1.25rem;
   background: var(--ctv-glass-bg);
@@ -355,15 +355,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
-  padding-top: 2rem;
+  gap: var(--ctv-space-6);
+  padding-top: var(--ctv-space-8);
   border-top: 1px solid var(--ctv-rule);
 }
 
 .ts-nav__counter {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-family: var(--ctv-font-display);
   color: var(--ctv-ink);
 }
@@ -387,7 +387,7 @@
 
 .ts-nav__btns {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .ts-nav__btn {

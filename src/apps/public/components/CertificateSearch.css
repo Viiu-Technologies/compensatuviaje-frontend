@@ -98,7 +98,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  margin-top: 1rem;
+  margin-top: var(--ctv-space-4);
 }
 
 .cs-card-meta__network {
@@ -118,8 +118,8 @@
 .cs-card-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: var(--ctv-space-2);
+  margin-top: var(--ctv-space-4);
   padding: 0.5rem 1rem;
   border-radius: var(--ctv-radius-pill);
   background: var(--ctv-brand-soft);
@@ -174,7 +174,7 @@
 .cs-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -217,7 +217,7 @@
 .cs-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   margin: 0 0 2.5rem;
   background: var(--ctv-canvas);
   border: 1px solid var(--ctv-rule);
@@ -273,7 +273,7 @@
 .cs-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   background: var(--ctv-brand-deep);
   color: var(--ctv-canvas);
   border: none;
@@ -320,7 +320,7 @@
   padding: clamp(1.5rem, 3vw, 2.25rem);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
 }
 
 .cs-result--ok {
@@ -335,7 +335,7 @@
 .cs-result__head {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
 }
 
 .cs-result__icon {
@@ -375,7 +375,7 @@
 .cs-stats {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: var(--ctv-space-5);
   margin: 0;
   padding: 1.5rem 0;
   border-top: 1px solid var(--ctv-rule);
@@ -421,13 +421,13 @@
 .cs-result-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
 }
 
 .cs-action {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   padding: 0.7rem 1.25rem;
   border-radius: var(--ctv-radius-pill);
   background: var(--ctv-brand-deep);
@@ -470,7 +470,7 @@
 .cs-trust__item {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.8rem;
   color: var(--ctv-ink-soft);
   letter-spacing: 0.02em;

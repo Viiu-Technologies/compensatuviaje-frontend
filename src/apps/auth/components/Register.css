@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: var(--ctv-space-8);
   background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
 }
 
@@ -13,26 +13,26 @@
   background: white;
   border-radius: var(--ctv-radius-lg);
   box-shadow: var(--ctv-elev-4);
-  padding: 2.5rem;
+  padding: var(--ctv-space-10);
   width: 100%;
   max-width: 540px;
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
   position: relative;
 }
 
 .back-to-home {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   color: #22C55E;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ctv-space-4);
   transition: all 0.2s;
   padding: 0.5rem 1rem;
   border-radius: var(--ctv-radius-sm);
@@ -53,7 +53,7 @@
   font-size: 2rem;
   font-weight: bold;
   color: #1F2937;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ctv-space-2);
 }
 
 .register-header p {
@@ -64,12 +64,12 @@
 .error-message {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   background-color: #FEE2E2;
   color: #991B1B;
-  padding: 1rem;
+  padding: var(--ctv-space-4);
   border-radius: var(--ctv-radius-sm);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ctv-space-6);
   border: 1px solid #FCA5A5;
 }
 
@@ -82,19 +82,19 @@
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--ctv-space-5);
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .form-group label {
@@ -142,7 +142,7 @@
 
 .password-input input {
   width: 100%;
-  padding-right: 3rem;
+  padding-right: var(--ctv-space-12);
 }
 
 .toggle-password {
@@ -151,7 +151,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: var(--ctv-space-2);
   color: #6B7280;
   transition: color 0.2s;
 }
@@ -171,13 +171,13 @@
 }
 
 .checkbox-group {
-  gap: 0.25rem;
+  gap: var(--ctv-space-1);
 }
 
 .checkbox-label {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   cursor: pointer;
   font-size: 0.9rem;
   color: #4B5563;
@@ -214,8 +214,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: var(--ctv-space-2);
+  margin-top: var(--ctv-space-2);
 }
 
 .btn-register:hover:not(:disabled) {
@@ -248,7 +248,7 @@
 }
 
 .register-footer {
-  margin-top: 1.5rem;
+  margin-top: var(--ctv-space-6);
   text-align: center;
   color: #6B7280;
   font-size: 0.95rem;
@@ -268,11 +268,11 @@
 
 @media (max-width: 640px) {
   .register-container {
-    padding: 1rem;
+    padding: var(--ctv-space-4);
   }
 
   .register-card {
-    padding: 1.5rem;
+    padding: var(--ctv-space-6);
   }
 
   .register-header h1 {
@@ -298,7 +298,7 @@
 .wizard-header {
   background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
   color: white;
-  padding: 2rem;
+  padding: var(--ctv-space-8);
   text-align: center;
   position: relative;
 }
@@ -347,7 +347,7 @@
 }
 
 .wizard-step {
-  padding: 2.5rem;
+  padding: var(--ctv-space-10);
   min-height: 400px;
   animation: fadeIn 0.3s ease;
 }
@@ -377,7 +377,7 @@
 }
 
 .wizard-step .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
 }
 
 .wizard-step select {
@@ -427,18 +427,18 @@
   text-align: right;
   font-size: 0.85rem;
   color: #6B7280;
-  margin-top: 0.25rem;
+  margin-top: var(--ctv-space-1);
 }
 
 .checkbox-group-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  gap: var(--ctv-space-3);
+  margin-top: var(--ctv-space-3);
 }
 
 .checkbox-group-list .checkbox-label {
-  padding: 0.75rem;
+  padding: var(--ctv-space-3);
   border: 1px solid #E5E7EB;
   border-radius: var(--ctv-radius-sm);
   transition: all 0.2s;
@@ -456,7 +456,7 @@
 
 .wizard-actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   padding: 1.5rem 2.5rem 2.5rem;
   border-top: 1px solid #E5E7EB;
   background: #F9FAFB;
@@ -474,7 +474,7 @@
   border: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .btn-previous {
@@ -531,7 +531,7 @@
   }
 
   .wizard-step {
-    padding: 1.5rem;
+    padding: var(--ctv-space-6);
     min-height: 350px;
   }
 
@@ -589,7 +589,7 @@
   width: 2.5rem;
   height: 2.5rem;
   stroke: #22C55E;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--ctv-space-1);
 }
 
 .dropzone__title {
@@ -618,7 +618,7 @@
 .dropzone__file {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   text-align: left;
 }
 
@@ -662,8 +662,8 @@
 .step2-hint {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
+  gap: var(--ctv-space-3);
+  margin-top: var(--ctv-space-5);
   padding: 0.875rem 1rem;
   background: #fffbeb;
   border: 1px solid #fde68a;
@@ -689,7 +689,7 @@
 .step-description {
   font-size: 0.9rem;
   color: #6b7280;
-  margin-top: 0.25rem;
-  margin-bottom: 1.5rem;
+  margin-top: var(--ctv-space-1);
+  margin-bottom: var(--ctv-space-6);
   line-height: 1.5;
 }

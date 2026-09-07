@@ -69,7 +69,7 @@
 .contact-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -111,8 +111,8 @@
 .contact-email {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
+  gap: var(--ctv-space-2);
+  margin-top: var(--ctv-space-5);
   padding: 0.5rem 0;
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
@@ -145,7 +145,7 @@
   padding: clamp(1.75rem, 4vw, 2.5rem);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
   box-shadow: 0 1px 0 rgba(7, 61, 61, 0.04),
     0 40px 80px -50px rgba(7, 61, 61, 0.30);
 }
@@ -153,7 +153,7 @@
 .contact-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
 }
 
 @media (min-width: 768px) {
@@ -165,7 +165,7 @@
 .contact-field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
 }
 
 .contact-field__label {
@@ -209,7 +209,7 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5l5 5 5-5' stroke='%230F3D2E' stroke-width='1.5' stroke-linecap='round'/></svg>");
   background-repeat: no-repeat;
   background-position: right 0 center;
-  padding-right: 1.5rem;
+  padding-right: var(--ctv-space-6);
   cursor: pointer;
 }
 
@@ -232,8 +232,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
-  margin-top: 0.75rem;
+  gap: var(--ctv-space-5);
+  margin-top: var(--ctv-space-3);
 }
 
 .contact-submit {
@@ -282,7 +282,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
 }
 
 .contact-success__icon {
@@ -315,7 +315,7 @@
 }
 
 .contact-success__again {
-  margin-top: 0.5rem;
+  margin-top: var(--ctv-space-2);
   padding: 0.75rem 1.5rem;
   background: transparent;
   border: 1px solid var(--ctv-rule-strong);
@@ -337,12 +337,12 @@
 .contact-channel-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.12);
   border-radius: var(--ctv-radius-lg);
   padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ctv-space-6);
   box-shadow: 0 4px 12px rgba(7, 61, 61, 0.04);
 }
 
@@ -393,7 +393,7 @@
 .contact-trust-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.82rem;
   color: var(--ctv-ink-soft);
 }
@@ -424,11 +424,11 @@
 .contact-alert {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   padding: 0.75rem 1rem;
   border-radius: var(--ctv-radius-sm);
   font-size: 0.82rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
 }
 
 .contact-alert--error {
@@ -440,8 +440,8 @@
 .contact-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--ctv-space-4);
+  margin-bottom: var(--ctv-space-4);
 }
 
 @media (max-width: 640px) {
@@ -454,7 +454,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ctv-space-4);
 }
 
 .contact-label {
@@ -497,7 +497,7 @@
 .contact-fineprint {
   font-size: 0.72rem;
   color: var(--ctv-ink-mute);
-  margin-top: 0.75rem;
+  margin-top: var(--ctv-space-3);
   text-align: center;
   line-height: 1.4;
 }

@@ -33,12 +33,12 @@
 .calcp-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--ctv-ink-soft);
   text-decoration: none;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
@@ -50,13 +50,13 @@
 .calcp-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--ctv-brand);
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
   background: rgba(8, 174, 6, 0.08);
   padding: 0.35rem 0.85rem;
   border-radius: var(--ctv-radius-pill);
@@ -69,7 +69,7 @@
   font-size: clamp(2.2rem, 5vw, 3.8rem);
   line-height: 1.08;
   color: var(--ctv-brand-deep);
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
   max-width: 20ch;
   letter-spacing: -0.02em;
 }
@@ -79,13 +79,13 @@
   line-height: 1.6;
   color: var(--ctv-ink-soft);
   max-width: 64ch;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
 }
 
 .calcp-quick-routes {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   flex-wrap: wrap;
 }
 
@@ -97,7 +97,7 @@
 
 .calcp-quick-pills {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   flex-wrap: wrap;
 }
 
@@ -133,7 +133,7 @@
 .calcp-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: var(--ctv-space-8);
   margin-bottom: 3.5rem;
 }
 
@@ -156,7 +156,7 @@
 .calcp-form-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   margin-bottom: 1.75rem;
 }
 
@@ -202,8 +202,8 @@
 .calcp-airports-wrap {
   display: flex;
   align-items: flex-end;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: var(--ctv-space-3);
+  margin-bottom: var(--ctv-space-6);
 }
 
 @media (max-width: 640px) {
@@ -272,7 +272,7 @@
 .calcp-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+  gap: var(--ctv-space-5);
   margin-bottom: 1.75rem;
 }
 
@@ -325,12 +325,12 @@
 .calcp-checkbox-wrap {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   cursor: pointer;
 }
 
 .calcp-checkbox-wrap input {
-  margin-top: 0.25rem;
+  margin-top: var(--ctv-space-1);
   accent-color: var(--ctv-brand);
   width: 18px;
   height: 18px;
@@ -350,7 +350,7 @@
 }
 
 .calcp-error {
-  margin-top: 1rem;
+  margin-top: var(--ctv-space-4);
   padding: 0.75rem 1rem;
   background: rgba(227, 6, 19, 0.08);
   border: 1px solid rgba(227, 6, 19, 0.25);
@@ -386,7 +386,7 @@
   padding: 0.3rem 0.75rem;
   border-radius: var(--ctv-radius-pill);
   align-self: flex-start;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ctv-space-6);
 }
 
 .calcp-emissions-highlight {
@@ -421,10 +421,10 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--ctv-radius-lg);
-  padding: 1.25rem;
+  padding: var(--ctv-space-5);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   margin-bottom: 1.75rem;
 }
 
@@ -470,7 +470,7 @@
 .calcp-equiv-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
 }
 
 .calcp-equiv-item {
@@ -516,14 +516,14 @@
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
 }
 
 .calcp-cta-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   background: var(--ctv-brand);
   color: #ffffff;
   padding: 1rem 1.5rem;
@@ -563,8 +563,8 @@
 .calcp-method-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: var(--ctv-space-3);
+  margin-bottom: var(--ctv-space-3);
 }
 
 .calcp-method-header svg {
@@ -584,13 +584,13 @@
   line-height: 1.6;
   color: var(--ctv-ink-soft);
   max-width: 80ch;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ctv-space-8);
 }
 
 .calcp-sources-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: var(--ctv-space-5);
 }
 
 @media (min-width: 768px) {
@@ -603,7 +603,7 @@
   background: #ffffff;
   border: 1px solid var(--ctv-glass-border);
   border-radius: var(--ctv-radius-lg);
-  padding: 1.5rem;
+  padding: var(--ctv-space-6);
   text-decoration: none;
   color: inherit;
   display: flex;
@@ -635,14 +635,14 @@
   font-family: var(--ctv-font-display);
   font-size: 1.05rem;
   color: var(--ctv-brand-deep);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ctv-space-2);
 }
 
 .calcp-source-card p {
   font-size: 0.84rem;
   line-height: 1.5;
   color: var(--ctv-ink-soft);
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
 }
 
 .calcp-source-link {

@@ -142,7 +142,7 @@ html {
   align-items: center;
   justify-content: center;
   background-color: #F9FAFB;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
 }
 
 .spinner-large {

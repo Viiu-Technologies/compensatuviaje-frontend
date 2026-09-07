@@ -26,7 +26,7 @@
 .faq-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--ctv-space-3);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -60,7 +60,7 @@
 /* ── Tabs ───────────────────────────────────────────── */
 .faq-tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   margin: 0 0 clamp(2rem, 4vw, 3rem);
   background: var(--ctv-canvas-2);
   padding: 0.35rem;
@@ -107,7 +107,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
   width: 100%;
   padding: 1.5rem 0;
   background: transparent;
@@ -165,7 +165,7 @@
   color: var(--ctv-ink-soft);
   margin: 0 0 1.75rem;
   max-width: 60ch;
-  padding-right: 3rem;
+  padding-right: var(--ctv-space-12);
 }
 
 /* ── CTA inferior ───────────────────────────────────── */
@@ -174,7 +174,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--ctv-space-6);
   padding: 2rem 0;
   border-top: 1px solid var(--ctv-rule);
 }

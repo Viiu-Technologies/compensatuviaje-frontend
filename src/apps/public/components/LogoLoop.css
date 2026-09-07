@@ -159,7 +159,7 @@
   font-weight: 600;
   color: #3ED32B;
   text-decoration: none;
-  margin-top: 0.5rem;
+  margin-top: var(--ctv-space-2);
   transition: all 0.2s ease;
 }
 

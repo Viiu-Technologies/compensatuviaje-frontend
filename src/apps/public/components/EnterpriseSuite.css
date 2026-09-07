@@ -37,7 +37,7 @@
 .es-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -47,7 +47,7 @@
   padding: 0.35rem 0.8rem;
   border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(7, 61, 61, 0.12);
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--ctv-space-5);
 }
 
 .es-title {
@@ -109,14 +109,14 @@
 .es-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--ctv-space-4);
   align-items: center;
 }
 
 .es-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   padding: 0.85rem 1.6rem;
   border-radius: var(--ctv-radius-md);
   font-size: 0.9rem;
@@ -206,15 +206,15 @@
 }
 
 .es-mockup-body {
-  padding: 1.5rem;
+  padding: var(--ctv-space-6);
 }
 
 /* Fila de Métricas */
 .es-metrics-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: var(--ctv-space-3);
+  margin-bottom: var(--ctv-space-6);
 }
 
 @media (max-width: 480px) {
@@ -266,8 +266,8 @@
 .es-features-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--ctv-space-4);
+  margin-bottom: var(--ctv-space-6);
 }
 
 .es-feature-item {
@@ -315,7 +315,7 @@
 .es-mockup-footer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ctv-space-2);
   font-size: 0.72rem;
   color: var(--ctv-ink-soft);
   padding: 0.65rem 0.85rem;
