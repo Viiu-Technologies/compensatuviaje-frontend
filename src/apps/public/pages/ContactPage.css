@@ -1,0 +1,207 @@
+/* ==========================================================================
+   ContactPage.css — Estilos para la página completa de Atención y Consultas
+   ========================================================================== */
+@import '../components/landing/tokens.css';
+
+.cp-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ctv-canvas-1);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+}
+
+.cp-main {
+  flex: 1;
+  padding-top: 5rem;
+}
+
+.cp-container {
+  width: 100%;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+/* ── Hero ─────────────────────────────────────────── */
+.cp-hero {
+  padding: clamp(3rem, 6vw, 4.5rem) 0 2rem;
+  background: radial-gradient(circle at 20% 20%, rgba(8, 174, 6, 0.08) 0%, transparent 65%);
+}
+
+.cp-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.cp-back-link:hover {
+  color: var(--ctv-brand);
+  transform: translateX(-3px);
+}
+
+.cp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ctv-brand);
+  margin-bottom: 1.25rem;
+  background: rgba(8, 174, 6, 0.08);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(8, 174, 6, 0.2);
+}
+
+.cp-title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  line-height: 1.08;
+  color: var(--ctv-brand-deep);
+  margin-bottom: 1.25rem;
+  max-width: 22ch;
+  letter-spacing: -0.02em;
+}
+
+.cp-lead {
+  font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  max-width: 64ch;
+  margin-bottom: 2.5rem;
+}
+
+.cp-meta-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .cp-meta-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.cp-meta-card {
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--ctv-shadow-card);
+}
+
+.cp-meta-card__icon {
+  font-size: 1.85rem;
+  color: var(--ctv-brand);
+  flex-shrink: 0;
+}
+
+.cp-meta-card h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  margin-bottom: 0.2rem;
+}
+
+.cp-meta-card p,
+.cp-meta-card a {
+  font-size: 0.82rem;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+  text-decoration: none;
+}
+
+.cp-meta-card a:hover {
+  color: var(--ctv-brand);
+}
+
+/* ── Form wrapper ─────────────────────────────────── */
+.cp-form-wrapper {
+  padding: 1rem 0;
+}
+
+.cp-form-wrapper .contact-section {
+  padding: 2rem 0 !important;
+  background: transparent !important;
+}
+
+/* ── FAQ Link Section ─────────────────────────────── */
+.cp-faq-link-section {
+  padding: 2rem 0 clamp(3rem, 6vw, 5rem);
+}
+
+.cp-faq-box {
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow: var(--ctv-shadow-card);
+}
+
+@media (max-width: 800px) {
+  .cp-faq-box {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.cp-faq-icon {
+  font-size: 2.75rem;
+  color: var(--ctv-brand);
+  flex-shrink: 0;
+}
+
+.cp-faq-box h3 {
+  font-family: var(--ctv-font-display);
+  font-size: 1.25rem;
+  color: var(--ctv-brand-deep);
+  margin-bottom: 0.35rem;
+}
+
+.cp-faq-box p {
+  font-size: 0.92rem;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+}
+
+.cp-faq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid var(--ctv-glass-border);
+  color: var(--ctv-brand-deep);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.cp-faq-btn:hover {
+  border-color: var(--ctv-brand);
+  color: var(--ctv-brand);
+  transform: translateY(-2px);
+}

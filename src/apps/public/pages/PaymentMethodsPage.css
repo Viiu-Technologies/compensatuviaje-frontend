@@ -1,0 +1,411 @@
+/* ==========================================================================
+   PaymentMethodsPage.css — Métodos de Pago y Seguridad Bancaria
+   ========================================================================== */
+@import '../components/landing/tokens.css';
+
+.pmp-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ctv-canvas-1);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+}
+
+.pmp-main {
+  flex: 1;
+  padding-top: 5rem;
+}
+
+.pmp-container {
+  width: 100%;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+/* ── Hero ─────────────────────────────────────────── */
+.pmp-hero {
+  padding: clamp(3rem, 6vw, 5rem) 0 2rem;
+  background: radial-gradient(circle at 80% 20%, rgba(8, 174, 6, 0.08) 0%, transparent 60%);
+}
+
+.pmp-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.pmp-back-link:hover {
+  color: var(--ctv-brand);
+  transform: translateX(-3px);
+}
+
+.pmp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ctv-brand);
+  margin-bottom: 1.25rem;
+  background: rgba(8, 174, 6, 0.08);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(8, 174, 6, 0.2);
+}
+
+.pmp-title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  line-height: 1.08;
+  color: var(--ctv-brand-deep);
+  margin-bottom: 1.25rem;
+  max-width: 20ch;
+  letter-spacing: -0.02em;
+}
+
+.pmp-lead {
+  font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  max-width: 62ch;
+  margin-bottom: 2rem;
+}
+
+/* ── Métodos de Pago Grid ────────────────────────── */
+.pmp-methods-section {
+  padding: clamp(2.5rem, 5vw, 4rem) 0;
+}
+
+.pmp-section-title {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  color: var(--ctv-brand-deep);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.015em;
+}
+
+.pmp-section-sub {
+  font-size: 1rem;
+  color: var(--ctv-ink-soft);
+  margin-bottom: 2.5rem;
+  max-width: 55ch;
+}
+
+.pmp-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .pmp-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.pmp-card {
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  border-radius: 20px;
+  padding: 2rem 1.75rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--ctv-shadow-card);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.pmp-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(8, 174, 6, 0.3);
+  box-shadow: var(--ctv-shadow-card-hover), var(--ctv-glow-green-soft);
+}
+
+.pmp-card--featured {
+  border-color: rgba(8, 174, 6, 0.4);
+  background: linear-gradient(to bottom, rgba(8, 174, 6, 0.04), var(--ctv-glass-bg));
+  position: relative;
+}
+
+.pmp-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.pmp-webpay-badge-large {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(7, 61, 61, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pmp-webpay-text {
+  font-weight: 900;
+  color: #073D3D;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.pmp-webpay-plus {
+  font-weight: 900;
+  color: #E30613;
+  font-size: 1.25rem;
+  margin-left: 3px;
+}
+
+.pmp-visa-badge-large {
+  display: inline-flex;
+  align-items: center;
+  background: #1A1F71;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(26, 31, 113, 0.25);
+}
+
+.pmp-credit-badge-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #073D3D;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(7, 61, 61, 0.25);
+}
+
+.pmp-credit-icon {
+  font-size: 1.25rem;
+  color: var(--ctv-brand-lime);
+}
+
+.pmp-card__pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(8, 174, 6, 0.12);
+  color: var(--ctv-brand);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.pmp-card__pill--intl {
+  background: rgba(26, 31, 113, 0.1);
+  color: #1A1F71;
+}
+
+.pmp-card__title {
+  font-family: var(--ctv-font-display);
+  font-size: 1.35rem;
+  color: var(--ctv-brand-deep);
+  margin-bottom: 0.75rem;
+}
+
+.pmp-card__desc {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ctv-ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.pmp-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--ctv-ink);
+  line-height: 1.45;
+  margin-top: auto;
+}
+
+.pmp-card__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.pmp-card__list svg {
+  color: var(--ctv-brand);
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ── Seguridad Box ───────────────────────────────── */
+.pmp-security-section {
+  padding: clamp(2rem, 5vw, 4rem) 0 clamp(4rem, 8vw, 6rem);
+}
+
+.pmp-security-box {
+  background: linear-gradient(135deg, var(--ctv-teal-900) 0%, var(--ctv-teal-950) 100%);
+  border: 1px solid var(--ctv-glass-border-dark);
+  border-radius: 24px;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  color: #ffffff;
+  margin-bottom: 3.5rem;
+  box-shadow: 0 24px 60px -20px rgba(1, 33, 32, 0.6);
+}
+
+.pmp-security-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pmp-security-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(8, 174, 6, 0.18);
+  border: 1px solid rgba(8, 174, 6, 0.4);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: #3ED32B;
+  flex-shrink: 0;
+}
+
+.pmp-security-title {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.pmp-security-desc {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pmp-security-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 800px) {
+  .pmp-security-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.pmp-sec-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.pmp-sec-item__icon {
+  font-size: 1.75rem;
+  color: #3ED32B;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.pmp-sec-item h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.4rem;
+}
+
+.pmp-sec-item p {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── CTA Wrap ─────────────────────────────────────── */
+.pmp-cta-wrap {
+  text-align: center;
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  border-radius: 20px;
+  padding: clamp(2rem, 4vw, 3rem);
+  box-shadow: var(--ctv-shadow-card);
+}
+
+.pmp-cta-wrap h3 {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  color: var(--ctv-brand-deep);
+  margin-bottom: 0.5rem;
+}
+
+.pmp-cta-wrap p {
+  font-size: 1rem;
+  color: var(--ctv-ink-soft);
+  margin-bottom: 1.75rem;
+}
+
+.pmp-cta-btns {
+  display: inline-flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pmp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pmp-btn--primary {
+  background: var(--ctv-brand);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(8, 174, 6, 0.25);
+}
+
+.pmp-btn--primary:hover {
+  background: #068a04;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(8, 174, 6, 0.35);
+}
+
+.pmp-btn--outline {
+  background: transparent;
+  border: 1px solid var(--ctv-glass-border);
+  color: var(--ctv-brand-deep);
+}
+
+.pmp-btn--outline:hover {
+  border-color: var(--ctv-brand);
+  color: var(--ctv-brand);
+  transform: translateY(-2px);
+}

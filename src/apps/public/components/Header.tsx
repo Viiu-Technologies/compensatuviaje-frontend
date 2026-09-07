@@ -5,6 +5,13 @@ import { FaUser, FaChartBar } from 'react-icons/fa';
 import { HiMenu, HiX, HiArrowRight } from 'react-icons/hi';
 import './Header.css';
 
+interface NavLinkItem {
+  href: string;
+  label: string;
+  badge?: string;
+  isExternal?: boolean;
+}
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -28,9 +35,14 @@ const Header = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* ── Active nav link via IntersectionObserver ── */
+  /* ── Active nav link via IntersectionObserver (on landing) ── */
   useEffect(() => {
-    const ids = ['inicio', 'proyectos', 'empresas', 'calculadora-content', 'contacto'];
+    if (location.pathname !== '/') {
+      setActiveHash(location.pathname);
+      return;
+    }
+
+    const ids = ['inicio', 'proyectos', 'empresas', 'calculadora-content'];
     const observers: IntersectionObserver[] = [];
 
     ids.forEach((id) => {
@@ -45,7 +57,7 @@ const Header = () => {
     });
 
     return () => observers.forEach((o) => o.disconnect());
-  }, []);
+  }, [location.pathname]);
 
   /* ── Lock body scroll when mobile menu is open ── */
   useEffect(() => {
@@ -56,21 +68,84 @@ const Header = () => {
   const closeMenu = () => setIsMenuOpen(false);
   const handleLogout = () => { logout(); navigate('/'); closeMenu(); };
 
-  const navLinks = [
+  const navLinks: NavLinkItem[] = [
     { href: '#inicio', label: 'Inicio' },
+    { href: '/calculadora', label: 'Calculadora', badge: 'Nueva' },
     { href: '#proyectos', label: 'Proyectos' },
     { href: '#empresas', label: 'Empresas' },
-    { href: '/aliados', label: 'Aliados' },
     { href: '#calculadora-content', label: 'Metodología' },
+    { href: '/pagos', label: 'Pagos' },
+    { href: '/aliados', label: 'Aliados' },
     { href: '/blog', label: 'Blog' },
-    { href: '#contacto', label: 'Contacto' },
+    { href: '/contacto', label: 'Contacto' },
   ];
 
-  const buildLinkHref = (href: string) => {
-    if (href.startsWith('#')) {
-      return location.pathname === '/' ? href : `/${href}`;
+  const renderDesktopNavLink = (link: NavLinkItem) => {
+    const isAnchor = link.href.startsWith('#');
+    const isActive = isAnchor
+      ? location.pathname === '/' && activeHash === link.href
+      : location.pathname === link.href;
+
+    if (isAnchor) {
+      const destination = location.pathname === '/' ? link.href : `/${link.href}`;
+      return (
+        <a
+          key={link.href}
+          href={destination}
+          className={`ctv-nav-link${isActive ? ' ctv-nav-link--active' : ''}`}
+        >
+          {link.label}
+          {link.badge && <span className="ctv-nav-badge">{link.badge}</span>}
+        </a>
+      );
     }
-    return href;
+
+    return (
+      <Link
+        key={link.href}
+        to={link.href}
+        className={`ctv-nav-link${isActive ? ' ctv-nav-link--active' : ''}`}
+      >
+        {link.label}
+        {link.badge && <span className="ctv-nav-badge">{link.badge}</span>}
+      </Link>
+    );
+  };
+
+  const renderMobileNavLink = (link: NavLinkItem) => {
+    const isAnchor = link.href.startsWith('#');
+    const isActive = isAnchor
+      ? location.pathname === '/' && activeHash === link.href
+      : location.pathname === link.href;
+
+    if (isAnchor) {
+      const destination = location.pathname === '/' ? link.href : `/${link.href}`;
+      return (
+        <a
+          key={link.href}
+          href={destination}
+          onClick={closeMenu}
+          className={`ctv-drawer__link${isActive ? ' ctv-drawer__link--active' : ''}`}
+        >
+          <span>{link.label}</span>
+          {link.badge && <span className="ctv-nav-badge">{link.badge}</span>}
+          <HiArrowRight className="ctv-drawer__link-arrow" />
+        </a>
+      );
+    }
+
+    return (
+      <Link
+        key={link.href}
+        to={link.href}
+        onClick={closeMenu}
+        className={`ctv-drawer__link${isActive ? ' ctv-drawer__link--active' : ''}`}
+      >
+        <span>{link.label}</span>
+        {link.badge && <span className="ctv-nav-badge">{link.badge}</span>}
+        <HiArrowRight className="ctv-drawer__link-arrow" />
+      </Link>
+    );
   };
 
   return (
@@ -84,22 +159,14 @@ const Header = () => {
               src="/images/brand/logo-horizontal.svg"
               alt="compensatuviaje"
               className="ctv-header__logo-img"
-              width="188"
-              height="42"
+              width="170"
+              height="38"
             />
           </Link>
 
           {/* ── Desktop nav ── */}
           <nav className="ctv-header__nav" aria-label="Navegación principal">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={buildLinkHref(link.href)}
-                className={`ctv-nav-link${activeHash === link.href ? ' ctv-nav-link--active' : ''}`}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => renderDesktopNavLink(link))}
           </nav>
 
           {/* ── Desktop auth ── */}
@@ -127,10 +194,10 @@ const Header = () => {
             ) : (
               <>
                 <Link to="/login" className="ctv-btn ctv-btn--outline">
-                  Iniciar Sesión
+                  Entrar
                 </Link>
                 <Link to="/register" className="ctv-btn ctv-btn--primary">
-                  Registrarse Gratis
+                  Registrarse
                 </Link>
               </>
             )}
@@ -159,17 +226,7 @@ const Header = () => {
         {/* Panel */}
         <div className="ctv-drawer__panel">
           <nav className="ctv-drawer__nav">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={buildLinkHref(link.href)}
-                onClick={closeMenu}
-                className={`ctv-drawer__link${activeHash === link.href ? ' ctv-drawer__link--active' : ''}`}
-              >
-                {link.label}
-                <HiArrowRight className="ctv-drawer__link-arrow" />
-              </a>
-            ))}
+            {navLinks.map((link) => renderMobileNavLink(link))}
 
             {isAuthenticated && (
               <Link
@@ -178,7 +235,7 @@ const Header = () => {
                 className="ctv-drawer__link"
               >
                 <FaChartBar />
-                Dashboard
+                <span>Dashboard</span>
                 <HiArrowRight className="ctv-drawer__link-arrow" />
               </Link>
             )}

@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
@@ -13,27 +14,28 @@ const SECTIONS = [
   {
     title: 'Servicios',
     links: [
-      { label: 'Calculadora CO₂', href: '#calculadora' },
+      { label: 'Calculadora de Carbono', href: '/calculadora' },
+      { label: 'Proyectos de Conservación', href: '/#proyectos' },
+      { label: 'Soluciones Empresas (B2B)', href: '/#empresas' },
+      { label: 'Métodos de Pago y Seguridad', href: '/pagos' },
     ],
   },
   {
     title: 'Información',
     links: [
-      { label: 'Blog', href: '/blog' },
-      { label: 'Sé un aliado', href: '/aliados' },
-      { label: 'Transparencia', href: '#transparencia' },
-      { label: 'FAQ', href: '#faq' },
-      { label: 'Nosotros', href: '#nosotros' },
+      { label: 'Blog de Impacto', href: '/blog' },
+      { label: 'Sé un Aliado', href: '/aliados' },
+      { label: 'Metodología DEFRA', href: '/#calculadora-content' },
+      { label: 'Preguntas Frecuentes', href: '/#faq' },
     ],
   },
   {
-    title: 'Contacto',
+    title: 'Atención y Consultas',
     links: [
-      { label: 'Contáctanos', href: 'mailto:compensatuviaje@gmail.com' },
-      { label: 'Soporte', href: 'mailto:compensatuviaje@gmail.com?subject=Soporte' },
-      { label: 'Prensa', href: 'mailto:compensatuviaje@gmail.com?subject=Prensa' },
-      { label: 'Empresas', href: 'mailto:compensatuviaje@gmail.com?subject=Empresas' },
-      { label: 'Partners', href: 'mailto:compensatuviaje@gmail.com?subject=Partners' },
+      { label: 'Formulario de Contacto', href: '/contacto' },
+      { label: 'Email Oficial', href: 'mailto:contacto@compensatuviaje.com' },
+      { label: 'Soporte y Verificación', href: '/contacto' },
+      { label: 'Postulación de Proyectos', href: '/aliados' },
     ],
   },
 ];
@@ -140,7 +142,11 @@ const Footer = () => {
               <ul className="ft-col__list">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="ft-col__link">{link.label}</a>
+                    {link.href.startsWith('/') ? (
+                      <Link to={link.href} className="ft-col__link">{link.label}</Link>
+                    ) : (
+                      <a href={link.href} className="ft-col__link">{link.label}</a>
+                    )}
                   </li>
                 ))}
               </ul>
