@@ -66,6 +66,61 @@
   --ctv-shadow-card-hover: 0 2px 4px rgba(7, 61, 61, 0.06),
     0 32px 72px -28px rgba(7, 61, 61, 0.36);
 
+  /* ── Espaciado ──
+     Base 4. Alrededor del 70 % del CSS ya seguía esta retícula; el 30 %
+     restante eran ajustes ópticos sueltos (0.35rem, 0.45rem, 0.65rem…).
+     Usar estos tokens en vez de valores nuevos. */
+  --ctv-space-1: 0.25rem;
+  /*  4px */
+  --ctv-space-2: 0.5rem;
+  /*  8px */
+  --ctv-space-3: 0.75rem;
+  /* 12px */
+  --ctv-space-4: 1rem;
+  /* 16px */
+  --ctv-space-5: 1.25rem;
+  /* 20px */
+  --ctv-space-6: 1.5rem;
+  /* 24px */
+  --ctv-space-8: 2rem;
+  /* 32px */
+  --ctv-space-10: 2.5rem;
+  /* 40px */
+  --ctv-space-12: 3rem;
+  /* 48px */
+  --ctv-space-16: 4rem;
+  /* 64px */
+  --ctv-section-y: clamp(4rem, 8vw, 6rem);
+
+  /* ── Radios ──
+     Seis valores derivados de los que ya dominan el código (999px, 12px,
+     8px, 16px, 24px, 50%), en sustitución de los 27 encontrados. */
+  --ctv-radius-sm: 8px;
+  --ctv-radius-md: 12px;
+  --ctv-radius-lg: 16px;
+  --ctv-radius-xl: 24px;
+  --ctv-radius-pill: 999px;
+  --ctv-radius-full: 50%;
+
+  /* ── Elevación ──
+     Cinco niveles, con sombra teñida del teal de marca en vez de negro puro
+     (misma intuición que --ctv-shadow-card, que se conserva por compatibilidad). */
+  --ctv-elev-0: none;
+  --ctv-elev-1: 0 1px 2px rgba(7, 61, 61, 0.06);
+  --ctv-elev-2: 0 4px 12px -2px rgba(7, 61, 61, 0.10);
+  --ctv-elev-3: 0 12px 32px -8px rgba(7, 61, 61, 0.18);
+  --ctv-elev-4: 0 24px 60px -32px rgba(7, 61, 61, 0.28);
+  --ctv-focus-ring: 0 0 0 3px rgba(4, 99, 2, 0.35);
+
+  /* ── Apilamiento ──
+     Sustituye valores mágicos como el z-index: 9000 del header. */
+  --ctv-z-dropdown: 100;
+  --ctv-z-sticky: 200;
+  --ctv-z-header: 300;
+  --ctv-z-overlay: 400;
+  --ctv-z-modal: 500;
+  --ctv-z-toast: 600;
+
   /* ── Tipografía ──
      Las familias declaradas aquí DEBEN estar en el <link> de Google Fonts
      de index.html. Outfit es la display del branding vigente (commit 0ac5043). */
@@ -74,6 +129,20 @@
   --ctv-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ctv-display-weight: 600;
   --ctv-display-tracking: -0.005em;
+
+  /* ── Escala tipográfica ──
+     Ocho pasos en sustitución de los 90 tamaños distintos hallados en el CSS.
+     0.75rem (12px) es el mínimo: por debajo el texto deja de ser cómodo. */
+  --ctv-text-display: clamp(2.5rem, 5vw, 4rem);
+  --ctv-text-h1: clamp(2rem, 4vw, 3rem);
+  --ctv-text-h2: clamp(1.5rem, 3vw, 2.25rem);
+  --ctv-text-h3: 1.5rem;
+  --ctv-text-body-lg: 1.125rem;
+  --ctv-text-body: 1rem;
+  --ctv-text-small: 0.875rem;
+  --ctv-text-caption: 0.75rem;
+  /* Ancho de lectura cómodo para texto corrido */
+  --ctv-measure: 65ch;
 
   /* ── Easing & duración (alineado a GSAP power3) ── */
   --ctv-ease-out: cubic-bezier(0.22, 1, 0.36, 1);

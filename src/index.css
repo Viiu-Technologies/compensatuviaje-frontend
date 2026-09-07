@@ -189,7 +189,10 @@ html {
   left: 50%;
   top: 0;
   transform: translate(-50%, -120%);
-  z-index: 10000;
+  /* Equivale a --ctv-z-toast (600) de tokens.css. Se deja literal porque este
+     archivo no importa tokens.css y la variable no resolveria: el skip link
+     debe quedar por encima de todo, incluido el drawer y los modales. */
+  z-index: 600;
   padding: 0.75rem 1.25rem;
   background: #046302;
   color: #ffffff;
