@@ -75,17 +75,7 @@
   --radius-5xl: 3rem;
 }
 
-/* Variables CSS adicionales */
-:root {
-  --color-primary: #22c55e;
-  --color-primary-dark: #16a34a;
-  --color-secondary: #3b82f6;
-  --color-accent: #d97706;
-  --color-neutral-900: #171717;
-  --color-neutral-100: #f5f5f5;
-}
-
-/* Variables CSS adicionales */
+/* Alias planos de la escala de @theme, para CSS que no usa utilidades Tailwind */
 :root {
   --color-primary: #22c55e;
   --color-primary-dark: #16a34a;
@@ -147,6 +137,36 @@ html {
 :where(.glass-dark, .dark, [data-theme="dark"])
   :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline-color: #3ED32B;
+}
+
+/* ── Tamaño minimo de area tactil ─────────────────────────────────────────
+   WCAG 2.5.5 pide 44x44 CSS px. Los botones globales ya llegan a ~48px por
+   su padding, pero varios controles compactos (enlaces de navegacion, chips,
+   botones de solo icono) se quedaban en ~38px.
+
+   Se aplica solo en punteros gruesos (dedo) para no alterar la densidad
+   visual en escritorio, donde el raton es preciso y la pauta no aplica
+   del mismo modo. :where() mantiene especificidad cero. */
+@media (pointer: coarse) {
+  /* min-height no afecta a cajas inline, asi que se excluyen los enlaces de
+     texto corrido: aumentarlos rompe el interlineado de un parrafo sin
+     ganar area real. Los enlaces-boton ya son inline-flex o block y si lo
+     reciben. Los enlaces dentro de prosa quedan fuera del alcance de esta
+     regla y se tratan caso por caso. */
+  :where(button, input[type="button"], input[type="submit"],
+         input[type="checkbox"], input[type="radio"], select, summary,
+         [role="button"], [tabindex]:not([tabindex="-1"])) {
+    min-height: 44px;
+  }
+
+  :where(a[href]):not(:where(p a, li a, .prose a)) {
+    min-height: 44px;
+  }
+
+  /* Los que no son de ancho completo necesitan tambien el minimo horizontal. */
+  :where(button, [role="button"], summary):not(:where(.nf-btn, .btn, .ctv-btn)) {
+    min-width: 44px;
+  }
 }
 
 /* Quien navega con teclado necesita poder saltar la navegacion. */
@@ -350,16 +370,6 @@ html {
 .divider {
   @apply h-1 w-20 rounded-full;
   background: linear-gradient(to right, var(--color-primary-500), var(--color-secondary-500));
-}
-
-/* Section padding */
-.section-padding {
-  padding: 80px 0;
-}
-
-/* Sections */
-.section {
-  @apply py-16 md:py-24;
 }
 
 .bg-white {

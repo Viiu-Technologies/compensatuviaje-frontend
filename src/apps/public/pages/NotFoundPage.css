@@ -1,0 +1,108 @@
+/* ==========================================================================
+   NotFoundPage.css — 404 sobre canvas de marca
+   ========================================================================== */
+@import '../components/landing/tokens.css';
+
+.nf-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ctv-canvas);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+  padding: var(--ctv-gutter);
+}
+
+.nf-inner {
+  width: 100%;
+  max-width: 34rem;
+  text-align: center;
+}
+
+.nf-code {
+  font-family: var(--ctv-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-mute);
+  margin: 0 0 1.25rem;
+}
+
+.nf-title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: var(--ctv-display-tracking);
+  color: var(--ctv-brand-deep);
+  margin: 0 0 1rem;
+  text-wrap: balance;
+}
+
+.nf-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  margin: 0 auto 2.25rem;
+  max-width: 42ch;
+}
+
+.nf-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+@media (min-width: 560px) {
+  .nf-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.nf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  /* 44px: mínimo táctil de WCAG 2.5.5 */
+  min-height: 44px;
+  padding: 0.75rem 1.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--ctv-rule-strong);
+  background: transparent;
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.25s var(--ctv-ease-out),
+    border-color 0.25s var(--ctv-ease-out),
+    color 0.25s var(--ctv-ease-out);
+}
+
+.nf-btn:hover {
+  border-color: var(--ctv-brand-deep);
+  background: rgba(7, 61, 61, 0.04);
+}
+
+/* #046302 sobre blanco: 7.52:1 */
+.nf-btn--primary {
+  background: var(--ctv-accent-contrast);
+  border-color: var(--ctv-accent-contrast);
+  color: #ffffff;
+}
+
+.nf-btn--primary:hover {
+  background: var(--ctv-brand-deep);
+  border-color: var(--ctv-brand-deep);
+  color: #ffffff;
+}

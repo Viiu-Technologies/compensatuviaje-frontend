@@ -57,8 +57,14 @@ const VerificationPage = lazy(() => import('./apps/admin/pages/VerificationPage'
 const PartnerRoutes = lazy(() => import('./apps/partner').then(m => ({ default: m.PartnerRoutes })));
 
 // TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off.
-const BusinessCardStackPreview = lazy(() => import('./threejs-assets/BusinessCardStackPreview'));
-const LeaningCardsPreview = lazy(() => import('./threejs-assets/LeaningCardsPreview'));
+// Los lazy() se crean solo en desarrollo: si se declaran fuera del guard, Vite
+// sigue emitiendo sus chunks en produccion (~100KB) aunque la ruta no exista.
+const BusinessCardStackPreview = import.meta.env.DEV
+  ? lazy(() => import('./threejs-assets/BusinessCardStackPreview'))
+  : null;
+const LeaningCardsPreview = import.meta.env.DEV
+  ? lazy(() => import('./threejs-assets/LeaningCardsPreview'))
+  : null;
 
 // Loading fallback minimalista
 const PageLoader = () => (
@@ -67,10 +73,10 @@ const PageLoader = () => (
   </div>
 );
 
-// Smart redirect based on user type
-const SmartRedirect = () => {
-  return <Navigate to="/dashboard" replace />;
-};
+// Antes, el catch-all mandaba cualquier URL desconocida a /dashboard (ruta
+// protegida): un visitante con un enlace roto terminaba en el login sin saber
+// que la direccion no existia. Ahora se muestra un 404 real.
+const NotFoundPage = lazy(() => import('./apps/public/pages/NotFoundPage'));
 
 function App() {
   return (
@@ -95,8 +101,13 @@ function App() {
             <Route path="/aliados" element={<PartnersGuidePage />} />
 
             {/* TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off */}
-            <Route path="/dev/business-card-stack" element={<BusinessCardStackPreview />} />
-            <Route path="/dev/leaning-cards" element={<LeaningCardsPreview />} />
+            {/* Previews temporales de revision: solo en desarrollo. */}
+            {BusinessCardStackPreview && (
+              <Route path="/dev/business-card-stack" element={<BusinessCardStackPreview />} />
+            )}
+            {LeaningCardsPreview && (
+              <Route path="/dev/leaning-cards" element={<LeaningCardsPreview />} />
+            )}
             
             {/* Auth Callback for OAuth */}
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -334,10 +345,10 @@ function App() {
             />
             
             {/* ===================== */}
-            {/* Catch-all - Redirige seg├║n autenticaci├│n */}
+            {/* Catch-all - 404 */}
             {/* ===================== */}
-            
-            <Route path="*" element={<SmartRedirect />} />
+
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>
         </div>
