@@ -110,7 +110,11 @@
   --ctv-elev-2: 0 4px 12px -2px rgba(7, 61, 61, 0.10);
   --ctv-elev-3: 0 12px 32px -8px rgba(7, 61, 61, 0.18);
   --ctv-elev-4: 0 24px 60px -32px rgba(7, 61, 61, 0.28);
-  --ctv-focus-ring: 0 0 0 3px rgba(4, 99, 2, 0.35);
+  /* Anillo de foco. La opacidad no es decorativa: WCAG 2.4.11 pide 3:1 contra
+     el fondo adyacente, y por debajo del 60 % el verde no lo alcanza sobre
+     blanco. Al 70 % da 3.78:1. El ring que habia antes en los formularios
+     (verde al 10 %) daba 1.09:1, es decir, era practicamente invisible. */
+  --ctv-focus-ring: 0 0 0 3px rgba(4, 99, 2, 0.7);
 
   /* ── Puntos de ruptura ──
      Cuatro valores (los de Tailwind) en sustitución de los 17 encontrados.

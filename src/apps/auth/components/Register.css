@@ -12,7 +12,7 @@
 .register-card {
   background: white;
   border-radius: var(--ctv-radius-lg);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--ctv-elev-4);
   padding: 2.5rem;
   width: 100%;
   max-width: 540px;
@@ -116,7 +116,7 @@
 .form-group input:focus {
   outline: none;
   border-color: #22C55E;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  box-shadow: var(--ctv-focus-ring);
 }
 
 .form-group input:disabled {
@@ -394,7 +394,7 @@
 .wizard-step select:focus {
   outline: none;
   border-color: #22C55E;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  box-shadow: var(--ctv-focus-ring);
 }
 
 .wizard-step select.error {
@@ -415,7 +415,7 @@
 .wizard-step textarea:focus {
   outline: none;
   border-color: #22C55E;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  box-shadow: var(--ctv-focus-ring);
 }
 
 .wizard-step textarea.error {

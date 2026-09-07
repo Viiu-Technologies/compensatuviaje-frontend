@@ -11,7 +11,7 @@
   color: white;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-2);
 }
 
 .batch-header h1 {
@@ -44,7 +44,7 @@
   background: white;
   border-radius: var(--ctv-radius-lg);
   padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-2);
 }
 
 .dropzone {
@@ -401,7 +401,7 @@
   padding: 4rem 2rem;
   text-align: center;
   color: #6B7280;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
 }
 
 .empty-history svg {
@@ -426,12 +426,12 @@
   background: white;
   border-radius: var(--ctv-radius-md);
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
   transition: all 0.2s;
 }
 
 .history-item:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-2);
   transform: translateY(-2px);
 }
 

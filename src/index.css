@@ -344,7 +344,10 @@ html {
 }
 .input:focus {
   @apply border-primary-500;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  /* Equivale a --ctv-focus-ring de tokens.css; literal porque este archivo no
+     lo importa. El valor anterior (verde al 20 %) daba 1.09:1 contra el fondo:
+     WCAG 2.4.11 pide 3:1, y al 70 % se obtiene 3.78:1. */
+  box-shadow: 0 0 0 3px rgba(4, 99, 2, 0.7);
 }
 
 .input-glass {

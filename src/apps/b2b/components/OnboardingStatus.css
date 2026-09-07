@@ -11,7 +11,7 @@
   background: white;
   border-bottom: 1px solid #e5e7eb;
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
 }
 
 .header-content {
@@ -73,7 +73,7 @@
   border-radius: var(--ctv-radius-md);
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
 }
 
 .card-header {
@@ -142,7 +142,7 @@
   border-radius: var(--ctv-radius-md);
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
 }
 
 .timeline-card h2 {
@@ -345,7 +345,7 @@
   background: white;
   border-radius: var(--ctv-radius-md);
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
 }
 
 .documents-card h2 {
@@ -488,7 +488,7 @@
   background: white;
   border-radius: var(--ctv-radius-md);
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ctv-elev-1);
   position: sticky;
   top: 2rem;
 }
