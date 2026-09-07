@@ -875,11 +875,17 @@ const CompanyOnboardingWizard = () => {
   return (
     <div className="wizard-container">
       <div className="wizard-card">
-        {/* Progress Stepper */}
+        {/* Progress Stepper. El estado visual (activo/completado) se comunicaba
+            solo por color y forma; aria-current y el resumen textual lo hacen
+            perceptible tambien con lector de pantalla. */}
+        <p className="sr-only" role="status">
+          Paso {currentStep} de {steps.length}: {steps[currentStep - 1]?.title}
+        </p>
         <div className="wizard-stepper">
           {steps.map((step, index) => (
             <div
               key={step.number}
+              aria-current={currentStep === step.number ? 'step' : undefined}
               className={`step ${currentStep === step.number ? 'active' : ''} ${
                 currentStep > step.number ? 'completed' : ''
               }`}

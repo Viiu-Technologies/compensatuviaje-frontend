@@ -512,14 +512,17 @@ const Register: React.FC = () => {
                     {renderInput('Correo Electrónico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
                     
                     <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
+                      <label htmlFor="register-password" className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
+                          id="register-password"
                           name="password"
                           value={formData.password}
                           onChange={handleChange}
                           placeholder="••••••••"
+                          aria-invalid={!!validationErrors.password}
+                          aria-describedby={validationErrors.password ? 'register-password-error' : undefined}
                           className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
@@ -527,23 +530,26 @@ const Register: React.FC = () => {
                           {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
                         </button>
                       </div>
-                      {validationErrors.password && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.password}</span>}
+                      {validationErrors.password && <span id="register-password-error" role="alert" className="!text-xs !text-red-300 !ml-2">{validationErrors.password}</span>}
                     </div>
 
                     <div className="!space-y-2 !col-span-2">
-                      <label className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar Contraseña</label>
+                      <label htmlFor="register-confirm-password" className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar Contraseña</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
+                          id="register-confirm-password"
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
                           placeholder="••••••••"
+                          aria-invalid={!!validationErrors.confirmPassword}
+                          aria-describedby={validationErrors.confirmPassword ? 'register-confirm-password-error' : undefined}
                           className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
                       </div>
-                      {validationErrors.confirmPassword && <span className="!text-xs !text-red-300 !ml-2">{validationErrors.confirmPassword}</span>}
+                      {validationErrors.confirmPassword && <span id="register-confirm-password-error" role="alert" className="!text-xs !text-red-300 !ml-2">{validationErrors.confirmPassword}</span>}
                     </div>
 
                     <div className="!col-span-2 !mt-2">

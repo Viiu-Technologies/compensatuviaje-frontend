@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaLeaf, FaTree, FaGlobeAmericas, FaCertificate, FaChartLine, FaHandHoldingHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
@@ -140,10 +141,12 @@ const Compensation = () => {
               whileTap={{ scale: 0.95 }}
               className="inline-block"
             >
-              <a href="#calculadora" className="btn-primary text-lg px-8 py-4">
+              {/* #calculadora no existe dentro de la app autenticada: este
+                  enlace no llevaba a ninguna parte. Apunta a la calculadora real. */}
+              <Link to="/b2c/calculator" className="btn-primary text-lg px-8 py-4">
                 <FaLeaf />
                 Comienza a Compensar Ahora
-              </a>
+              </Link>
             </motion.div>
           </div>
         </ScrollReveal>
