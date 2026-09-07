@@ -12,7 +12,6 @@ const EnterpriseSuite = lazy(() => import('../components/EnterpriseSuite'));
 const CertificateSearch = lazy(() => import('../components/CertificateSearch'));
 const Testimonials = lazy(() => import('../components/Testimonials'));
 const FAQ = lazy(() => import('../components/FAQ'));
-const ContactSection = lazy(() => import('../components/ContactSection'));
 const Footer = lazy(() => import('../components/Footer'));
 
 const LandingPage: React.FC = () => {
@@ -65,7 +64,6 @@ const LandingPage: React.FC = () => {
           <CertificateSearch />
           <Testimonials />
           <FAQ />
-          <ContactSection />
         </Suspense>
       </main>
       <Suspense fallback={null}>

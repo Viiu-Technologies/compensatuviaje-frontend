@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiPlus, HiMinus, HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
@@ -96,14 +97,30 @@ const FAQ = () => {
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
 
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
-    tl.from('.faq-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0);
+    const tl = gsap.timeline({ 
+      defaults: { ease: 'power3.out', duration: 0.8 },
+      scrollTrigger: {
+        trigger: root,
+        start: 'top 75%',
+        toggleActions: 'play none none none',
+      }
+    });
+
+    tl.from('.faq-eyebrow', { y: 16, autoAlpha: 0, duration: 0.6 }, 0);
     tl.from('.faq-title .hero-line__inner', {
       yPercent: 110, stagger: 0.1, duration: 0.9,
     }, 0.1);
-    tl.from('.faq-tabs', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.3);
-    tl.from('.faq-item', { y: 14, autoAlpha: 0, stagger: 0.06, duration: 0.5 }, 0.4);
-    tl.from('.faq-cta', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.7);
+    tl.from('.faq-tabs', { y: 20, autoAlpha: 0, duration: 0.6 }, 0.25);
+    // Animación de scroll-stagger: las preguntas suben desde abajo ordenándose en cascada
+    tl.from('.faq-item', { 
+      y: 55, 
+      autoAlpha: 0, 
+      stagger: 0.08, 
+      duration: 0.7, 
+      ease: 'power3.out',
+      clearProps: 'transform,opacity'
+    }, 0.35);
+    tl.from('.faq-cta', { y: 20, autoAlpha: 0, duration: 0.6 }, 0.7);
   }, []);
 
   const currentFaqs = activeTab === 'b2c' ? FAQS_B2C : activeTab === 'b2b' ? FAQS_B2B : FAQS_PARTNER;
@@ -111,6 +128,25 @@ const FAQ = () => {
   useEffect(() => {
     if (currentFaqs.length > 0) {
       setOpenId(currentFaqs[0].id);
+    }
+
+    // Animación fluida de entrada al alternar entre pestañas
+    if (scopeRef.current) {
+      const items = scopeRef.current.querySelectorAll('.faq-item');
+      if (items.length > 0) {
+        gsap.fromTo(
+          items,
+          { y: 35, autoAlpha: 0 },
+          { 
+            y: 0, 
+            autoAlpha: 1, 
+            stagger: 0.06, 
+            duration: 0.5, 
+            ease: 'power3.out',
+            clearProps: 'transform,opacity' 
+          }
+        );
+      }
     }
   }, [activeTab]);
 
@@ -130,7 +166,7 @@ const FAQ = () => {
   const toggle = (id: number) => setOpenId((curr) => (curr === id ? null : id));
 
   return (
-    <section ref={scopeRef} className="faq-section">
+    <section ref={scopeRef} className="faq-section" id="faq">
       <div className="faq-container">
         <header className="faq-header">
           <span className="faq-eyebrow ctv-reveal">
@@ -201,10 +237,10 @@ const FAQ = () => {
 
         <div className="faq-cta">
           <p className="faq-cta__text">¿Te queda otra duda? Estamos a un mensaje.</p>
-          <a href="#contacto" className="faq-cta__link">
+          <Link to="/contacto" className="faq-cta__link">
             Contáctanos
             <HiArrowRight aria-hidden="true" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

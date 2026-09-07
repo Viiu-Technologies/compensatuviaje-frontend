@@ -44,30 +44,106 @@
   width: 100%;
 }
 
-.ts-svg-wrapper {
+.ts-photo-card {
   position: relative;
   width: 100%;
-  max-width: 320px;
+  max-width: 380px;
   background: #ffffff;
-  border: 1px solid rgba(1, 57, 56, 0.08);
+  border: 1px solid rgba(1, 57, 56, 0.1);
   border-radius: 28px;
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: 0 1px 0 rgba(1, 57, 56, 0.02),
-              0 30px 60px -40px rgba(1, 57, 56, 0.15);
+              0 32px 64px -28px rgba(1, 57, 56, 0.25);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
   transition: transform 0.4s var(--ctv-ease-out), box-shadow 0.4s var(--ctv-ease-out);
 }
-.ts-svg-wrapper:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 40px 80px -30px rgba(1, 57, 56, 0.22);
+
+.ts-photo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 42px 84px -24px rgba(1, 57, 56, 0.32);
 }
 
-.ts-tech-svg {
+.ts-photo-wrapper {
+  position: relative;
   width: 100%;
-  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--ctv-canvas-2);
+}
+
+.ts-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  transition: transform 0.6s var(--ctv-ease-out);
+}
+
+.ts-photo-card:hover .ts-photo-img {
+  transform: scale(1.04);
+}
+
+.ts-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(1, 57, 56, 0.4) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+.ts-photo-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ts-photo-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ts-photo-badge svg {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ts-photo-badge--impact {
+  background: rgba(8, 174, 6, 0.1);
+  border: 1px solid rgba(8, 174, 6, 0.25);
+  color: #046302;
+}
+
+.ts-photo-badge--impact svg {
+  color: #08AE06;
+}
+
+.ts-photo-badge--project {
+  background: rgba(7, 61, 61, 0.06);
+  border: 1px solid rgba(7, 61, 61, 0.12);
+  color: #073D3D;
+}
+
+.ts-photo-badge--project svg {
+  color: #073D3D;
+}
+
+.ts-photo-badge--location {
+  background: transparent;
+  color: var(--ctv-ink-soft);
+  font-size: 0.78rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.ts-photo-badge--location svg {
+  color: var(--ctv-brand);
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -162,6 +238,15 @@
   font-size: 0.95rem;
   letter-spacing: 0.04em;
   flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid rgba(8, 174, 6, 0.3);
+  box-shadow: 0 4px 12px rgba(8, 174, 6, 0.15);
+}
+
+.ts-author__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .ts-author__meta {

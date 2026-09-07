@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import gsap from 'gsap';
-import { HiArrowLeft, HiArrowRight, HiOutlineShieldCheck } from 'react-icons/hi';
+import { 
+  HiArrowLeft, 
+  HiArrowRight, 
+  HiOutlineShieldCheck, 
+  HiSparkles,
+  HiLocationMarker 
+} from 'react-icons/hi';
+import { FaTree } from 'react-icons/fa';
 import { useGsapReveal } from '../hooks/useGsapReveal';
-import { ForestSVG } from './Illustrations';
 import './Testimonials.css';
 
 const PARTNERS = [
@@ -17,31 +23,47 @@ const PARTNERS = [
 const TESTIMONIALS = [
   {
     id: 1,
-    quote: 'Entendí mi huella de carbono por primera vez. Ahora compenso cada viaje sin pensarlo.',
+    quote: 'Entendí mi huella de carbono por primera vez. Ahora compenso cada viaje sin pensarlo y sé exactamente qué hectárea de bosque nativo se está protegiendo.',
     name: 'Laura Sánchez',
     role: 'Ecologista y viajera consciente',
     company: 'Fundación Verde Chile',
+    image: '/images/testimonials/laura.jpg',
+    impact: '2.8 tCO₂e compensadas',
+    project: 'Bosque Nativo Valdiviano',
+    location: 'Puerto Varas, Chile',
   },
   {
     id: 2,
-    quote: 'La calculadora es directa, los resultados claros. Una herramienta imprescindible.',
+    quote: 'La calculadora es directa, los resultados claros. Una herramienta imprescindible para recorrer las rutas de Chile cuidando nuestro patrimonio natural.',
     name: 'Carlos Mendoza',
     role: 'Defensor del medio ambiente',
     company: 'EcoAventura Chile',
+    image: '/images/testimonials/carlos.jpg',
+    impact: '4.2 tCO₂e compensadas',
+    project: 'Conservación Cordillera Sur',
+    location: 'Aysén, Chile',
   },
   {
     id: 3,
-    quote: 'Aprendí cómo mis decisiones afectan al planeta. Lo recomiendo a quien viaje seguido.',
+    quote: 'Aprendí cómo mis decisiones de viaje afectan al planeta. El certificado con QR y registro inmutable le da una confianza total a mi comunidad.',
     name: 'Ana López',
     role: 'Bloguera de sostenibilidad',
     company: 'Viajes Conscientes',
+    image: '/images/testimonials/ana.jpg',
+    impact: '1.9 tCO₂e compensadas',
+    project: 'Reforestación Maule Costero',
+    location: 'Santiago, Chile',
   },
   {
     id: 4,
-    quote: 'Lo implementamos para pasajeros frecuentes. El feedback ha sido excelente.',
+    quote: 'Lo implementamos para los viajes corporativos de nuestro equipo ejecutivo. El feedback de los colaboradores y la auditoría de reportes ESG ha sido impecable.',
     name: 'Diego Rojas',
     role: 'Director de Sostenibilidad',
-    company: 'LATAM Airlines',
+    company: 'LATAM Corporate',
+    image: '/images/testimonials/diego.jpg',
+    impact: '18.5 tCO₂e compensadas',
+    project: 'Parque Solar Atacama',
+    location: 'Santiago, Chile',
   },
 ];
 
@@ -78,21 +100,24 @@ const Testimonials = () => {
     if (!root) return;
     const quote = root.querySelector('.ts-quote');
     const author = root.querySelector('.ts-author');
+    const photo = root.querySelector('.ts-photo-card');
+
     if (!quote || !author) {
       setIndex(next);
       return;
     }
-    gsap.to([quote, author], {
+
+    gsap.to([quote, author, photo], {
       autoAlpha: 0,
-      y: -10,
+      y: -8,
       duration: 0.25,
       ease: 'power2.in',
       onComplete: () => {
         setIndex(next);
         gsap.fromTo(
-          [quote, author],
-          { autoAlpha: 0, y: 14 },
-          { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.08 },
+          [quote, author, photo],
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.06 },
         );
       },
     });
@@ -144,7 +169,11 @@ const Testimonials = () => {
 
               <footer className="ts-author">
                 <div className="ts-author__avatar" aria-hidden="true">
-                  {current.name.split(' ').map((p) => p[0]).slice(0, 2).join('')}
+                  <img
+                    src={current.image}
+                    alt={current.name}
+                    className="ts-author__avatar-img"
+                  />
                 </div>
                 <div className="ts-author__meta">
                   <p className="ts-author__name">{current.name}</p>
@@ -176,9 +205,33 @@ const Testimonials = () => {
             </div>
           </div>
 
+          {/* Fotografía de personas reales con tarjetas de impacto editorial */}
           <div className="ts-visual ctv-reveal">
-            <div className="ts-svg-wrapper">
-              <ForestSVG className="ts-tech-svg" style={{ width: '280px', height: '280px' }} />
+            <div className="ts-photo-card">
+              <div className="ts-photo-wrapper">
+                <img
+                  src={current.image}
+                  alt={current.name}
+                  className="ts-photo-img"
+                />
+                <div className="ts-photo-overlay" />
+              </div>
+
+              {/* Badges de impacto sobre la foto */}
+              <div className="ts-photo-badges">
+                <div className="ts-photo-badge ts-photo-badge--impact">
+                  <HiSparkles />
+                  <span>{current.impact}</span>
+                </div>
+                <div className="ts-photo-badge ts-photo-badge--project">
+                  <FaTree />
+                  <span>{current.project}</span>
+                </div>
+                <div className="ts-photo-badge ts-photo-badge--location">
+                  <HiLocationMarker />
+                  <span>{current.location}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
