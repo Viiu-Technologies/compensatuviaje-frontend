@@ -7,3 +7,22 @@ build/
 *.log
 /test
 skills/
+
+# img2threejs working artifacts (tool scratch, not runtime assets)
+.img2threejs/
+/detail-inventory/
+/detail-inventory-card45/
+/material-evidence/
+/material-evidence-card45/
+/assessment.json
+/assessment-card45.json
+/di.json
+/di-card45.json
+/object-sculpt-spec.json
+/object-sculpt-spec-card45.json
+/delit-report.json
+/delit-full.png
+/projection-descriptor.json
+/reference-camera.json
+/skills-lock.json
+/public/tree.json
