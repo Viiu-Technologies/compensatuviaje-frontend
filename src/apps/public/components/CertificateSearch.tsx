@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import {
   FaSearch, FaShieldAlt, FaCheckCircle, FaTimesCircle,
-  FaExternalLinkAlt, FaSpinner,
+  FaExternalLinkAlt,
 } from 'react-icons/fa';
 import { searchCertificateByNumber, publicVerifyCertificate } from '../../../shared/services/blockchainApi';
 import type { PublicVerification } from '../../../types/blockchain.types';
 import { useGsapReveal } from '../hooks/useGsapReveal';
+import { Button, Input } from '../../../shared/components/ui';
 import { PlanetDataSVG } from './Illustrations';
 import './CertificateSearch.css';
 
@@ -109,20 +110,24 @@ const CertificateSearch: React.FC = () => {
             </header>
 
             <form className="cs-form ctv-reveal" onSubmit={handleSearch}>
-              <div className="cs-input-wrap">
-                <FaSearch className="cs-input-icon" aria-hidden="true" />
-                <input
-                  type="text"
-                  className="cs-input"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="CERT-2024-SCL-MIA-001 o ID de compensación"
-                />
-              </div>
-              <button type="submit" className="cs-btn" disabled={loading || !query.trim()}>
-                {loading ? <FaSpinner className="cs-spin" aria-hidden="true" /> : null}
+              <Input
+                label="Número de certificado o ID de compensación"
+                hideLabel
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="CERT-2024-SCL-MIA-001 o ID de compensación"
+                iconLeft={<FaSearch />}
+              />
+              <Button
+                type="submit"
+                variant="secondary"
+                loading={loading}
+                loadingLabel="Verificando certificado…"
+                disabled={!query.trim()}
+              >
                 Verificar
-              </button>
+              </Button>
             </form>
 
             {/* Chips de prueba rápida 1-Click */}

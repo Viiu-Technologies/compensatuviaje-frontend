@@ -1,0 +1,199 @@
+/* ==========================================================================
+   Button.css — botón del sistema de diseño
+   Todos los colores salen de tokens.css. Los pares texto/fondo cumplen
+   WCAG AA (>= 4.5:1); los ratios van anotados en cada variante.
+   ========================================================================== */
+@import '../../../apps/public/components/landing/tokens.css';
+
+.ctvb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ctv-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--ctv-radius-pill);
+  font-family: var(--ctv-font-body);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ctv-ease-out),
+    border-color 0.2s var(--ctv-ease-out),
+    color 0.2s var(--ctv-ease-out),
+    box-shadow 0.2s var(--ctv-ease-out),
+    transform 0.12s ease;
+}
+
+/* ── Tamaños ──
+   md y lg superan los 44px que pide WCAG 2.5.5; sm queda por debajo a
+   propósito y se reserva a barras de herramientas de escritorio. */
+.ctvb--sm {
+  min-height: 36px;
+  padding: var(--ctv-space-2) var(--ctv-space-3);
+  font-size: var(--ctv-text-caption);
+}
+
+.ctvb--md {
+  min-height: 44px;
+  padding: var(--ctv-space-3) var(--ctv-space-5);
+  font-size: var(--ctv-text-small);
+}
+
+.ctvb--lg {
+  min-height: 52px;
+  padding: var(--ctv-space-4) var(--ctv-space-8);
+  font-size: var(--ctv-text-body);
+}
+
+.ctvb--full {
+  width: 100%;
+}
+
+/* ── Variantes ── */
+
+/* Blanco sobre #046302 = 7.52:1 */
+.ctvb--primary {
+  background-color: var(--ctv-accent-contrast);
+  border-color: var(--ctv-accent-contrast);
+  color: #ffffff;
+}
+
+.ctvb--primary:hover:not(:disabled) {
+  background-color: var(--ctv-brand-deep);
+  border-color: var(--ctv-brand-deep);
+}
+
+/* Canvas sobre #073D3D = 11.46:1 */
+.ctvb--secondary {
+  background-color: var(--ctv-brand-deep);
+  border-color: var(--ctv-brand-deep);
+  color: var(--ctv-canvas);
+}
+
+.ctvb--secondary:hover:not(:disabled) {
+  background-color: var(--ctv-teal-700);
+  border-color: var(--ctv-teal-700);
+}
+
+.ctvb--outline {
+  background-color: transparent;
+  border-color: var(--ctv-rule-strong);
+  color: var(--ctv-ink);
+}
+
+.ctvb--outline:hover:not(:disabled) {
+  border-color: var(--ctv-accent-contrast);
+  color: var(--ctv-accent-contrast);
+  background-color: rgba(4, 99, 2, 0.06);
+}
+
+.ctvb--ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--ctv-ink-soft);
+}
+
+.ctvb--ghost:hover:not(:disabled) {
+  background-color: rgba(7, 61, 61, 0.06);
+  color: var(--ctv-brand-deep);
+}
+
+/* Blanco sobre #991B1B = 8.31:1 */
+.ctvb--destructive {
+  background-color: #991B1B;
+  border-color: #991B1B;
+  color: #ffffff;
+}
+
+.ctvb--destructive:hover:not(:disabled) {
+  background-color: #7F1616;
+  border-color: #7F1616;
+}
+
+.ctvb--link {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--ctv-accent-contrast);
+  padding-left: 0;
+  padding-right: 0;
+  min-height: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ctvb--link:hover:not(:disabled) {
+  color: var(--ctv-brand-deep);
+}
+
+/* ── Estados ── */
+
+.ctvb:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* La regla global de index.css ya da un outline; aquí se refuerza con el
+   anillo tokenizado para que destaque también sobre fondos de color. */
+.ctvb:focus-visible {
+  outline: 2px solid var(--ctv-accent-contrast);
+  outline-offset: 2px;
+  box-shadow: var(--ctv-focus-ring);
+}
+
+/* Deshabilitado: no basta con bajar la opacidad — el cursor confirma que el
+   control no acepta interacción. */
+.ctvb:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ctvb--loading {
+  cursor: progress;
+}
+
+.ctvb__label {
+  display: inline-block;
+}
+
+.ctvb__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 1.1em;
+}
+
+.ctvb__spinner {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--ctv-radius-full);
+  animation: ctvb-spin 0.7s linear infinite;
+}
+
+@keyframes ctvb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* La regla global de movimiento reducido limita las animaciones infinitas a
+   una iteración, lo que dejaría el spinner congelado a media vuelta. Aquí se
+   sustituye el giro por un parpadeo suave, que comunica actividad sin rotar. */
+@media (prefers-reduced-motion: reduce) {
+  .ctvb__spinner {
+    animation: ctvb-pulse 1.2s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+    border-top-color: currentColor;
+    opacity: 0.6;
+  }
+
+  @keyframes ctvb-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+  }
+}

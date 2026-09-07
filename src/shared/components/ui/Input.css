@@ -1,0 +1,111 @@
+/* ==========================================================================
+   Input.css — campo de formulario del sistema de diseño
+   ========================================================================== */
+@import '../../../apps/public/components/landing/tokens.css';
+
+.ctvi {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--ctv-space-2);
+  font-family: var(--ctv-font-body);
+}
+
+.ctvi--full {
+  display: flex;
+  width: 100%;
+}
+
+.ctvi__label {
+  font-size: var(--ctv-text-small);
+  font-weight: 500;
+  color: var(--ctv-ink);
+  /* 6.56:1 sobre canvas */
+}
+
+.ctvi__required {
+  color: #991B1B;
+}
+
+.ctvi__field {
+  display: flex;
+  align-items: center;
+  gap: var(--ctv-space-2);
+  background: #ffffff;
+  border: 1px solid var(--ctv-rule-strong);
+  border-radius: var(--ctv-radius-md);
+  padding: 0 var(--ctv-space-4);
+  /* 44px: mínimo táctil de WCAG 2.5.5 */
+  min-height: 44px;
+  transition:
+    border-color 0.2s var(--ctv-ease-out),
+    box-shadow 0.2s var(--ctv-ease-out);
+}
+
+/* El foco se marca en el contenedor porque el input no tiene borde propio:
+   mismo patrón que .cs-form y .ft-newsletter__form. */
+.ctvi__field:focus-within {
+  border-color: var(--ctv-accent-contrast);
+  box-shadow: var(--ctv-focus-ring);
+}
+
+.ctvi__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--ctv-ink-mute);
+}
+
+.ctvi__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: var(--ctv-space-3) 0;
+  font-family: inherit;
+  font-size: var(--ctv-text-body);
+  color: var(--ctv-ink);
+}
+
+/* #59716E sobre blanco = 5.23:1 */
+.ctvi__input::placeholder {
+  color: #59716E;
+}
+
+.ctvi__input:disabled {
+  cursor: not-allowed;
+}
+
+.ctvi--disabled .ctvi__field {
+  background: var(--ctv-canvas-2);
+  opacity: 0.7;
+}
+
+.ctvi--disabled .ctvi__label {
+  color: var(--ctv-ink-mute);
+}
+
+/* Estado inválido: el borde rojo acompaña al mensaje, nunca lo sustituye —
+   el color por sí solo no es un medio de comunicación accesible. */
+.ctvi--invalid .ctvi__field {
+  border-color: #991B1B;
+}
+
+.ctvi--invalid .ctvi__field:focus-within {
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.28);
+}
+
+.ctvi__hint {
+  margin: 0;
+  font-size: var(--ctv-text-caption);
+  color: var(--ctv-ink-soft);
+  /* 6.56:1 sobre canvas */
+}
+
+.ctvi__error {
+  margin: 0;
+  font-size: var(--ctv-text-caption);
+  font-weight: 500;
+  color: #991B1B;
+  /* 8.31:1 sobre blanco */
+}
