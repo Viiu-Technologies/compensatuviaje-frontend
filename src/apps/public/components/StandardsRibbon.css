@@ -1,0 +1,133 @@
+/* ==========================================================================
+   StandardsRibbon.css — Cinta horizontal de rigor y estándares oficiales
+   ========================================================================== */
+@import './landing/tokens.css';
+
+.st-ribbon-section {
+  position: relative;
+  background: var(--ctv-canvas);
+  border-top: 1px solid var(--ctv-rule);
+  border-bottom: 1px solid var(--ctv-rule);
+  padding: 1.5rem 0;
+  overflow: hidden;
+}
+
+.st-ribbon-container {
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+.st-ribbon-intro {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.st-ribbon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ctv-brand-deep);
+  background: rgba(7, 61, 61, 0.06);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(7, 61, 61, 0.1);
+}
+
+.st-ribbon-text {
+  font-size: 0.8rem;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+}
+
+.st-ribbon-track-wrapper {
+  position: relative;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 0%, #000000 8%, #000000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000000 8%, #000000 92%, transparent 100%);
+}
+
+.st-ribbon-track {
+  display: flex;
+  gap: 1.25rem;
+  width: max-content;
+  animation: stMarquee 38s linear infinite;
+}
+
+.st-ribbon-track:hover {
+  animation-play-state: paused;
+}
+
+.st-item {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid rgba(7, 61, 61, 0.1);
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
+  min-width: 220px;
+  box-shadow: 0 2px 4px rgba(7, 61, 61, 0.03);
+  transition: transform 0.2s var(--ctv-ease-out), border-color 0.2s ease;
+}
+
+.st-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--ctv-accent-contrast);
+}
+
+.st-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.st-item-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  font-family: var(--ctv-font-display);
+}
+
+.st-item-check {
+  color: var(--ctv-accent-contrast);
+  font-size: 0.95rem;
+}
+
+.st-item-category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ctv-accent-contrast);
+  margin-bottom: 0.15rem;
+}
+
+.st-item-scope {
+  font-size: 0.75rem;
+  color: var(--ctv-ink-mute);
+  white-space: nowrap;
+}
+
+@keyframes stMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-ribbon-track {
+    animation: none;
+    overflow-x: auto;
+  }
+}

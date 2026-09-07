@@ -1,0 +1,289 @@
+/* ==========================================================================
+   CarbonJourneySection.css — Scrollytelling 3D: El Ciclo del Carbono
+   Estética Glassmorphism ESG, Alto Contraste y Fluidez Cinemática
+   ========================================================================== */
+@import '../landing/tokens.css';
+
+.carbon-journey {
+  position: relative;
+  width: 100%;
+  background: #021214; /* Profundidad cósmica a ras de suelo */
+  color: #ffffff;
+  font-family: var(--ctv-font-body);
+}
+
+/* ── Viewport Sticky con Canvas WebGL ── */
+.cj-canvas-pin {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  z-index: 5;
+  background: radial-gradient(circle at 50% 30%, #062828 0%, #021214 70%, #010a0b 100%);
+}
+
+.cj-canvas-pin canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  outline: none;
+}
+
+.cj-canvas-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #021214;
+}
+
+/* ── HUD Superior: Navegación de Actos ── */
+.cj-top-hud {
+  position: absolute;
+  top: clamp(1rem, 2.5vh, 2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: calc(100% - 2rem);
+  max-width: 820px;
+  pointer-events: auto;
+}
+
+.cj-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #4ade80;
+  background: rgba(8, 174, 6, 0.15);
+  border: 1px solid rgba(8, 174, 6, 0.35);
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cj-hud-stepper {
+  display: flex;
+  align-items: center;
+  background: rgba(2, 20, 20, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 3px;
+  border-radius: 999px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cj-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.25s var(--ctv-ease-out);
+}
+
+.cj-step-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cj-step-pill--active {
+  background: var(--ctv-brand-deep, #073d3d);
+  color: #4ade80;
+  font-weight: 700;
+  border: 1px solid rgba(8, 174, 6, 0.4);
+  box-shadow: 0 0 16px rgba(8, 174, 6, 0.3);
+}
+
+/* ── Contenedor de Tarjetas Flotantes ── */
+.cj-overlay-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  display: flex;
+  align-items: flex-end;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.cj-narrative-card {
+  position: absolute;
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  left: clamp(1.25rem, 4vw, 3.5rem);
+  max-width: 520px;
+  width: calc(100% - 2.5rem);
+  background: rgba(3, 24, 25, 0.88);
+  border: 1.5px solid rgba(8, 174, 6, 0.32);
+  border-radius: 20px;
+  padding: clamp(1.25rem, 2.5vw, 1.85rem);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset,
+              0 24px 60px -12px rgba(0, 0, 0, 0.65);
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.5s var(--ctv-ease-out), transform 0.5s var(--ctv-ease-out);
+}
+
+.cj-narrative-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.cj-card-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4ade80;
+  background: rgba(8, 174, 6, 0.15);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(8, 174, 6, 0.3);
+  margin-bottom: 0.75rem;
+}
+
+.cj-card-title {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(1.25rem, 2.4vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.22;
+  color: #ffffff;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.cj-card-text {
+  font-size: 0.9rem;
+  line-height: 1.58;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 1.1rem;
+}
+
+.cj-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.65);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.75rem;
+}
+
+.cj-meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  flex-shrink: 0;
+}
+
+.cj-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.85rem;
+}
+
+.cj-card-tag {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.cj-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--ctv-brand, #08ae06);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(8, 174, 6, 0.35);
+  transition: all 0.2s var(--ctv-ease-out);
+}
+
+.cj-cta-btn:hover {
+  background: #09c407;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(8, 174, 6, 0.5);
+}
+
+/* ── Pista de Interacción 3D ── */
+.cj-orbit-hint {
+  position: absolute;
+  bottom: clamp(1rem, 3vh, 2rem);
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  z-index: 18;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(2, 20, 20, 0.6);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+/* ── Pista de Scroll (Tracks de GSAP ScrollTrigger) ── */
+.cj-scroll-track {
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+}
+
+.cj-scroll-segment {
+  height: 95vh;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .cj-narrative-card {
+    left: 1rem;
+    bottom: 1rem;
+    width: calc(100% - 2rem);
+    padding: 1.15rem;
+  }
+
+  .cj-hud-stepper {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .cj-step-pill {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.7rem;
+  }
+
+  .cj-orbit-hint {
+    display: none;
+  }
+}

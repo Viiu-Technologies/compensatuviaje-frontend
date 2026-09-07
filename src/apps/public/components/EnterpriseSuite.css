@@ -1,0 +1,331 @@
+/* ==========================================================================
+   EnterpriseSuite.css — Soluciones corporativas B2B Scope 3
+   ========================================================================== */
+@import './landing/tokens.css';
+
+.es-section {
+  position: relative;
+  background: var(--ctv-canvas);
+  padding: clamp(4.5rem, 9vw, 7.5rem) 0;
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+  border-top: 1px solid var(--ctv-rule);
+  border-bottom: 1px solid var(--ctv-rule);
+  overflow: hidden;
+}
+
+.es-container {
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+.es-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .es-grid {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+
+/* ── Contenido Izquierdo ── */
+.es-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ctv-brand-deep);
+  background: rgba(7, 61, 61, 0.06);
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(7, 61, 61, 0.12);
+  margin-bottom: 1.25rem;
+}
+
+.es-title {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 1.25rem;
+}
+
+.es-title-accent {
+  background: var(--ctv-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.es-lede {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  margin: 0 0 1.75rem;
+}
+
+.es-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.es-benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  color: var(--ctv-ink);
+  line-height: 1.45;
+}
+
+.es-benefit-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-accent-contrast);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.es-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.es-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.25s var(--ctv-ease-out);
+}
+
+.es-btn--primary {
+  background: var(--ctv-brand-deep);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(7, 61, 61, 0.22);
+}
+
+.es-btn--primary:hover {
+  background: var(--ctv-teal-800);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(7, 61, 61, 0.3);
+}
+
+.es-btn--ghost {
+  background: transparent;
+  color: var(--ctv-brand-deep);
+  border-color: rgba(7, 61, 61, 0.2);
+}
+
+.es-btn--ghost:hover {
+  background: rgba(7, 61, 61, 0.05);
+  border-color: var(--ctv-brand-deep);
+}
+
+/* ── Mockup UI ── */
+.es-mockup-wrapper {
+  position: relative;
+}
+
+.es-mockup-card {
+  background: #ffffff;
+  border: 1px solid rgba(7, 61, 61, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px -15px rgba(7, 61, 61, 0.22),
+              0 2px 6px rgba(7, 61, 61, 0.04);
+  overflow: hidden;
+}
+
+.es-mockup-bar {
+  background: var(--ctv-teal-950);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #ffffff;
+}
+
+.es-mockup-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.es-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.es-dot--r { background: #EF4444; }
+.es-dot--y { background: #F59E0B; }
+.es-dot--g { background: #10B981; }
+
+.es-mockup-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.es-mockup-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(8, 174, 6, 0.2);
+  color: #3ED32B;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.es-mockup-body {
+  padding: 1.5rem;
+}
+
+/* Fila de Métricas */
+.es-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .es-metrics-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.es-m-card {
+  background: rgba(7, 61, 61, 0.03);
+  border: 1px solid rgba(7, 61, 61, 0.08);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.es-m-card--accent {
+  background: var(--ctv-brand-soft);
+  border-color: rgba(8, 174, 6, 0.25);
+}
+
+.es-m-label {
+  font-size: 0.68rem;
+  color: var(--ctv-ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+
+.es-m-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ctv-brand-deep);
+  line-height: 1.1;
+}
+
+.es-m-card--accent .es-m-val {
+  color: var(--ctv-accent-contrast);
+}
+
+.es-m-sub {
+  font-size: 0.65rem;
+  color: var(--ctv-ink-mute);
+  margin-top: 0.2rem;
+}
+
+/* Features List */
+.es-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.es-feature-item {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 0.85rem;
+  background: #ffffff;
+  border: 1px solid rgba(7, 61, 61, 0.08);
+  border-radius: 12px;
+  transition: border-color 0.2s ease;
+}
+
+.es-feature-item:hover {
+  border-color: rgba(8, 174, 6, 0.35);
+}
+
+.es-f-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(7, 61, 61, 0.06);
+  color: var(--ctv-brand-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.es-f-text h4 {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 0.2rem;
+}
+
+.es-f-text p {
+  font-size: 0.76rem;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.es-mockup-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--ctv-ink-soft);
+  padding: 0.65rem 0.85rem;
+  background: var(--ctv-canvas);
+  border-radius: 8px;
+  border: 1px solid rgba(7, 61, 61, 0.08);
+}
+
+.es-footer-shield {
+  color: var(--ctv-accent-contrast);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
