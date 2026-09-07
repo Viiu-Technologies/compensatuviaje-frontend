@@ -6,6 +6,7 @@ import { getRedirectPath } from '../services/authService';
 import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BsGoogle } from 'react-icons/bs';
+import { toast } from 'sonner';
 
 interface LocationState {
   from?: {
@@ -66,6 +67,9 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       console.error('Error en login:', err);
+      toast.error('No se pudo completar el inicio de sesión', {
+        description: 'Revisa tu conexión e inténtalo de nuevo.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -304,6 +308,11 @@ const Login: React.FC = () => {
                   await loginWithGoogle();
                 } catch (err) {
                   console.error('Error al iniciar sesión con Google:', err);
+                  // Sin esto el fallo era invisible: el boton volvia a su
+                  // estado normal y el usuario no sabia que habia pasado.
+                  toast.error('No se pudo iniciar sesión con Google', {
+                    description: 'Vuelve a intentarlo o entra con tu correo y contraseña.',
+                  });
                   setIsGoogleSigningIn(false);
                 }
               }}

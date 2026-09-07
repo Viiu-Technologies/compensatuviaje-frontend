@@ -8,6 +8,7 @@ import {
   Check, Loader2, AlertCircle, Eye, EyeOff 
 } from 'lucide-react';
 import { BsGoogle } from 'react-icons/bs';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Register: React.FC = () => {
@@ -168,6 +169,9 @@ const Register: React.FC = () => {
       await loginWithGoogle();
     } catch (error) {
       console.error('Error al registrarse con Google:', error);
+      toast.error('No se pudo continuar con Google', {
+        description: 'Vuelve a intentarlo o crea la cuenta con tu correo.',
+      });
     }
   };
 

@@ -4,6 +4,7 @@
 
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import './App.css';
 
 // Context
@@ -85,6 +86,21 @@ function App() {
         <B2CAuthProvider>
         <ThemeProvider>
           <div className="App min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+            {/* Notificaciones globales. richColors da los tonos semanticos de
+                exito/error; closeButton permite descartarlas con teclado, y
+                sonner ya las publica en una region aria-live. */}
+            <Toaster
+              position="top-center"
+              richColors
+              closeButton
+              duration={5000}
+              toastOptions={{
+                style: {
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  borderRadius: '12px',
+                },
+              }}
+            />
             <Suspense fallback={<PageLoader />}>
             <Routes>
             {/* ===================== */}
