@@ -169,6 +169,34 @@ html {
   }
 }
 
+/* ── Movimiento reducido ──────────────────────────────────────────────────
+   19 hojas de estilo declaran animaciones y solo 3 respetaban esta
+   preferencia. Para quien la activa por trastornos vestibulares, migrana o
+   simple preferencia, la landing resultaba hostil: globo 3D, bosque, marquesina
+   de logos, contadores y reveals de scroll, todos en movimiento continuo.
+
+   En lugar de repetir la consulta en cada archivo, se neutraliza aqui de forma
+   global. No se elimina la animacion (eso romperia estados que dependen de su
+   fin): se reduce a 0.01ms, de modo que el elemento salta a su estado final y
+   los eventos animationend/transitionend siguen disparandose.
+
+   Las animaciones infinitas se limitan a una sola iteracion. */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Contenido solo para lectores de pantalla. Tailwind genera esta utilidad,
    pero definirla aqui la hace independiente del orden de capas y del purgado. */
 .sr-only {

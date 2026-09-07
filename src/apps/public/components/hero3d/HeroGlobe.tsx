@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { HiGlobeAlt, HiSparkles } from 'react-icons/hi';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import './HeroGlobe.css';
 
 const EARTH_RADIUS = 1.5;
@@ -326,6 +327,7 @@ function GlobeFallback() {
 export const HeroGlobe: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   // Pausar el render loop cuando el usuario scrollea hacia abajo
   useEffect(() => {
@@ -373,11 +375,13 @@ export const HeroGlobe: React.FC = () => {
             <EarthMesh />
             <HeroFlightRoutes />
 
-            {/* Rotación automática suave y posibilidad de arrastrar con el mouse */}
+            {/* Rotación automática suave y posibilidad de arrastrar con el mouse.
+                La rotación continua se desactiva si el sistema pide movimiento
+                reducido: el arrastre manual sigue disponible. */}
             <OrbitControls
               enableZoom={false}
               enablePan={false}
-              autoRotate={true}
+              autoRotate={!prefersReducedMotion}
               autoRotateSpeed={0.75}
               rotateSpeed={0.65}
               dampingFactor={0.05}
