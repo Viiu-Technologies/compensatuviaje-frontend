@@ -59,7 +59,7 @@
   margin-bottom: 1.25rem;
   background: rgba(8, 174, 6, 0.08);
   padding: 0.35rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(8, 174, 6, 0.2);
 }
 
@@ -117,7 +117,7 @@
 .pmp-card {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   padding: 2rem 1.75rem;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -151,7 +151,7 @@
   align-items: center;
   background: #ffffff;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   border: 1px solid rgba(7, 61, 61, 0.15);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
@@ -179,7 +179,7 @@
   font-size: 1.15rem;
   letter-spacing: 0.06em;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   box-shadow: 0 2px 8px rgba(26, 31, 113, 0.25);
 }
 
@@ -192,7 +192,7 @@
   font-weight: 700;
   font-size: 0.95rem;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   box-shadow: 0 2px 8px rgba(7, 61, 61, 0.25);
 }
 
@@ -209,7 +209,7 @@
   background: rgba(8, 174, 6, 0.12);
   color: var(--ctv-brand);
   padding: 0.25rem 0.65rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
 }
 
 .pmp-card__pill--intl {
@@ -265,7 +265,7 @@
 .pmp-security-box {
   background: linear-gradient(135deg, var(--ctv-teal-900) 0%, var(--ctv-teal-950) 100%);
   border: 1px solid var(--ctv-glass-border-dark);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 4vw, 3.5rem);
   color: #ffffff;
   margin-bottom: 3.5rem;
@@ -286,7 +286,7 @@
   height: 56px;
   background: rgba(8, 174, 6, 0.18);
   border: 1px solid rgba(8, 174, 6, 0.4);
-  border-radius: 16px;
+  border-radius: var(--ctv-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -349,7 +349,7 @@
   text-align: center;
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 4vw, 3rem);
   box-shadow: var(--ctv-shadow-card);
 }
@@ -379,7 +379,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.85rem 1.75rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;

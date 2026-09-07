@@ -95,7 +95,7 @@
 .pb-card {
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.1);
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   overflow: hidden;
   box-shadow: 0 4px 20px -4px rgba(7, 61, 61, 0.08);
   transition: transform 0.3s var(--ctv-ease-out), box-shadow 0.3s var(--ctv-ease-out), border-color 0.3s ease;
@@ -151,7 +151,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   padding: 0.35rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -233,7 +233,7 @@
   border: 1px solid rgba(8, 174, 6, 0.2);
   color: var(--ctv-accent-contrast);
   padding: 0.25rem 0.65rem;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -290,7 +290,7 @@
   background: var(--ctv-brand-deep);
   color: #ffffff;
   padding: 0.65rem 1.25rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   font-size: 0.84rem;
   font-weight: 600;
   text-decoration: none;
@@ -407,7 +407,7 @@
   text-decoration: none;
   padding: 0.25rem 0.55rem;
   background: rgba(7, 61, 61, 0.05);
-  border-radius: 6px;
+  border-radius: var(--ctv-radius-sm);
   transition: all 0.15s ease;
 }
 

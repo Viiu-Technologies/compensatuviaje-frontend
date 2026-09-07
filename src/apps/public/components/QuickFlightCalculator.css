@@ -10,7 +10,7 @@
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid rgba(7, 61, 61, 0.12);
-  border-radius: 28px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 3.8vw, 3rem);
   box-shadow: 0 4px 14px -2px rgba(7, 61, 61, 0.04),
               0 28px 64px -14px rgba(7, 61, 61, 0.12),
@@ -92,7 +92,7 @@
 .qfc-indicator-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: var(--ctv-brand);
   box-shadow: 0 0 0 4px rgba(8, 174, 6, 0.16);
   animation: qfcPulseDot 2.4s infinite ease-in-out;
@@ -127,7 +127,7 @@
   color: var(--ctv-accent-contrast);
   background: var(--ctv-brand-soft);
   padding: 0.25rem 0.65rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(8, 174, 6, 0.18);
 }
 
@@ -135,7 +135,7 @@
   display: inline-flex;
   background: rgba(7, 61, 61, 0.05);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   border: 1px solid rgba(7, 61, 61, 0.08);
 }
 
@@ -146,7 +146,7 @@
   font-weight: 500;
   color: var(--ctv-ink-soft);
   padding: 0.5rem 1.15rem;
-  border-radius: 9px;
+  border-radius: var(--ctv-radius-sm);
   cursor: pointer;
   transition: all 0.22s var(--ctv-ease-out);
 }
@@ -173,7 +173,7 @@
   position: relative;
   background: #F9FBFA;
   border: 1.5px solid rgba(7, 61, 61, 0.12);
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(1.2rem, 2vw, 1.6rem) clamp(1.35rem, 2.4vw, 1.85rem);
   cursor: pointer;
   transition: all 0.28s var(--ctv-ease-out);
@@ -299,7 +299,7 @@
   justify-content: center;
   background: #ffffff;
   border: 1.5px solid rgba(7, 61, 61, 0.14);
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   color: var(--ctv-brand-deep);
   cursor: pointer;
   font-size: 1.4rem;
@@ -328,7 +328,7 @@
 .qfc-config-block {
   background: #F9FBFA;
   border: 1px solid rgba(7, 61, 61, 0.09);
-  border-radius: 18px;
+  border-radius: var(--ctv-radius-lg);
   padding: 1.15rem 1.5rem;
   display: flex;
   flex-direction: column;
@@ -364,7 +364,7 @@
   -webkit-appearance: none;
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.14);
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   padding: 0.75rem 2.4rem 0.75rem 1rem;
   font-size: 0.95rem;
   font-weight: 600;
@@ -393,7 +393,7 @@
   justify-content: space-between;
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.14);
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   padding: 4px;
 }
 
@@ -409,7 +409,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   cursor: pointer;
-  border-radius: 9px;
+  border-radius: var(--ctv-radius-sm);
   transition: all 0.18s ease;
 }
 
@@ -465,7 +465,7 @@
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.12);
   padding: 0.45rem 0.95rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--ctv-ink-soft);
@@ -498,7 +498,7 @@
   background: #FEE2E2;
   border: 1px solid #FCA5A5;
   color: #991B1B;
-  border-radius: 14px;
+  border-radius: var(--ctv-radius-md);
   font-size: 0.88rem;
   font-weight: 500;
   margin-bottom: 1.5rem;
@@ -514,7 +514,7 @@
   align-items: center;
   background: linear-gradient(135deg, rgba(228, 246, 224, 0.9) 0%, #ffffff 100%);
   border: 1.5px solid rgba(8, 174, 6, 0.32);
-  border-radius: 22px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(1.6rem, 2.6vw, 2.4rem) clamp(1.8rem, 3vw, 2.6rem);
   box-shadow: 0 12px 36px -10px rgba(8, 174, 6, 0.16),
               0 0 0 1px rgba(255, 255, 255, 0.8) inset;
@@ -601,7 +601,7 @@
 .qfc-eco-icon-wrap {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--ctv-radius-sm);
   background: var(--ctv-brand-soft);
   color: var(--ctv-accent-contrast);
   display: flex;
@@ -696,7 +696,7 @@
   background: var(--ctv-brand-deep);
   color: #ffffff;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--ctv-radius-md);
   padding: 0.95rem 1.85rem;
   font-size: 0.96rem;
   font-weight: 700;
@@ -759,7 +759,7 @@
 
   .qfc-card {
     padding: 1.5rem 1.25rem;
-    border-radius: 20px;
+    border-radius: var(--ctv-radius-xl);
   }
 
   .qfc-impact-panel {

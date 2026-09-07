@@ -114,7 +114,7 @@
   color: var(--ctv-ink-soft);
   text-decoration: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   white-space: nowrap;
   transition: color var(--header-transition);
 }
@@ -130,7 +130,7 @@
   background: rgba(8, 174, 6, 0.12);
   color: var(--ctv-brand);
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   margin-left: 4px;
   line-height: 1.2;
 }
@@ -255,7 +255,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.85rem 0.35rem 0.4rem;
-  border-radius: 100px;
+  border-radius: var(--ctv-radius-pill);
   background: rgba(7, 61, 61, 0.05);
   border: 1px solid var(--ctv-rule);
 }
@@ -263,7 +263,7 @@
 .ctv-user-chip__avatar {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: var(--ctv-brand-deep);
   display: flex;
   align-items: center;
@@ -294,7 +294,7 @@
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   background: transparent;
   border: 1px solid var(--ctv-rule-strong);
   color: var(--ctv-ink);
@@ -384,7 +384,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   font-size: 1rem;
   font-weight: 500;
   color: var(--ctv-ink-soft);
@@ -436,7 +436,7 @@
   align-items: center;
   gap: 0.875rem;
   padding: 0.875rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   background: rgba(7, 61, 61, 0.04);
   border: 1px solid var(--ctv-rule);
   margin-bottom: 0.25rem;

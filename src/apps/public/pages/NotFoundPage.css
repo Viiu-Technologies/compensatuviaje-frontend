@@ -74,7 +74,7 @@
   /* 44px: mínimo táctil de WCAG 2.5.5 */
   min-height: 44px;
   padding: 0.75rem 1.35rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid var(--ctv-rule-strong);
   background: transparent;
   color: var(--ctv-ink);

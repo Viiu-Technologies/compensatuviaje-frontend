@@ -45,7 +45,7 @@
 
 .contact-image-wrapper {
   position: relative;
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   overflow: hidden;
   box-shadow: 0 20px 40px -15px rgba(7, 61, 61, 0.2);
   transform: translateZ(0);
@@ -141,7 +141,7 @@
 .contact-form {
   background: var(--ctv-canvas);
   border: 1px solid var(--ctv-rule);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(1.75rem, 4vw, 2.5rem);
   display: flex;
   flex-direction: column;
@@ -215,7 +215,7 @@
 
 .contact-input--textarea {
   border: 1px solid var(--ctv-rule-strong);
-  border-radius: 14px;
+  border-radius: var(--ctv-radius-md);
   padding: 1rem 1.25rem;
   resize: vertical;
   min-height: 140px;
@@ -244,7 +244,7 @@
   background: var(--ctv-brand-deep);
   color: var(--ctv-canvas);
   border: none;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   font-family: var(--ctv-font-body);
   font-size: 0.95rem;
   font-weight: 500;
@@ -276,7 +276,7 @@
 .contact-success {
   background: var(--ctv-canvas);
   border: 1px solid var(--ctv-rule);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(2.5rem, 5vw, 4rem);
   text-align: center;
   display: flex;
@@ -288,7 +288,7 @@
 .contact-success__icon {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: var(--ctv-brand-soft);
   color: var(--ctv-brand-deep);
   display: inline-flex;
@@ -319,7 +319,7 @@
   padding: 0.75rem 1.5rem;
   background: transparent;
   border: 1px solid var(--ctv-rule-strong);
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
   font-size: 0.9rem;
@@ -340,7 +340,7 @@
   gap: 1rem;
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.12);
-  border-radius: 16px;
+  border-radius: var(--ctv-radius-lg);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 12px rgba(7, 61, 61, 0.04);
@@ -349,7 +349,7 @@
 .contact-channel-icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   background: var(--ctv-brand-soft);
   color: var(--ctv-accent-contrast);
   display: flex;
@@ -407,7 +407,7 @@
 .contact-card {
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.12);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 4.5vw, 3.25rem);
   box-shadow: 0 24px 56px -12px rgba(7, 61, 61, 0.16);
   width: 100%;
@@ -426,7 +426,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--ctv-radius-sm);
   font-size: 0.82rem;
   margin-bottom: 1.25rem;
 }
@@ -470,7 +470,7 @@
   padding: 0.75rem 1rem;
   background: var(--ctv-canvas);
   border: 1px solid rgba(7, 61, 61, 0.16);
-  border-radius: 10px;
+  border-radius: var(--ctv-radius-sm);
   font-family: var(--ctv-font-body);
   font-size: 0.88rem;
   color: var(--ctv-ink);

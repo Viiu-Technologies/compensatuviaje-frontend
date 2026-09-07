@@ -50,7 +50,7 @@
   max-width: 380px;
   background: #ffffff;
   border: 1px solid rgba(1, 57, 56, 0.1);
-  border-radius: 28px;
+  border-radius: var(--ctv-radius-xl);
   padding: 1rem;
   box-shadow: 0 1px 0 rgba(1, 57, 56, 0.02),
               0 32px 64px -28px rgba(1, 57, 56, 0.25);
@@ -69,7 +69,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   overflow: hidden;
   background: var(--ctv-canvas-2);
 }
@@ -104,7 +104,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.85rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   font-size: 0.82rem;
   font-weight: 600;
   line-height: 1.2;
@@ -228,7 +228,7 @@
 .ts-author__avatar {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: var(--ctv-brand-soft);
   color: var(--ctv-brand-deep);
   display: flex;
@@ -284,7 +284,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.25rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   width: fit-content;
   margin-top: 0.25rem;
 }
@@ -298,7 +298,7 @@
   padding: 0.65rem 1.25rem;
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-rule);
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   overflow: hidden;
 }
 
@@ -393,7 +393,7 @@
 .ts-nav__btn {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: transparent;
   border: 1px solid var(--ctv-rule-strong);
   color: var(--ctv-ink);

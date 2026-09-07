@@ -40,14 +40,14 @@
   background: rgba(16, 185, 129, 0.10);
   border: 1px solid rgba(16, 185, 129, 0.22);
   padding: 0.38rem 0.95rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   margin-bottom: 1.15rem;
 }
 
 .vfs-eyebrow__dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
 }
@@ -87,7 +87,7 @@
   position: relative;
   width: 100%;
   height: clamp(540px, 68vh, 760px);
-  border-radius: 28px;
+  border-radius: var(--ctv-radius-xl);
   overflow: hidden;
   box-shadow: 0 24px 64px -16px rgba(7, 61, 61, 0.14),
               0 0 0 1px rgba(7, 61, 61, 0.08);
@@ -130,7 +130,7 @@
   color: #073d3d;
   background: rgba(255, 255, 255, 0.85);
   padding: 0.65rem 1.35rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(7, 61, 61, 0.12);
   border: 1px solid rgba(7, 61, 61, 0.10);
@@ -171,7 +171,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0.35rem 0.5rem 0.35rem 0.95rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(7, 61, 61, 0.10);
   box-shadow: 0 4px 18px rgba(7, 61, 61, 0.06);
   pointer-events: auto;
@@ -190,7 +190,7 @@
   align-items: center;
   background: rgba(7, 61, 61, 0.06);
   padding: 0.18rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   gap: 0.2rem;
 }
 
@@ -199,7 +199,7 @@
   align-items: center;
   gap: 0.38rem;
   padding: 0.32rem 0.78rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: none;
   background: transparent;
   font-size: 0.74rem;
@@ -231,7 +231,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(7, 61, 61, 0.12);
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   padding: 1.25rem 1.4rem;
   box-shadow: 0 12px 32px rgba(7, 61, 61, 0.10);
   z-index: 10;
@@ -253,7 +253,7 @@
 .vfs-telemetry-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
 }
@@ -323,7 +323,7 @@
   background: var(--ctv-brand-deep);
   color: #ffffff;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   padding: 0.42rem 0.95rem;
   font-size: 0.74rem;
   font-weight: 600;
@@ -345,7 +345,7 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.4rem 0.95rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

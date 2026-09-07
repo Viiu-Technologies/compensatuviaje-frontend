@@ -1,3 +1,5 @@
+@import '../../public/components/landing/tokens.css';
+
 /* Batch Upload */
 .batch-upload {
   min-height: 100vh;
@@ -40,14 +42,14 @@
 
 .upload-card {
   background: white;
-  border-radius: 1rem;
+  border-radius: var(--ctv-radius-lg);
   padding: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .dropzone {
   border: 3px dashed #D1D5DB;
-  border-radius: 1rem;
+  border-radius: var(--ctv-radius-lg);
   padding: 3rem 2rem;
   text-align: center;
   cursor: pointer;
@@ -86,7 +88,7 @@
   padding: 0.875rem 2rem;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   color: white;
-  border-radius: 0.5rem;
+  border-radius: var(--ctv-radius-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -120,7 +122,7 @@
   padding: 1rem 1.5rem;
   background: #F3F4F6;
   border: 2px solid #E5E7EB;
-  border-radius: 0.5rem;
+  border-radius: var(--ctv-radius-sm);
   font-weight: 600;
   color: #374151;
   cursor: pointer;
@@ -143,7 +145,7 @@
   padding: 1.5rem;
   background: #FEF3C7;
   border: 1px solid #FCD34D;
-  border-radius: 0.75rem;
+  border-radius: var(--ctv-radius-md);
 }
 
 .format-info h4 {
@@ -198,7 +200,7 @@
   width: 100%;
   height: 12px;
   background: #E5E7EB;
-  border-radius: 9999px;
+  border-radius: var(--ctv-radius-pill);
   overflow: hidden;
   margin-bottom: 1rem;
 }
@@ -207,7 +209,7 @@
   height: 100%;
   background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%);
   transition: width 0.3s ease;
-  border-radius: 9999px;
+  border-radius: var(--ctv-radius-pill);
 }
 
 .progress-text {
@@ -252,7 +254,7 @@
 
 .summary-card {
   padding: 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--ctv-radius-md);
   text-align: center;
 }
 
@@ -301,7 +303,7 @@
   padding: 1.5rem;
   background: #FEF2F2;
   border: 1px solid #FCA5A5;
-  border-radius: 0.75rem;
+  border-radius: var(--ctv-radius-md);
   text-align: left;
 }
 
@@ -324,7 +326,7 @@
   gap: 1rem;
   padding: 0.75rem;
   background: white;
-  border-radius: 0.375rem;
+  border-radius: var(--ctv-radius-sm);
   font-size: 0.875rem;
 }
 
@@ -347,7 +349,7 @@
   padding: 0.75rem 1.5rem;
   background: white;
   border: 2px solid #FCA5A5;
-  border-radius: 0.5rem;
+  border-radius: var(--ctv-radius-sm);
   font-weight: 600;
   color: #991B1B;
   cursor: pointer;
@@ -369,7 +371,7 @@
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   color: white;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--ctv-radius-sm);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
@@ -395,7 +397,7 @@
 
 .empty-history {
   background: white;
-  border-radius: 1rem;
+  border-radius: var(--ctv-radius-lg);
   padding: 4rem 2rem;
   text-align: center;
   color: #6B7280;
@@ -422,7 +424,7 @@
 
 .history-item {
   background: white;
-  border-radius: 0.75rem;
+  border-radius: var(--ctv-radius-md);
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
@@ -479,7 +481,7 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 1rem;
-  border-radius: 9999px;
+  border-radius: var(--ctv-radius-pill);
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -503,7 +505,7 @@
   padding: 0.625rem 1.25rem;
   background: #FEF2F2;
   border: 1px solid #FCA5A5;
-  border-radius: 0.375rem;
+  border-radius: var(--ctv-radius-sm);
   color: #991B1B;
   font-weight: 500;
   font-size: 0.875rem;

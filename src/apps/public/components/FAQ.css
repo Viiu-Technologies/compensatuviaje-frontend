@@ -64,7 +64,7 @@
   margin: 0 0 clamp(2rem, 4vw, 3rem);
   background: var(--ctv-canvas-2);
   padding: 0.35rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   width: fit-content;
 }
 
@@ -72,7 +72,7 @@
   border: none;
   background: transparent;
   padding: 0.65rem 1.5rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   font-family: var(--ctv-font-body);
   font-size: 0.9rem;
   font-weight: 500;
@@ -138,7 +138,7 @@
 .faq-item__icon {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   border: 1px solid var(--ctv-rule-strong);
   display: inline-flex;
   align-items: center;
@@ -194,7 +194,7 @@
   padding: 0.9rem 1.5rem;
   background: var(--ctv-brand-deep);
   color: var(--ctv-canvas);
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;

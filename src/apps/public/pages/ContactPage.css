@@ -59,7 +59,7 @@
   margin-bottom: 1.25rem;
   background: rgba(8, 174, 6, 0.08);
   padding: 0.35rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(8, 174, 6, 0.2);
 }
 
@@ -97,7 +97,7 @@
 .cp-meta-card {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 16px;
+  border-radius: var(--ctv-radius-lg);
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
@@ -149,7 +149,7 @@
 .cp-faq-box {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 20px;
+  border-radius: var(--ctv-radius-xl);
   padding: 2rem 2.5rem;
   display: flex;
   align-items: center;
@@ -189,7 +189,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   background: transparent;
   border: 1px solid var(--ctv-glass-border);
   color: var(--ctv-brand-deep);

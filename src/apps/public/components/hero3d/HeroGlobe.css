@@ -1,3 +1,5 @@
+@import '../landing/tokens.css';
+
 /* ==========================================================================
    HeroGlobe.css — Contenedor del Planeta 3D y elementos orbitales para el Hero
    ========================================================================== */
@@ -19,7 +21,7 @@
   position: absolute;
   width: 82%;
   height: 82%;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: radial-gradient(circle at 45% 45%,
       rgba(34, 211, 238, 0.16) 0%,
       rgba(16, 185, 129, 0.12) 40%,
@@ -69,7 +71,7 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.35rem 0.8rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(7, 61, 61, 0.12);
   backdrop-filter: blur(12px);
@@ -86,7 +88,7 @@
 .hero-globe-badge__dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
 }
@@ -107,7 +109,7 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.35rem 0.95rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(7, 61, 61, 0.10);
   backdrop-filter: blur(12px);
@@ -146,7 +148,7 @@
   position: relative;
   width: 72%;
   height: 72%;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   background: radial-gradient(circle at 35% 35%, #0e7490 0%, #073d3d 70%, #032020 100%);
   box-shadow: 0 0 40px rgba(6, 182, 212, 0.25), inset -20px -20px 40px rgba(0, 0, 0, 0.6);
   display: flex;
@@ -157,7 +159,7 @@
 .hgf-glow {
   position: absolute;
   inset: -6px;
-  border-radius: 50%;
+  border-radius: var(--ctv-radius-full);
   border: 1.5px solid rgba(34, 211, 238, 0.4);
   filter: blur(2px);
 }
@@ -171,7 +173,7 @@
   font-weight: 500;
   background: rgba(7, 61, 61, 0.85);
   padding: 0.35rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }

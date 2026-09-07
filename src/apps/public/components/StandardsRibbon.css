@@ -37,7 +37,7 @@
   color: var(--ctv-brand-deep);
   background: rgba(7, 61, 61, 0.06);
   padding: 0.25rem 0.65rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(7, 61, 61, 0.1);
 }
 
@@ -70,7 +70,7 @@
   flex-direction: column;
   background: #ffffff;
   border: 1px solid rgba(7, 61, 61, 0.1);
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   padding: 0.85rem 1.15rem;
   min-width: 220px;
   box-shadow: 0 2px 4px rgba(7, 61, 61, 0.03);

@@ -59,7 +59,7 @@
   margin-bottom: 1.25rem;
   background: rgba(8, 174, 6, 0.08);
   padding: 0.35rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(8, 174, 6, 0.2);
 }
 
@@ -104,7 +104,7 @@
 .calcp-quick-pill {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   padding: 0.4rem 0.9rem;
   font-size: 0.82rem;
   font-weight: 600;
@@ -147,7 +147,7 @@
 .calcp-form-card {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(1.75rem, 3.5vw, 2.5rem);
   backdrop-filter: blur(12px);
   box-shadow: var(--ctv-shadow-card);
@@ -176,7 +176,7 @@
   display: flex;
   background: rgba(7, 61, 61, 0.05);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   margin-bottom: 1.75rem;
 }
 
@@ -185,7 +185,7 @@
   padding: 0.65rem 1rem;
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--ctv-ink-soft);
@@ -231,7 +231,7 @@
 .calcp-select {
   width: 100%;
   padding: 0.75rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   border: 1px solid var(--ctv-glass-border);
   background: #ffffff;
   color: var(--ctv-brand-deep);
@@ -249,7 +249,7 @@
 .calcp-swap-btn {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   border: 1px solid var(--ctv-glass-border);
   background: #ffffff;
   color: var(--ctv-brand-deep);
@@ -282,14 +282,14 @@
   justify-content: space-between;
   background: #ffffff;
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   padding: 0.35rem;
 }
 
 .calcp-counter button {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--ctv-radius-sm);
   border: none;
   background: rgba(7, 61, 61, 0.06);
   color: var(--ctv-brand-deep);
@@ -318,7 +318,7 @@
 .calcp-rf-toggle {
   background: rgba(8, 174, 6, 0.04);
   border: 1px solid rgba(8, 174, 6, 0.15);
-  border-radius: 14px;
+  border-radius: var(--ctv-radius-md);
   padding: 1rem 1.25rem;
 }
 
@@ -355,7 +355,7 @@
   background: rgba(227, 6, 19, 0.08);
   border: 1px solid rgba(227, 6, 19, 0.25);
   color: #E30613;
-  border-radius: 10px;
+  border-radius: var(--ctv-radius-sm);
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -364,7 +364,7 @@
 .calcp-results-card {
   background: linear-gradient(135deg, var(--ctv-teal-900) 0%, var(--ctv-teal-950) 100%);
   border: 1px solid var(--ctv-glass-border-dark);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(1.75rem, 3.5vw, 2.5rem);
   color: #ffffff;
   display: flex;
@@ -384,7 +384,7 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 0.3rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   align-self: flex-start;
   margin-bottom: 1.5rem;
 }
@@ -420,7 +420,7 @@
 .calcp-route-summary {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border-radius: var(--ctv-radius-lg);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -479,7 +479,7 @@
   gap: 0.85rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--ctv-radius-md);
   padding: 0.75rem 1rem;
 }
 
@@ -527,7 +527,7 @@
   background: var(--ctv-brand);
   color: #ffffff;
   padding: 1rem 1.5rem;
-  border-radius: 14px;
+  border-radius: var(--ctv-radius-md);
   font-weight: 700;
   font-size: 1rem;
   text-decoration: none;
@@ -555,7 +555,7 @@
 .calcp-method-box {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 24px;
+  border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 4vw, 3rem);
   box-shadow: var(--ctv-shadow-card);
 }
@@ -602,7 +602,7 @@
 .calcp-source-card {
   background: #ffffff;
   border: 1px solid var(--ctv-glass-border);
-  border-radius: 16px;
+  border-radius: var(--ctv-radius-lg);
   padding: 1.5rem;
   text-decoration: none;
   color: inherit;
@@ -626,7 +626,7 @@
   background: rgba(8, 174, 6, 0.1);
   color: var(--ctv-brand);
   padding: 0.2rem 0.6rem;
-  border-radius: 999px;
+  border-radius: var(--ctv-radius-pill);
   margin-bottom: 0.85rem;
   align-self: flex-start;
 }
