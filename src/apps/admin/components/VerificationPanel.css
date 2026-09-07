@@ -195,7 +195,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #9CA3AF;
+  color: #6B7280;
   text-align: center;
 }
 
@@ -526,7 +526,7 @@
   width: 4rem;
   height: 4rem;
   margin-bottom: 1rem;
-  color: #9CA3AF;
+  color: #6B7280;
 }
 
 .pdf-viewer-placeholder p {
@@ -537,14 +537,14 @@
 .pdf-note {
   font-size: 0.875rem;
   font-style: italic;
-  color: #9CA3AF;
+  color: #6B7280;
 }
 
 .loading-state,
 .empty-state {
   padding: 2rem;
   text-align: center;
-  color: #9CA3AF;
+  color: #6B7280;
 }
 
 /* Responsive */

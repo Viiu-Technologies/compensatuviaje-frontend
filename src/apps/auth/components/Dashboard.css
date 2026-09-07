@@ -250,7 +250,7 @@
 
 .card-description {
   font-size: 0.875rem;
-  color: #9CA3AF;
+  color: #6B7280;
 }
 
 .recent-activity {
@@ -269,7 +269,7 @@
 .activity-empty {
   text-align: center;
   padding: 3rem 1rem;
-  color: #9CA3AF;
+  color: #6B7280;
 }
 
 .activity-empty svg {

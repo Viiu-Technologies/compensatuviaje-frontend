@@ -14,7 +14,7 @@
 .search-icon {
   position: absolute;
   left: 16px;
-  color: #64748b;
+  color: #94A3B8;
   font-size: 16px;
   pointer-events: none;
 }
@@ -32,7 +32,7 @@
 }
 
 .airport-search-input::placeholder {
-  color: #64748b;
+  color: #94A3B8;
 }
 
 .airport-search-input:focus {
@@ -190,7 +190,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #64748b;
+  color: #94A3B8;
   font-size: 12px;
 }
 

@@ -424,7 +424,7 @@
   display: block;
   text-align: right;
   font-size: 0.85rem;
-  color: #9CA3AF;
+  color: #6B7280;
   margin-top: 0.25rem;
 }
 
@@ -609,7 +609,7 @@
 
 .dropzone__hint {
   font-size: 0.78rem;
-  color: #9ca3af;
+  color: #6B7280;
   margin: 0;
 }
 
