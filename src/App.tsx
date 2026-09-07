@@ -56,6 +56,10 @@ const VerificationPage = lazy(() => import('./apps/admin/pages/VerificationPage'
 
 const PartnerRoutes = lazy(() => import('./apps/partner').then(m => ({ default: m.PartnerRoutes })));
 
+// TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off.
+const BusinessCardStackPreview = lazy(() => import('./threejs-assets/BusinessCardStackPreview'));
+const LeaningCardsPreview = lazy(() => import('./threejs-assets/LeaningCardsPreview'));
+
 // Loading fallback minimalista
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
@@ -89,6 +93,10 @@ function App() {
             <Route path="/verify/token/:tokenId" element={<CertificateVerificationPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/aliados" element={<PartnersGuidePage />} />
+
+            {/* TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off */}
+            <Route path="/dev/business-card-stack" element={<BusinessCardStackPreview />} />
+            <Route path="/dev/leaning-cards" element={<LeaningCardsPreview />} />
             
             {/* Auth Callback for OAuth */}
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
