@@ -145,13 +145,16 @@ html {
          inline-flex items-center justify-center gap-2;
 }
 
+/* El gradiente anterior (primary-500 → primary-600) daba 2.28:1 y 3.30:1 con
+   texto blanco: por debajo del mínimo AA de 4.5:1. primary-700 es el primer
+   peso de la escala que cumple (5.02:1); el hover baja a 800 (7.13:1). */
 .btn-primary {
-  @apply px-6 py-3 rounded-xl font-medium transition-all duration-300 
+  @apply px-6 py-3 rounded-xl font-medium transition-all duration-300
          inline-flex items-center justify-center gap-2 text-white hover:scale-105 active:scale-95;
-  background: linear-gradient(to right, var(--color-primary-500), var(--color-primary-600));
+  background: linear-gradient(to right, var(--color-primary-700), var(--color-primary-800));
 }
 .btn-primary:hover {
-  background: linear-gradient(to right, var(--color-primary-600), var(--color-primary-700));
+  background: linear-gradient(to right, var(--color-primary-800), var(--color-primary-900));
   box-shadow: var(--shadow-glow);
 }
 
@@ -164,13 +167,15 @@ html {
   background: linear-gradient(to right, var(--color-secondary-600), var(--color-secondary-700));
 }
 
+/* text-primary-600 daba 3.30:1 sobre blanco. primary-700 (5.02:1) cumple AA
+   como texto; el borde puede quedarse en 600 porque no transporta texto. */
 .btn-outline {
-  @apply px-6 py-3 rounded-xl font-medium transition-all duration-300 
-         inline-flex items-center justify-center gap-2 border-2 text-primary-600 hover:bg-primary-50 hover:scale-105 active:scale-95;
-  border-color: var(--color-primary-500);
+  @apply px-6 py-3 rounded-xl font-medium transition-all duration-300
+         inline-flex items-center justify-center gap-2 border-2 text-primary-700 hover:bg-primary-50 hover:scale-105 active:scale-95;
+  border-color: var(--color-primary-600);
 }
 .btn-outline:hover {
-  border-color: var(--color-primary-600);
+  border-color: var(--color-primary-700);
 }
 
 .btn-ghost {
@@ -320,8 +325,10 @@ html {
 }
 
 /* Colors */
+/* #fbbf24 daba 1.67:1 sobre fondo claro — ilegible como texto. amber-700
+   (#b45309) da 5.02:1. El ámbar claro sigue disponible como fondo/relleno. */
 .text-amber-400 {
-  color: #fbbf24;
+  color: #b45309;
 }
 
 .text-neutral-900 {
@@ -344,20 +351,25 @@ html {
   color: #737373;
 }
 
+/* Estas dos utilidades pintan TEXTO. Sobre fondo claro, #22c55e da 2.28:1 y
+   #16a34a 3.30:1: ninguno alcanza el 4.5:1 de AA, así que ambas se sirven
+   desde primary-700 (5.02:1). Para el verde vivo de marca en superficies
+   decorativas sin texto, usar bg-primary-500 o --ctv-brand. */
 .text-primary-500 {
-  color: #22c55e;
+  color: #15803d;
 }
 
 .text-primary-600 {
-  color: #16a34a;
+  color: #15803d;
 }
 
 .text-secondary-600 {
   color: #2563eb;
 }
 
+/* #f59e0b daba 2.15:1 como texto. amber-700 (#b45309) da 5.02:1. */
 .text-accent-500 {
-  color: #f59e0b;
+  color: #b45309;
 }
 
 /* Backgrounds */

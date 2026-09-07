@@ -49,6 +49,11 @@
 
   /* ── Efectos premium ── */
   --ctv-gradient-brand: linear-gradient(120deg, #08AE06 0%, #0B8A4A 55%, #073D3D 100%);
+  /* Variante para superficies que llevan texto encima: el gradiente de marca
+     arranca en #08AE06 (2.97:1 con blanco) y no cumple AA. Este parte de
+     --ctv-accent-contrast, así que el tramo más claro ya da 7.52:1.
+     Usar --ctv-gradient-brand solo en superficies decorativas sin texto. */
+  --ctv-gradient-brand-accessible: linear-gradient(120deg, #046302 0%, #075239 55%, #073D3D 100%);
   --ctv-gradient-text: linear-gradient(100deg, #08AE06 0%, #0E9E5C 100%);
   --ctv-glow-green: 0 0 80px -12px rgba(8, 174, 6, 0.35);
   --ctv-glow-green-soft: 0 8px 40px -12px rgba(8, 174, 6, 0.28);

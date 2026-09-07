@@ -220,9 +220,12 @@
   border-color: var(--ctv-brand-deep);
 }
 
+/* Hover: --ctv-brand (#08AE06) daba 2.83:1 con el texto en canvas — por debajo
+   del mínimo AA de 4.5:1. --ctv-accent-contrast (#046302) da 7.16:1 y mantiene
+   la dirección del gesto (el botón se aclara respecto al teal de reposo). */
 .ctv-btn--primary:hover {
-  background: var(--ctv-brand);
-  border-color: var(--ctv-brand);
+  background: var(--ctv-accent-contrast);
+  border-color: var(--ctv-accent-contrast);
 }
 
 /* Full-width (mobile) */

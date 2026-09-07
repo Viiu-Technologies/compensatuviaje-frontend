@@ -122,8 +122,11 @@
   border: none;
 }
 
+/* --ctv-gradient-brand arranca en #08AE06, que da 2.97:1 con texto blanco.
+   Se usa --ctv-gradient-brand-accessible: mismo recorrido visual (verde → teal)
+   pero partiendo de #046302, con 7.52:1 en el tramo más claro. */
 .ctv-btn--primary {
-  background: var(--ctv-gradient-brand);
+  background: var(--ctv-gradient-brand-accessible);
   color: #ffffff;
   box-shadow: var(--ctv-glow-green-soft);
 }
