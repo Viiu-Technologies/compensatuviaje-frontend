@@ -13,8 +13,8 @@ import './CertificateSearch.css';
 
 const TRUST = [
   'Polygon Blockchain',
-  'ERC-721 Verificado',
-  'Impacto Trazable',
+  'Retiro Inmutable Auditado',
+  'Trazabilidad Pública',
 ];
 
 const CertificateSearch: React.FC = () => {
@@ -98,7 +98,7 @@ const CertificateSearch: React.FC = () => {
               <h2 className="cs-title">
                 <span className="hero-line"><span className="hero-line__inner">Verifica tu</span></span>
                 <span className="hero-line cs-title--accent">
-                  <span className="hero-line__inner"><em>certificado</em> NFT.</span>
+                  <span className="hero-line__inner"><em>certificado</em> inmutable.</span>
                 </span>
               </h2>
 
@@ -153,7 +153,7 @@ const CertificateSearch: React.FC = () => {
 
                     <dl className="cs-stats">
                       <div className="cs-stat">
-                        <dt>Token ID</dt>
+                        <dt>ID de Retiro</dt>
                         <dd>#{result.certificate.tokenId}</dd>
                       </div>
                       <div className="cs-stat">
@@ -231,7 +231,7 @@ const CertificateSearch: React.FC = () => {
               <div className="cs-hologram-sheen" aria-hidden="true" />
               <PlanetDataSVG className="cs-certificate-img" style={{ width: '220px', height: '220px' }} />
               <div className="cs-card-meta">
-                <span className="cs-card-meta__network">POLYGON MAINNET · ERC-721</span>
+                <span className="cs-card-meta__network">POLYGON MAINNET · RETIRO AUDITADO</span>
                 <span className="cs-card-meta__hash">0x71C...4a9b</span>
               </div>
               <div className="cs-card-badge">

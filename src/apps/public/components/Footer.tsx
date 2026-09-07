@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import './Footer.css';
+
+// Decorative 3D brand object beside the newsletter. Lazy so three.js stays out of the
+// landing page's initial bundle -- it is an ornament, not content, and the footer is
+// below the fold.
+const LeaningCardsFooterScene = lazy(() => import('../../../threejs-assets/LeaningCardsFooterScene'));
 
 const SECTIONS = [
   {
@@ -73,23 +78,31 @@ const Footer = () => {
             <h3 className="ft-newsletter__title">Recibe historias de impacto cada mes.</h3>
           </div>
 
-          <form
-            className="ft-newsletter__form"
-            onSubmit={(e) => { e.preventDefault(); setEmail(''); }}
-          >
-            <input
-              type="email"
-              required
-              placeholder="tu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="ft-newsletter__input"
-            />
-            <button type="submit" className="ft-newsletter__btn">
-              Suscribirme
-              <HiArrowRight aria-hidden="true" />
-            </button>
-          </form>
+          <div className="ft-newsletter__row">
+            <form
+              className="ft-newsletter__form"
+              onSubmit={(e) => { e.preventDefault(); setEmail(''); }}
+            >
+              <input
+                type="email"
+                required
+                placeholder="tu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="ft-newsletter__input"
+              />
+              <button type="submit" className="ft-newsletter__btn">
+                Suscribirme
+                <HiArrowRight aria-hidden="true" />
+              </button>
+            </form>
+
+            <div className="ft-newsletter__scene-row">
+              <Suspense fallback={null}>
+                <LeaningCardsFooterScene />
+              </Suspense>
+            </div>
+          </div>
         </div>
 
         {/* ── Banner de Proyectos ESG / Partners ── */}

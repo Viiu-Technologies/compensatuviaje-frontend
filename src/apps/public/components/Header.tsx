@@ -30,7 +30,7 @@ const Header = () => {
 
   /* ── Active nav link via IntersectionObserver ── */
   useEffect(() => {
-    const ids = ['inicio', 'calculadora-content', 'contacto'];
+    const ids = ['inicio', 'proyectos', 'empresas', 'calculadora-content', 'contacto'];
     const observers: IntersectionObserver[] = [];
 
     ids.forEach((id) => {
@@ -58,9 +58,11 @@ const Header = () => {
 
   const navLinks = [
     { href: '#inicio', label: 'Inicio' },
-    { href: '#calculadora-content', label: 'Calculadora' },
-    { href: '/blog', label: 'Blog' },
+    { href: '#proyectos', label: 'Proyectos' },
+    { href: '#empresas', label: 'Empresas' },
     { href: '/aliados', label: 'Aliados' },
+    { href: '#calculadora-content', label: 'Metodología' },
+    { href: '/blog', label: 'Blog' },
     { href: '#contacto', label: 'Contacto' },
   ];
 

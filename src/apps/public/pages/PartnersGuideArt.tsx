@@ -69,7 +69,7 @@ export const HeroPartnersNetworkArt = ({ className }: ArtProps) => (
           <rect x="49" y="53" width="36" height="16" rx="8" />
         </g>
       </g>
-      <text x="85" y="112" textAnchor="middle" fill={BRIGHT} fontSize="10" fontWeight="700" fontFamily="Montserrat, sans-serif" letterSpacing="1.5">IMPACT PARTNER RED</text>
+      <text x="85" y="112" textAnchor="middle" fill={BRIGHT} fontSize="10" fontWeight="700" fontFamily="Outfit, sans-serif" letterSpacing="1.5">IMPACT PARTNER RED</text>
     </g>
 
     {/* Nodo 1: Bosque / Reforestación (Top Left) */}
@@ -301,11 +301,11 @@ export const Step4KybVerificationArt = ({ className }: ArtProps) => (
     {/* Lente de Escaneo IA / Badge Platinum Tier */}
     <g transform="translate(135 60)">
       <rect x="0" y="0" width="95" height="75" rx="16" fill={DEEP} stroke={BRAND} strokeWidth="1.5" />
-      <text x="47" y="24" textAnchor="middle" fill="#7BE96D" fontSize="8" fontWeight="700" fontFamily="Montserrat, sans-serif" letterSpacing="1">VERIFICACIÓN IA</text>
+      <text x="47" y="24" textAnchor="middle" fill="#7BE96D" fontSize="8" fontWeight="700" fontFamily="Outfit, sans-serif" letterSpacing="1">VERIFICACIÓN IA</text>
       
       {/* Badge Tier Platinum */}
       <rect x="12" y="34" width="71" height="26" rx="13" fill={BRAND} />
-      <text x="47" y="51" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="800" fontFamily="Montserrat, sans-serif" letterSpacing="1">PLATINUM</text>
+      <text x="47" y="51" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="800" fontFamily="Outfit, sans-serif" letterSpacing="1">PLATINUM</text>
     </g>
 
     {/* Rayo de escáner verde */}
@@ -391,7 +391,7 @@ export const Step6EsgCertificationArt = ({ className }: ArtProps) => (
       <circle cx="67" cy="40" r="14" fill={BRAND} />
       <path d="M 61 40 L 65 44 L 73 36" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
 
-      <text x="67" y="74" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="700" fontFamily="Montserrat, sans-serif" letterSpacing="0.8">PROYECTO CERTIFICADO</text>
+      <text x="67" y="74" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="700" fontFamily="Outfit, sans-serif" letterSpacing="0.8">PROYECTO CERTIFICADO</text>
       <text x="67" y="88" textAnchor="middle" fill="#7BE96D" fontSize="7.5" fontFamily="Inter, sans-serif" letterSpacing="1.2">NIVEL PLATINO IMPACTO</text>
 
       {/* Línea de firma / Hash auditado */}
@@ -404,7 +404,7 @@ export const Step6EsgCertificationArt = ({ className }: ArtProps) => (
       {/* Roseta de la medalla */}
       <circle cx="35" cy="35" r="32" fill={BRAND} stroke="#ffffff" strokeWidth="2" />
       <circle cx="35" cy="35" r="24" fill={DEEP} />
-      <text x="35" y="39" textAnchor="middle" fill={BRIGHT} fontSize="14" fontWeight="800" fontFamily="Montserrat, sans-serif">ESG</text>
+      <text x="35" y="39" textAnchor="middle" fill={BRIGHT} fontSize="14" fontWeight="800" fontFamily="Outfit, sans-serif">ESG</text>
       
       {/* Cintas colgantes */}
       <path d="M 22 62 L 15 95 L 30 88 L 35 95 L 28 62 Z" fill={BRAND} />

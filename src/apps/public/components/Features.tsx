@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { HiArrowRight } from 'react-icons/hi';
 import { gsap, useGsapReveal, sectionTimeline } from '../hooks/useGsapReveal';
 import LogoLoopComponent from './LogoLoop';
-import { CO2EmissionSVG, MetricsSVG, CircuitLeafSVG } from './Illustrations';
+import { StepTripInputSVG, StepCalculationSVG, StepCompensationSVG } from './Illustrations';
 import { BlobField } from './landing/EcoArt';
 import './Features.css';
 
@@ -12,20 +12,20 @@ const STEPS = [
   {
     num: '01',
     title: 'Ingresa tu viaje',
-    body: 'Selecciona el medio de transporte, la ruta y los pasajeros. Tres campos, sin formularios largos.',
-    Illustration: CO2EmissionSVG,
+    body: 'Selecciona tu ruta, clase de cabina y pasajeros en tres clics, sin formularios largos ni registros previos.',
+    Illustration: StepTripInputSVG,
   },
   {
     num: '02',
     title: 'Calcula con datos oficiales',
-    body: 'Aplicamos factores de emisión DEFRA 2024, GHG Protocol e ICAO. Cálculo auditable.',
-    Illustration: MetricsSVG,
+    body: 'Aplicamos factores oficiales del DEFRA 2024, GHG Protocol e ICAO. Cálculo transparente y 100% auditable.',
+    Illustration: StepCalculationSVG,
   },
   {
     num: '03',
     title: 'Compensa con proyectos verificados',
-    body: 'Apoya iniciativas certificadas internacionalmente y recibe tu certificado digital.',
-    Illustration: CircuitLeafSVG,
+    body: 'Apoya iniciativas certificadas bajo estándares Verra VCS o Gold Standard y recibe tu certificado digital inmutable.',
+    Illustration: StepCompensationSVG,
   },
 ];
 
@@ -35,21 +35,19 @@ const Features = () => {
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set('.ctv-reveal', { autoAlpha: 1 });
 
-    // Reveal disparado al entrar la sección al viewport (una sola vez)
     const tl = sectionTimeline(root);
     tl.from('.ft-eyebrow', { y: 14, autoAlpha: 0, duration: 0.6 }, 0)
       .from('.ft-title .hero-line__inner', { yPercent: 110, stagger: 0.1, duration: 0.9 }, 0.1)
       .from('.ft-lede', { y: 16, autoAlpha: 0, duration: 0.7 }, 0.4)
       .from('.ft-step', { y: 36, autoAlpha: 0, stagger: 0.14, duration: 0.7 }, 0.45)
       .from('.ft-step__art > svg', {
-        scale: 0.72,
+        scale: 0.85,
         autoAlpha: 0,
         stagger: 0.14,
         duration: 0.7,
-        ease: 'back.out(1.7)',
+        ease: 'back.out(1.5)',
       }, 0.6);
 
-    // La tarjeta calculadora vive más abajo: trigger propio
     gsap.from('.ft-card', {
       y: 44,
       autoAlpha: 0,
@@ -58,40 +56,23 @@ const Features = () => {
       scrollTrigger: { trigger: '.ft-card', start: 'top 84%', once: true },
     });
 
-    // Micro-vida en las ilustraciones (loops sutiles, sin re-renders)
+    // Micro-animación suave en las tarjetas
     gsap.to('.ft-step__art', {
-      y: -7,
+      y: -5,
       duration: 3.2,
       ease: 'sine.inOut',
       yoyo: true,
       repeat: -1,
       stagger: 0.45,
     });
-    gsap.to('.molecule-co2', {
-      y: -6,
-      duration: 2.6,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-      transformOrigin: '50% 50%',
-    });
-    gsap.to('.leaf-capture', {
-      rotation: 3,
-      duration: 3,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-      transformOrigin: '50% 100%',
-    });
   }, []);
 
   return (
     <section ref={scopeRef} className="ft-section" id="calculadora">
-      {/* Patrón de blobs de marca, muy sutil */}
       <BlobField className="ft-section__bg" tone="rgba(7, 61, 61, 0.03)" />
 
       <div className="ft-container">
-        {/* ── Eyebrow + título ── */}
+        {/* Eyebrow + título */}
         <header className="ft-header">
           <span className="ft-eyebrow ctv-reveal">
             <span className="ft-eyebrow__line" />
@@ -112,7 +93,7 @@ const Features = () => {
           </p>
         </header>
 
-        {/* ── Pasos 01 / 02 / 03 — tarjetas con arte CO₂ ── */}
+        {/* Pasos 01 / 02 / 03: tarjetas con ilustraciones vectoriales claras */}
         <ol className="ft-steps" id="calculadora-content">
           {STEPS.map((step) => {
             const { Illustration } = step;
@@ -129,20 +110,23 @@ const Features = () => {
           })}
         </ol>
 
-        {/* ── Card calculadora — panel teal de marca ── */}
+        {/* Card resumen metodológico y garantías de pago */}
         <div className="ft-card">
           <BlobField className="ft-card__pattern" tone="rgba(255, 255, 255, 0.05)" />
 
           <div className="ft-card__copy">
-            <span className="ft-card__pill">1 cálculo gratuito</span>
-            <h3 className="ft-card__name">Calculadora de carbono</h3>
+            <span className="ft-card__pill">Metodología auditada</span>
+            <h3 className="ft-card__name">Cálculo transparente y certificado</h3>
             <p className="ft-card__sub">
-              Cálculos precisos con factores de emisión oficiales del DEFRA 2024 y
-              metodologías certificadas internacionalmente.
+              Aplicamos los factores oficiales de emisión del DEFRA 2024 y estándares internacionales del GHG Protocol
+              para asegurar que cada gramo de CO₂e sea exactamente atribuible y verificable.
             </p>
 
-            <button className="ft-cta" onClick={() => setIsModalOpen(true)}>
-              Calcular mi huella
+            <button
+              className="ft-cta"
+              onClick={() => document.getElementById('inicio')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Calcular mi ruta ahora
               <HiArrowRight aria-hidden="true" />
             </button>
 
@@ -152,7 +136,7 @@ const Features = () => {
           </div>
 
           <div className="ft-card__aside">
-            <span className="ft-card__aside-label">Confiado por</span>
+            <span className="ft-card__aside-label">Garantía de seguridad y pagos</span>
             <LogoLoopComponent />
           </div>
         </div>

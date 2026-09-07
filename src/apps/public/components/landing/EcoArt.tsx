@@ -311,7 +311,7 @@ export const CertificateArt = ({ className }: ArtProps) => (
         <rect x="49" y="53" width="36" height="16" rx="8" />
       </g>
     </g>
-    <text x="190" y="196" textAnchor="middle" fill="#ffffff" fontSize="17" fontWeight="600" fontFamily="Montserrat, sans-serif" letterSpacing="0.5">Certificado de Compensación</text>
+    <text x="190" y="196" textAnchor="middle" fill="#ffffff" fontSize="17" fontWeight="600" fontFamily="Outfit, sans-serif" letterSpacing="0.5">Certificado de Compensación</text>
     <text x="190" y="220" textAnchor="middle" fill="#8FBDB9" fontSize="11.5" fontFamily="Inter, sans-serif" letterSpacing="2.5">CO₂ · VERIFICADO EN BLOCKCHAIN</text>
     {/* métricas */}
     <g fontFamily="Inter, sans-serif">

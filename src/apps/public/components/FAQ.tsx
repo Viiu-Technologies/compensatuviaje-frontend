@@ -13,7 +13,7 @@ const FAQS_B2C = [
   {
     id: 2,
     q: '¿Qué es la compensación de carbono?',
-    a: 'Es invertir en proyectos verificados que reducen o capturan emisiones —reforestación, energías renovables, conservación— para equilibrar tu propio impacto.',
+    a: 'Es invertir en proyectos verificados que reducen o capturan emisiones (reforestación, energías renovables, conservación) para equilibrar tu propio impacto.',
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ const FAQS_B2C = [
   {
     id: 6,
     q: '¿Cuánto cuesta compensar un viaje?',
-    a: 'Aproximadamente USD 25 por tonelada de CO₂. Un Santiago–Buenos Aires ida y vuelta ronda USD 12,5. Calcula tu costo exacto en la calculadora.',
+    a: 'Aproximadamente USD 25 por tonelada de CO₂. Un vuelo Santiago a Buenos Aires ida y vuelta ronda USD 12,5. Calcula tu costo exacto en la calculadora.',
   },
   {
     id: 7,

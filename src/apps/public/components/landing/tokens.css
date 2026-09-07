@@ -17,6 +17,13 @@
   /* verde marca ultra-suave           */
   --ctv-accent: #079705;
   /* hover / estado activo             */
+  --ctv-accent-contrast: #046302;
+  /* verde con contraste WCAG AA > 4.5:1 sobre fondo claro */
+
+  /* ── Semántica ODS (Objetivos de Desarrollo Sostenible) ── */
+  --ctv-sdg-13: #3F7E44;
+  --ctv-sdg-15: #56C02B;
+  --ctv-sdg-7: #D9A404;
 
   /* ── Escala teal (fondos corporativos de marca) ── */
   --ctv-teal-950: #012120;
@@ -54,9 +61,12 @@
   --ctv-shadow-card-hover: 0 2px 4px rgba(7, 61, 61, 0.06),
     0 32px 72px -28px rgba(7, 61, 61, 0.36);
 
-  /* ── Tipografía ── */
-  --ctv-font-display: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif;
+  /* ── Tipografía ──
+     Las familias declaradas aquí DEBEN estar en el <link> de Google Fonts
+     de index.html. Outfit es la display del branding vigente (commit 0ac5043). */
+  --ctv-font-display: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   --ctv-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --ctv-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ctv-display-weight: 600;
   --ctv-display-tracking: -0.005em;
 

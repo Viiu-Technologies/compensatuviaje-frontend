@@ -1,143 +1,144 @@
 /* ==========================================================================
-   LogoLoop.css — Payment Marquee v4 · CompensaTuViaje
+   LogoLoop.css — Badges de pago y seguridad bancaria
    ========================================================================== */
+@import './landing/tokens.css';
 
-/* --------------------------------------------------------------------------
-   Section
-   -------------------------------------------------------------------------- */
-.pm-section {
+.pm-container {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0;
-  background: transparent;
 }
 
-.pm-eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+.pm-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   text-transform: uppercase;
-  color: #9ca3af;
-  margin: 0;
+  letter-spacing: 0.08em;
+  color: #3ED32B;
 }
 
-/* --------------------------------------------------------------------------
-   Marquee outer + fade edges
-   -------------------------------------------------------------------------- */
-.pm-marquee-outer {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
+.pm-header svg {
+  font-size: 0.95rem;
 }
 
-.pm-fade {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 100px;
-  z-index: 2;
-  pointer-events: none;
+.pm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
 }
 
-.pm-fade--left  { left:  0; background: linear-gradient(to right, var(--ctv-canvas, #ffffff), transparent); }
-.pm-fade--right { right: 0; background: linear-gradient(to left,  var(--ctv-canvas, #ffffff), transparent); }
-
-/* Si el fondo de la sección es oscuro, cambia estos gradientes a #0b1320 */
-
-/* --------------------------------------------------------------------------
-   Track animado
-   -------------------------------------------------------------------------- */
-.pm-marquee-track {
-  display: flex;
-  gap: 14px;
-  width: max-content;
-  padding: 12px 0;
-  animation: pmMarquee 22s linear infinite;
-  will-change: transform;
+@media (max-width: 440px) {
+  .pm-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.pm-marquee-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes pmMarquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* --------------------------------------------------------------------------
-   Card
-   -------------------------------------------------------------------------- */
 .pm-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 22px;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1.5px solid #e5e7eb;
-  flex-shrink: 0;
-  min-width: 210px;
-  cursor: default;
-  transition:
-    border-color 0.22s ease,
-    box-shadow   0.22s ease,
-    transform    0.18s ease;
+  gap: 0.65rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .pm-card:hover {
-  border-color: var(--accent-hover);
-  box-shadow: 0 10px 32px var(--accent);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* --------------------------------------------------------------------------
-   Logo area
-   -------------------------------------------------------------------------- */
-.pm-card__logo {
+.pm-card-visual {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-/* Stripe — icono cuadrado, morado */
-.pm-logo--stripe {
-  width: 36px;
-  height: 36px;
-}
-
-/* Webpay — pill rectangular */
-.pm-logo--webpay {
-  height: 36px;
+.pm-svg {
+  height: 18px;
   width: auto;
-  border-radius: 7px;
-  overflow: hidden;
-  display: block;
-  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.20);
 }
 
-/* --------------------------------------------------------------------------
-   Info
-   -------------------------------------------------------------------------- */
-.pm-card__info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pm-card__name {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: #111827;
+.pm-webpay-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1;
 }
 
-.pm-card__sub {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #9ca3af;
+.pm-webpay-text {
+  font-weight: 800;
+  color: #073D3D;
+  font-size: 0.76rem;
+  letter-spacing: -0.02em;
+}
+
+.pm-webpay-plus {
+  font-weight: 800;
+  color: #E30613;
+  font-size: 0.76rem;
+  margin-left: 2px;
+}
+
+.pm-cards-badge {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.pm-card-chip {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.pm-card-chip--visa {
+  background: #1A1F71;
+  color: #ffffff;
+}
+
+.pm-card-chip--mc {
+  background: #EB001B;
+  color: #ffffff;
+}
+
+.pm-ssl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(62, 211, 43, 0.15);
+  border: 1px solid rgba(62, 211, 43, 0.35);
+  color: #3ED32B;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.pm-card-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.pm-card-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.pm-card-sub {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.2;
 }

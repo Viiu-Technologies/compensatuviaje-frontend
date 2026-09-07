@@ -1,110 +1,99 @@
 import React from 'react';
+import { HiLockClosed, HiShieldCheck } from 'react-icons/hi';
 import './LogoLoop.css';
 
 /* ─────────────────────────────────────────────────────────────────
-   Stripe — path oficial extraído de simple-icons (hex: #635BFF)
-   viewBox 0 0 24 24
+   Stripe Logo: Clean modern SVG
    ───────────────────────────────────────────────────────────────── */
-const StripeLogo = () => (
-  <svg
-    role="img"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-label="Stripe"
-    className="pm-logo pm-logo--stripe"
-  >
+const StripeBadge = () => (
+  <svg viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="pm-svg">
     <path
+      d="M59.64 14.28c0-4.48-2.18-8-6.44-8-4.28 0-6.86 3.54-6.86 8 0 5.28 3.06 7.96 7.42 7.96 2.12 0 3.72-.48 4.92-1.16v-3.52c-1.2.6-2.58.94-4.14.94-1.68 0-3.08-.6-3.26-2.38h8.32c.02-.32.04-.6.04-.84zm-8.4-1.7c0-1.64.98-2.32 2-2.32s1.96.68 1.96 2.32h-3.96zm-7.6-6.3c-1.74 0-2.88.82-3.46 1.4V6.52H35.5v15.46h4.72v-9.28c0-2.02 1.34-3.02 2.76-3.02.48 0 .9.08 1.18.18V6.44c-.48-.12-.96-.16-1.46-.16zm-11.88-5.7v4.62h-2.34v3.52h2.34v7.38c0 3.1 1.7 4.94 4.58 4.94 1.32 0 2.28-.24 2.82-.54v-3.52c-.44.18-1.02.3-1.68.3-1.18 0-1.72-.6-1.72-1.94v-6.62h3.5v-3.52h-3.5V.58h-4zm-8.8 8.7c-1.14-.54-2.7-.96-3.86-1.38-.82-.3-1.12-.66-1.12-1.14 0-.68.62-1.14 1.76-1.14 1.62 0 3.3.62 4.46 1.28l1.32-3.72c-1.34-.72-3.32-1.24-5.78-1.24-4.1 0-6.88 2.18-6.88 5.84 0 3.16 1.96 4.78 5.12 5.92 1.28.48 2.58.9 2.58 1.48 0 .74-.72 1.24-1.98 1.24-1.84 0-3.98-.82-5.4-1.8l-1.38 3.82c1.62 1.08 3.96 1.76 6.78 1.76 4.38 0 7.12-2.18 7.12-5.88-.02-3.34-2.12-4.96-4.72-6.04z"
       fill="#635BFF"
-      d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305
-         1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975
-         15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757
-         4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445
-         1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921
-         -6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0
-         4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732
-         0-4.128-2.524-5.851-6.594-7.305h.003z"
     />
   </svg>
 );
 
 /* ─────────────────────────────────────────────────────────────────
-   Webpay — logo pill oficial con colores de marca Transbank
+   Webpay Plus: Clean modern typography & dual shield
    ───────────────────────────────────────────────────────────────── */
-const WebpayLogo = () => (
-  <svg
-    viewBox="0 0 130 40"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-label="Webpay by Transbank"
-    role="img"
-    className="pm-logo pm-logo--webpay"
-  >
-    {/* Pill rojo */}
-    <rect width="130" height="40" rx="8" fill="#E30613" />
-    {/* Texto WEBPAY */}
-    <text
-      x="12" y="27"
-      fontFamily="'Arial Black', Arial, sans-serif"
-      fontWeight="900"
-      fontSize="17"
-      fill="white"
-      letterSpacing="1.2"
-    >
-      WEBPAY
-    </text>
-    {/* Ícono tarjeta */}
-    <rect x="98" y="11" width="22" height="18" rx="3.5" fill="white" fillOpacity=".20" />
-    <rect x="98" y="17" width="22" height="5"  fill="white" fillOpacity=".40" />
-    <rect x="100" y="25" width="7" height="2"  rx="1"   fill="white" fillOpacity=".55" />
-  </svg>
+const WebpayBadge = () => (
+  <div className="pm-webpay-badge">
+    <span className="pm-webpay-text">webpay</span>
+    <span className="pm-webpay-plus">plus</span>
+  </div>
 );
 
 /* ─────────────────────────────────────────────────────────────────
-   Items del marquee — duplicados para loop infinito seamless
+   Visa / Mastercard clean badge
    ───────────────────────────────────────────────────────────────── */
-const ITEMS = [
-  { id: 'stripe',  Logo: StripeLogo,  name: 'Stripe',  sub: 'Crédito · Débito · Wallet', accent: 'rgba(99,91,255,0.18)',  accentHover: 'rgba(99,91,255,0.42)'  },
-  { id: 'webpay',  Logo: WebpayLogo,  name: 'Webpay',  sub: 'Transbank · Chile',          accent: 'rgba(227,6,19,0.15)',   accentHover: 'rgba(227,6,19,0.40)'   },
+const CardNetworkBadge = () => (
+  <div className="pm-cards-badge">
+    <span className="pm-card-chip pm-card-chip--visa">VISA</span>
+    <span className="pm-card-chip pm-card-chip--mc">MC</span>
+  </div>
+);
+
+const TRUST_ITEMS = [
+  {
+    id: 'stripe',
+    Component: StripeBadge,
+    label: 'Stripe Payments',
+    sub: 'Tarjetas globales',
+  },
+  {
+    id: 'webpay',
+    Component: WebpayBadge,
+    label: 'Webpay Plus',
+    sub: 'Transbank Chile',
+  },
+  {
+    id: 'cards',
+    Component: CardNetworkBadge,
+    label: 'Tarjetas Débito y Crédito',
+    sub: 'Procesamiento encriptado',
+  },
+  {
+    id: 'security',
+    Component: () => (
+      <div className="pm-ssl-badge">
+        <HiLockClosed aria-hidden="true" />
+        <span>SSL 256-Bit</span>
+      </div>
+    ),
+    label: 'Seguridad Bancaria',
+    sub: 'Tokens y 3D Secure',
+  },
 ];
 
-const LOOP = [...ITEMS, ...ITEMS, ...ITEMS, ...ITEMS]; // 4 repeticiones para un loop fluido
+const LOOP = [...TRUST_ITEMS, ...TRUST_ITEMS];
 
-/* ─────────────────────────────────────────────────────────────────
-   Componente principal
-   ───────────────────────────────────────────────────────────────── */
-const LogoLoop: React.FC = () => (
-  <section className="pm-section" aria-label="Métodos de pago aceptados">
-    <p className="pm-eyebrow">Pagos seguros con</p>
+export const LogoLoop: React.FC = () => {
+  return (
+    <div className="pm-container" aria-label="Plataforma de pagos segura y verificada">
+      <div className="pm-header">
+        <HiShieldCheck aria-hidden="true" />
+        <span>Pasarela de pago segura</span>
+      </div>
 
-    <div className="pm-marquee-outer">
-      {/* fade edges */}
-      <div className="pm-fade pm-fade--left"  aria-hidden="true" />
-      <div className="pm-fade pm-fade--right" aria-hidden="true" />
-
-      <div className="pm-marquee-track">
-        {LOOP.map((item, i) => {
-          const { Logo } = item;
+      <div className="pm-grid">
+        {TRUST_ITEMS.map((item) => {
+          const { Component } = item;
           return (
-            <div
-              key={`${item.id}-${i}`}
-              className={`pm-card pm-card--${item.id}`}
-              style={{
-                '--accent':       item.accent,
-                '--accent-hover': item.accentHover,
-              } as React.CSSProperties}
-            >
-              <div className="pm-card__logo">
-                <Logo />
+            <div key={item.id} className="pm-card">
+              <div className="pm-card-visual">
+                <Component />
               </div>
-              <div className="pm-card__info">
-                <span className="pm-card__name">{item.name}</span>
-                <span className="pm-card__sub">{item.sub}</span>
+              <div className="pm-card-text">
+                <span className="pm-card-title">{item.label}</span>
+                <span className="pm-card-sub">{item.sub}</span>
               </div>
             </div>
           );
         })}
       </div>
     </div>
-  </section>
-);
+  );
+};
 
 export default LogoLoop;

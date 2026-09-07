@@ -12,7 +12,7 @@
 
 .contact-container {
   width: 100%;
-  max-width: var(--ctv-page-max);
+  max-width: 1380px;
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
 }
@@ -21,13 +21,13 @@
 .contact-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(3rem, 6vw, 5rem);
-  align-items: center;
+  gap: clamp(2rem, 4.5vw, 4rem);
+  align-items: start;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 960px) {
   .contact-grid {
-    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-columns: 0.8fr 1.35fr;
   }
 }
 
@@ -331,4 +331,173 @@
   border-color: var(--ctv-brand-deep);
   color: var(--ctv-brand-deep);
   background: rgba(7, 61, 61, 0.04);
+}
+
+/* ── Tarjeta de Canal Oficial y Confianza ── */
+.contact-channel-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid rgba(7, 61, 61, 0.12);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(7, 61, 61, 0.04);
+}
+
+.contact-channel-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-accent-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.contact-channel-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-channel-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ctv-ink-mute);
+}
+
+.contact-channel-email {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.contact-channel-email:hover {
+  color: var(--ctv-accent-contrast);
+}
+
+.contact-trust-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.contact-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--ctv-ink-soft);
+}
+
+.contact-trust-item svg {
+  color: var(--ctv-accent-contrast);
+  font-size: 1rem;
+}
+
+/* ── Tarjeta de Formulario ── */
+.contact-card {
+  background: #ffffff;
+  border: 1px solid rgba(7, 61, 61, 0.12);
+  border-radius: 24px;
+  padding: clamp(2rem, 4.5vw, 3.25rem);
+  box-shadow: 0 24px 56px -12px rgba(7, 61, 61, 0.16);
+  width: 100%;
+}
+
+.contact-form-title {
+  font-family: var(--ctv-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 1.25rem;
+}
+
+.contact-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  margin-bottom: 1.25rem;
+}
+
+.contact-alert--error {
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+}
+
+.contact-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .contact-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.contact-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ctv-ink-soft);
+}
+
+.contact-input,
+.contact-select,
+.contact-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--ctv-canvas);
+  border: 1px solid rgba(7, 61, 61, 0.16);
+  border-radius: 10px;
+  font-family: var(--ctv-font-body);
+  font-size: 0.88rem;
+  color: var(--ctv-ink);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact-input:focus,
+.contact-select:focus,
+.contact-textarea:focus {
+  border-color: var(--ctv-brand);
+  box-shadow: 0 0 0 3px rgba(8, 174, 6, 0.14);
+}
+
+.contact-select {
+  cursor: pointer;
+}
+
+.contact-textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.contact-fineprint {
+  font-size: 0.72rem;
+  color: var(--ctv-ink-mute);
+  margin-top: 0.75rem;
+  text-align: center;
+  line-height: 1.4;
 }

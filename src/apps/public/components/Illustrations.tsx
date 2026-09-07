@@ -254,104 +254,163 @@ export const CircuitLeafSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props) =
 );
 
 /**
- * CO2EmissionSVG — Ilustración de molécula de CO₂ y su captura en hojas.
- * Transmite la compensación, captura y mitigación de huella.
+ * StepTripInputSVG: Ilustración moderna de ruta de vuelo y selección de viaje.
+ * Paso 01: Ingresa tu viaje.
  */
-export const CO2EmissionSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+export const StepTripInputSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
-    viewBox="0 0 400 400"
+    viewBox="0 0 320 220"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     style={{ overflow: 'visible' }}
     {...props}
   >
     <defs>
-      <radialGradient id="co2-glow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="rgba(8, 174, 6, 0.15)" />
-        <stop offset="100%" stopColor="rgba(0, 0, 0, 0)" />
-      </radialGradient>
-      <filter id="co2-blur" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="8" result="blur" />
+      <linearGradient id="route-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#073D3D" />
+        <stop offset="50%" stopColor="#08AE06" />
+        <stop offset="100%" stopColor="#073D3D" />
+      </linearGradient>
+      <filter id="route-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
         <feComposite in="SourceGraphic" in2="blur" operator="over" />
       </filter>
     </defs>
 
-    <circle cx="200" cy="200" r="160" fill="url(#co2-glow)" />
+    {/* Fondo de tarjeta estilo ticket de vuelo */}
+    <rect x="20" y="25" width="280" height="170" rx="18" fill="#ffffff" stroke="rgba(7, 61, 61, 0.12)" strokeWidth="1.5" />
+    
+    {/* Cabecera del ticket */}
+    <rect x="20" y="25" width="280" height="42" rx="18" fill="rgba(7, 61, 61, 0.04)" />
+    <circle cx="44" cy="46" r="4" fill="#08AE06" />
+    <rect x="58" y="42" width="70" height="8" rx="4" fill="rgba(7, 61, 61, 0.2)" />
+    <rect x="220" y="38" width="60" height="16" rx="8" fill="rgba(8, 174, 6, 0.15)" />
 
-    {/* Molécula CO2 central */}
-    <g className="molecule-co2">
-      {/* Enlaces químicos */}
-      <line x1="140" y1="185" x2="260" y2="185" stroke="#073D3D" strokeWidth="6" />
-      <line x1="140" y1="195" x2="260" y2="195" stroke="#073D3D" strokeWidth="6" />
+    {/* Nodos de Ruta: Origen y Destino */}
+    <circle cx="65" cy="125" r="14" fill="#073D3D" />
+    <circle cx="65" cy="125" r="5" fill="#ffffff" />
 
-      <line x1="140" y1="185" x2="260" y2="185" stroke="#08AE06" strokeWidth="2" filter="url(#co2-blur)" />
-      <line x1="140" y1="195" x2="260" y2="195" stroke="#08AE06" strokeWidth="2" filter="url(#co2-blur)" />
+    <circle cx="255" cy="125" r="14" fill="#08AE06" filter="url(#route-glow)" />
+    <circle cx="255" cy="125" r="5" fill="#ffffff" />
 
-      {/* Átomo Carbono (Centro) */}
-      <circle cx="200" cy="190" r="32" fill="#ffffff" stroke="#073D3D" strokeWidth="3" />
-      <text
-        x="200"
-        y="198"
-        textAnchor="middle"
-        fontFamily="'Outfit', 'Inter', sans-serif"
-        fontWeight="800"
-        fontSize="24"
-        fill="#073D3D"
-      >
-        C
-      </text>
+    {/* Arco parabólico de vuelo */}
+    <path
+      d="M 65 125 Q 160 55 255 125"
+      stroke="url(#route-gradient)"
+      strokeWidth="3.5"
+      strokeLinecap="round"
+      strokeDasharray="6 4"
+    />
 
-      {/* Átomo Oxígeno Izquierdo */}
-      <circle cx="110" cy="190" r="24" fill="#ffffff" stroke="#073D3D" strokeWidth="2.5" />
-      <text
-        x="110"
-        y="197"
-        textAnchor="middle"
-        fontFamily="'Outfit', 'Inter', sans-serif"
-        fontWeight="800"
-        fontSize="18"
-        fill="#073D3D"
-      >
-        O
-      </text>
-
-      {/* Átomo Oxígeno Derecho */}
-      <circle cx="290" cy="190" r="24" fill="#ffffff" stroke="#073D3D" strokeWidth="2.5" />
-      <text
-        x="290"
-        y="197"
-        textAnchor="middle"
-        fontFamily="'Outfit', 'Inter', sans-serif"
-        fontWeight="800"
-        fontSize="18"
-        fill="#073D3D"
-      >
-        O
-      </text>
+    {/* Avión volando sobre el arco */}
+    <g transform="translate(150, 78) rotate(5)">
+      <circle cx="10" cy="10" r="15" fill="#ffffff" stroke="#073D3D" strokeWidth="1.5" />
+      <path
+        d="M 10 3 L 14 12 L 20 13 L 13 15 L 14 19 L 10 17 L 6 19 L 7 15 L 0 13 L 6 12 Z"
+        fill="#08AE06"
+      />
     </g>
 
-    {/* Partículas de CO2 capturadas por hojas verdes */}
-    <g className="leaf-capture">
-      {/* Hoja 1 */}
-      <path
-        d="M260 280 C290 270, 310 290, 310 320 C280 320, 260 300, 260 280 Z"
-        fill="#08AE06"
-        fillOpacity="0.25"
-        stroke="#08AE06"
-        strokeWidth="1.5"
-      />
-      <circle cx="250" cy="270" r="4.5" fill="#08AE06" filter="url(#co2-blur)" />
+    {/* Etiquetas inferiores */}
+    <rect x="45" y="155" width="40" height="10" rx="5" fill="rgba(7, 61, 61, 0.25)" />
+    <rect x="235" y="155" width="40" height="10" rx="5" fill="rgba(8, 174, 6, 0.35)" />
+    <rect x="110" y="155" width="100" height="8" rx="4" fill="rgba(7, 61, 61, 0.12)" />
+  </svg>
+);
 
-      {/* Hoja 2 */}
-      <path
-        d="M140 280 C110 270, 90 290, 90 320 C120 320, 140 300, 140 280 Z"
-        fill="#08AE06"
-        fillOpacity="0.25"
-        stroke="#08AE06"
-        strokeWidth="1.5"
-      />
-      <circle cx="150" cy="270" r="4" fill="#08AE06" />
-    </g>
+/**
+ * StepCalculationSVG: Ilustración analítica y precisa de cálculo con datos oficiales.
+ * Paso 02: Calcula con datos oficiales.
+ */
+export const StepCalculationSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 320 220"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ overflow: 'visible' }}
+    {...props}
+  >
+    <defs>
+      <linearGradient id="calc-bar-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#08AE06" />
+        <stop offset="100%" stopColor="#073D3D" />
+      </linearGradient>
+    </defs>
+
+    {/* Fondo de tarjeta analítica */}
+    <rect x="20" y="25" width="280" height="170" rx="18" fill="#ffffff" stroke="rgba(7, 61, 61, 0.12)" strokeWidth="1.5" />
+
+    {/* Tacómetro / Barra de medición */}
+    <rect x="45" y="55" width="230" height="14" rx="7" fill="rgba(7, 61, 61, 0.08)" />
+    <rect x="45" y="55" width="165" height="14" rx="7" fill="url(#calc-bar-grad)" />
+
+    {/* Indicador de factor DEFRA */}
+    <circle cx="210" cy="62" r="11" fill="#073D3D" stroke="#ffffff" strokeWidth="2.5" />
+    <circle cx="210" cy="62" r="4" fill="#08AE06" />
+
+    {/* Bloques de datos métricos (distancia, factor, total) */}
+    <rect x="45" y="90" width="65" height="42" rx="10" fill="rgba(7, 61, 61, 0.04)" stroke="rgba(7, 61, 61, 0.08)" />
+    <circle cx="58" cy="103" r="4" fill="#08AE06" />
+    <rect x="68" y="100" width="30" height="6" rx="3" fill="rgba(7, 61, 61, 0.25)" />
+    <rect x="55" y="116" width="45" height="8" rx="4" fill="#073D3D" />
+
+    <text x="122" y="115" fontSize="16" fontWeight="bold" fill="#073D3D" textAnchor="middle">×</text>
+
+    <rect x="135" y="90" width="65" height="42" rx="10" fill="rgba(7, 61, 61, 0.04)" stroke="rgba(7, 61, 61, 0.08)" />
+    <circle cx="148" cy="103" r="4" fill="#073D3D" />
+    <rect x="158" y="100" width="30" height="6" rx="3" fill="rgba(7, 61, 61, 0.25)" />
+    <rect x="145" y="116" width="45" height="8" rx="4" fill="#08AE06" />
+
+    <text x="212" y="115" fontSize="16" fontWeight="bold" fill="#073D3D" textAnchor="middle">=</text>
+
+    <rect x="225" y="85" width="50" height="52" rx="10" fill="rgba(8, 174, 6, 0.12)" stroke="rgba(8, 174, 6, 0.3)" />
+    <rect x="233" y="98" width="34" height="8" rx="4" fill="#046302" />
+    <rect x="233" y="114" width="24" height="6" rx="3" fill="rgba(7, 61, 61, 0.3)" />
+
+    {/* Sello de validación inferior */}
+    <rect x="45" y="152" width="230" height="24" rx="8" fill="rgba(7, 61, 61, 0.03)" />
+    <circle cx="60" cy="164" r="5" fill="#08AE06" />
+    <rect x="74" y="161" width="110" height="6" rx="3" fill="rgba(7, 61, 61, 0.3)" />
+    <rect x="210" y="158" width="55" height="12" rx="6" fill="rgba(8, 174, 6, 0.2)" />
+  </svg>
+);
+
+/**
+ * StepCompensationSVG: Ilustración de certificado digital inmutable y proyecto verificado.
+ * Paso 03: Compensa con proyectos verificados.
+ */
+export const StepCompensationSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 320 220"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ overflow: 'visible' }}
+    {...props}
+  >
+    {/* Fondo de Certificado Digital */}
+    <rect x="35" y="25" width="250" height="170" rx="18" fill="#ffffff" stroke="rgba(7, 61, 61, 0.12)" strokeWidth="1.5" />
+
+    {/* Borde interior decorativo */}
+    <rect x="45" y="35" width="230" height="150" rx="12" fill="rgba(8, 174, 6, 0.02)" stroke="rgba(8, 174, 6, 0.2)" strokeDasharray="4 3" />
+
+    {/* Escudo / Sello de verificación central */}
+    <circle cx="160" cy="85" r="32" fill="#E4F6E0" stroke="#08AE06" strokeWidth="2" />
+    <path
+      d="M150 85 L157 92 L172 77"
+      stroke="#046302"
+      strokeWidth="3.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+
+    {/* Líneas de certificado y firmas */}
+    <rect x="90" y="130" width="140" height="8" rx="4" fill="#073D3D" />
+    <rect x="110" y="146" width="100" height="6" rx="3" fill="rgba(7, 61, 61, 0.3)" />
+
+    {/* Chip inferior de Trazabilidad Blockchain */}
+    <rect x="75" y="162" width="170" height="14" rx="7" fill="rgba(7, 61, 61, 0.06)" />
+    <circle cx="86" cy="169" r="3" fill="#08AE06" />
+    <rect x="96" y="166" width="120" height="6" rx="3" fill="rgba(7, 61, 61, 0.25)" />
   </svg>
 );
 

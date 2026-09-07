@@ -69,15 +69,39 @@
 
 /* ── Newsletter ─────────────────────────────────────── */
 .ft-newsletter {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   padding: clamp(2rem, 5vw, 3.5rem) 0;
   border-bottom: 1px solid rgba(247, 250, 248, 0.15);
 }
-@media (min-width: 800px) {
-  .ft-newsletter { grid-template-columns: 1fr 1fr; }
+
+.ft-newsletter__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+/* ── 3D brand object ────────────────────────────────── */
+.ft-cards3d {
+  display: block;
+  width: min(100%, 760px);
+  height: clamp(280px, 38vw, 520px);
+  /* Decorative: never intercept clicks aimed at the newsletter form. */
+  pointer-events: none;
+  /* Slightly held back so it reads as an ornament behind the content hierarchy,
+     not a third competing element. */
+  opacity: 0.92;
+}
+.ft-newsletter__scene-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+/* Motion in the scene itself is already gated on prefers-reduced-motion; this is the
+   belt-and-braces case where a user also wants less visual noise overall. */
+@media (prefers-reduced-motion: reduce) {
+  .ft-cards3d { opacity: 0.8; }
 }
 
 .ft-newsletter__label {
@@ -92,12 +116,13 @@
 .ft-newsletter__title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
   line-height: 1.15;
   letter-spacing: -0.005em;
   color: var(--ctv-canvas);
   margin: 0;
-  max-width: 24ch;
+  /* No max-width / no forced wrap here on purpose -- this row now owns the full
+     footer width, so the line only breaks if the viewport is genuinely too narrow. */
 }
 
 .ft-newsletter__form {

@@ -1,5 +1,18 @@
 import { Link } from 'react-router-dom';
-import { HiArrowRight, HiOutlineMail } from 'react-icons/hi';
+import {
+  HiArrowRight,
+  HiOutlineMail,
+  HiCheckCircle,
+  HiCheck,
+  HiShieldCheck,
+  HiOutlineKey,
+  HiOutlineOfficeBuilding,
+  HiOutlineGlobeAlt,
+  HiBadgeCheck,
+  HiSparkles,
+  HiExternalLink,
+} from 'react-icons/hi';
+import { FaSun, FaTree, FaSeedling } from 'react-icons/fa';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { gsap, useGsapReveal, sectionTimeline } from '../hooks/useGsapReveal';
@@ -21,6 +34,7 @@ type Step = {
   title: string;
   body: string;
   bullets: string[];
+  Icon: React.ComponentType<{ className?: string }>;
   Art: React.ComponentType<{ className?: string }>;
   badge?: { label: string; tone: 'pending' | 'ai' | 'approved' | 'rejected' };
 };
@@ -28,29 +42,32 @@ type Step = {
 const STEPS: Step[] = [
   {
     num: '01',
-    eyebrow: 'Invitación',
-    title: 'Recibes tu acceso por correo',
+    eyebrow: 'Invitación oficial',
+    title: 'Recibes tu acceso por correo corporativo',
     body:
-      'CompensaTuViaje es una red de aliados por invitación. Nuestro equipo crea tu cuenta y te envía credenciales temporales al correo de contacto de tu organización.',
-    bullets: ['Cuenta creada por el equipo CompensaTuViaje', 'Un solo usuario administrador por aliado', 'Login en /partner/login'],
+      'CompensaTuViaje es una red de aliados por invitación. Nuestro equipo crea tu cuenta y te envía credenciales temporales al correo de contacto oficial de tu organización.',
+    bullets: ['Cuenta creada por el equipo CompensaTuViaje', 'Un solo usuario administrador por aliado', 'Acceso seguro al portal de partners'],
+    Icon: HiOutlineMail,
     Art: Step1InvitationArt,
   },
   {
     num: '02',
-    eyebrow: 'Seguridad',
-    title: 'Cambias tu contraseña temporal',
+    eyebrow: 'Seguridad y autenticación',
+    title: 'Estableces tu contraseña definitiva',
     body:
-      'En tu primer ingreso te pedimos reemplazar la contraseña temporal por una definitiva, con mínimo 8 caracteres, una mayúscula y un número.',
-    bullets: ['Obligatorio antes de continuar', 'Mínimo 8 caracteres · mayúscula · número'],
+      'En tu primer ingreso te pedimos reemplazar la contraseña temporal por una definitiva con altos estándares de seguridad criptográfica.',
+    bullets: ['Obligatorio antes de continuar', 'Mínimo 8 caracteres, mayúscula y números', 'Sesión cifrada con JWT'],
+    Icon: HiOutlineKey,
     Art: Step2SecurityArt,
   },
   {
     num: '03',
-    eyebrow: 'Onboarding',
+    eyebrow: 'Onboarding organizacional',
     title: 'Completas el perfil de tu organización',
     body:
-      'Dos pasos rápidos: subes el logo y los datos de tu organización, y luego registras los datos bancarios donde recibirás el pago de tus compensaciones.',
-    bullets: ['Logo y datos de contacto', 'Datos bancarios (uso confidencial)', 'Habilita el resto de la plataforma'],
+      'Dos pasos rápidos: subes el logo y datos legales de tu organización, y luego registras los datos bancarios protegidos donde recibirás el pago por tus compensaciones.',
+    bullets: ['Logo corporativo e información de contacto', 'Datos bancarios con resguardo confidencial', 'Habilitación de dashboard de proyectos'],
+    Icon: HiOutlineOfficeBuilding,
     Art: Step3OnboardingArt,
   },
   {
@@ -58,29 +75,62 @@ const STEPS: Step[] = [
     eyebrow: 'Verificación empresarial · KYB',
     title: 'Tu empresa pasa la verificación KYB',
     body:
-      'Subes un dossier con tu documentación legal, financiera y comercial. Nuestra IA evalúa cuatro dimensiones y asigna un puntaje; luego un administrador confirma la decisión.',
-    bullets: ['Documento PDF · máx. 10MB', 'Evalúa: legal, financiero, técnico, referencias', 'Tier asignado: PLATINUM · GOLD · SILVER'],
-    badge: { label: 'Empresa verificada', tone: 'approved' },
+      'Subes un dossier con tu documentación legal, financiera y técnica. Nuestra IA evalúa cuatro dimensiones y asigna un puntaje; luego un auditor senior confirma la acreditación.',
+    bullets: ['Documento PDF auditado hasta 10MB', 'Evaluación legal, financiera y de solvencia técnica', 'Acreditación en niveles PLATINUM, GOLD o SILVER'],
+    badge: { label: 'Organización verificada KYB', tone: 'approved' },
+    Icon: HiShieldCheck,
     Art: Step4KybVerificationArt,
   },
   {
     num: '05',
-    eyebrow: 'Proyectos ESG',
-    title: 'Creas y envías tu primer proyecto',
+    eyebrow: 'Proyectos climáticos ESG',
+    title: 'Cargas y postulas tu primer proyecto',
     body:
-      'Con la cuenta activa, cargas tu proyecto de compensación (reforestación, energía renovable, conservación marina, etc.) con sus métricas de impacto y lo envías a revisión.',
-    bullets: ['Guarda como borrador cuantas veces quieras', 'Envías a revisión cuando esté completo', 'Un SuperAdmin aprueba o solicita ajustes'],
+      'Con la cuenta activa, cargas tu iniciativa de compensación (reforestación nativa, parques solares, conservación biológica) con sus métricas auditables y geolocalización.',
+    bullets: ['Edición en borrador las veces que requieras', 'Envío a revisión con documentación técnica', 'Revisión técnica de estándares internacionales'],
+    Icon: HiOutlineGlobeAlt,
     Art: Step5EsgProjectsArt,
   },
   {
     num: '06',
-    eyebrow: 'Certificación ESG',
-    title: 'Certificas el proyecto y comienzas a operar',
+    eyebrow: 'Certificación ESG y Operación',
+    title: 'Certificas el proyecto y comienzas a monetizar',
     body:
-      'Subes el documento PDD del proyecto para la auditoría de impacto ESG. La IA genera un informe y un nivel de certificación; el admin confirma y tu proyecto queda activo para recibir compensaciones.',
-    bullets: ['Niveles: Platino Impacto · Oro · Plata', 'Informe de auditoría en detalle', 'Proyecto activo = recibe ventas'],
-    badge: { label: 'Proyecto certificado', tone: 'approved' },
+      'Subes el documento PDD para la auditoría de impacto. Nuestro sistema audita y emite la certificación; tu proyecto queda activo para recibir fondos de viajeros y corporaciones.',
+    bullets: ['Niveles de certificación de impacto Platino, Oro y Plata', 'Informe de auditoría técnica con trazabilidad', 'Proyecto activo en marketplace público y B2B'],
+    badge: { label: 'Proyecto certificado y activo', tone: 'approved' },
+    Icon: HiBadgeCheck,
     Art: Step6EsgCertificationArt,
+  },
+];
+
+const CERTIFIED_SHOWCASE = [
+  {
+    title: 'Parque Solar Fotovoltaico Atacama',
+    location: 'Región de Antofagasta, Chile',
+    category: 'Energía Renovable',
+    standard: 'Verra VCS & Gold Standard',
+    metric: '45.000 t CO₂/año evitadas',
+    image: '/images/atacama_solar_park.jpg',
+    Icon: FaSun,
+  },
+  {
+    title: 'Reserva Biológica Selva Valdiviana',
+    location: 'Región de Los Ríos, Chile',
+    category: 'Conservación y Biodiversidad',
+    standard: 'Estándar VCS · Defra Audit',
+    metric: '18.200 t CO₂ capturadas',
+    image: '/images/realistic_forest_canopy.png',
+    Icon: FaTree,
+  },
+  {
+    title: 'Restauración Comunitaria de Ecosistemas',
+    location: 'Cordillera Central, Chile',
+    category: 'Reforestación Nativa',
+    standard: 'Polygon Blockchain ERC-721',
+    metric: '12.000 árboles plantados',
+    image: '/images/realistic_eco_seedling.png',
+    Icon: FaSeedling,
   },
 ];
 
@@ -260,22 +310,29 @@ const PartnersGuidePage = () => {
 
               <ol className="pg-steps">
                 {STEPS.map((step, i) => {
-                  const { Art } = step;
+                  const { Art, Icon } = step;
                   return (
                     <li key={step.num} className={`pg-step${i % 2 === 0 ? ' pg-step--left' : ' pg-step--right'}`}>
                       <span className="pg-step__dot">{step.num}</span>
                       <div className="pg-step__card">
-                        <span className="pg-step__eyebrow">{step.eyebrow}</span>
+                        <div className="pg-step__eyebrow-wrap">
+                          <Icon className="pg-step__eyebrow-icon" aria-hidden="true" />
+                          <span className="pg-step__eyebrow">{step.eyebrow}</span>
+                        </div>
                         <h3 className="pg-step__title">{step.title}</h3>
                         <p className="pg-step__body">{step.body}</p>
                         <ul className="pg-step__bullets">
                           {step.bullets.map((b) => (
-                            <li key={b}>{b}</li>
+                            <li key={b}>
+                              <HiCheck className="pg-bullet__check-icon" aria-hidden="true" />
+                              <span>{b}</span>
+                            </li>
                           ))}
                         </ul>
                         {step.badge && (
                           <span className={`pg-badge pg-badge--${step.badge.tone}`}>
-                            ✅ {step.badge.label}
+                            <HiCheckCircle className="pg-badge__check-icon" aria-hidden="true" />
+                            <span>{step.badge.label}</span>
                           </span>
                         )}
                       </div>
@@ -286,6 +343,71 @@ const PartnersGuidePage = () => {
                   );
                 })}
               </ol>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Galería Real de Proyectos de Aliados Certificados ── */}
+        <section className="pg-showcase" aria-label="Proyectos de aliados en operación">
+          <div className="pg-showcase__container">
+            <header className="pg-showcase__header">
+              <span className="pg-showcase__eyebrow">
+                <HiShieldCheck aria-hidden="true" />
+                Impacto en Operación
+              </span>
+              <h2 className="pg-showcase__title">
+                Proyectos de aliados que ya reciben compensaciones
+              </h2>
+              <p className="pg-showcase__lead">
+                Iniciativas auditadas con factores DEFRA 2024, GHG Protocol y registro inmutable en blockchain.
+              </p>
+            </header>
+
+            <div className="pg-showcase__grid">
+              {CERTIFIED_SHOWCASE.map((item) => {
+                const { Icon } = item;
+                return (
+                  <div key={item.title} className="pg-showcase__card">
+                    <div className="pg-showcase__image-wrap">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="pg-showcase__img"
+                        loading="lazy"
+                      />
+                      <span className="pg-showcase__category-badge">
+                        <Icon aria-hidden="true" />
+                        <span>{item.category}</span>
+                      </span>
+                    </div>
+
+                    <div className="pg-showcase__body">
+                      <h3 className="pg-showcase__card-title">{item.title}</h3>
+                      <p className="pg-showcase__card-location">{item.location}</p>
+
+                      <div className="pg-showcase__meta-row">
+                        <div className="pg-showcase__meta-item">
+                          <span className="pg-showcase__meta-label">Estándar</span>
+                          <span className="pg-showcase__meta-val">{item.standard}</span>
+                        </div>
+                        <div className="pg-showcase__meta-item">
+                          <span className="pg-showcase__meta-label">Impacto anual</span>
+                          <span className="pg-showcase__meta-val pg-showcase__meta-val--green">
+                            {item.metric}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="pg-showcase__footer">
+                        <span className="pg-showcase__verified-pill">
+                          <HiCheckCircle aria-hidden="true" />
+                          Certificación Activa
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
