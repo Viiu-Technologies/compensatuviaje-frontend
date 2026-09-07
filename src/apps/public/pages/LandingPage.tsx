@@ -48,18 +48,27 @@ const LandingPage: React.FC = () => {
 
   return (
     <>
+      {/* Primer elemento tabulable: permite saltar la navegación y llegar
+          directo al contenido. Solo es visible al recibir foco. */}
+      <a href="#contenido-principal" className="skip-to-content">
+        Saltar al contenido
+      </a>
       <Header />
-      <Hero />
-      <StandardsRibbon />
+      <main id="contenido-principal">
+        <Hero />
+        <StandardsRibbon />
+        <Suspense fallback={null}>
+          <Features />
+          <VirtualForestSection />
+          <ProjectsBento />
+          <EnterpriseSuite />
+          <CertificateSearch />
+          <Testimonials />
+          <FAQ />
+          <ContactSection />
+        </Suspense>
+      </main>
       <Suspense fallback={null}>
-        <Features />
-        <VirtualForestSection />
-        <ProjectsBento />
-        <EnterpriseSuite />
-        <CertificateSearch />
-        <Testimonials />
-        <FAQ />
-        <ContactSection />
         <Footer />
       </Suspense>
     </>

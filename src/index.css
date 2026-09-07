@@ -126,6 +126,48 @@ html {
   color: #14532d;
 }
 
+/* ── Foco de teclado ──────────────────────────────────────────────────────
+   Red de seguridad global: antes de esto, :focus-visible existia en 1 de 35
+   hojas y ningun boton global declaraba :focus, asi que navegar con Tab no
+   producia señal visible en la mayor parte del producto.
+
+   Se usa :focus-visible (no :focus) para que el anillo aparezca al tabular
+   pero no al hacer clic con el raton. Los componentes que ya definen su
+   propio foco lo sobrescriben por especificidad; esto solo cubre el resto.
+
+   El offset separa el anillo del borde del control, y el color es
+   --ctv-accent-contrast (#046302), el mismo verde accesible del bug 2. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #046302;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Sobre fondos oscuros el verde oscuro se pierde: ahi se usa el verde vivo. */
+:where(.glass-dark, .dark, [data-theme="dark"])
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline-color: #3ED32B;
+}
+
+/* Quien navega con teclado necesita poder saltar la navegacion. */
+.skip-to-content {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -120%);
+  z-index: 10000;
+  padding: 0.75rem 1.25rem;
+  background: #046302;
+  color: #ffffff;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+.skip-to-content:focus {
+  transform: translate(-50%, 0);
+}
+
 /* Componentes reutilizables */
 .glass {
   @apply backdrop-blur-xl border border-white/30;

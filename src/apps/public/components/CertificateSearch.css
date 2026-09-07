@@ -226,6 +226,17 @@
   align-items: center;
   box-shadow: 0 1px 0 rgba(7, 61, 61, 0.04),
     0 30px 60px -50px rgba(7, 61, 61, 0.25);
+  transition: border-color 0.2s var(--ctv-ease-out),
+    box-shadow 0.2s var(--ctv-ease-out);
+}
+
+/* .cs-input anula su outline y es transparente sin borde propio: sin esto,
+   tabular hasta el buscador no producía ninguna señal visible. El foco se
+   marca en la píldora contenedora, igual que .ft-newsletter__form. */
+.cs-form:focus-within {
+  border-color: var(--ctv-accent-contrast);
+  box-shadow: 0 0 0 3px rgba(4, 99, 2, 0.18),
+    0 30px 60px -50px rgba(7, 61, 61, 0.25);
 }
 
 .cs-input-wrap {
