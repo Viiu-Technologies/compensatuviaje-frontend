@@ -14,6 +14,7 @@ import {
   updateSettings,
   PlatformSettings,
 } from '../services/adminApi';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
@@ -49,7 +50,7 @@ export default function SettingsPage() {
         max_price_clp_per_ton: settingsData.max_price_clp_per_ton
       });
     } catch (err: any) {
-      setError(err.message || 'Error loading settings');
+      setError(getErrorMessage(err, 'No pudimos cargar la configuración.'));
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,7 @@ export default function SettingsPage() {
       setSuccess('Configuración guardada exitosamente');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Error saving settings');
+      setError(getErrorMessage(err, 'No pudimos guardar los cambios. Vuelve a intentarlo.'));
     } finally {
       setSaving(false);
     }

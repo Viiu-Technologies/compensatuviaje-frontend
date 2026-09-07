@@ -49,6 +49,7 @@ import {
   KYB_TIER_ICONS,
   KYB_TIER_COLORS
 } from '../../../types/kyb.types';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 // Services
 import kybApi from '../services/kybApi';
@@ -660,7 +661,7 @@ const KybVerificationPage: React.FC = () => {
       await refetch();
     } catch (err: any) {
       console.error('Upload error:', err);
-      setError(err.message || 'Error al enviar el dossier');
+      setError(getErrorMessage(err, 'No pudimos enviar el dossier. Vuelve a intentarlo en unos momentos.'));
     } finally {
       setIsSubmitting(false);
     }

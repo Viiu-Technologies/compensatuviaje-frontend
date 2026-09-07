@@ -20,6 +20,7 @@ import b2cApi, { type B2CCertificate } from '../services/b2cApi';
 import { MintNFTModal } from '../../../shared/components/blockchain';
 import { downloadCertificatePDF } from '../utils/CertificatePDF';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const B2CCertificatesPage: React.FC = () => {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ const B2CCertificatesPage: React.FC = () => {
         setCertificates(data.certificates || []);
       } catch (err: any) {
         console.error('Error fetching certificates:', err);
-        setError(err.message || 'Error cargando certificados');
+        setError(getErrorMessage(err, 'No pudimos cargar tus certificados. Vuelve a intentarlo en unos momentos.'));
       } finally {
         setLoading(false);
       }

@@ -42,9 +42,12 @@ const ERROR_MESSAGES = {
 /**
  * Obtiene un mensaje user-friendly a partir de un error
  * @param {Error|Object} error - Error object o respuesta de error del backend
+ * @param {string} [fallback] - Mensaje para errores no reconocidos, redactado
+ *   para el caso de uso que llama ("No pudimos cargar tus vuelos", etc.).
+ *   Si se omite se usa el genérico UNKNOWN_ERROR.
  * @returns {string} Mensaje de error user-friendly
  */
-export const getErrorMessage = (error) => {
+export const getErrorMessage = (error, fallback) => {
   // Si es un string, retornarlo directamente
   if (typeof error === 'string') {
     return error;
@@ -116,11 +119,11 @@ export const getErrorMessage = (error) => {
       case 500:
         return 'Error del servidor. Por favor, intenta de nuevo más tarde.';
       default:
-        return ERROR_MESSAGES.UNKNOWN_ERROR;
+        return fallback || ERROR_MESSAGES.UNKNOWN_ERROR;
     }
   }
 
-  return ERROR_MESSAGES.UNKNOWN_ERROR;
+  return fallback || ERROR_MESSAGES.UNKNOWN_ERROR;
 };
 
 /**

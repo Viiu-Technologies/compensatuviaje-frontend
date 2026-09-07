@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Register.css';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const API_URL = (import.meta as any).env?.VITE_APP_API_URL
   || (import.meta as any).env?.VITE_API_URL
@@ -123,13 +124,13 @@ const RegisterWizard = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Error al crear la cuenta');
+        throw new Error(data.message || 'No pudimos crear la cuenta. Revisa los datos e inténtalo de nuevo.');
       }
         
         // Redirigir al login
         navigate('/auth/login');
     } catch (err: any) {
-      setApiError(err.message || 'Error al crear la cuenta');
+      setApiError(getErrorMessage(err, 'Error al crear la cuenta'));
     } finally {
       setIsLoading(false);
     }

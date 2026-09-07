@@ -21,6 +21,7 @@ import {
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const B2CNFTCertificatesPage: React.FC = () => {
   const [wallet, setWallet] = useState<WalletState>(walletService.getState());
@@ -65,7 +66,7 @@ const B2CNFTCertificatesPage: React.FC = () => {
         setError('No se pudieron cargar los certificados');
       }
     } catch (err: any) {
-      setError(err.message || 'Error al cargar certificados');
+      setError(getErrorMessage(err, 'Error al cargar certificados'));
     } finally {
       setLoading(false);
     }

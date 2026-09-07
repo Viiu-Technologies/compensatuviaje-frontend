@@ -6,6 +6,7 @@ import {
   ArrowLeft, ArrowRight, Loader2, CheckCircle, AlertCircle,
   Plane, Truck, Package, Briefcase, Star, Globe, Check
 } from 'lucide-react';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 type CompanyType = 'TRAVEL_AGENCY' | 'TRANSPORT' | 'LOGISTICS' | 'CORPORATE' | 'EVENTS' | 'OTHER';
 
@@ -128,13 +129,13 @@ const B2BRegisterPage: React.FC = () => {
           const hasStep2Error = data.errors.some((e: any) => step2Fields.includes(e.field));
           if (hasStep2Error) setStep(2);
         } else {
-          throw new Error(data.error || data.message || 'Error al registrar empresa');
+          throw new Error(data.error || data.message || 'No pudimos completar el registro. Revisa los datos e inténtalo de nuevo.');
         }
         return;
       }
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || 'Error al registrar empresa');
+      setError(getErrorMessage(err, 'Error al registrar empresa'));
     } finally {
       setIsLoading(false);
     }

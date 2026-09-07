@@ -14,6 +14,7 @@ import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from './B2CLayout';
 import b2cApi, { type DashboardData } from '../services/b2cApi';
 import { TrophyRoomPanel } from './badges/TrophyRoomPanel';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const emptyDashboard: DashboardData = {
   user: { nombre: '', email: '', avatarUrl: null, memberSince: new Date().toISOString() },
@@ -46,7 +47,7 @@ const B2CDashboard = () => {
         setData(dashData);
       } catch (err: any) {
         console.error('Error fetching dashboard:', err);
-        setError(err.message || 'Error cargando datos');
+        setError(getErrorMessage(err, 'No pudimos cargar tu panel. Vuelve a intentarlo en unos momentos.'));
         // Use empty dashboard so the page renders with zeros instead of error page
         setData(emptyDashboard);
       } finally {

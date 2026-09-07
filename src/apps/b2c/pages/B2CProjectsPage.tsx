@@ -21,6 +21,7 @@ import {
 import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
 import b2cApi, { createPaymentTransaction, type B2CProject } from '../services/b2cApi';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const projectTypeConfig: Record<string, { label: string; emoji: string; icon: any; colorFrom: string; colorTo: string; badgeBg: string; badgeText: string }> = {
   reforestation: { label: 'Reforestación', emoji: '🌳', icon: FaTree, colorFrom: '!from-green-50', colorTo: '!to-green-100', badgeBg: '!bg-green-100', badgeText: '!text-green-700' },
@@ -60,7 +61,7 @@ const B2CProjectsPage: React.FC = () => {
         setProjects(data);
       } catch (err: any) {
         console.error('Error fetching projects:', err);
-        setError(err.message || 'Error cargando proyectos');
+        setError(getErrorMessage(err, 'No pudimos cargar los proyectos. Vuelve a intentarlo en unos momentos.'));
       } finally {
         setLoading(false);
       }
@@ -108,7 +109,7 @@ const B2CProjectsPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error creating payment:', err);
-      setError(err.message || 'Error al crear transacción de pago');
+      setError(getErrorMessage(err, 'No pudimos iniciar el pago. Vuelve a intentarlo o prueba con otro método.'));
     } finally {
       setPayingProjectId(null);
     }

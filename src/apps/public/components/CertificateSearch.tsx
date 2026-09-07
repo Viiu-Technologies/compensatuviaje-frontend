@@ -10,7 +10,7 @@ import type { PublicVerification } from '../../../types/blockchain.types';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import { Button, Input } from '../../../shared/components/ui';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
-import { PlanetDataSVG } from './Illustrations';
+import { BlockchainESGSVG } from './BlockchainESGSVG';
 import './CertificateSearch.css';
 
 const TRUST = [
@@ -237,7 +237,7 @@ const CertificateSearch: React.FC = () => {
               onMouseLeave={handleCardMouseLeave}
             >
               <div className="cs-hologram-sheen" aria-hidden="true" />
-              <PlanetDataSVG className="cs-certificate-img" style={{ width: '220px', height: '220px' }} />
+              <BlockchainESGSVG className="cs-certificate-img" style={{ width: '270px', height: '270px' }} />
               <div className="cs-card-meta">
                 <span className="cs-card-meta__network">POLYGON MAINNET · RETIRO AUDITADO</span>
                 <span className="cs-card-meta__hash">0x71C...4a9b</span>

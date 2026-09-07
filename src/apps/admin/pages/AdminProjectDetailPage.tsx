@@ -47,6 +47,7 @@ import {
   ProjectDetailPricing,
   ProjectDetailCertificate,
 } from '../services/adminApi';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import api from '../../../shared/services/api';
 import PhotoCarousel from '../../../shared/components/PhotoCarousel';
 import DocumentViewer from '../../../shared/components/DocumentViewer';
@@ -234,7 +235,7 @@ export default function AdminProjectDetailPage() {
       const data = await getProjectDetail(id!);
       setProject(data);
     } catch (err: any) {
-      setError(err.message || 'Error al cargar el proyecto');
+      setError(getErrorMessage(err, 'Error al cargar el proyecto'));
     } finally {
       setLoading(false);
     }

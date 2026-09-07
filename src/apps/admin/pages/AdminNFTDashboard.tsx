@@ -20,6 +20,7 @@ import {
 import { HiSparkles } from 'react-icons/hi';
 import { getBlockchainStats, getBlockchainStatus } from '../../../shared/services/blockchainApi';
 import type { BlockchainStatsResponse, BlockchainStatusResponse, RecentMint } from '../../../types/blockchain.types';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const AUTO_REFRESH_INTERVAL = 30_000; // 30 seconds
 
@@ -43,7 +44,7 @@ const AdminNFTDashboard: React.FC = () => {
       setStats(statsRes);
       setLastUpdated(new Date());
     } catch (err: any) {
-      setError(err.message || 'Error al cargar datos de blockchain');
+      setError(getErrorMessage(err, 'Error al cargar datos de blockchain'));
     } finally {
       setLoading(false);
     }

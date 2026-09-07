@@ -24,6 +24,7 @@ import {
   reviewCompanyDocument,
   verifyDomain
 } from '../services/adminApi';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 interface PendingCompany {
   id: string;
@@ -100,7 +101,7 @@ const VerificationPanel = () => {
         setStats(statsRes.value);
       }
     } catch (e: any) {
-      setError(e.message || 'Error al cargar datos de verificacion');
+      setError(getErrorMessage(e, 'Error al cargar datos de verificacion'));
     } finally {
       setLoading(false);
     }

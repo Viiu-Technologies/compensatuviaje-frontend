@@ -15,6 +15,7 @@ import {
 import { HiSparkles } from 'react-icons/hi';
 import B2CLayout from '../components/B2CLayout';
 import b2cApi, { type B2CCalculation } from '../services/b2cApi';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const B2CFlightsPage: React.FC = () => {
   const [flights, setFlights] = useState<B2CCalculation[]>([]);
@@ -30,7 +31,7 @@ const B2CFlightsPage: React.FC = () => {
         setFlights(data.calculations || []);
       } catch (err: any) {
         console.error('Error fetching flights:', err);
-        setError(err.message || 'Error cargando vuelos');
+        setError(getErrorMessage(err, 'No pudimos cargar tus vuelos. Vuelve a intentarlo en unos momentos.'));
       } finally {
         setLoading(false);
       }

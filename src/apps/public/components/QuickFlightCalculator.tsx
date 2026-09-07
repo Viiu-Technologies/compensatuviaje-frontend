@@ -9,6 +9,7 @@ import {
 } from '../services/publicApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import './QuickFlightCalculator.css';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const QUICK_ROUTES = [
   { origin: 'SCL', destination: 'LIM', label: 'Santiago → Lima' },
@@ -89,10 +90,10 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
         if (res.status === 'success') {
           setEstimate(res);
         } else {
-          setError(res.message || 'Error al calcular emisiones');
+          setError(getErrorMessage(res, 'No pudimos calcular las emisiones de este vuelo. Prueba con otra ruta.'));
         }
       } catch (err: any) {
-        setError(err.message || 'Error de conexión con la calculadora');
+        setError(getErrorMessage(err, 'No pudimos conectar con la calculadora. Revisa tu conexión e inténtalo de nuevo.'));
       } finally {
         setLoading(false);
       }
