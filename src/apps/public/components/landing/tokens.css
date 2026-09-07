@@ -112,6 +112,20 @@
   --ctv-elev-4: 0 24px 60px -32px rgba(7, 61, 61, 0.28);
   --ctv-focus-ring: 0 0 0 3px rgba(4, 99, 2, 0.35);
 
+  /* ── Puntos de ruptura ──
+     Cuatro valores (los de Tailwind) en sustitución de los 17 encontrados.
+     CSS no admite var() dentro de @media, así que estos tokens sirven de
+     referencia documental: las media queries usan el número literal, pero
+     solo uno de estos cuatro.
+       sm 640  · móvil grande
+       md 768  · tablet vertical
+       lg 1024 · tablet apaisada / escritorio
+       xl 1280 · escritorio amplio */
+  --ctv-bp-sm: 640px;
+  --ctv-bp-md: 768px;
+  --ctv-bp-lg: 1024px;
+  --ctv-bp-xl: 1280px;
+
   /* ── Apilamiento ──
      Sustituye valores mágicos como el z-index: 9000 del header. */
   --ctv-z-dropdown: 100;

@@ -25,7 +25,7 @@
   align-items: start;
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1024px) {
   .contact-grid {
     grid-template-columns: 0.8fr 1.35fr;
   }
@@ -156,7 +156,7 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 700px) {
+@media (min-width: 768px) {
   .contact-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -444,7 +444,7 @@
   margin-bottom: 1rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .contact-row {
     grid-template-columns: 1fr;
   }

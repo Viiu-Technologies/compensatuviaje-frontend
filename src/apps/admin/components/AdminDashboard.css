@@ -390,7 +390,7 @@
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
+@media (max-width: 1280px) {
   .modules-grid {
     grid-template-columns: 1fr;
   }

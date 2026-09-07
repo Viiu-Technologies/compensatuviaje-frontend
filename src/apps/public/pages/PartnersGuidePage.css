@@ -39,7 +39,7 @@
   align-items: center;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .pg-hero__container {
     grid-template-columns: 1.2fr minmax(0, 0.8fr);
   }
@@ -240,7 +240,7 @@
   display: none;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 1024px) {
   .pg-timeline__rail {
     display: block;
   }
@@ -294,7 +294,7 @@
   filter: drop-shadow(0 12px 32px rgba(7, 61, 61, 0.08));
 }
 
-@media (min-width: 860px) {
+@media (min-width: 1024px) {
   .pg-step {
     grid-template-columns: 1fr 1fr;
     gap: 0;
@@ -363,7 +363,7 @@
   flex-shrink: 0;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 1024px) {
   .pg-step__dot {
     position: absolute;
     left: 50%;
@@ -512,7 +512,7 @@
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 48px 96px -48px rgba(1, 33, 32, 0.65);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .pg-cta__panel {
     grid-template-columns: 1.3fr minmax(0, 0.7fr);
     align-items: center;
@@ -632,7 +632,7 @@
   gap: 1.25rem;
 }
 
-@media (min-width: 720px) {
+@media (min-width: 768px) {
   .pg-faq__list {
     grid-template-columns: repeat(2, 1fr);
   }

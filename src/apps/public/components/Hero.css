@@ -75,7 +75,7 @@
   margin-bottom: 2rem;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1024px) {
   .hero__top-grid {
     grid-template-columns: 1.15fr 0.85fr;
     gap: 3rem;
@@ -348,7 +348,7 @@
   gap: 1.25rem;
 }
 
-@media (min-width: 700px) {
+@media (min-width: 768px) {
   .hero-meta {
     grid-template-columns: repeat(3, 1fr);
   }

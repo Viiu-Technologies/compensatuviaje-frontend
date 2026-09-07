@@ -158,7 +158,7 @@
   box-shadow: var(--ctv-shadow-card);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .cp-faq-box {
     flex-direction: column;
     text-align: center;

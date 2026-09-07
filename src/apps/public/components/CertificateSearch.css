@@ -27,7 +27,7 @@
   align-items: center;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .cs-grid {
     grid-template-columns: 1.25fr 0.75fr;
   }
@@ -382,7 +382,7 @@
   border-bottom: 1px solid var(--ctv-rule);
 }
 
-@media (min-width: 600px) {
+@media (min-width: 640px) {
   .cs-stats {
     grid-template-columns: repeat(3, 1fr);
   }

@@ -27,7 +27,7 @@
   align-items: center;
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1024px) {
   .es-grid {
     grid-template-columns: 1.1fr 1fr;
   }

@@ -176,7 +176,7 @@
   gap: 2.5rem;
   padding: clamp(3rem, 6vw, 4.5rem) 0;
 }
-@media (min-width: 700px) {
+@media (min-width: 768px) {
   .ft-cols { grid-template-columns: 2fr 1fr 1fr 1fr; }
 }
 

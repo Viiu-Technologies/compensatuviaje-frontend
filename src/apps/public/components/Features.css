@@ -89,7 +89,7 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 768px) {
   .ft-steps {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -250,7 +250,7 @@
   z-index: 1;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .ft-card {
     grid-template-columns: 1.25fr minmax(0, 1fr);
     align-items: center;
@@ -404,7 +404,7 @@
   overflow: hidden;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .ft-card__aside {
     border-top: none;
     border-left: 1px solid var(--ctv-rule);

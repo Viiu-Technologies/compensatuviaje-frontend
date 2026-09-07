@@ -47,7 +47,7 @@
   align-items: end;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 1024px) {
   .pb-title-row {
     grid-template-columns: 1.4fr 1fr;
   }
@@ -85,7 +85,7 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1024px) {
   .pb-grid {
     grid-template-columns: 1.35fr 1fr;
   }
@@ -316,7 +316,7 @@
   grid-template-columns: 140px 1fr;
 }
 
-@media (max-width: 580px) {
+@media (max-width: 640px) {
   .pb-card--side {
     grid-template-columns: 1fr;
   }
