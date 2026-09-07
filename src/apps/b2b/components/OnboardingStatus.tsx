@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import onboardingService from '../services/onboardingService';
 import './OnboardingStatus.css';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const OnboardingStatus = () => {
   const [status, setStatus] = useState(null);
@@ -115,7 +116,7 @@ const OnboardingStatus = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setStatus(mockStatus);
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import { searchCertificateByNumber, publicVerifyCertificate } from '../../../sha
 import type { PublicVerification } from '../../../types/blockchain.types';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import { Button, Input } from '../../../shared/components/ui';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { PlanetDataSVG } from './Illustrations';
 import './CertificateSearch.css';
 
@@ -56,7 +57,7 @@ const CertificateSearch: React.FC = () => {
           : await publicVerifyCertificate(query.trim());
       setResult(res);
     } catch (err: any) {
-      setError(err.message || 'Error al buscar el certificado');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -197,7 +198,7 @@ const CertificateSearch: React.FC = () => {
                 )}
 
                 {(!result?.valid || !result?.certificate) && !error && (
-                  <div className="cs-result cs-result--err">
+                  <div className="cs-result cs-result--err" role="status">
                     <FaTimesCircle className="cs-result__icon" aria-hidden="true" />
                     <div>
                       <p className="cs-result__title">Certificado no encontrado</p>
@@ -207,10 +208,10 @@ const CertificateSearch: React.FC = () => {
                 )}
 
                 {error && (
-                  <div className="cs-result cs-result--err">
+                  <div className="cs-result cs-result--err" role="alert">
                     <FaTimesCircle className="cs-result__icon" aria-hidden="true" />
                     <div>
-                      <p className="cs-result__title">Error</p>
+                      <p className="cs-result__title">No se pudo completar la verificación</p>
                       <p className="cs-result__sub">{error}</p>
                     </div>
                   </div>

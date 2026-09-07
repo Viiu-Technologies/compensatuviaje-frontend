@@ -10,6 +10,7 @@ import {
 import { BsGoogle } from 'react-icons/bs';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -220,7 +221,7 @@ const Register: React.FC = () => {
       // con su vuelo ya cargado en vez de tener que introducirlo otra vez.
       navigate('/auth/login', { state: location.state });
     } catch (err: any) {
-      setApiError(err.message || 'Error al crear la cuenta');
+      setApiError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

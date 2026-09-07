@@ -59,7 +59,21 @@ export const getErrorMessage = (error) => {
   if (error.message) {
     // Verificar si el mensaje contiene alguna palabra clave
     const message = error.message.toLowerCase();
-    
+
+    // Fallos de red y timeout. Van antes que el resto porque, si no, se cae
+    // en el `return error.message` del final y el usuario acaba leyendo el
+    // texto crudo de la librería HTTP: "Network Error", "Failed to fetch",
+    // "timeout of 0ms exceeded". Ninguno dice qué pasó ni qué hacer.
+    const sinConexion =
+      typeof navigator !== 'undefined' && navigator.onLine === false;
+
+    if (sinConexion || message.includes('network error') || message.includes('failed to fetch')) {
+      return 'No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+    }
+    if (message.includes('timeout')) {
+      return 'El servidor tardó demasiado en responder. Vuelve a intentarlo en unos momentos.';
+    }
+
     if (message.includes('rut') && message.includes('inválido')) {
       return 'RUT inválido';
     }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './ForgotPassword.css';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const ForgotPassword = () => {
   const { forgotPassword } = useAuth();
@@ -21,7 +22,7 @@ const ForgotPassword = () => {
       setMessage('Se ha enviado un email con las instrucciones para resetear tu contraseña.');
       setEmail('');
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
