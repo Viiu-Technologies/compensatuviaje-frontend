@@ -113,6 +113,8 @@ const CertificateSearch: React.FC = () => {
               <Input
                 label="Número de certificado o ID de compensación"
                 hideLabel
+                bare
+                fullWidth={false}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

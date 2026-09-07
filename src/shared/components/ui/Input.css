@@ -48,6 +48,29 @@
   box-shadow: var(--ctv-focus-ring);
 }
 
+/* Variante sin marco: el contenedor externo ya dibuja la caja y marca el foco
+   con :focus-within, así que el campo solo aporta el input y su icono. Evita
+   el doble borde y el doble anillo de foco. */
+.ctvi--bare .ctvi__field {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 0;
+}
+
+.ctvi--bare .ctvi__field:focus-within {
+  border: none;
+  box-shadow: none;
+}
+
+/* Dentro de una barra horizontal el campo debe poder encogerse y crecer,
+   no ocupar el 100 % y empujar al botón a la línea siguiente. */
+.ctvi--bare {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .ctvi__icon {
   display: inline-flex;
   align-items: center;
@@ -93,6 +116,14 @@
 
 .ctvi--invalid .ctvi__field:focus-within {
   box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.28);
+}
+
+/* En modo bare no hay borde que teñir de rojo, así que el estado inválido se
+   marca con una línea inferior. Sin esto el error quedaría comunicado solo
+   por el texto, y el campo no daría ninguna señal visual. */
+.ctvi--bare.ctvi--invalid .ctvi__field {
+  border-bottom: 2px solid #991B1B;
+  padding-bottom: 2px;
 }
 
 .ctvi__hint {

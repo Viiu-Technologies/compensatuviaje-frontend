@@ -13,6 +13,13 @@ export interface InputProps
   hideLabel?: boolean;
   iconLeft?: React.ReactNode;
   fullWidth?: boolean;
+  /**
+   * Suprime el marco propio del campo (borde, fondo, alto mínimo y anillo de
+   * foco) para insertarlo dentro de un contenedor que ya dibuja esa caja —
+   * una barra de búsqueda en forma de píldora, por ejemplo. Sin esto se
+   * pintan dos marcos, uno dentro del otro.
+   */
+  bare?: boolean;
 }
 
 /**
@@ -35,6 +42,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       hideLabel = false,
       iconLeft,
       fullWidth = true,
+      bare = false,
       id,
       className = '',
       disabled,
@@ -55,6 +63,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         className={[
           'ctvi',
           fullWidth ? 'ctvi--full' : '',
+          bare ? 'ctvi--bare' : '',
           error ? 'ctvi--invalid' : '',
           disabled ? 'ctvi--disabled' : '',
           className,
