@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HiArrowRight, HiSwitchHorizontal, HiSparkles, HiInformationCircle, HiChevronDown } from 'react-icons/hi';
 import { FaPlane, FaUsers, FaLeaf, FaTree } from 'react-icons/fa';
 import {
@@ -45,6 +46,7 @@ export interface QuickFlightCalculatorProps {
 
 export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ onCompensationSelect }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [origin, setOrigin] = useState('SCL');
   const [destination, setDestination] = useState('LIM');
@@ -141,17 +143,35 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
     ? estimate.equivalencies.treesPerYear
     : Math.max(1, Math.round((estimate?.emissions?.kgCO2e || 308) / 22));
 
+  /**
+   * Lleva el vuelo recien calculado a la calculadora B2C, que ya sabe leer
+   * estos parametros (mismo contrato que usa "Mis Viajes").
+   *
+   * Antes, este boton hacia scroll a #proyectos y las tarjetas de esa seccion
+   * enlazaban de vuelta a #calculadora: el usuario quedaba dando vueltas por
+   * la landing sin llegar nunca a compensar. /b2c/calculator esta protegida,
+   * asi que quien no tenga sesion pasa por login y vuelve aqui con sus datos
+   * intactos (B2CProtectedRoute guarda el destino en state.from).
+   */
+  const buildCompensationUrl = useCallback(() => {
+    const params = new URLSearchParams({
+      origin,
+      destination,
+      cabin: cabinCode,
+      passengers: String(passengers),
+      roundTrip: String(roundTrip),
+    });
+    return `/b2c/calculator?${params.toString()}`;
+  }, [origin, destination, cabinCode, passengers, roundTrip]);
+
   const handleCompensateClick = () => {
+    // El callback tiene prioridad: es la API publica del componente y puede
+    // estar gestionando el flujo desde fuera (por ejemplo, un modal).
     if (onCompensationSelect && estimate) {
       onCompensationSelect(estimate);
       return;
     }
-    const projectsEl = document.getElementById('proyectos');
-    if (projectsEl) {
-      projectsEl.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.location.href = '/register';
-    }
+    navigate(buildCompensationUrl());
   };
 
   return (

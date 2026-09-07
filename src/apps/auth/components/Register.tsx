@@ -1,5 +1,5 @@
 import React, { useState, useRef, ChangeEvent, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
 import { 
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register, error: authError, clearError } = useAuth();
   const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
   
@@ -210,7 +211,10 @@ const Register: React.FC = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al crear la cuenta');
 
-      navigate('/auth/login');
+      // Se arrastra el destino pendiente (si lo hay) para que sobreviva al
+      // paso por login: quien venia de la calculadora publica vuelve a ella
+      // con su vuelo ya cargado en vez de tener que introducirlo otra vez.
+      navigate('/auth/login', { state: location.state });
     } catch (err: any) {
       setApiError(err.message || 'Error al crear la cuenta');
     } finally {

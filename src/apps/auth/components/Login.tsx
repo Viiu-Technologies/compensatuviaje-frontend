@@ -10,6 +10,7 @@ import { BsGoogle } from 'react-icons/bs';
 interface LocationState {
   from?: {
     pathname: string;
+    search?: string;
   };
 }
 
@@ -53,7 +54,13 @@ const Login: React.FC = () => {
       if (response.success && response.user_info) {
         const userType = response.user_info.user_type;
         const state = location.state as LocationState;
-        const from = state?.from?.pathname;
+        // Se conserva el search: el destino guardado puede llevar datos en la
+        // query (p. ej. /b2c/calculator?origin=SCL&destination=LIM al venir de
+        // la calculadora publica). Quedarse solo con el pathname obligaba al
+        // usuario a volver a introducir su vuelo despues de identificarse.
+        const from = state?.from?.pathname
+          ? `${state.from.pathname}${state.from.search ?? ''}`
+          : undefined;
         const redirectPath = from || getRedirectPath(userType);
         navigate(redirectPath, { replace: true });
       }
@@ -313,7 +320,7 @@ const Login: React.FC = () => {
 
             <div className="!mt-6">
               <span className="!text-emerald-200/80">¿No tienes cuenta? </span>
-              <Link to="/register" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
+              <Link to="/register" state={location.state} className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
                 Regístrate aquí
               </Link>
             </div>

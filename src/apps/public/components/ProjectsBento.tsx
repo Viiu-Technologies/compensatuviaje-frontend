@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { HiArrowRight, HiShieldCheck, HiLocationMarker, HiExternalLink } from 'react-icons/hi';
 import { FaTree, FaSun, FaWater, FaCheck } from 'react-icons/fa';
 import './ProjectsBento.css';
@@ -148,15 +149,18 @@ export const ProjectsBento: React.FC = () => {
                   <span className="pb-price-value">${featured.pricePerTon} USD / t</span>
                 </div>
 
-                <a
-                  href="#calculadora"
+                {/* Antes apuntaba a #calculadora, que a su vez enviaba de vuelta
+                    aqui: el usuario giraba en circulo sin llegar a compensar.
+                    Ahora lleva a la compensacion con el proyecto ya elegido. */}
+                <Link
+                  to={`/b2c/calculator?projectId=${encodeURIComponent(featured.id)}`}
                   className="pb-action-btn"
                   onClick={() => setSelectedProjectId(featured.id)}
                 >
                   <FaTree aria-hidden="true" />
                   <span>Compensar en este proyecto</span>
                   <HiArrowRight aria-hidden="true" />
-                </a>
+                </Link>
               </div>
             </div>
           </article>
@@ -195,14 +199,14 @@ export const ProjectsBento: React.FC = () => {
 
                     <div className="pb-side-price">
                       <span className="pb-side-price-tag">${proj.pricePerTon} USD / t</span>
-                      <a
-                        href="#calculadora"
+                      <Link
+                        to={`/b2c/calculator?projectId=${encodeURIComponent(proj.id)}`}
                         className="pb-side-link"
                         onClick={() => setSelectedProjectId(proj.id)}
                       >
                         <span>Elegir</span>
                         <HiArrowRight aria-hidden="true" />
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
