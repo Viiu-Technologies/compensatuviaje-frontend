@@ -279,18 +279,16 @@ const Header: React.FC = () => {
   return (
     <>
       {/* ── Contenedor Único Liquid Glass ── */}
+      {/* border-radius y box-shadow ya no se animan aqui via Framer Motion -- ambas
+          propiedades fuerzan layout/paint en el hilo principal en cada frame del
+          spring, y Motion las recalculaba con su propio bucle de JS por encima de
+          eso. Ahora son una transicion CSS declarativa (ver .ctv-liquid-surface,
+          --scrolled y --expanded en Header.css) que el navegador interpola por su
+          cuenta; el spring de Motion se conserva solo para lo que si vale la pena
+          animar con fisica (el panel desplegable, mas abajo). */}
       <motion.header
         ref={headerRef}
         className={`ctv-liquid-surface${scrolled ? ' ctv-liquid-surface--scrolled' : ''}${isExpanded ? ' ctv-liquid-surface--expanded' : ''}`}
-        animate={{
-          borderRadius: isExpanded ? '24px' : '9999px',
-          boxShadow: isExpanded
-            ? '0 24px 60px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(62, 211, 43, 0.18), inset 0 1px 1.5px rgba(255, 255, 255, 0.22)'
-            : scrolled
-              ? '0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(62, 211, 43, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.16)'
-              : '0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(62, 211, 43, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.12)',
-        }}
-        transition={LIQUID_SPRING}
         onMouseLeave={handleMouseLeaveHeader}
       >
         {/* Capa de refracción óptica decorativa */}
