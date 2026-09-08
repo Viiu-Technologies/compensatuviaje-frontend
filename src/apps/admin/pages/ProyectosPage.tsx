@@ -39,6 +39,8 @@ import {
 } from '../services/adminApi';
 import api from '../../../shared/services/api';
 import { useConfirm } from '../../../shared/components/ui';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 // ============================================
 // Status config — only inventory-relevant states
@@ -174,7 +176,7 @@ export default function ProyectosPage() {
       loadData();
       loadStats();
     } catch (err: any) {
-      alert(err.response?.data?.message || `Error al ${label} proyecto`);
+      toast.error(getErrorMessage(err, `Error al ${label} proyecto`));
     } finally {
       setActionLoading(null);
     }

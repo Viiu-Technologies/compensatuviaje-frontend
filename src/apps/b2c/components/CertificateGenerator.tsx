@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { MintNFTModal } from '../../../shared/components/blockchain';
+import { toast } from 'sonner';
 
 interface CertificateData {
   certificateId: string;
@@ -126,7 +127,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
       
     } catch (error) {
       console.error('Error generando PDF:', error);
-      alert('Hubo un error generando el PDF. Por favor intenta de nuevo.');
+      toast.error('No pudimos generar el PDF. Vuelve a intentarlo.');
     } finally {
       setIsGenerating(false);
     }

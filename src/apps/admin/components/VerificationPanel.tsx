@@ -25,6 +25,7 @@ import {
   verifyDomain
 } from '../services/adminApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { toast } from 'sonner';
 
 interface PendingCompany {
   id: string;
@@ -136,7 +137,7 @@ const VerificationPanel = () => {
       setSelectedCompany(null);
       await loadData();
     } catch (e: any) {
-      alert(`Error: ${e.message || 'No se pudo aprobar'}`);
+      toast.error(getErrorMessage(e, 'No se pudo aprobar'));
     } finally {
       setActionLoading(null);
     }
@@ -151,7 +152,7 @@ const VerificationPanel = () => {
       setSelectedCompany(null);
       await loadData();
     } catch (e: any) {
-      alert(`Error: ${e.message || 'No se pudo rechazar'}`);
+      toast.error(getErrorMessage(e, 'No se pudo rechazar'));
     } finally {
       setActionLoading(null);
     }
@@ -166,7 +167,7 @@ const VerificationPanel = () => {
       const docs = await getCompanyDocuments(selectedCompany.id);
       setCompanyDocs(Array.isArray(docs) ? docs : docs?.documents || []);
     } catch (e: any) {
-      alert(`Error: ${e.message || 'No se pudo revisar el documento'}`);
+      toast.error(getErrorMessage(e, 'No se pudo revisar el documento'));
     } finally {
       setActionLoading(null);
     }
@@ -180,7 +181,7 @@ const VerificationPanel = () => {
       await verifyDomain(domainId, approve, note || undefined);
       await loadData();
     } catch (e: any) {
-      alert(`Error: ${e.message || 'No se pudo verificar el dominio'}`);
+      toast.error(getErrorMessage(e, 'No se pudo verificar el dominio'));
     } finally {
       setActionLoading(null);
     }

@@ -7,6 +7,7 @@ import {
 import { HiSparkles } from 'react-icons/hi';
 import CountUp from 'react-countup';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { toast } from 'sonner';
 
 const CarbonCalculatorNew = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
@@ -315,7 +316,7 @@ const CarbonCalculatorNew = ({ isOpen, onClose }) => {
                       Atrás
                     </button>
                     <button
-                      onClick={() => formData.distance ? setStep(3) : alert('Ingresa la distancia')}
+                      onClick={() => formData.distance ? setStep(3) : toast.error('Indica la distancia del viaje para continuar.')}
                       className="flex-1 btn-primary"
                     >
                       Continuar

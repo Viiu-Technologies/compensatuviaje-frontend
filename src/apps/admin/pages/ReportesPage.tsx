@@ -44,6 +44,7 @@ import {
   downloadCSV,
   ReportFilters
 } from '../services/adminApi';
+import { toast } from 'sonner';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -130,7 +131,7 @@ export default function ReportesPage() {
         downloadCSV(response.data, `reporte_${activeTab}_${Date.now()}.csv`);
       } else {
         console.log('Export result:', response.data);
-        alert('Exportación completada. Ver consola para detalles.');
+        toast.success('Exportación completada.');
       }
     } catch (error) {
       console.error('Error exporting:', error);

@@ -25,6 +25,8 @@ import {
   uploadB2BInvoice,
   type B2BOrder
 } from '../services/adminApi';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 export default function OrdenesB2BPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -111,7 +113,7 @@ export default function OrdenesB2BPage() {
       await uploadB2BInvoice(orderId, file);
       loadOrders();
     } catch (err: any) {
-      alert(err?.response?.data?.message || 'Error al subir la factura');
+      toast.error(getErrorMessage(err, 'Error al subir la factura'));
     } finally {
       setUploadingInvoiceId(null);
     }

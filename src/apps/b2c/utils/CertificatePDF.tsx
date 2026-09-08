@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver';
+import { toast } from 'sonner';
 // Obtenemos la URL del backend desde las variables de entorno
 const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
 export interface CertificatePDFData {
@@ -59,7 +60,7 @@ export const downloadCertificatePDF = async (data: CertificatePDFData) => {
     saveAs(blob, filename);
   } catch (error) {
     console.error('Error al generar el PDF del certificado:', error);
-    alert('Hubo un problema al generar tu certificado. Por favor, intenta de nuevo más tarde.');
+    toast.error('No pudimos generar tu certificado. Vuelve a intentarlo en unos minutos.');
   }
 };
 // Componente React vacío por si en otros archivos aún lo intentaban renderizar (para evitar crasheos de importación)

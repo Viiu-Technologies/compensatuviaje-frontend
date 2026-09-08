@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import '../../auth/components/Register.css';
+import { toast } from 'sonner';
 
 /**
  * Forma del formulario de edicion del onboarding.
@@ -262,11 +263,11 @@ const OnboardingEdit = () => {
       // Aquí iría la llamada al backend cuando esté listo
       // await axios.put('/api/onboarding/update', formData);
 
-      alert('✅ Información actualizada correctamente');
+      toast.success('Información actualizada correctamente.');
       navigate('/dashboard');
     } catch (error) {
       console.error('Error al actualizar:', error);
-      alert('❌ Error al actualizar la información');
+      toast.error('No pudimos guardar los cambios. Vuelve a intentarlo.');
     } finally {
       setLoading(false);
     }

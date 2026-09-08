@@ -16,6 +16,7 @@ import {
   X
 } from 'lucide-react';
 import { getCompanies, Company, updateCompanyStatus } from '../services/adminApi';
+import { toast } from 'sonner';
 
 const industryLabels: Record<string, string> = {
   aerolineas: 'Aerolíneas',
@@ -140,7 +141,7 @@ export default function EmpresasPage() {
       await loadCompanies();
     } catch (err) {
       console.error('Error:', err);
-      alert('Error al cambiar el estado');
+      toast.error('No pudimos cambiar el estado. Vuelve a intentarlo.');
     } finally {
       setChangingStatus(false);
     }

@@ -49,6 +49,8 @@ import DocumentViewer from '../../../shared/components/DocumentViewer';
 import { approveCertEvaluation, rejectCertEvaluation } from '../services/adminAIApi';
 import RejectModal from '../components/shared/RejectModal';
 import { useConfirm } from '../../../shared/components/ui';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 interface PendingProject {
   id: string;
@@ -236,11 +238,11 @@ export default function ProjectsReviewPage() {
     
     if (platformSettings) {
       if (calculatedPrice < platformSettings.min_price_clp_per_ton) {
-        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es menor al mínimo permitido ($${platformSettings.min_price_clp_per_ton})`);
+        toast.error(`El precio calculado ($${calculatedPrice.toFixed(2)}) está por debajo del mínimo permitido ($${platformSettings.min_price_clp_per_ton}).`);
         return;
       }
       if (calculatedPrice > platformSettings.max_price_clp_per_ton) {
-        alert(`El precio calculado ($${calculatedPrice.toFixed(2)}) es mayor al máximo permitido ($${platformSettings.max_price_clp_per_ton})`);
+        toast.error(`El precio calculado ($${calculatedPrice.toFixed(2)}) supera el máximo permitido ($${platformSettings.max_price_clp_per_ton}).`);
         return;
       }
     }
@@ -265,7 +267,7 @@ export default function ProjectsReviewPage() {
       fetchPendingProjects();
       fetchApprovedProjects();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al aprobar proyecto');
+      toast.error(getErrorMessage(err, 'Error al aprobar proyecto'));
     } finally {
       setActionLoading(null);
     }
@@ -282,7 +284,7 @@ export default function ProjectsReviewPage() {
       setSelectedProject(null);
       fetchPendingProjects();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al rechazar proyecto');
+      toast.error(getErrorMessage(err, 'Error al rechazar proyecto'));
     } finally {
       setActionLoading(null);
     }
@@ -302,7 +304,7 @@ export default function ProjectsReviewPage() {
       fetchApprovedProjects();
     } catch (err: any) {
       const message = err.response?.data?.message || err.message || 'Error al activar proyecto';
-      alert(message);
+      toast.error(message);
     } finally {
       setActionLoading(null);
     }
@@ -338,7 +340,7 @@ export default function ProjectsReviewPage() {
       await approveCertEvaluation(evalId);
       await refreshSelectedProject();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al aprobar certificación');
+      toast.error(getErrorMessage(err, 'Error al aprobar certificación'));
     } finally {
       setCertActionLoading(false);
     }
@@ -353,7 +355,7 @@ export default function ProjectsReviewPage() {
       setShowCertRejectModal(false);
       await refreshSelectedProject();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al rechazar certificación');
+      toast.error(getErrorMessage(err, 'Error al rechazar certificación'));
     } finally {
       setCertActionLoading(false);
     }

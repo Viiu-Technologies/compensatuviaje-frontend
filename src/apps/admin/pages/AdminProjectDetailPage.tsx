@@ -52,6 +52,7 @@ import { useConfirm } from '../../../shared/components/ui';
 import api from '../../../shared/services/api';
 import PhotoCarousel from '../../../shared/components/PhotoCarousel';
 import DocumentViewer from '../../../shared/components/DocumentViewer';
+import { toast } from 'sonner';
 
 // ── Config ────────────────────────────────────────────────────────
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -261,7 +262,7 @@ export default function AdminProjectDetailPage() {
       await (api as any).put(`/admin/projects/${project.id}/status`, { status: newStatus });
       await loadProject();
     } catch (err: any) {
-      alert(err?.response?.data?.message || err.message || 'Error al cambiar estado');
+      toast.error(getErrorMessage(err, 'Error al cambiar estado'));
     } finally {
       setStatusLoading(false);
     }

@@ -21,6 +21,7 @@ import { MintNFTModal } from '../../../shared/components/blockchain';
 import { downloadCertificatePDF } from '../utils/CertificatePDF';
 import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { toast } from 'sonner';
 
 const B2CCertificatesPage: React.FC = () => {
   const { user } = useAuth();
@@ -79,7 +80,7 @@ const B2CCertificatesPage: React.FC = () => {
       navigator.share({ title: 'Certificado de Compensación', text });
     } else {
       navigator.clipboard.writeText(text);
-      alert('Texto copiado al portapapeles');
+      toast.success('Copiado al portapapeles.');
     }
   };
 

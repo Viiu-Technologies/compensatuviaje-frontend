@@ -37,6 +37,7 @@ import {
   updateCompanyStatus,
   getCompanyTimeline,
 } from '../services/adminApi';
+import { toast } from 'sonner';
 
 // ─── Status config ───
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType; borderColor: string }> = {
@@ -180,7 +181,7 @@ export default function EmpresaDetailPage() {
     } catch (err: any) {
       console.error('Error updating status:', err);
       const msg = err?.response?.data?.message || err?.message || 'Error al cambiar el estado. Verifica la transición sea válida.';
-      alert(msg);
+      toast.success(msg);
     } finally {
       setChangingStatus(false);
     }
@@ -552,7 +553,7 @@ export default function EmpresaDetailPage() {
                               a.remove();
                               window.URL.revokeObjectURL(url);
                             } catch {
-                              alert('No se pudo descargar el documento');
+                              toast.error('No pudimos descargar el documento. Vuelve a intentarlo.');
                             }
                           }}
                           className="!p-2.5 !rounded-xl bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-white !transition-all !flex-shrink-0"

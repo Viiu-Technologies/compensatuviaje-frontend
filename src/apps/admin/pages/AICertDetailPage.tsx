@@ -8,6 +8,8 @@ import AdminPendingBadge from '../components/shared/AdminPendingBadge';
 import RejectModal from '../components/shared/RejectModal';
 import { CERT_LEVEL_LABELS, CERT_LEVEL_COLORS, SCORE_LABELS } from '../../../types/certification.types';
 import { useConfirm } from '../../../shared/components/ui';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const getCertIcon = (level: string) => {
   switch (level) {
@@ -70,7 +72,7 @@ const AICertDetailPage: React.FC = () => {
       await adminAIApi.approveCertEvaluation(evaluation.id);
       await loadData(); // Reload to get updated status
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al aprobar');
+      toast.error(getErrorMessage(err, 'Error al aprobar'));
     } finally {
       setActionLoading(false);
     }
@@ -84,7 +86,7 @@ const AICertDetailPage: React.FC = () => {
       setShowRejectModal(false);
       await loadData(); // Reload to get updated status
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al rechazar');
+      toast.error(getErrorMessage(err, 'Error al rechazar'));
     } finally {
       setActionLoading(false);
     }

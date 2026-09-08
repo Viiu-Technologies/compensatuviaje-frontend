@@ -31,6 +31,8 @@ import {
 import { getPartners, getPartnersStats, updatePartnerStatus, Partner } from '../services/adminApi';
 import PartnerCreateModal from '../components/PartnerCreateModal';
 import { useConfirm } from '../../../shared/components/ui';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 interface PartnerStats {
   total: number;
@@ -151,7 +153,7 @@ export default function PartnersPage() {
       fetchStats();
       setActionMenuOpen(null);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al actualizar estado');
+      toast.error(getErrorMessage(err, 'Error al actualizar estado'));
     }
   };
 

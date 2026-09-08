@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './CarbonCalculatorModal.css';
+import { toast } from 'sonner';
 
 const CarbonCalculatorModal = ({ isOpen, onClose }) => {
   const [carbonData, setCarbonData] = useState({
@@ -21,7 +22,7 @@ const CarbonCalculatorModal = ({ isOpen, onClose }) => {
 
   const calculateCarbon = async () => {
     if (!carbonData.distance) {
-      alert('Por favor ingresa la distancia del viaje');
+      toast.error('Indica la distancia del viaje para poder calcular.');
       return;
     }
 
@@ -42,7 +43,7 @@ const CarbonCalculatorModal = ({ isOpen, onClose }) => {
       if (data.success) {
         setResult(data.data);
       } else {
-        alert('Error al calcular la huella de carbono');
+        toast.error('No pudimos calcular la huella. Revisa los datos e inténtalo de nuevo.');
       }
     } catch (error) {
       // Fallback calculation for demo
