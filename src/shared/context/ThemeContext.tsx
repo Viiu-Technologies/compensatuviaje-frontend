@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -82,17 +82,25 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   }, [resolvedTheme]);
 
   // Guardar en localStorage
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_KEY, newTheme);
-  };
+  }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
-  };
+  }, [resolvedTheme, setTheme]);
+
+  // Sin memoizar, este objeto era una referencia nueva en cada render de
+  // ThemeProvider -- como envuelve toda la app, cualquier consumidor envuelto en
+  // React.memo perdia el beneficio de la memoizacion sin razon aparente.
+  const value = useMemo<ThemeContextType>(
+    () => ({ theme, resolvedTheme, setTheme, toggleTheme }),
+    [theme, resolvedTheme, setTheme, toggleTheme]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

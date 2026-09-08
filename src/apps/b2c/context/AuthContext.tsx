@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import authService, { B2CUser } from '../services/authService';
 
@@ -106,18 +106,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login       = async () => { await authService.loginWithGoogle(); };
-  const logout      = async () => { await authService.logout(); setUser(null); };
-  const refreshUser = async () => { await loadUser(); };
+  const login       = useCallback(async () => { await authService.loginWithGoogle(); }, []);
+  const logout      = useCallback(async () => { await authService.logout(); setUser(null); }, []);
+  const refreshUser = useCallback(async () => { await loadUser(); }, []);
 
-  const value: AuthContextType = {
-    user,
-    loading,
-    isAuthenticated: user !== null,
-    login,
-    logout,
-    refreshUser,
-  };
+  // Sin memoizar, este objeto era una referencia nueva en cada render de
+  // AuthProvider -- como envuelve toda la app (rutas B2C), cualquier consumidor
+  // envuelto en React.memo perdia el beneficio de la memoizacion sin razon aparente.
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      loading,
+      isAuthenticated: user !== null,
+      login,
+      logout,
+      refreshUser,
+    }),
+    [user, loading, login, logout, refreshUser]
+  );
 
   return (
     <AuthContext.Provider value={value}>
