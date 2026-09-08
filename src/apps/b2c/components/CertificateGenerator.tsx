@@ -1,7 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import {
   FaDownload,
   FaLeaf,
@@ -62,9 +60,17 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
     
     setIsGenerating(true);
     try {
+      // jsPDF + html2canvas sólo se necesitan aquí, al generar el PDF -- cargarlos de
+      // forma estática mantenía ambas librerías (y su peso) en el chunk inicial de la
+      // calculadora aunque el usuario nunca llegara a pulsar este botón.
+      const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ]);
+
       // Esperar a que las imágenes y estilos se carguen completamente
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       const element = certificateRef.current;
       
       // Clonar el elemento para manipularlo sin afectar la UI
