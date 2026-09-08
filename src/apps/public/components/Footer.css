@@ -97,6 +97,10 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  /* Reserves the 3D scene's own footprint (.ft-cards3d) before its canvas mounts --
+     the scene is now gated behind an IntersectionObserver (see Footer.tsx) so this
+     row would otherwise collapse to 0 height and cause a layout shift once it loads. */
+  min-height: clamp(280px, 38vw, 520px);
 }
 /* Motion in the scene itself is already gated on prefers-reduced-motion; this is the
    belt-and-braces case where a user also wants less visual noise overall. */

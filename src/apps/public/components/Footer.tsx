@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
@@ -9,6 +9,40 @@ import './Footer.css';
 // landing page's initial bundle -- it is an ornament, not content, and the footer is
 // below the fold.
 const LeaningCardsFooterScene = lazy(() => import('../../../threejs-assets/LeaningCardsFooterScene'));
+
+/**
+ * Mounts the WebGL canvas only once the newsletter row is about to enter the
+ * viewport. Every page that renders <Footer> (landing, blog, calculator,
+ * contact, partners guide, payment methods) pays for this scene's shaders
+ * and PBR textures the instant its lazy chunk resolves -- with no visibility
+ * gate, that happened as soon as the page loaded, regardless of whether the
+ * visitor ever scrolled this far. Same pattern as VirtualForestSection's
+ * ForestCanvas gate.
+ */
+function useIsNearViewport<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px 200px 0px', threshold: 0.05 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
 
 const SECTIONS = [
   {
@@ -43,6 +77,7 @@ const SECTIONS = [
 const Footer = () => {
   const year = new Date().getFullYear();
   const [email, setEmail] = useState('');
+  const { ref: sceneRowRef, isVisible: isSceneVisible } = useIsNearViewport<HTMLDivElement>();
 
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
@@ -99,10 +134,12 @@ const Footer = () => {
               </button>
             </form>
 
-            <div className="ft-newsletter__scene-row">
-              <Suspense fallback={null}>
-                <LeaningCardsFooterScene />
-              </Suspense>
+            <div className="ft-newsletter__scene-row" ref={sceneRowRef}>
+              {isSceneVisible && (
+                <Suspense fallback={null}>
+                  <LeaningCardsFooterScene />
+                </Suspense>
+              )}
             </div>
           </div>
         </div>
