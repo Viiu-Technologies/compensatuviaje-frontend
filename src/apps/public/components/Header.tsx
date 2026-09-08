@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Transition } from 'framer-motion';
 import { useAuth } from '../../auth/context/AuthContext';
 import { 
   FaUser, 
@@ -135,7 +135,7 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 // Física de resorte orgánica, rápida y precisa
-const LIQUID_SPRING = {
+const LIQUID_SPRING: Transition = {
   type: 'spring',
   stiffness: 380,
   damping: 34,
@@ -169,13 +169,29 @@ const Header: React.FC = () => {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
-      if (window.scrollY > 120 && activeGroup !== null) {
-        setActiveGroup(null);
-      }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  /* ── Cerrar el panel ante un scroll deliberado del usuario ──
+     Antes esto vivía en el mismo efecto que setScrolled, con `activeGroup`
+     como dependencia: al abrir un grupo (setActiveGroup) el efecto se
+     re-suscribía y ejecutaba onScroll() de inmediato en el mismo tick, así
+     que si la página ya estaba scrolleada (> 120px) el panel se cerraba
+     apenas se abría. Aquí solo reacciona a scroll real (evento 'scroll'),
+     nunca al montar/re-suscribirse. */
+  useEffect(() => {
+    if (activeGroup === null) return;
+    const startY = window.scrollY;
+    const onScrollWhileOpen = () => {
+      if (Math.abs(window.scrollY - startY) > 40) {
+        setActiveGroup(null);
+      }
+    };
+    window.addEventListener('scroll', onScrollWhileOpen, { passive: true });
+    return () => window.removeEventListener('scroll', onScrollWhileOpen);
   }, [activeGroup]);
 
   /* ── Click outside & Escape key listeners para cierre fluido ── */
