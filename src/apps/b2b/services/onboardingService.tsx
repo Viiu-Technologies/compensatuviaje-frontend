@@ -1,3 +1,5 @@
+import { validateRut } from '../../../shared/utils/validators';
+
 const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 class OnboardingService {
@@ -372,6 +374,30 @@ class OnboardingService {
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * Da formato de RUT chileno mientras se escribe: 12.345.678-9
+   *
+   * CompanyOnboardingWizard y OnboardingEdit ya llamaban a este metodo y al
+   * siguiente, pero ninguno existia en la clase: eran un TypeError en cuanto
+   * el usuario escribia en el campo RUT. El typecheck los senalaba, pero
+   * nadie lo ejecutaba porque acumulaba 193 errores.
+   */
+  formatRUT(value: string): string {
+    const cleaned = String(value ?? '').replace(/[^0-9kK]/g, '');
+    if (cleaned.length <= 1) return cleaned;
+    const body = cleaned.slice(0, -1);
+    const dv = cleaned.slice(-1);
+    return `${body.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${dv}`;
+  }
+
+  /**
+   * Valida un RUT chileno con su digito verificador (modulo 11).
+   * Reutiliza validateRut de shared/utils/validators.
+   */
+  validateRUT(rut: string): boolean {
+    return validateRut(rut);
   }
 }
 

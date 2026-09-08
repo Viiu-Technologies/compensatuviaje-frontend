@@ -47,7 +47,7 @@ const ERROR_MESSAGES = {
  *   Si se omite se usa el genérico UNKNOWN_ERROR.
  * @returns {string} Mensaje de error user-friendly
  */
-export const getErrorMessage = (error, fallback) => {
+export const getErrorMessage = (error: any, fallback?: string): string => {
   // Si es un string, retornarlo directamente
   if (typeof error === 'string') {
     return error;
