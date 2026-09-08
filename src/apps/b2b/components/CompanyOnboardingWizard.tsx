@@ -599,7 +599,7 @@ const CompanyOnboardingWizard = () => {
                   value={formData.sustainabilityGoals}
                   onChange={handleChange}
                   placeholder="Describa los objetivos de sustentabilidad de su empresa..."
-                  rows="4"
+                  rows={4}
                   className={errors.sustainabilityGoals ? 'error' : ''}
                 />
                 {errors.sustainabilityGoals && <span className="field-error">{errors.sustainabilityGoals}</span>}

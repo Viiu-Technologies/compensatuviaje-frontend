@@ -521,7 +521,7 @@ const OnboardingEdit = () => {
           name="description"
           value={formData.description}
           onChange={handleChange}
-          rows="4"
+          rows={4}
           placeholder="Describe brevemente las actividades principales de tu empresa..."
           maxLength={500}
         />
