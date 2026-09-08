@@ -1,462 +1,812 @@
 /* ==========================================================================
-   Header.css — Minimal, editorial, tema claro sobre canvas
+   Header.css — Liquid Glass Navigation con Wren-Style Grouping
+   Alto contraste tecnológico-ecológico sobre canvas claro
    ========================================================================== */
-@import './landing/tokens.css';
 
 /* --------------------------------------------------------------------------
-   Tokens locales
+   Tokens locales del Header Liquid
    -------------------------------------------------------------------------- */
 :root {
-  --header-h: 76px;
-  --header-radius: 999px;
-  --header-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --lq-bg: rgba(6, 30, 28, 0.88);
+  --lq-bg-scrolled: rgba(4, 22, 20, 0.95);
+  --lq-bg-dropdown: rgba(6, 30, 28, 0.96);
+  --lq-border: rgba(62, 211, 43, 0.24);
+  --lq-border-hover: rgba(62, 211, 43, 0.55);
+  --lq-neon: #3ed32b;
+  --lq-neon-glow: rgba(62, 211, 43, 0.35);
+  --lq-text: #f8fafc;
+  --lq-text-muted: #94a3b8;
+  --lq-text-sub: #cbd5e1;
+  --lq-header-h: 68px;
+  --lq-radius-pill: 9999px;
+  --lq-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(62, 211, 43, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  --lq-shadow-scrolled: 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(62, 211, 43, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.16);
+  --lq-transition: 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* --------------------------------------------------------------------------
-   Base header
+   Contenedor Principal: Cápsula Flotante Liquid Glass
    -------------------------------------------------------------------------- */
-.ctv-header {
+.ctv-liquid-header {
   position: fixed;
-  top: 0;
+  top: 14px;
   left: 0;
   right: 0;
-  z-index: var(--ctv-z-header);
-  height: var(--header-h);
-  background: transparent;
-  border-bottom: 1px solid transparent;
+  margin: 0 auto;
+  width: calc(100% - 32px);
+  max-width: 1240px;
+  height: var(--lq-header-h);
+  border-radius: var(--lq-radius-pill);
+  z-index: 1000;
+  background: var(--lq-bg);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid var(--lq-border);
+  box-shadow: var(--lq-shadow);
   transition:
-    background var(--header-transition),
-    border-color var(--header-transition),
-    box-shadow var(--header-transition),
-    backdrop-filter var(--header-transition);
-  animation: headerSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  font-family: var(--ctv-font-body);
+    background var(--lq-transition),
+    border-color var(--lq-transition),
+    box-shadow var(--lq-transition),
+    top var(--lq-transition);
+  animation: liquidHeaderSlide 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Scrolled: blur + sutil rule */
-.ctv-header--scrolled {
-  background: rgba(247, 250, 248, 0.78);
-  border-bottom-color: var(--ctv-rule);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-}
-
-@keyframes headerSlideIn {
+@keyframes liquidHeaderSlide {
   from {
-    transform: translateY(-100%);
+    transform: translateY(-40px);
     opacity: 0;
   }
-
   to {
     transform: translateY(0);
     opacity: 1;
   }
 }
 
-/* Inner layout */
-.ctv-header__inner {
+.ctv-liquid-header--scrolled {
+  top: 10px;
+  background: var(--lq-bg-scrolled);
+  border-color: rgba(62, 211, 43, 0.35);
+  box-shadow: var(--lq-shadow-scrolled);
+}
+
+.ctv-liquid-header__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  max-width: var(--ctv-page-max);
-  margin: 0 auto;
-  padding: 0 var(--ctv-gutter);
-  gap: var(--ctv-space-6);
+  padding: 0 1.25rem;
+  gap: 1rem;
 }
 
 /* --------------------------------------------------------------------------
-   Logo
+   Logo Liquid
    -------------------------------------------------------------------------- */
-.ctv-header__logo {
+.ctv-liquid-logo {
   display: flex;
   align-items: center;
   flex-shrink: 0;
   text-decoration: none;
+  padding: 0.25rem 0;
+  transition: transform var(--lq-transition), opacity var(--lq-transition);
 }
 
-.ctv-header__logo img {
-  height: 40px;
-  width: auto;
-  transition: transform 0.25s var(--ctv-ease-out), opacity 0.25s var(--ctv-ease-out);
-}
-
-.ctv-header__logo:hover img {
+.ctv-liquid-logo:hover {
   transform: scale(1.02);
-  opacity: 0.92;
+  opacity: 0.94;
+}
+
+.ctv-liquid-logo__img {
+  height: 34px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
 /* --------------------------------------------------------------------------
-   Desktop nav
+   Desktop Navigation: Wren-Style Mega Groups
    -------------------------------------------------------------------------- */
-.ctv-header__nav {
+.ctv-liquid-nav {
   display: none;
   align-items: center;
-  justify-content: center;
-  flex: 1;
-  gap: clamp(0.1rem, 0.4vw, 0.45rem);
+  gap: 0.5rem;
+  margin: 0 auto;
 }
 
 @media (min-width: 1024px) {
-  .ctv-header__nav {
+  .ctv-liquid-nav {
     display: flex;
   }
 }
 
-.ctv-nav-link {
+.ctv-liquid-nav__group {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ctv-liquid-nav__trigger {
   display: inline-flex;
   align-items: center;
-  padding: 0.45rem clamp(0.45rem, 0.75vw, 0.75rem);
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--ctv-ink-soft);
-  text-decoration: none;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
   background: transparent;
-  border-radius: var(--ctv-radius-sm);
+  border: none;
+  border-radius: var(--lq-radius-pill);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--lq-text);
+  cursor: pointer;
+  transition:
+    background var(--lq-transition),
+    color var(--lq-transition),
+    transform 0.15s ease;
   white-space: nowrap;
-  transition: color var(--header-transition);
 }
 
-.ctv-nav-link:hover {
-  color: var(--ctv-brand-deep);
+.ctv-liquid-nav__chevron {
+  font-size: 0.95rem;
+  color: var(--lq-text-muted);
+  transition: transform 0.25s var(--lq-transition), color var(--lq-transition);
 }
 
-.ctv-nav-badge {
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: rgba(8, 174, 6, 0.12);
-  color: var(--ctv-brand);
-  padding: 1px 6px;
-  border-radius: var(--ctv-radius-pill);
-  margin-left: 4px;
-  line-height: 1.2;
+.ctv-liquid-nav__group:hover .ctv-liquid-nav__trigger,
+.ctv-liquid-nav__group--open .ctv-liquid-nav__trigger {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
-/* Underline animado en hover/active */
-.ctv-nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  left: 0.6rem;
-  right: 0.6rem;
-  height: 1.5px;
-  background: var(--ctv-brand);
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 0.28s var(--ctv-ease-out);
+.ctv-liquid-nav__group:hover .ctv-liquid-nav__chevron,
+.ctv-liquid-nav__group--open .ctv-liquid-nav__chevron {
+  transform: rotate(180deg);
+  color: var(--lq-neon);
 }
 
-.ctv-nav-link:hover::after,
-.ctv-nav-link--active::after {
-  transform: scaleX(1);
-}
-
-.ctv-nav-link--active {
-  color: var(--ctv-brand-deep);
+.ctv-liquid-nav__trigger--active {
+  color: var(--lq-neon);
   font-weight: 600;
 }
 
+/* Direct quick nav pill */
+.ctv-liquid-nav__direct {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(62, 211, 43, 0.12);
+  border: 1px solid rgba(62, 211, 43, 0.28);
+  border-radius: var(--lq-radius-pill);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all var(--lq-transition);
+}
+
+.ctv-liquid-nav__direct:hover {
+  background: rgba(62, 211, 43, 0.22);
+  border-color: var(--lq-neon);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(62, 211, 43, 0.25);
+}
+
+.ctv-liquid-nav__sparkle {
+  color: var(--lq-neon);
+  font-size: 1rem;
+}
+
 /* --------------------------------------------------------------------------
-   Desktop auth buttons
+   Liquid Glass Dropdown Mega-Panel
    -------------------------------------------------------------------------- */
-.ctv-header__actions {
+.ctv-liquid-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px) scale(0.96);
+  min-width: 400px;
+  background: var(--lq-bg-dropdown);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid var(--lq-border-hover);
+  border-radius: 20px;
+  box-shadow:
+    0 24px 60px -12px rgba(0, 0, 0, 0.75),
+    0 0 32px rgba(62, 211, 43, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  padding: 0.75rem;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.24s;
+  z-index: 1050;
+}
+
+/* Puente invisible para evitar que el mouse pierda el hover */
+.ctv-liquid-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  height: 16px;
+}
+
+.ctv-liquid-nav__group:hover .ctv-liquid-dropdown,
+.ctv-liquid-dropdown--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.ctv-liquid-dropdown__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ctv-liquid-dropdown__link {
+  text-decoration: none;
+  display: block;
+}
+
+.ctv-liquid-dropdown__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    background var(--lq-transition),
+    border-color var(--lq-transition),
+    transform 0.16s ease;
+  cursor: pointer;
+}
+
+.ctv-liquid-dropdown__card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(62, 211, 43, 0.3);
+  transform: translateX(3px);
+}
+
+.ctv-liquid-dropdown__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(62, 211, 43, 0.12);
+  border: 1px solid rgba(62, 211, 43, 0.28);
+  color: var(--lq-neon);
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  transition:
+    background var(--lq-transition),
+    border-color var(--lq-transition),
+    box-shadow var(--lq-transition),
+    transform 0.2s ease;
+}
+
+.ctv-liquid-dropdown__card:hover .ctv-liquid-dropdown__icon-wrap {
+  background: rgba(62, 211, 43, 0.22);
+  border-color: var(--lq-neon);
+  box-shadow: 0 0 16px rgba(62, 211, 43, 0.35);
+  transform: scale(1.05);
+}
+
+.ctv-liquid-dropdown__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ctv-liquid-dropdown__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.ctv-liquid-dropdown__title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: color var(--lq-transition);
+}
+
+.ctv-liquid-dropdown__card:hover .ctv-liquid-dropdown__title {
+  color: #a7f3d0;
+}
+
+.ctv-liquid-dropdown__desc {
+  font-size: 0.78rem;
+  color: var(--lq-text-muted);
+  line-height: 1.35;
+  margin: 0;
+  transition: color var(--lq-transition);
+}
+
+.ctv-liquid-dropdown__card:hover .ctv-liquid-dropdown__desc {
+  color: var(--lq-text-sub);
+}
+
+.ctv-liquid-dropdown__arrow {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--lq-neon);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ctv-liquid-dropdown__card:hover .ctv-liquid-dropdown__arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* --------------------------------------------------------------------------
+   Badges Liquid
+   -------------------------------------------------------------------------- */
+.ctv-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: var(--lq-radius-pill);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ctv-badge--primary {
+  background: rgba(62, 211, 43, 0.16);
+  color: var(--lq-neon);
+  border: 1px solid rgba(62, 211, 43, 0.35);
+}
+
+.ctv-badge--polygon {
+  background: rgba(130, 71, 229, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.ctv-badge--secure {
+  background: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.ctv-badge--pulse {
+  background: rgba(62, 211, 43, 0.25);
+  color: #4ade80;
+  border: 1px solid var(--lq-neon);
+  animation: badgePulse 2s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(62, 211, 43, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(62, 211, 43, 0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Desktop Actions
+   -------------------------------------------------------------------------- */
+.ctv-liquid-actions {
   display: none;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.6rem;
   flex-shrink: 0;
 }
 
 @media (min-width: 1024px) {
-  .ctv-header__actions {
+  .ctv-liquid-actions {
     display: flex;
   }
 }
 
-/* --------------------------------------------------------------------------
-   Botones — píldoras minimal
-   -------------------------------------------------------------------------- */
-.ctv-btn {
+.ctv-btn-liquid {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--header-radius);
-  font-size: 0.82rem;
+  gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--lq-radius-pill);
+  font-size: 0.84rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  white-space: nowrap;
-  cursor: pointer;
   text-decoration: none;
+  cursor: pointer;
   border: 1px solid transparent;
-  transition:
-    background var(--header-transition),
-    border-color var(--header-transition),
-    color var(--header-transition),
-    transform 0.15s ease;
+  transition: all var(--lq-transition);
+  white-space: nowrap;
 }
 
-.ctv-btn:active {
+.ctv-btn-liquid:active {
   transform: scale(0.97);
 }
 
 /* Ghost */
-.ctv-btn--ghost {
+.ctv-btn-liquid--ghost {
   background: transparent;
-  color: var(--ctv-ink-soft);
+  color: var(--lq-text-sub);
 }
 
-.ctv-btn--ghost:hover {
-  color: var(--ctv-brand-deep);
-  background: rgba(7, 61, 61, 0.05);
+.ctv-btn-liquid--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
-/* Outline (login) */
-.ctv-btn--outline {
+/* Outline */
+.ctv-btn-liquid--outline {
   background: transparent;
-  color: var(--ctv-ink);
-  border-color: var(--ctv-rule-strong);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
-.ctv-btn--outline:hover {
-  border-color: var(--ctv-brand-deep);
-  color: var(--ctv-brand-deep);
-  background: rgba(7, 61, 61, 0.04);
+.ctv-btn-liquid--outline:hover {
+  border-color: var(--lq-neon);
+  color: var(--lq-neon);
+  background: rgba(62, 211, 43, 0.08);
 }
 
-/* Primary — verde bosque sólido */
-.ctv-btn--primary {
-  background: var(--ctv-brand-deep);
-  color: var(--ctv-canvas);
-  border-color: var(--ctv-brand-deep);
+/* Primary */
+.ctv-btn-liquid--primary {
+  background: #0f766e;
+  color: #ffffff;
+  border-color: #14b8a6;
 }
 
-/* Hover: --ctv-brand (#08AE06) daba 2.83:1 con el texto en canvas — por debajo
-   del mínimo AA de 4.5:1. --ctv-accent-contrast (#046302) da 7.16:1 y mantiene
-   la dirección del gesto (el botón se aclara respecto al teal de reposo). */
-.ctv-btn--primary:hover {
-  background: var(--ctv-accent-contrast);
-  border-color: var(--ctv-accent-contrast);
+.ctv-btn-liquid--primary:hover {
+  background: #115e59;
 }
 
-/* Full-width (mobile) */
-.ctv-btn--full {
+/* Glow CTA (Compensar Vuelo) */
+.ctv-btn-liquid--glow {
+  background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+}
+
+.ctv-btn-liquid--glow:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
+  box-shadow: 0 6px 26px rgba(16, 185, 129, 0.55), 0 0 14px rgba(62, 211, 43, 0.4);
+  transform: translateY(-1px);
+}
+
+.ctv-btn-liquid__arrow {
+  font-size: 0.95rem;
+  transition: transform 0.2s ease;
+}
+
+.ctv-btn-liquid--glow:hover .ctv-btn-liquid__arrow {
+  transform: translateX(2px);
+}
+
+.ctv-btn-liquid--full {
   width: 100%;
 }
 
-/* --------------------------------------------------------------------------
-   User chip
-   -------------------------------------------------------------------------- */
-.ctv-user-chip {
-  display: flex;
-  align-items: center;
-  gap: var(--ctv-space-2);
-  padding: 0.35rem 0.85rem 0.35rem 0.4rem;
-  border-radius: var(--ctv-radius-pill);
-  background: rgba(7, 61, 61, 0.05);
-  border: 1px solid var(--ctv-rule);
+.ctv-btn-liquid--half {
+  flex: 1;
 }
 
-.ctv-user-chip__avatar {
+/* User chip inside header */
+.ctv-liquid-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.8rem 0.3rem 0.35rem;
+  border-radius: var(--lq-radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ctv-liquid-user__avatar {
   width: 28px;
   height: 28px;
-  border-radius: var(--ctv-radius-full);
-  background: var(--ctv-brand-deep);
+  border-radius: 50%;
+  background: var(--lq-neon);
+  color: #041f1e;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: var(--ctv-canvas);
-  flex-shrink: 0;
 }
 
-.ctv-user-chip__avatar--lg {
-  width: 40px;
-  height: 40px;
-  font-size: 16px;
+.ctv-liquid-user__avatar--lg {
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
 }
 
-.ctv-user-chip__name {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--ctv-ink);
+.ctv-liquid-user__name {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 /* --------------------------------------------------------------------------
-   Hamburger (mobile only)
+   Mobile Hamburger
    -------------------------------------------------------------------------- */
-.ctv-hamburger {
+.ctv-liquid-hamburger {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: var(--ctv-radius-md);
-  background: transparent;
-  border: 1px solid var(--ctv-rule-strong);
-  color: var(--ctv-ink);
+  border-radius: var(--lq-radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--lq-border);
+  color: #ffffff;
   font-size: 22px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
-.ctv-hamburger:hover {
-  background: rgba(7, 61, 61, 0.05);
-  border-color: var(--ctv-brand-deep);
-}
-
-.ctv-hamburger:active {
-  transform: scale(0.92);
+.ctv-liquid-hamburger:hover {
+  background: rgba(62, 211, 43, 0.15);
+  border-color: var(--lq-neon);
+  color: var(--lq-neon);
 }
 
 @media (min-width: 1024px) {
-  .ctv-hamburger {
+  .ctv-liquid-hamburger {
     display: none;
   }
 }
 
 /* --------------------------------------------------------------------------
-   Mobile drawer — sibling del <header> (NO dentro), z-index encima del header
-   Usa visibility+opacity+transform para permitir transición suave.
+   Mobile Drawer Liquid
    -------------------------------------------------------------------------- */
-.ctv-drawer {
+.ctv-liquid-drawer {
   position: fixed;
   inset: 0;
-  z-index: var(--ctv-z-overlay);
-  /* > header para nunca quedar tapado */
+  z-index: 1100;
   visibility: hidden;
   pointer-events: none;
 }
 
-.ctv-drawer--open {
+.ctv-liquid-drawer--open {
   visibility: visible;
   pointer-events: auto;
 }
 
-.ctv-drawer__overlay {
+.ctv-liquid-drawer__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(7, 61, 61, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(2, 14, 13, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   opacity: 0;
-  transition: opacity 0.28s var(--ctv-ease-out);
+  transition: opacity 0.3s ease;
 }
 
-.ctv-drawer--open .ctv-drawer__overlay {
+.ctv-liquid-drawer--open .ctv-liquid-drawer__overlay {
   opacity: 1;
 }
 
-.ctv-drawer__panel {
+.ctv-liquid-drawer__panel {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(85vw, 340px);
-  background: var(--ctv-canvas);
-  border-left: 1px solid var(--ctv-rule);
+  width: min(88vw, 360px);
+  background: rgba(4, 24, 22, 0.98);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-left: 1px solid rgba(62, 211, 43, 0.28);
   display: flex;
   flex-direction: column;
-  padding-top: var(--header-h);
   overflow-y: auto;
   transform: translateX(100%);
-  transition: transform 0.32s var(--ctv-ease-out);
-  box-shadow: -20px 0 60px -30px rgba(7, 61, 61, 0.35);
+  transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8);
 }
 
-.ctv-drawer--open .ctv-drawer__panel {
+.ctv-liquid-drawer--open .ctv-liquid-drawer__panel {
   transform: translateX(0);
 }
 
-.ctv-drawer__nav {
-  display: flex;
-  flex-direction: column;
-  padding: 1.25rem 1rem 0;
-  gap: 0.15rem;
-}
-
-.ctv-drawer__link {
+.ctv-liquid-drawer__top {
   display: flex;
   align-items: center;
-  gap: var(--ctv-space-3);
-  padding: 0.875rem 1rem;
-  border-radius: var(--ctv-radius-md);
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--ctv-ink-soft);
-  text-decoration: none;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    transform 0.15s ease;
-  border: none;
-  background: transparent;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ctv-liquid-drawer__logo img {
+  height: 32px;
+  width: auto;
+}
+
+.ctv-liquid-drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 20px;
   cursor: pointer;
-  width: 100%;
+  transition: all 0.2s ease;
 }
 
-.ctv-drawer__link:hover {
-  color: var(--ctv-brand-deep);
-  background: rgba(7, 61, 61, 0.05);
-  transform: translateX(3px);
+.ctv-liquid-drawer__close:hover {
+  background: rgba(62, 211, 43, 0.2);
+  color: var(--lq-neon);
+  border-color: var(--lq-neon);
 }
 
-.ctv-drawer__link--active {
-  color: var(--ctv-brand-deep);
-  background: var(--ctv-brand-soft);
-}
-
-.ctv-drawer__link-arrow {
-  margin-left: auto;
-  font-size: 16px;
-  opacity: 0.45;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.ctv-drawer__link:hover .ctv-drawer__link-arrow {
-  opacity: 0.85;
-  transform: translateX(2px);
-}
-
-.ctv-drawer__footer {
-  margin-top: auto;
-  padding: 1.25rem 1rem 2rem;
-  border-top: 1px solid var(--ctv-rule);
+.ctv-liquid-drawer__nav {
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: var(--ctv-space-2);
+  gap: 0.75rem;
 }
 
-.ctv-drawer__user {
+.ctv-liquid-drawer__accordion {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.ctv-liquid-drawer__accordion-header {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1rem;
-  border-radius: var(--ctv-radius-md);
-  background: rgba(7, 61, 61, 0.04);
-  border: 1px solid var(--ctv-rule);
-  margin-bottom: var(--ctv-space-1);
-}
-
-.ctv-drawer__user-name {
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-family: inherit;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--ctv-ink);
+  cursor: pointer;
+}
+
+.ctv-liquid-drawer__accordion-chevron {
+  font-size: 1.1rem;
+  color: var(--lq-neon);
+  transition: transform 0.25s ease;
+}
+
+.ctv-liquid-drawer__accordion-chevron--rotated {
+  transform: rotate(180deg);
+}
+
+.ctv-liquid-drawer__accordion-body {
+  padding: 0 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ctv-liquid-drawer__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #ffffff;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.ctv-liquid-drawer__item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ctv-liquid-drawer__item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(62, 211, 43, 0.15);
+  border: 1px solid rgba(62, 211, 43, 0.3);
+  color: var(--lq-neon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ctv-liquid-drawer__item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ctv-liquid-drawer__item-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+.ctv-liquid-drawer__item-head strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ctv-liquid-drawer__item-text small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--lq-text-muted);
+  line-height: 1.3;
+}
+
+.ctv-liquid-drawer__direct-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(62, 211, 43, 0.12);
+  border: 1px solid rgba(62, 211, 43, 0.3);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.ctv-liquid-drawer__footer {
+  margin-top: auto;
+  padding: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ctv-liquid-drawer__user {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ctv-liquid-drawer__user-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
   margin: 0;
 }
 
-.ctv-drawer__user-role {
-  font-size: 0.8125rem;
-  color: var(--ctv-ink-mute);
+.ctv-liquid-drawer__user-role {
+  font-size: 0.78rem;
+  color: var(--lq-neon);
   margin: 0;
+}
+
+.ctv-liquid-drawer__auth-row {
+  display: flex;
+  gap: 0.5rem;
 }
 
 @media (min-width: 1024px) {
-  .ctv-drawer {
+  .ctv-liquid-drawer {
     display: none;
   }
 }

@@ -2,9 +2,10 @@
 // App.tsx - Routing con Multi-User Support
 // ============================================
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import { scheduleIdlePrefetch } from './shared/utils/routePrefetch';
 
 // Context
 import { AuthProvider } from './apps/auth/context/AuthContext';
@@ -82,6 +83,10 @@ const PageLoader = () => (
 const NotFoundPage = lazy(() => import('./apps/public/pages/NotFoundPage'));
 
 function App() {
+  useEffect(() => {
+    scheduleIdlePrefetch();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
