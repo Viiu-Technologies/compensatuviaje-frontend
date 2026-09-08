@@ -23,3 +23,5 @@ export type { ConfirmDialogProps } from './ConfirmDialog';
 
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
+export { useConfirm } from './useConfirm';
+export type { ConfirmOptions } from './useConfirm';

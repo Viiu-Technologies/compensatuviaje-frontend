@@ -7,6 +7,7 @@ import { AdminCertEvaluationDetail, AdminProjectContext } from '../../../types/a
 import AdminPendingBadge from '../components/shared/AdminPendingBadge';
 import RejectModal from '../components/shared/RejectModal';
 import { CERT_LEVEL_LABELS, CERT_LEVEL_COLORS, SCORE_LABELS } from '../../../types/certification.types';
+import { useConfirm } from '../../../shared/components/ui';
 
 const getCertIcon = (level: string) => {
   switch (level) {
@@ -21,6 +22,7 @@ const AICertDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const { confirm, dialog } = useConfirm();
   const [evaluation, setEvaluation] = useState<AdminCertEvaluationDetail | null>(null);
   const [context, setContext] = useState<AdminProjectContext | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +58,13 @@ const AICertDetailPage: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (!evaluation || !window.confirm('¿Estás seguro de aprobar esta certificación de proyecto?')) return;
+    if (!evaluation) return;
+    const ok = await confirm({
+      title: '¿Aprobar esta certificación?',
+      description: 'El proyecto quedará certificado y disponible para compensaciones. Esta acción no se puede deshacer.',
+      confirmLabel: 'Aprobar certificación',
+    });
+    if (!ok) return;
     try {
       setActionLoading(true);
       await adminAIApi.approveCertEvaluation(evaluation.id);
@@ -266,6 +274,7 @@ const AICertDetailPage: React.FC = () => {
         itemName={evaluation.project.name}
         loading={actionLoading}
       />
+      {dialog}
     </div>
   );
 };

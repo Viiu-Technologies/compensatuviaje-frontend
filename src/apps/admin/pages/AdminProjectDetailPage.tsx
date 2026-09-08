@@ -48,6 +48,7 @@ import {
   ProjectDetailCertificate,
 } from '../services/adminApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { useConfirm } from '../../../shared/components/ui';
 import api from '../../../shared/services/api';
 import PhotoCarousel from '../../../shared/components/PhotoCarousel';
 import DocumentViewer from '../../../shared/components/DocumentViewer';
@@ -217,6 +218,7 @@ function EvaluationBadge({ evaluation }: { evaluation: ProjectDetailEvaluation }
 export default function AdminProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { confirm, dialog } = useConfirm();
   const [project, setProject] = useState<ProjectDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -243,10 +245,16 @@ export default function AdminProjectDetailPage() {
 
   async function handleChangeStatus(newStatus: 'paused' | 'active') {
     if (!project) return;
-    const confirmMsg = newStatus === 'paused'
-      ? 'Pausar este proyecto? Los compradores no podran adquirir creditos.'
-      : 'Reactivar este proyecto?';
-    if (!confirm(confirmMsg)) return;
+    const ok = await confirm({
+      title: newStatus === 'paused' ? '¿Pausar este proyecto?' : '¿Reactivar este proyecto?',
+      description:
+        newStatus === 'paused'
+          ? 'Los compradores no podrán adquirir créditos mientras esté pausado. Las compensaciones ya emitidas no se ven afectadas.'
+          : 'El proyecto volverá a estar disponible para la compra de créditos.',
+      confirmLabel: newStatus === 'paused' ? 'Pausar proyecto' : 'Reactivar proyecto',
+      confirmVariant: newStatus === 'paused' ? 'destructive' : 'primary',
+    });
+    if (!ok) return;
 
     try {
       setStatusLoading(true);
@@ -706,6 +714,7 @@ export default function AdminProjectDetailPage() {
           )}
         </div>
       </div>
+      {dialog}
     </div>
   );
 }

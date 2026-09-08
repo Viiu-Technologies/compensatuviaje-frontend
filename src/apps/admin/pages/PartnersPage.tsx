@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { getPartners, getPartnersStats, updatePartnerStatus, Partner } from '../services/adminApi';
 import PartnerCreateModal from '../components/PartnerCreateModal';
+import { useConfirm } from '../../../shared/components/ui';
 
 interface PartnerStats {
   total: number;
@@ -52,6 +53,7 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
 
 export default function PartnersPage() {
   const navigate = useNavigate();
+  const { confirm, dialog } = useConfirm();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,7 +134,16 @@ export default function PartnersPage() {
   };
 
   const handleStatusChange = async (partnerId: string, newStatus: 'active' | 'suspended' | 'inactive') => {
-    if (!confirm(`¿Cambiar estado del partner a "${statusConfig[newStatus]?.label}"?`)) return;
+    const ok = await confirm({
+      title: `¿Cambiar el estado a "${statusConfig[newStatus]?.label}"?`,
+      description:
+        newStatus === 'suspended' || newStatus === 'inactive'
+          ? 'El partner dejará de operar en la plataforma hasta que vuelvas a activarlo.'
+          : 'El partner podrá volver a operar en la plataforma.',
+      confirmLabel: 'Cambiar estado',
+      confirmVariant: newStatus === 'active' ? 'primary' : 'destructive',
+    });
+    if (!ok) return;
     
     try {
       await updatePartnerStatus(partnerId, newStatus);
@@ -546,6 +557,7 @@ export default function PartnersPage() {
           })()}
         </>
       )}
+      {dialog}
     </div>
   );
 }

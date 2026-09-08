@@ -48,6 +48,7 @@ import PhotoCarousel from '../../../shared/components/PhotoCarousel';
 import DocumentViewer from '../../../shared/components/DocumentViewer';
 import { approveCertEvaluation, rejectCertEvaluation } from '../services/adminAIApi';
 import RejectModal from '../components/shared/RejectModal';
+import { useConfirm } from '../../../shared/components/ui';
 
 interface PendingProject {
   id: string;
@@ -113,6 +114,7 @@ type TabType = 'pending' | 'approved';
 
 export default function ProjectsReviewPage() {
   const navigate = useNavigate();
+  const { confirm, dialog } = useConfirm();
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   
   // Pending projects state
@@ -243,9 +245,12 @@ export default function ProjectsReviewPage() {
       }
     }
 
-    if (!confirm(`¿Estás seguro de aprobar este proyecto con un precio final de $${Math.round(calculatedPrice).toLocaleString('es-CL')} CLP/ton?`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: '¿Aprobar este proyecto?',
+      description: `Se fijará un precio final de $${Math.round(calculatedPrice).toLocaleString('es-CL')} CLP por tonelada. El proyecto pasará a certificación.`,
+      confirmLabel: 'Aprobar proyecto',
+    });
+    if (!ok) return;
 
     setActionLoading(selectedProject.id);
     try {
@@ -284,7 +289,12 @@ export default function ProjectsReviewPage() {
   };
 
   const handleActivate = async (project: PendingProject) => {
-    if (!confirm(`¿Activar el proyecto "${project.name}"? Una vez activo, estará disponible para certificación y compensaciones.`)) return;
+    const ok = await confirm({
+      title: `¿Activar "${project.name}"?`,
+      description: 'Una vez activo estará disponible para certificación y compensaciones.',
+      confirmLabel: 'Activar proyecto',
+    });
+    if (!ok) return;
 
     setActionLoading(project.id);
     try {
@@ -316,7 +326,13 @@ export default function ProjectsReviewPage() {
 
   const handleCertApprove = async () => {
     const evalId = selectedProject?.evaluations?.[0]?.id;
-    if (!evalId || !window.confirm('¿Estás seguro de aprobar esta certificación de proyecto?')) return;
+    if (!evalId) return;
+    const ok = await confirm({
+      title: '¿Aprobar esta certificación?',
+      description: 'El proyecto quedará certificado y disponible para compensaciones. Esta acción no se puede deshacer.',
+      confirmLabel: 'Aprobar certificación',
+    });
+    if (!ok) return;
     try {
       setCertActionLoading(true);
       await approveCertEvaluation(evalId);
@@ -919,6 +935,7 @@ export default function ProjectsReviewPage() {
           ))}
         </div>
       )}
+      {dialog}
     </div>
   );
 }

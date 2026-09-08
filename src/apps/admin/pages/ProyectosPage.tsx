@@ -38,6 +38,7 @@ import {
   ProjectsListResponse
 } from '../services/adminApi';
 import api from '../../../shared/services/api';
+import { useConfirm } from '../../../shared/components/ui';
 
 // ============================================
 // Status config — only inventory-relevant states
@@ -78,6 +79,7 @@ const inventoryStatuses = ['active', 'paused', 'completed', 'rejected'] as const
 
 export default function ProyectosPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { confirm, dialog } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [pagination, setPagination] = useState({
@@ -155,7 +157,16 @@ export default function ProyectosPage() {
   // ====== PAUSE / REACTIVATE ======
   const handleChangeStatus = async (projectId: string, newStatus: 'paused' | 'active') => {
     const label = newStatus === 'paused' ? 'pausar' : 'reactivar';
-    if (!confirm(`¿Estás seguro de ${label} este proyecto?`)) return;
+    const ok = await confirm({
+      title: newStatus === 'paused' ? '¿Pausar este proyecto?' : '¿Reactivar este proyecto?',
+      description:
+        newStatus === 'paused'
+          ? 'Dejará de estar disponible para nuevas compensaciones. Las ya emitidas no se ven afectadas.'
+          : 'Volverá a estar disponible para nuevas compensaciones.',
+      confirmLabel: newStatus === 'paused' ? 'Pausar proyecto' : 'Reactivar proyecto',
+      confirmVariant: newStatus === 'paused' ? 'destructive' : 'primary',
+    });
+    if (!ok) return;
 
     setActionLoading(projectId);
     try {
@@ -540,6 +551,7 @@ export default function ProyectosPage() {
           </p>
         </div>
       </div>
+      {dialog}
     </div>
   );
 }

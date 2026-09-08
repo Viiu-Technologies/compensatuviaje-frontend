@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../../../shared/context/ThemeContext';
 import api from '../../../../shared/services/api';
+import { useConfirm } from '../../../../shared/components/ui';
 
 interface DocumentFile {
   id: string;
@@ -67,6 +68,7 @@ const DocumentsView: React.FC = () => {
   const isDark = resolvedTheme === 'dark';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { confirm, dialog } = useConfirm();
   const [documents, setDocuments] = useState<CompanyDocument[]>([]);
   const [documentTypes, setDocumentTypes] = useState<Record<string, DocumentTypeConfig>>({});
   const [validation, setValidation] = useState<ValidationResult | null>(null);
@@ -153,7 +155,13 @@ const DocumentsView: React.FC = () => {
   };
 
   const handleDelete = async (docId: string) => {
-    if (!confirm('¿Eliminar este documento?')) return;
+    const ok = await confirm({
+      title: '¿Eliminar este documento?',
+      description: 'El documento se borrará de forma permanente y tendrás que volver a subirlo si lo necesitas.',
+      confirmLabel: 'Eliminar',
+      confirmVariant: 'destructive',
+    });
+    if (!ok) return;
     setDeleting(docId);
     try {
       await api.delete(`/b2b/documents/${docId}`);
@@ -513,6 +521,7 @@ const DocumentsView: React.FC = () => {
           </div>
         </div>
       </div>
+      {dialog}
     </div>
   );
 };
