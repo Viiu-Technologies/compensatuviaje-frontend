@@ -1,12 +1,11 @@
 // ==========================================================================
-// Header.tsx — Liquid Glass Unified Surface Header (Framer Motion)
-// El header actúa como un solo objeto/superficie de cristal líquido continuo
-// que se expande físicamente con física de resorte y refracción óptica.
+// Header.tsx — Liquid Glass Unified Surface Header (Estilo Wren)
+// Compacto, limpio, horizontal, sin footer ni exceso de descripciones.
 // ==========================================================================
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence, type Transition } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/context/AuthContext';
 import { 
   FaUser, 
@@ -25,8 +24,7 @@ import {
   HiCalculator, 
   HiOfficeBuilding, 
   HiCreditCard, 
-  HiSupport,
-  HiSparkles
+  HiSupport
 } from 'react-icons/hi';
 import { prefetchRoute, PrefetchKey } from '../../../shared/utils/routePrefetch';
 import './Header.css';
@@ -36,15 +34,13 @@ interface DropdownItem {
   href: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  badgeType?: 'primary' | 'polygon' | 'secure';
+  iconTheme?: 'green' | 'orange' | 'teal' | 'purple' | 'blue' | 'pink';
   prefetchKey?: PrefetchKey;
 }
 
 interface NavGroup {
   id: string;
   label: string;
-  footerNote: string;
   items: DropdownItem[];
 }
 
@@ -52,58 +48,56 @@ const NAV_GROUPS: NavGroup[] = [
   {
     id: 'soluciones',
     label: 'Soluciones',
-    footerNote: 'Proyectos certificados internacionalmente bajo Verra VCS y Gold Standard.',
     items: [
       {
         label: 'Calculadora de Vuelos',
         href: '/calculadora',
-        description: 'Calcula tu huella de CO₂ y neutralízala con proyectos certificados',
+        description: 'Calcula y neutraliza tu huella de vuelo.',
         icon: HiCalculator,
-        badge: 'Nueva',
-        badgeType: 'primary',
+        iconTheme: 'green',
         prefetchKey: 'calculator',
       },
       {
         label: 'Proyectos de Impacto',
         href: '/#proyectos',
-        description: 'Conservación forestal en Patagonia, Amazonía y energías limpias',
+        description: 'Conservación en Patagonia y Amazonía.',
         icon: FaTree,
+        iconTheme: 'teal',
       },
       {
-        label: 'Empresas & API B2B',
+        label: 'Empresas & B2B',
         href: '/#empresas',
-        description: 'Integración para aerolíneas, corporativos y viajes de negocios Scope 3',
+        description: 'Gestión Scope 3 y API corporativa.',
         icon: HiOfficeBuilding,
+        iconTheme: 'orange',
       },
     ],
   },
   {
     id: 'transparencia',
     label: 'Transparencia',
-    footerNote: 'Trazabilidad pública en Polygon Mainnet y transacciones protegidas con cifrado bancario.',
     items: [
       {
         label: 'Verificación Blockchain',
         href: '/#verificar',
-        description: 'Trazabilidad criptográfica en Polygon con certificados NFT únicos',
+        description: 'Certificados NFT trazables en Polygon.',
         icon: FaCube,
-        badge: 'Polygon',
-        badgeType: 'polygon',
+        iconTheme: 'purple',
       },
       {
         label: 'Metodología & Estándares',
         href: '/calculadora#metodologia',
-        description: 'Factores validados con ICAO, DEFRA del Reino Unido y GHG Protocol',
+        description: 'Factores oficiales ICAO, DEFRA y GHG.',
         icon: FaShieldAlt,
+        iconTheme: 'teal',
         prefetchKey: 'calculator',
       },
       {
-        label: 'Métodos de Pago & Seguridad',
+        label: 'Métodos de Pago',
         href: '/pagos',
-        description: 'Webpay Plus, Visa y Mastercard con cifrado SSL bancario 256-bit',
+        description: 'Webpay Plus, Visa y Mastercard seguros.',
         icon: HiCreditCard,
-        badge: 'Seguro',
-        badgeType: 'secure',
+        iconTheme: 'green',
         prefetchKey: 'payments',
       },
     ],
@@ -111,51 +105,41 @@ const NAV_GROUPS: NavGroup[] = [
   {
     id: 'recursos',
     label: 'Recursos',
-    footerNote: 'Conocimiento científico y herramientas prácticas para la acción climática real.',
     items: [
       {
         label: 'Blog de Impacto',
         href: '/blog',
-        description: 'Noticias climáticas, ecología y guías para viajeros conscientes',
+        description: 'Guías de ecología y viajes conscientes.',
         icon: FaNewspaper,
+        iconTheme: 'pink',
         prefetchKey: 'blog',
       },
       {
         label: 'Aliados & Partners',
         href: '/aliados',
-        description: 'Red global de aerolíneas, agencias y hoteles comprometidos',
+        description: 'Red global de aerolíneas y hoteles.',
         icon: FaHandshake,
+        iconTheme: 'orange',
         prefetchKey: 'partners',
       },
       {
         label: 'Atención y Soporte',
         href: '/contacto',
-        description: 'Canal oficial para resolver dudas sobre tus compensaciones',
+        description: 'Centro oficial de ayuda y consultas.',
         icon: HiSupport,
+        iconTheme: 'blue',
         prefetchKey: 'contact',
       },
     ],
   },
 ];
 
-// Física de resorte orgánica para el material de cristal líquido.
-// Se aplica ÚNICAMENTE al panel expandible (altura del mega-menú): la barra
-// superior nunca debe animarse con spring para evitar overshoot visible
-// (el "jalón" del label del header) — esa usa LIQUID_EASE, sin rebote.
-const LIQUID_SPRING: Transition = {
+// Física de resorte orgánica, rápida y precisa
+const LIQUID_SPRING = {
   type: 'spring',
-  stiffness: 340,
-  damping: 32,
-  mass: 0.8,
-};
-
-// Transición sin overshoot para el marco del header (border-radius, sombra).
-// Framer Motion aplicaba el mismo spring al contenedor padre y al panel hijo
-// a la vez; dos springs en la misma superficie combinaban su rebote y
-// deformaban visualmente la barra superior durante la expansión/contracción.
-const LIQUID_FRAME_EASE: Transition = {
-  duration: 0.34,
-  ease: [0.22, 1, 0.36, 1],
+  stiffness: 380,
+  damping: 34,
+  mass: 0.75,
 };
 
 const Header: React.FC = () => {
@@ -185,29 +169,13 @@ const Header: React.FC = () => {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
+      if (window.scrollY > 120 && activeGroup !== null) {
+        setActiveGroup(null);
+      }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  /* ── Cerrar el panel ante cualquier intento de scroll ──
-     El panel expandido cubre una franja alta del viewport (position: fixed),
-     por lo que un wheel/touch del usuario sobre esa franja queda "atrapado"
-     por el header en vez de desplazar la página. Se cierra en el primer
-     gesto de scroll para liberar la franja de inmediato, sin esperar un
-     umbral de scrollY. */
-  useEffect(() => {
-    if (activeGroup === null) return;
-
-    const closeOnScrollAttempt = () => setActiveGroup(null);
-
-    window.addEventListener('wheel', closeOnScrollAttempt, { passive: true });
-    window.addEventListener('touchmove', closeOnScrollAttempt, { passive: true });
-    return () => {
-      window.removeEventListener('wheel', closeOnScrollAttempt);
-      window.removeEventListener('touchmove', closeOnScrollAttempt);
-    };
   }, [activeGroup]);
 
   /* ── Click outside & Escape key listeners para cierre fluido ── */
@@ -256,7 +224,6 @@ const Header: React.FC = () => {
       setActiveGroup(null);
     } else {
       setActiveGroup(groupId);
-      // Prefetch routes de la categoría
       const group = NAV_GROUPS.find((g) => g.id === groupId);
       group?.items.forEach((item) => {
         if (item.prefetchKey) prefetchRoute(item.prefetchKey);
@@ -266,7 +233,6 @@ const Header: React.FC = () => {
 
   const handleMouseEnterGroup = (groupId: string) => {
     if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
-    // Si ya está expandido o el usuario pasa el cursor, activa suavemente
     setActiveGroup(groupId);
     const group = NAV_GROUPS.find((g) => g.id === groupId);
     group?.items.forEach((item) => {
@@ -278,7 +244,7 @@ const Header: React.FC = () => {
     if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
     leaveTimeoutRef.current = setTimeout(() => {
       setActiveGroup(null);
-    }, 280);
+    }, 240);
   };
 
   const handleItemClick = (href: string) => {
@@ -296,24 +262,22 @@ const Header: React.FC = () => {
 
   return (
     <>
-      {/* ── Contenedor Único Liquid Glass ──
-          Animamos físicamente la altura, border-radius y refracción especular
-          como un solo bloque material de cristal líquido fluido. */}
+      {/* ── Contenedor Único Liquid Glass ── */}
       <motion.header
         ref={headerRef}
         className={`ctv-liquid-surface${scrolled ? ' ctv-liquid-surface--scrolled' : ''}${isExpanded ? ' ctv-liquid-surface--expanded' : ''}`}
         animate={{
-          borderRadius: isExpanded ? '28px' : '9999px',
+          borderRadius: isExpanded ? '24px' : '9999px',
           boxShadow: isExpanded
-            ? '0 28px 70px -12px rgba(0, 0, 0, 0.75), 0 0 35px rgba(62, 211, 43, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.28)'
+            ? '0 24px 60px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(62, 211, 43, 0.18), inset 0 1px 1.5px rgba(255, 255, 255, 0.22)'
             : scrolled
               ? '0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(62, 211, 43, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.16)'
               : '0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(62, 211, 43, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.12)',
         }}
-        transition={LIQUID_FRAME_EASE}
+        transition={LIQUID_SPRING}
         onMouseLeave={handleMouseLeaveHeader}
       >
-        {/* Capa de refracción óptica y cáustica líquida */}
+        {/* Capa de refracción óptica decorativa */}
         <div className="ctv-liquid-refraction" aria-hidden="true" />
 
         {/* ── Barra Superior (Siempre visible y anclada al cuerpo del cristal) ── */}
@@ -329,7 +293,7 @@ const Header: React.FC = () => {
             />
           </Link>
 
-          {/* Navegación Desktop: Disparadores Integrados */}
+          {/* Navegación Desktop: Disparadores con sombra sutil y sin bordes pesados */}
           <nav className="ctv-liquid-nav" aria-label="Navegación principal">
             {NAV_GROUPS.map((group) => {
               const isCurrentActive = activeGroup === group.id;
@@ -350,35 +314,25 @@ const Header: React.FC = () => {
                     <span>{group.label}</span>
                     <motion.span
                       animate={{ rotate: isCurrentActive ? 180 : 0 }}
-                      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                       className="ctv-liquid-nav__chevron-wrap"
                     >
                       <HiChevronDown className="ctv-liquid-nav__chevron" />
                     </motion.span>
                   </button>
-
-                  {/* Indicador de píldora activa dentro de la barra líquida */}
-                  {isCurrentActive && (
-                    <motion.div
-                      layoutId="liquid-active-pill"
-                      className="ctv-liquid-active-pill"
-                      transition={LIQUID_SPRING}
-                    />
-                  )}
                 </div>
               );
             })}
 
-            {/* Direct Quick Link: Calculadora */}
+            {/* Direct Quick Link: Calculadora estilo Wren ("For business [New]") */}
             <Link 
               to="/calculadora" 
-              className="ctv-liquid-nav__direct"
+              className="ctv-liquid-nav__trigger ctv-liquid-nav__trigger--link"
               onClick={() => setActiveGroup(null)}
               onMouseEnter={() => prefetchRoute('calculator')}
             >
-              <HiSparkles className="ctv-liquid-nav__sparkle" />
               <span>Calculadora</span>
-              <span className="ctv-badge ctv-badge--pulse">Rápida</span>
+              <span className="ctv-badge ctv-badge--new">Nueva</span>
             </Link>
           </nav>
 
@@ -438,8 +392,7 @@ const Header: React.FC = () => {
           </button>
         </div>
 
-        {/* ── Extensión Líquida del Contenedor (Mega-Menú Integrado) ──
-            Forma parte de la MISMA superficie de cristal y se despliega con física de resorte */}
+        {/* ── Extensión Líquida del Contenedor (Estilo Wren Compacto) ── */}
         <AnimatePresence mode="wait">
           {isExpanded && currentGroupData && (
             <motion.div
@@ -448,19 +401,19 @@ const Header: React.FC = () => {
               role="region"
               aria-label={currentGroupData.label}
               className="ctv-liquid-body"
-              initial={{ opacity: 0, height: 0, y: -6, filter: 'blur(6px)' }}
+              initial={{ opacity: 0, height: 0, y: -4, filter: 'blur(4px)' }}
               animate={{ opacity: 1, height: 'auto', y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, height: 0, y: -4, filter: 'blur(4px)' }}
+              exit={{ opacity: 0, height: 0, y: -4, filter: 'blur(3px)' }}
               transition={{
                 height: LIQUID_SPRING,
-                opacity: { duration: 0.22, ease: 'easeOut' },
-                filter: { duration: 0.22 },
+                opacity: { duration: 0.18, ease: 'easeOut' },
+                filter: { duration: 0.18 },
               }}
             >
-              {/* Divisoria refractiva líquida */}
-              <div className="ctv-liquid-divider" aria-hidden="true" />
+              {/* Título de sección sutil estilo Wren */}
+              <div className="ctv-liquid-section-title">{currentGroupData.label}</div>
 
-              {/* Contenido panorámico en cuadrícula de 3 columnas */}
+              {/* Grid horizontal compacto de 3 columnas */}
               <div className="ctv-liquid-grid">
                 {currentGroupData.items.map((item, idx) => {
                   const Icon = item.icon;
@@ -469,29 +422,21 @@ const Header: React.FC = () => {
                   const cardInner = (
                     <motion.div
                       className="ctv-liquid-card"
-                      initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{
-                        delay: 0.04 * idx,
-                        duration: 0.28,
+                        delay: 0.03 * idx,
+                        duration: 0.22,
                         ease: [0.22, 1, 0.36, 1],
                       }}
                       onMouseEnter={() => item.prefetchKey && prefetchRoute(item.prefetchKey)}
                     >
-                      <div className="ctv-liquid-card__icon-wrap">
+                      <div className={`ctv-liquid-card__icon-wrap ctv-liquid-card__icon-wrap--${item.iconTheme || 'green'}`}>
                         <Icon className="ctv-liquid-card__icon" />
                       </div>
 
-                      <div className="ctv-liquid-card__content">
-                        <div className="ctv-liquid-card__header">
-                          <span className="ctv-liquid-card__title">{item.label}</span>
-                          {item.badge && (
-                            <span className={`ctv-badge ctv-badge--${item.badgeType || 'primary'}`}>
-                              {item.badge}
-                            </span>
-                          )}
-                          <HiArrowRight className="ctv-liquid-card__arrow" />
-                        </div>
+                      <div className="ctv-liquid-card__text">
+                        <span className="ctv-liquid-card__title">{item.label}</span>
                         <p className="ctv-liquid-card__desc">{item.description}</p>
                       </div>
                     </motion.div>
@@ -528,19 +473,6 @@ const Header: React.FC = () => {
                     </Link>
                   );
                 })}
-              </div>
-
-              {/* Tira inferior de confianza y verificación */}
-              <div className="ctv-liquid-footer">
-                <span className="ctv-liquid-footer__indicator" />
-                <p className="ctv-liquid-footer__note">{currentGroupData.footerNote}</p>
-                <button
-                  type="button"
-                  className="ctv-liquid-footer__close"
-                  onClick={() => setActiveGroup(null)}
-                >
-                  Cerrar
-                </button>
               </div>
             </motion.div>
           )}
@@ -597,18 +529,11 @@ const Header: React.FC = () => {
 
                         const inner = (
                           <>
-                            <div className="ctv-liquid-drawer__item-icon">
+                            <div className={`ctv-liquid-drawer__item-icon ctv-liquid-card__icon-wrap--${item.iconTheme || 'green'}`}>
                               <Icon />
                             </div>
                             <div className="ctv-liquid-drawer__item-text">
-                              <div className="ctv-liquid-drawer__item-head">
-                                <strong>{item.label}</strong>
-                                {item.badge && (
-                                  <span className={`ctv-badge ctv-badge--${item.badgeType || 'primary'}`}>
-                                    {item.badge}
-                                  </span>
-                                )}
-                              </div>
+                              <strong>{item.label}</strong>
                               <small>{item.description}</small>
                             </div>
                           </>
@@ -657,8 +582,8 @@ const Header: React.FC = () => {
               onClick={closeMenu}
               className="ctv-liquid-drawer__direct-cta"
             >
-              <HiSparkles />
-              <span>Calculadora de Vuelos Rápida</span>
+              <HiCalculator />
+              <span>Calculadora de Vuelos</span>
               <HiArrowRight />
             </Link>
           </nav>

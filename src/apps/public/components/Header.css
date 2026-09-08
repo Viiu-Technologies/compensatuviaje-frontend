@@ -1,56 +1,26 @@
 /* ==========================================================================
-   Header.css — Liquid Glass Unified Surface Header
-   El contenedor del header es una única superficie de cristal líquido continuo
-   que se expande físicamente con física de resorte y refracción óptica.
+   Header.css — Liquid Glass Unified Surface Header (Estilo Wren Compacto)
+   Superficie fluida continua con ítems horizontales y triggers sin bordes pesados
    ========================================================================== */
 @import './landing/tokens.css';
 
 /* --------------------------------------------------------------------------
-   Tokens locales del Header Liquid vinculados al Design System
+   Tokens locales vinculados al Design System
    -------------------------------------------------------------------------- */
 :root {
   --lq-bg: rgba(5, 27, 25, 0.90);
   --lq-bg-scrolled: rgba(4, 22, 20, 0.96);
   --lq-bg-expanded: rgba(4, 22, 20, 0.97);
+  --lq-border: rgba(62, 211, 43, 0.24);
+  --lq-border-expanded: rgba(62, 211, 43, 0.38);
   --lq-neon: var(--ctv-brand-bright);
+  --lq-neon-glow: rgba(62, 211, 43, 0.35);
   --lq-text: var(--ctv-canvas);
   --lq-text-muted: #94a3b8;
   --lq-text-sub: #cbd5e1;
   --lq-header-h: 68px;
   --lq-radius-pill: var(--ctv-radius-pill);
-  --lq-radius-expanded: 28px;
-  --lq-transition: 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  /* Opacidades del verde de marca (--ctv-brand-bright) usadas por la
-     superficie de cristal. Todas derivan de color-mix() sobre el token
-     real en vez de rgba() hardcodeado, así siguen el design system si
-     el token cambia. */
-  --lq-border: color-mix(in srgb, var(--lq-neon) 24%, transparent);
-  --lq-border-expanded: color-mix(in srgb, var(--lq-neon) 42%, transparent);
-  --lq-neon-glow: color-mix(in srgb, var(--lq-neon) 35%, transparent);
-  --lq-neon-08: color-mix(in srgb, var(--lq-neon) 8%, transparent);
-  --lq-neon-10: color-mix(in srgb, var(--lq-neon) 10%, transparent);
-  --lq-neon-12: color-mix(in srgb, var(--lq-neon) 12%, transparent);
-  --lq-neon-14: color-mix(in srgb, var(--lq-neon) 14%, transparent);
-  --lq-neon-15: color-mix(in srgb, var(--lq-neon) 15%, transparent);
-  --lq-neon-16: color-mix(in srgb, var(--lq-neon) 16%, transparent);
-  --lq-neon-18: color-mix(in srgb, var(--lq-neon) 18%, transparent);
-  --lq-neon-20: color-mix(in srgb, var(--lq-neon) 20%, transparent);
-  --lq-neon-22: color-mix(in srgb, var(--lq-neon) 22%, transparent);
-  --lq-neon-24: color-mix(in srgb, var(--lq-neon) 24%, transparent);
-  --lq-neon-25: color-mix(in srgb, var(--lq-neon) 25%, transparent);
-  --lq-neon-28: color-mix(in srgb, var(--lq-neon) 28%, transparent);
-  --lq-neon-30: color-mix(in srgb, var(--lq-neon) 30%, transparent);
-  --lq-neon-32: color-mix(in srgb, var(--lq-neon) 32%, transparent);
-  --lq-neon-35: color-mix(in srgb, var(--lq-neon) 35%, transparent);
-  --lq-neon-40: color-mix(in srgb, var(--lq-neon) 40%, transparent);
-  --lq-neon-45: color-mix(in srgb, var(--lq-neon) 45%, transparent);
-  --lq-neon-70: color-mix(in srgb, var(--lq-neon) 70%, transparent);
-  --lq-neon-75: color-mix(in srgb, var(--lq-neon) 75%, transparent);
-  /* Opacidades del verde --ctv-brand (tono base, más saturado) */
-  --lq-brand-16: color-mix(in srgb, var(--ctv-brand) 16%, transparent);
-  --lq-brand-22: color-mix(in srgb, var(--ctv-brand) 22%, transparent);
-  --lq-brand-35: color-mix(in srgb, var(--ctv-brand) 35%, transparent);
+  --lq-transition: 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* --------------------------------------------------------------------------
@@ -65,20 +35,18 @@
   width: calc(100% - 32px);
   max-width: 1240px;
   min-height: var(--lq-header-h);
-  z-index: var(--ctv-z-header);
-  display: flex;
-  flex-direction: column;
+  z-index: 1000;
   background: var(--lq-bg);
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
   border: 1px solid var(--lq-border);
-  box-shadow:
+  box-shadow: 
     0 16px 40px -8px rgba(0, 0, 0, 0.55),
-    0 0 20px -2px var(--lq-neon-glow),
+    0 0 20px -2px rgba(62, 211, 43, 0.08),
     inset 0 1px 1.5px rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 var(--lq-neon-12);
+    inset 0 -1px 0 rgba(62, 211, 43, 0.12);
   overflow: hidden;
-  will-change: transform, border-radius, box-shadow;
+  will-change: transform, border-radius, height, box-shadow;
   animation: liquidHeaderSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -96,7 +64,7 @@
 .ctv-liquid-surface--scrolled {
   top: 10px;
   background: var(--lq-bg-scrolled);
-  border-color: var(--lq-neon-32);
+  border-color: rgba(62, 211, 43, 0.32);
 }
 
 .ctv-liquid-surface--expanded {
@@ -111,18 +79,18 @@
   left: 10%;
   right: 10%;
   height: 2px;
-  background: radial-gradient(ellipse at center, var(--lq-neon-45) 0%, transparent 75%);
+  background: radial-gradient(ellipse at center, rgba(62, 211, 43, 0.45) 0%, transparent 75%);
   pointer-events: none;
   opacity: 0.6;
   transition: opacity 0.3s ease;
 }
 
 .ctv-liquid-surface--expanded .ctv-liquid-refraction {
-  opacity: 1;
+  opacity: 0.9;
   left: 5%;
   right: 5%;
-  height: 3px;
-  background: radial-gradient(ellipse at center, var(--lq-neon-75) 0%, transparent 70%);
+  height: 2.5px;
+  background: radial-gradient(ellipse at center, rgba(62, 211, 43, 0.65) 0%, transparent 70%);
 }
 
 /* --------------------------------------------------------------------------
@@ -133,14 +101,10 @@
   align-items: center;
   justify-content: space-between;
   height: var(--lq-header-h);
-  flex-shrink: 0;
   padding: 0 1.25rem;
   gap: 1rem;
   position: relative;
   z-index: 2;
-  /* Ancla la barra a su propio bloque de layout: el spring de altura del
-     panel inferior (.ctv-liquid-body) no debe medir ni desplazar esto. */
-  contain: layout;
 }
 
 /* ── Logo Liquid ── */
@@ -165,7 +129,7 @@
   object-fit: contain;
 }
 
-/* ── Navegación Desktop ── */
+/* ── Navegación Desktop: Disparadores Limpios sin Bordes Pesados ── */
 .ctv-liquid-nav {
   display: none;
   align-items: center;
@@ -185,27 +149,39 @@
   align-items: center;
 }
 
+/* Trigger minimalista estilo Wren: sin bordes ni pastillas pesadas, solo una pequeña sombra para identificar que se puede clicar */
 .ctv-liquid-nav__trigger {
   position: relative;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.9rem;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
   background: transparent;
   border: none;
   border-radius: var(--lq-radius-pill);
   font-family: inherit;
-  font-size: 0.88rem;
+  font-size: 0.90rem;
   font-weight: 500;
   color: var(--lq-text);
   cursor: pointer;
-  transition: color var(--lq-transition);
+  text-decoration: none;
+  transition: 
+    color var(--lq-transition),
+    box-shadow var(--lq-transition),
+    transform var(--lq-transition);
   white-space: nowrap;
 }
 
-.ctv-liquid-nav__trigger:hover {
+.ctv-liquid-nav__trigger:hover,
+.ctv-liquid-nav__trigger--expanded {
+  background: transparent;
   color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+}
+
+.ctv-liquid-nav__trigger--active {
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .ctv-liquid-nav__chevron-wrap {
@@ -215,63 +191,31 @@
 }
 
 .ctv-liquid-nav__chevron {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--lq-text-muted);
   transition: color var(--lq-transition);
 }
 
+.ctv-liquid-nav__trigger:hover .ctv-liquid-nav__chevron,
 .ctv-liquid-nav__trigger--expanded .ctv-liquid-nav__chevron {
-  color: var(--lq-neon);
-}
-
-.ctv-liquid-nav__trigger--expanded,
-.ctv-liquid-nav__trigger--active {
   color: #ffffff;
-  font-weight: 600;
 }
 
-/* Píldora activa animada con spring detrás del botón actual */
-.ctv-liquid-active-pill {
-  position: absolute;
-  inset: 0;
-  background: var(--lq-neon-14);
-  border: 1px solid var(--lq-neon-35);
-  border-radius: var(--lq-radius-pill);
-  z-index: 1;
-  box-shadow: 0 0 14px var(--lq-neon-18);
-  pointer-events: none;
-}
-
-/* Acceso rápido a Calculadora */
-.ctv-liquid-nav__direct {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.85rem;
-  background: var(--lq-neon-12);
-  border: 1px solid var(--lq-neon-28);
-  border-radius: var(--lq-radius-pill);
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #ffffff;
-  text-decoration: none;
-  transition: all var(--lq-transition);
-}
-
-.ctv-liquid-nav__direct:hover {
-  background: var(--lq-neon-22);
-  border-color: var(--lq-neon);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px var(--lq-neon-25);
-}
-
-.ctv-liquid-nav__sparkle {
-  color: var(--lq-neon);
-  font-size: 1rem;
+/* Badge 'Nueva' estilo Wren ("New") */
+.ctv-badge--new {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 /* --------------------------------------------------------------------------
-   Extensión Líquida del Contenedor (Mega-Menú Integrado en la misma superficie)
+   Extensión Líquida Compacta Estilo Wren (Sin footer, poco espacio, conciso)
    -------------------------------------------------------------------------- */
 .ctv-liquid-body {
   position: relative;
@@ -279,35 +223,29 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0 0.5rem;
+  padding: 0.15rem 0.6rem 0.85rem;
 }
 
-.ctv-liquid-divider {
-  width: calc(100% - 2rem);
-  margin: 0 auto 1.25rem;
-  height: 1px;
-  background: linear-gradient(
-    90deg, 
-    transparent 0%,
-    rgba(255, 255, 255, 0.12) 20%,
-    var(--lq-neon-45) 50%,
-    rgba(255, 255, 255, 0.12) 80%,
-    transparent 100%
-  );
+.ctv-liquid-section-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 0.2rem 1rem 0.55rem;
+  letter-spacing: -0.01em;
 }
 
 .ctv-liquid-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.85rem;
-  padding: 0 1rem 1.25rem;
+  gap: 0.45rem;
+  padding: 0 0.65rem;
 }
 
 @media (min-width: 1024px) {
   .ctv-liquid-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.15rem;
-    padding: 0 1.25rem 1.25rem;
+    gap: 0.65rem;
+    padding: 0 0.85rem;
   }
 }
 
@@ -317,143 +255,108 @@
   outline: none;
 }
 
+/* Fila horizontal compacta estilo Wren */
 .ctv-liquid-card {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 1.25rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  transition:
-    background var(--lq-transition),
-    border-color var(--lq-transition),
-    box-shadow var(--lq-transition),
-    transform 0.2s ease;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  transition: 
+    background 0.16s ease, 
+    box-shadow 0.16s ease,
+    transform 0.14s ease;
   cursor: pointer;
 }
 
 .ctv-liquid-card:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: var(--lq-neon-45);
-  box-shadow:
-    0 12px 28px -6px rgba(0, 0, 0, 0.6),
-    0 0 20px var(--lq-neon-14);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
 }
 
 .ctv-liquid-card__icon-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--lq-neon-12);
-  border: 1px solid var(--lq-neon-28);
-  color: var(--lq-neon);
-  font-size: 1.35rem;
-  margin-bottom: 0.9rem;
-  transition:
-    background var(--lq-transition),
-    border-color var(--lq-transition),
-    box-shadow var(--lq-transition),
-    transform 0.2s ease;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  transition: transform 0.16s ease;
+}
+
+/* Variantes temáticas pastel de Wren para íconos */
+.ctv-liquid-card__icon-wrap--green {
+  background: rgba(62, 211, 43, 0.14);
+  border: 1px solid rgba(62, 211, 43, 0.28);
+  color: #4ade80;
+}
+
+.ctv-liquid-card__icon-wrap--orange {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #fbbf24;
+}
+
+.ctv-liquid-card__icon-wrap--teal {
+  background: rgba(45, 212, 191, 0.14);
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  color: #2dd4bf;
+}
+
+.ctv-liquid-card__icon-wrap--purple {
+  background: rgba(168, 85, 247, 0.14);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  color: #c084fc;
+}
+
+.ctv-liquid-card__icon-wrap--blue {
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  color: #38bdf8;
+}
+
+.ctv-liquid-card__icon-wrap--pink {
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  color: #fb7185;
 }
 
 .ctv-liquid-card:hover .ctv-liquid-card__icon-wrap {
-  background: var(--lq-neon-22);
-  border-color: var(--lq-neon);
-  box-shadow: 0 0 16px var(--lq-neon-35);
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
-.ctv-liquid-card__header {
+.ctv-liquid-card__text {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .ctv-liquid-card__title {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: #ffffff;
-  transition: color var(--lq-transition);
+  line-height: 1.25;
+  transition: color 0.15s ease;
 }
 
 .ctv-liquid-card:hover .ctv-liquid-card__title {
-  color: #a7f3d0;
-}
-
-.ctv-liquid-card__arrow {
-  margin-left: auto;
-  font-size: 0.95rem;
-  color: var(--lq-neon);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.ctv-liquid-card:hover .ctv-liquid-card__arrow {
-  opacity: 1;
-  transform: translateX(0);
+  color: #ffffff;
 }
 
 .ctv-liquid-card__desc {
-  font-size: 0.8125rem;
+  font-size: 0.77rem;
   color: var(--lq-text-muted);
-  line-height: 1.45;
+  line-height: 1.35;
   margin: 0;
-  transition: color var(--lq-transition);
-}
-
-.ctv-liquid-card:hover .ctv-liquid-card__desc {
-  color: var(--lq-text-sub);
-}
-
-/* ── Tira inferior de estado dentro del header ── */
-.ctv-liquid-footer {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1.5rem 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  margin-top: 0.25rem;
-}
-
-.ctv-liquid-footer__indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--lq-neon);
-  box-shadow: 0 0 8px var(--lq-neon);
-  flex-shrink: 0;
-}
-
-.ctv-liquid-footer__note {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  margin: 0;
-  flex: 1;
-}
-
-.ctv-liquid-footer__close {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--lq-radius-pill);
-  color: #94a3b8;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.ctv-liquid-footer__close:hover {
-  color: #ffffff;
-  border-color: var(--lq-neon);
-  background: var(--lq-neon-10);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* --------------------------------------------------------------------------
@@ -471,9 +374,9 @@
 }
 
 .ctv-badge--primary {
-  background: var(--lq-neon-16);
+  background: rgba(62, 211, 43, 0.16);
   color: var(--lq-neon);
-  border: 1px solid var(--lq-neon-35);
+  border: 1px solid rgba(62, 211, 43, 0.35);
 }
 
 .ctv-badge--polygon {
@@ -482,27 +385,25 @@
   border: 1px solid rgba(168, 85, 247, 0.4);
 }
 
-/* "Seguro" usa el verde base de marca (--ctv-brand), no --ctv-brand-bright:
-   mismo tono en background/color/border en vez de mezclar dos verdes. */
 .ctv-badge--secure {
-  background: var(--lq-brand-16);
-  color: var(--ctv-brand);
-  border: 1px solid var(--lq-brand-35);
+  background: rgba(8, 174, 6, 0.16);
+  color: var(--ctv-brand-bright);
+  border: 1px solid rgba(62, 211, 43, 0.35);
 }
 
 .ctv-badge--pulse {
-  background: var(--lq-brand-22);
-  color: var(--ctv-brand);
-  border: 1px solid var(--ctv-brand);
+  background: rgba(8, 174, 6, 0.22);
+  color: var(--ctv-brand-bright);
+  border: 1px solid var(--ctv-brand-bright);
   animation: badgePulse 2s infinite ease-in-out;
 }
 
 @keyframes badgePulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 var(--lq-neon-40);
+    box-shadow: 0 0 0 0 rgba(62, 211, 43, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 4px transparent;
+    box-shadow: 0 0 0 4px rgba(62, 211, 43, 0);
   }
 }
 
@@ -564,14 +465,14 @@
 .ctv-btn-liquid--outline:hover {
   border-color: var(--lq-neon);
   color: var(--lq-neon);
-  background: var(--lq-neon-08);
+  background: rgba(62, 211, 43, 0.08);
 }
 
 /* Primary */
 .ctv-btn-liquid--primary {
   background: var(--ctv-brand-deep);
   color: #ffffff;
-  border-color: var(--lq-neon-40);
+  border-color: rgba(62, 211, 43, 0.4);
 }
 
 .ctv-btn-liquid--primary:hover {
@@ -579,22 +480,18 @@
   border-color: var(--ctv-brand-bright);
 }
 
-/* Glow CTA (Compensar Vuelo) — usa --ctv-gradient-brand-accessible, que
-   arranca en --ctv-accent-contrast: el glow se tiñe del mismo tono para
-   no mezclar un verde distinto al del propio gradiente del botón. */
+/* Glow CTA (Compensar Vuelo) — Oficialmente vinculado a tokens de marca */
 .ctv-btn-liquid--glow {
   background: var(--ctv-gradient-brand-accessible);
   color: #ffffff;
-  border: 1px solid var(--lq-neon-45);
-  box-shadow: 0 4px 18px color-mix(in srgb, var(--ctv-accent-contrast) 35%, transparent);
+  border: 1px solid rgba(62, 211, 43, 0.45);
+  box-shadow: 0 4px 18px rgba(8, 174, 6, 0.35);
 }
 
 .ctv-btn-liquid--glow:hover {
   background: var(--ctv-gradient-brand);
   border-color: var(--ctv-brand-bright);
-  box-shadow:
-    0 6px 24px var(--lq-neon-45),
-    0 0 12px color-mix(in srgb, var(--ctv-accent-contrast) 30%, transparent);
+  box-shadow: 0 6px 24px rgba(62, 211, 43, 0.45), 0 0 12px rgba(8, 174, 6, 0.3);
   transform: translateY(-1px);
 }
 
@@ -670,7 +567,7 @@
 }
 
 .ctv-liquid-hamburger:hover {
-  background: var(--lq-neon-15);
+  background: rgba(62, 211, 43, 0.15);
   border-color: var(--lq-neon);
   color: var(--lq-neon);
 }
@@ -687,7 +584,7 @@
 .ctv-liquid-drawer {
   position: fixed;
   inset: 0;
-  z-index: var(--ctv-z-overlay);
+  z-index: 1100;
   visibility: hidden;
   pointer-events: none;
 }
@@ -720,7 +617,7 @@
   background: rgba(4, 24, 22, 0.98);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  border-left: 1px solid var(--lq-neon-28);
+  border-left: 1px solid rgba(62, 211, 43, 0.28);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -762,7 +659,7 @@
 }
 
 .ctv-liquid-drawer__close:hover {
-  background: var(--lq-neon-20);
+  background: rgba(62, 211, 43, 0.2);
   color: var(--lq-neon);
   border-color: var(--lq-neon);
 }
@@ -833,8 +730,8 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--lq-neon-15);
-  border: 1px solid var(--lq-neon-30);
+  background: rgba(62, 211, 43, 0.15);
+  border: 1px solid rgba(62, 211, 43, 0.3);
   color: var(--lq-neon);
   display: flex;
   align-items: center;
@@ -874,8 +771,8 @@
   justify-content: space-between;
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  background: var(--lq-neon-12);
-  border: 1px solid var(--lq-neon-30);
+  background: rgba(62, 211, 43, 0.12);
+  border: 1px solid rgba(62, 211, 43, 0.3);
   color: #ffffff;
   text-decoration: none;
   font-size: 0.88rem;
@@ -935,8 +832,7 @@
     transition: none !important;
   }
   .ctv-liquid-card,
-  .ctv-liquid-card__icon-wrap,
-  .ctv-liquid-card__arrow {
+  .ctv-liquid-card__icon-wrap {
     transition: none !important;
     transform: none !important;
   }
