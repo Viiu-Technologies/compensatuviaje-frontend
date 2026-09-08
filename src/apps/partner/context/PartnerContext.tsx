@@ -19,7 +19,7 @@
 //    ventana detectan el cambio sin intervención del usuario.
 // ============================================
 
-import React, { createContext, useContext, useCallback, useEffect, useRef, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { getPartnerProfile, getOnboardingStatus } from '../services/partnerApi';
 import kybApi from '../services/kybApi';
 import { getKybVisualStatus } from '../../../types/kyb.types';
@@ -119,28 +119,40 @@ export const PartnerProvider: React.FC<{ children: ReactNode }> = ({ children })
     const handleFocus = () => {
       if (isDataLoaded) fetchAll();
     };
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', () => {
+    // Nombrado (no inline) para poder removerlo en el cleanup -- la version anterior
+    // pasaba una funcion anonima a addEventListener, asi que este listener nunca se
+    // limpiaba: cada montaje de PartnerProvider dejaba uno huerfano corriendo para
+    // siempre, cada uno disparando fetchAll() (3 requests) en cada cambio de pestaña.
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') handleFocus();
-    });
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isDataLoaded, fetchAll]);
 
+  // Sin memoizar, este objeto era una referencia nueva en cada render de
+  // PartnerProvider -- cualquier consumidor envuelto en React.memo bajo /partner/*
+  // perdia el beneficio de la memoizacion sin razon aparente.
+  const value = useMemo<PartnerContextValue>(
+    () => ({
+      profile,
+      onboarding,
+      kybStatus,
+      loading,
+      isDataLoaded,
+      isProfileComplete,
+      isKybVerified,
+      refetch,
+    }),
+    [profile, onboarding, kybStatus, loading, isDataLoaded, isProfileComplete, isKybVerified, refetch]
+  );
+
   return (
-    <PartnerContext.Provider
-      value={{
-        profile,
-        onboarding,
-        kybStatus,
-        loading,
-        isDataLoaded,
-        isProfileComplete,
-        isKybVerified,
-        refetch,
-      }}
-    >
+    <PartnerContext.Provider value={value}>
       {children}
     </PartnerContext.Provider>
   );
