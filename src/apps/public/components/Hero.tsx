@@ -1,11 +1,17 @@
-import React, { useRef } from 'react';
+import React, { useRef, lazy, Suspense } from 'react';
 import { HiArrowRight, HiShieldCheck } from 'react-icons/hi';
 import { FaBuilding } from 'react-icons/fa';
 import { gsap, useGsapReveal } from '../hooks/useGsapReveal';
 import { TechGrid } from './landing/EcoArt';
 import QuickFlightCalculator from './QuickFlightCalculator';
-import HeroGlobe from './hero3d/HeroGlobe';
 import './Hero.css';
+
+// Lazy: keeps three.js/@react-three/fiber/drei out of the entry chunk. HeroGlobe is
+// above the fold and eager-mounted (unlike the footer's 3D scene), but it no longer
+// needs to block the landing page's critical script evaluation to do that -- its own
+// CSS (.hero-globe-wrap, aspect-ratio 1/1) already reserves the layout space, and the
+// component ships its own loading placeholder (GlobeFallback) for the gap.
+const HeroGlobe = lazy(() => import('./hero3d/HeroGlobe'));
 
 const Hero: React.FC = () => {
   const rafId = useRef<number | null>(null);
@@ -133,7 +139,12 @@ const Hero: React.FC = () => {
           </div>
 
           <div className="hero__planet-col ctv-reveal">
-            <HeroGlobe />
+            {/* Fallback reserves .hero-globe-wrap's own footprint (aspect-ratio 1/1)
+                while the HeroGlobe chunk (three.js + r3f + drei) downloads, so this
+                column never collapses and reflows the grid next to it. */}
+            <Suspense fallback={<div className="hero-globe-wrap" aria-hidden="true" />}>
+              <HeroGlobe />
+            </Suspense>
           </div>
         </div>
 
