@@ -7,7 +7,9 @@ const CompanyOnboardingWizard = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  // Mapa campo -> mensaje de validacion. Sin el tipo explicito, useState({})
+  // infiere `{}` y todo acceso a una clave concreta se marca como error.
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     // Paso 1: Información de la Empresa
@@ -195,7 +197,7 @@ const CompanyOnboardingWizard = () => {
   };
 
   const validateStep = (step) => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     switch (step) {
       case 1:
@@ -335,7 +337,7 @@ const CompanyOnboardingWizard = () => {
                   value={formData.rut}
                   onChange={handleRUTChange}
                   placeholder="12.345.678-9"
-                  maxLength="12"
+                  maxLength={12}
                   className={errors.rut ? 'error' : ''}
                 />
                 {errors.rut && <span className="field-error">{errors.rut}</span>}

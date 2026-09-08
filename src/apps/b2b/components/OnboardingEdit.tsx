@@ -3,12 +3,41 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import '../../auth/components/Register.css';
 
+/**
+ * Forma del formulario de edicion del onboarding.
+ *
+ * Sin este tipo, el spread de JSON.parse(localStorage) en el useEffect de
+ * carga ensanchaba formData a `{}` y todo acceso a un campo concreto se
+ * marcaba como error.
+ */
+interface OnboardingFormData {
+  companyName: string;
+  rut: string;
+  businessType: string;
+  tradeName: string;
+  website: string;
+  legalRepName: string;
+  legalRepRut: string;
+  contactEmail: string;
+  phone: string;
+  region: string;
+  city: string;
+  address: string;
+  industry: string;
+  employeeCount: string;
+  annualRevenue: string;
+  description: string;
+  interests: string[];
+}
+
 const OnboardingEdit = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  // Mapa campo -> mensaje de validacion. Sin el tipo explicito, useState({})
+  // infiere `{}` y todo acceso a una clave concreta se marca como error.
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Regiones de Chile
   const regions = [
@@ -70,7 +99,7 @@ const OnboardingEdit = () => {
     'Más de $5.000M'
   ];
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     // Paso 1: Información de la Empresa
     companyName: '',
     rut: '',
@@ -173,7 +202,7 @@ const OnboardingEdit = () => {
   };
 
   const validateStep = (step) => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (step === 1) {
       if (!formData.companyName.trim()) newErrors.companyName = 'La razón social es requerida';
@@ -272,7 +301,7 @@ const OnboardingEdit = () => {
           onChange={handleRUTChange}
           className={errors.rut ? 'error' : ''}
           placeholder="Ej: 12.345.678-9"
-          maxLength="12"
+          maxLength={12}
         />
         {errors.rut && <span className="error-message">{errors.rut}</span>}
       </div>
@@ -349,7 +378,7 @@ const OnboardingEdit = () => {
           onChange={handleRUTChange}
           className={errors.legalRepRut ? 'error' : ''}
           placeholder="Ej: 12.345.678-9"
-          maxLength="12"
+          maxLength={12}
         />
         {errors.legalRepRut && <span className="error-message">{errors.legalRepRut}</span>}
       </div>
@@ -494,7 +523,7 @@ const OnboardingEdit = () => {
           onChange={handleChange}
           rows="4"
           placeholder="Describe brevemente las actividades principales de tu empresa..."
-          maxLength="500"
+          maxLength={500}
         />
         <span className="char-count">{formData.description.length}/500 caracteres</span>
       </div>
