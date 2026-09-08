@@ -26,3 +26,10 @@ skills/
 /reference-camera.json
 /skills-lock.json
 /public/tree.json
+
+# El proyecto usa pnpm. Un package-lock.json o yarn.lock conviviendo con
+# pnpm-lock.yaml deja node_modules en un estado que ningun gestor entiende:
+# los paquetes se instalan pero .bin queda incompleto y `vite` deja de
+# resolverse.
+package-lock.json
+yarn.lock
