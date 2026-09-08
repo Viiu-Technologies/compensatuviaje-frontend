@@ -1,0 +1,83 @@
+/* ==========================================================================
+   ConfirmDialog.css — diálogo de confirmación
+   ========================================================================== */
+@import '../../../apps/public/components/landing/tokens.css';
+
+.ctvd__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ctv-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ctv-space-4);
+  background: rgba(1, 33, 32, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: ctvd-fade 0.16s var(--ctv-ease-out);
+}
+
+.ctvd__panel {
+  width: 100%;
+  max-width: 27rem;
+  background: #ffffff;
+  border-radius: var(--ctv-radius-lg);
+  box-shadow: var(--ctv-elev-4);
+  padding: var(--ctv-space-6);
+  font-family: var(--ctv-font-body);
+  animation: ctvd-rise 0.2s var(--ctv-ease-out);
+}
+
+.ctvd__title {
+  margin: 0 0 var(--ctv-space-3);
+  font-family: var(--ctv-font-display);
+  font-size: var(--ctv-text-h3);
+  font-weight: var(--ctv-display-weight);
+  line-height: 1.25;
+  color: var(--ctv-brand-deep);
+  /* 12.04:1 sobre blanco */
+  text-wrap: balance;
+}
+
+.ctvd__desc {
+  margin: 0 0 var(--ctv-space-6);
+  font-size: var(--ctv-text-small);
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  /* 6.89:1 sobre blanco */
+}
+
+.ctvd__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ctv-space-3);
+}
+
+/* En pantallas estrechas los botones ocupan el ancho completo y la acción
+   principal queda arriba, al alcance del pulgar. */
+@media (max-width: 480px) {
+  .ctvd__actions {
+    flex-direction: column-reverse;
+  }
+
+  .ctvd__actions > * {
+    width: 100%;
+  }
+}
+
+@keyframes ctvd-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ctvd-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -9,8 +9,17 @@
  * Adoptar estos componentes en lo nuevo detiene el crecimiento de esa deuda.
  * La migración de lo existente puede hacerse de forma incremental.
  */
-export { Button, default as ButtonDefault } from './Button';
+export { Button } from './Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 
-export { Input, default as InputDefault } from './Input';
+export { Input } from './Input';
 export type { InputProps } from './Input';
+
+export { Card } from './Card';
+export type { CardProps, CardVariant } from './Card';
+
+export { ConfirmDialog } from './ConfirmDialog';
+export type { ConfirmDialogProps } from './ConfirmDialog';
+
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps } from './EmptyState';

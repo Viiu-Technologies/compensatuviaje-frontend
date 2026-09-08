@@ -1,0 +1,48 @@
+/* ==========================================================================
+   EmptyState.css — estado vacío
+   ========================================================================== */
+@import '../../../apps/public/components/landing/tokens.css';
+
+.ctve {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ctv-space-3);
+  padding: var(--ctv-space-12) var(--ctv-space-5);
+  font-family: var(--ctv-font-body);
+}
+
+.ctve__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--ctv-radius-full);
+  background: var(--ctv-canvas-2);
+  color: var(--ctv-ink-mute);
+  font-size: 1.5rem;
+}
+
+.ctve__title {
+  margin: 0;
+  font-family: var(--ctv-font-display);
+  font-size: var(--ctv-text-body-lg);
+  font-weight: var(--ctv-display-weight);
+  color: var(--ctv-brand-deep);
+  /* 12.04:1 sobre blanco */
+}
+
+.ctve__desc {
+  margin: 0;
+  max-width: 42ch;
+  font-size: var(--ctv-text-small);
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  /* 6.89:1 sobre blanco */
+}
+
+.ctve__action {
+  margin-top: var(--ctv-space-2);
+}

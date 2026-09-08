@@ -5,6 +5,9 @@ import { getAdminProjectEvidence, approveMonthlyEvidence, rejectMonthlyEvidence 
 import { EVIDENCE_STATUS_COLORS, EVIDENCE_STATUS_LABELS, ProjectEvidence } from '../../../types/evidence.types';
 import PhotoCarousel from '../../../shared/components/PhotoCarousel';
 import DocumentViewer from '../../../shared/components/DocumentViewer';
+import { ConfirmDialog } from '../../../shared/components/ui';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { toast } from 'sonner';
 
 const MonthlyEvidenceReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +18,12 @@ const MonthlyEvidenceReviewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Confirmacion de acciones irreversibles. Sustituye a window.confirm(),
+  // que bloquea el hilo y no puede mostrar el progreso de la operacion.
+  const [confirmAction, setConfirmAction] = useState<
+    { kind: 'approve' | 'reject'; evId: string } | null
+  >(null);
 
   // Review states per evidence
   const [reviewData, setReviewData] = useState<Record<string, {
@@ -75,11 +84,19 @@ const MonthlyEvidenceReviewPage: React.FC = () => {
     try {
       const data = reviewData[evId];
       if (!data.unitsVerified || !data.newStockApproved) {
-        alert('Debes definir las unidades verificadas y el nuevo stock.');
+        toast.error('Define las unidades verificadas y el nuevo stock antes de aprobar.');
         return;
       }
-      if (!window.confirm('¿Aprobar evidencia? Esto liberará el pago en Escrow y renovará el stock del partner.')) return;
+      setConfirmAction({ kind: 'approve', evId });
+      return;
+    } catch (err: any) {
+      toast.error(getErrorMessage(err, 'No pudimos preparar la aprobación.'));
+    }
+  };
 
+  const runApprove = async (evId: string) => {
+    try {
+      const data = reviewData[evId];
       setProcessing(true);
       await approveMonthlyEvidence(id!, evId, {
         unitsVerified: data.unitsVerified,
@@ -87,10 +104,12 @@ const MonthlyEvidenceReviewPage: React.FC = () => {
         adminNotes: data.adminNotes
       });
       await loadData();
+      toast.success('Evidencia aprobada. El pago en escrow ha sido liberado.');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al aprobar.');
+      toast.error(getErrorMessage(err, 'No pudimos aprobar la evidencia.'));
     } finally {
       setProcessing(false);
+      setConfirmAction(null);
     }
   };
 
@@ -98,21 +117,31 @@ const MonthlyEvidenceReviewPage: React.FC = () => {
     try {
       const data = reviewData[evId];
       if (!data.rejectReason) {
-        alert('Debes ingresar una razón para el rechazo.');
+        toast.error('Indica una razón para el rechazo.');
         return;
       }
-      if (!window.confirm('¿Rechazar evidencia? El pago NO será liberado.')) return;
+      setConfirmAction({ kind: 'reject', evId });
+      return;
+    } catch (err: any) {
+      toast.error(getErrorMessage(err, 'No pudimos preparar el rechazo.'));
+    }
+  };
 
+  const runReject = async (evId: string) => {
+    try {
+      const data = reviewData[evId];
       setProcessing(true);
       await rejectMonthlyEvidence(id!, evId, {
         reason: data.rejectReason,
         freezeStock: data.freezeStock
       });
       await loadData();
+      toast.success('Evidencia rechazada. El pago no se ha liberado.');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error al rechazar.');
+      toast.error(getErrorMessage(err, 'No pudimos rechazar la evidencia.'));
     } finally {
       setProcessing(false);
+      setConfirmAction(null);
     }
   };
 
@@ -356,6 +385,31 @@ const MonthlyEvidenceReviewPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        loading={processing}
+        title={
+          confirmAction?.kind === 'approve'
+            ? '¿Aprobar esta evidencia?'
+            : '¿Rechazar esta evidencia?'
+        }
+        description={
+          confirmAction?.kind === 'approve'
+            ? 'Se liberará el pago retenido en escrow y se renovará el stock del partner. Esta acción no se puede deshacer.'
+            : 'El pago retenido en escrow no se liberará y se notificará al partner con la razón indicada.'
+        }
+        confirmLabel={
+          confirmAction?.kind === 'approve' ? 'Aprobar y liberar pago' : 'Rechazar evidencia'
+        }
+        confirmVariant={confirmAction?.kind === 'approve' ? 'primary' : 'destructive'}
+        onConfirm={() => {
+          if (!confirmAction) return;
+          if (confirmAction.kind === 'approve') runApprove(confirmAction.evId);
+          else runReject(confirmAction.evId);
+        }}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 };

@@ -1,0 +1,86 @@
+/* ==========================================================================
+   Card.css — tarjeta del sistema de diseño
+   ========================================================================== */
+@import '../../../apps/public/components/landing/tokens.css';
+
+.ctvc {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: var(--ctv-radius-lg);
+  font-family: var(--ctv-font-body);
+  color: var(--ctv-ink);
+  /* La altura la marca el contenido: sin min-height, dos tarjetas contiguas
+     no se estiran sobre espacio vacío. */
+}
+
+.ctvc--flat {
+  border: 1px solid transparent;
+  box-shadow: var(--ctv-elev-0);
+  background: var(--ctv-canvas-2);
+}
+
+.ctvc--outlined {
+  border: 1px solid var(--ctv-rule);
+  box-shadow: var(--ctv-elev-0);
+}
+
+.ctvc--elevated {
+  border: 1px solid var(--ctv-rule);
+  box-shadow: var(--ctv-elev-2);
+}
+
+/* ── Slots ──
+   El padding vive en los slots, no en el contenedor: así una imagen a sangre
+   puede ocupar el ancho completo del cuerpo sin luchar contra el relleno. */
+.ctvc__header {
+  padding: var(--ctv-space-5) var(--ctv-space-5) 0;
+}
+
+.ctvc__body {
+  flex: 1;
+  padding: var(--ctv-space-5);
+  min-width: 0;
+}
+
+.ctvc__footer {
+  padding: 0 var(--ctv-space-5) var(--ctv-space-5);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ctv-space-3);
+}
+
+/* Con cabecera, el cuerpo no repite el espacio superior. */
+.ctvc__header + .ctvc__body {
+  padding-top: var(--ctv-space-3);
+}
+
+/* ── Interactiva ── */
+.ctvc--interactive {
+  cursor: pointer;
+  transition:
+    box-shadow 0.25s var(--ctv-ease-out),
+    border-color 0.25s var(--ctv-ease-out),
+    transform 0.25s var(--ctv-ease-out);
+}
+
+.ctvc--interactive:hover {
+  box-shadow: var(--ctv-elev-3);
+  border-color: var(--ctv-rule-strong);
+  transform: translateY(-2px);
+}
+
+/* Las tarjetas clicables del proyecto solo declaraban :hover, así que quien
+   navega con teclado no veía cuál estaba enfocada. */
+.ctvc--interactive:focus-within {
+  box-shadow: var(--ctv-elev-3), var(--ctv-focus-ring);
+  border-color: var(--ctv-accent-contrast);
+}
+
+/* El desplazamiento en hover es decorativo: se anula si molesta. */
+@media (prefers-reduced-motion: reduce) {
+  .ctvc--interactive:hover {
+    transform: none;
+  }
+}
