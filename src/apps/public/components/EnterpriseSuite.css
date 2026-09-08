@@ -52,26 +52,29 @@
 
 .es-title {
   font-family: var(--ctv-font-display);
-  font-size: clamp(2rem, 3.6vw, 3rem);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.015em;
+  font-size: var(--ctv-text-h1);
+  font-weight: var(--ctv-display-weight);
+  line-height: 1.1;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--ctv-space-4);
 }
 
 .es-title-accent {
   background: var(--ctv-gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  -webkit-text-fill-color: transparent;
+  color: var(--ctv-accent-contrast);
 }
 
 .es-lede {
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-family: var(--ctv-font-body);
+  font-size: var(--ctv-text-body-lg);
+  line-height: 1.65;
   color: var(--ctv-ink-soft);
-  margin: 0 0 1.75rem;
+  max-width: var(--ctv-measure);
+  margin: 0 0 var(--ctv-space-6);
 }
 
 .es-benefits {

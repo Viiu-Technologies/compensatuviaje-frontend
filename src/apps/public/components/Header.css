@@ -2,23 +2,24 @@
    Header.css — Liquid Glass Navigation con Wren-Style Grouping
    Alto contraste tecnológico-ecológico sobre canvas claro
    ========================================================================== */
+@import './landing/tokens.css';
 
 /* --------------------------------------------------------------------------
-   Tokens locales del Header Liquid
+   Tokens locales del Header Liquid vinculados al Design System
    -------------------------------------------------------------------------- */
 :root {
-  --lq-bg: rgba(6, 30, 28, 0.88);
-  --lq-bg-scrolled: rgba(4, 22, 20, 0.95);
-  --lq-bg-dropdown: rgba(6, 30, 28, 0.96);
+  --lq-bg: rgba(6, 30, 28, 0.90);
+  --lq-bg-scrolled: rgba(4, 22, 20, 0.96);
+  --lq-bg-dropdown: rgba(6, 30, 28, 0.97);
   --lq-border: rgba(62, 211, 43, 0.24);
   --lq-border-hover: rgba(62, 211, 43, 0.55);
-  --lq-neon: #3ed32b;
+  --lq-neon: var(--ctv-brand-bright);
   --lq-neon-glow: rgba(62, 211, 43, 0.35);
-  --lq-text: #f8fafc;
+  --lq-text: var(--ctv-canvas);
   --lq-text-muted: #94a3b8;
   --lq-text-sub: #cbd5e1;
   --lq-header-h: 68px;
-  --lq-radius-pill: 9999px;
+  --lq-radius-pill: var(--ctv-radius-pill);
   --lq-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(62, 211, 43, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.12);
   --lq-shadow-scrolled: 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(62, 211, 43, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.16);
   --lq-transition: 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -376,15 +377,15 @@
 }
 
 .ctv-badge--secure {
-  background: rgba(14, 165, 233, 0.2);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: rgba(8, 174, 6, 0.16);
+  color: var(--ctv-brand-bright);
+  border: 1px solid rgba(62, 211, 43, 0.35);
 }
 
 .ctv-badge--pulse {
-  background: rgba(62, 211, 43, 0.25);
-  color: #4ade80;
-  border: 1px solid var(--lq-neon);
+  background: rgba(8, 174, 6, 0.22);
+  color: var(--ctv-brand-bright);
+  border: 1px solid var(--ctv-brand-bright);
   animation: badgePulse 2s infinite ease-in-out;
 }
 
@@ -460,26 +461,28 @@
 
 /* Primary */
 .ctv-btn-liquid--primary {
-  background: #0f766e;
+  background: var(--ctv-brand-deep);
   color: #ffffff;
-  border-color: #14b8a6;
+  border-color: rgba(62, 211, 43, 0.4);
 }
 
 .ctv-btn-liquid--primary:hover {
-  background: #115e59;
+  background: var(--ctv-teal-800);
+  border-color: var(--ctv-brand-bright);
 }
 
-/* Glow CTA (Compensar Vuelo) */
+/* Glow CTA (Compensar Vuelo) — Oficialmente vinculado a tokens de marca */
 .ctv-btn-liquid--glow {
-  background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+  background: var(--ctv-gradient-brand-accessible);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+  border: 1px solid rgba(62, 211, 43, 0.45);
+  box-shadow: 0 4px 18px rgba(8, 174, 6, 0.35);
 }
 
 .ctv-btn-liquid--glow:hover {
-  background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
-  box-shadow: 0 6px 26px rgba(16, 185, 129, 0.55), 0 0 14px rgba(62, 211, 43, 0.4);
+  background: var(--ctv-gradient-brand);
+  border-color: var(--ctv-brand-bright);
+  box-shadow: 0 6px 24px rgba(62, 211, 43, 0.45), 0 0 12px rgba(8, 174, 6, 0.3);
   transform: translateY(-1px);
 }
 

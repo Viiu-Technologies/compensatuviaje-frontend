@@ -25,19 +25,20 @@
 .pb-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.72rem;
+  gap: var(--ctv-space-3);
+  font-size: var(--ctv-text-caption);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ctv-accent-contrast);
+  letter-spacing: 0.16em;
+  color: var(--ctv-ink-soft);
   margin-bottom: var(--ctv-space-4);
 }
 
 .pb-eyebrow-line {
-  width: 24px;
+  width: 28px;
   height: 2px;
   background: var(--ctv-brand);
+  display: inline-block;
 }
 
 .pb-title-row {
@@ -55,10 +56,10 @@
 
 .pb-title {
   font-family: var(--ctv-font-display);
-  font-size: clamp(2rem, 3.8vw, 3rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.015em;
+  font-size: var(--ctv-text-h1);
+  font-weight: var(--ctv-display-weight);
+  line-height: 1.08;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
   margin: 0;
 }
@@ -67,15 +68,16 @@
   background: var(--ctv-gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  -webkit-text-fill-color: transparent;
+  color: var(--ctv-accent-contrast);
   display: inline;
 }
 
 .pb-lede {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-family: var(--ctv-font-body);
+  font-size: var(--ctv-text-body-lg);
+  line-height: 1.65;
   color: var(--ctv-ink-soft);
-  margin: 0;
 }
 
 /* ── Bento Grid ── */

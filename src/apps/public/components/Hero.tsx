@@ -103,8 +103,8 @@ const Hero: React.FC = () => {
         <div className="hero__top-grid">
           <div className="hero__header">
             <div className="hero-eyebrow ctv-reveal">
-              <span className="hero-eyebrow__dot" />
-              <span>Tecnología climática: Sostenibilidad medible y certificada</span>
+              <span className="hero-eyebrow__line" />
+              <span>Tecnología climática certificada</span>
             </div>
 
             <h1 className="hero-display">
