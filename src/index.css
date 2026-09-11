@@ -22,6 +22,26 @@
   --color-primary-900: #14532d;
   --color-primary-950: #052e16;
 
+  /* Brand — la paleta real del producto, derivada del logo (ver tokens.css).
+     Primary sigue siendo el verde generico de Tailwind por compatibilidad con
+     el codigo existente; brand es el que debe usarse de aqui en adelante.
+
+     Regla de uso, verificada con la formula WCAG:
+       texto o fondo-con-texto -> brand-700 o mas oscuro (>= 7.52:1 con blanco)
+       sobre fondo oscuro      -> brand-300 / brand-400 (>= 8.98:1)
+       brand-400..600          -> solo decorativo, nunca bajo texto */
+  --color-brand-50: #F0F9EE;
+  --color-brand-100: #E4F6E0;
+  --color-brand-200: #C3EBBB;
+  --color-brand-300: #93DC88;
+  --color-brand-400: #3ED32B;
+  --color-brand-500: #08AE06;
+  --color-brand-600: #079705;
+  --color-brand-700: #046302;
+  --color-brand-800: #0A4D14;
+  --color-brand-900: #073D3D;
+  --color-brand-950: #012120;
+
   /* Secondary - Azul cielo */
   --color-secondary-50: #eff6ff;
   --color-secondary-100: #dbeafe;
