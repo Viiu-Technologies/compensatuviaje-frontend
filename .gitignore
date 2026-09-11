@@ -33,3 +33,4 @@ skills/
 # resolverse.
 package-lock.json
 yarn.lock
+/perf-audit
