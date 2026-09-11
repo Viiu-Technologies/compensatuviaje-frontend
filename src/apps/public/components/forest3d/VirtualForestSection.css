@@ -66,12 +66,17 @@
   margin: 0 0 1.25rem;
 }
 
+/* Ver nota en Hero.css: la cursiva sobresale del ancho de avance y
+   background-clip: text recortaba la ultima letra ("bosque vivo"). */
 .vfs-title em {
   font-style: italic;
   background: var(--ctv-gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  display: inline-block;
+  padding-inline-end: 0.12em;
+  margin-inline-end: -0.12em;
 }
 
 .vfs-lede {

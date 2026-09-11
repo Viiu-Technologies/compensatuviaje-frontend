@@ -123,11 +123,16 @@
   text-align: left;
 }
 
+/* overflow: hidden es lo que hace posible la animacion de reveal (la linea
+   entra desde abajo y el contenedor la enmascara). El padding lateral de
+   0.02em era demasiado justo: recortaba el trazo inclinado de la ultima
+   cursiva aunque el <em> reservase su propio espacio. Se amplia a 0.12em y se
+   compensa con el margin, asi que el bloque ocupa lo mismo que antes. */
 .hero-line {
   display: block;
   overflow: hidden;
-  padding: 0.08em 0.02em;
-  margin: -0.08em -0.02em;
+  padding: 0.08em 0.12em;
+  margin: -0.08em -0.12em;
 }
 
 .hero-line__inner {
@@ -135,6 +140,13 @@
   will-change: transform;
 }
 
+/* El trazo de una cursiva sobresale por la derecha del ancho de avance que
+   calcula el navegador. background-clip: text recorta el degradado justo a esa
+   caja, asi que la parte inclinada de la ultima letra quedaba fuera y se
+   pintaba transparente: la "o" de "medible" aparecia cortada.
+
+   inline-block da una caja propia que si admite padding, y el margin negativo
+   lo compensa para que la maquetacion no se mueva. */
 .hero-line--accent .hero-line__inner em {
   font-style: italic;
   font-family: var(--ctv-font-display);
@@ -143,6 +155,9 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: var(--ctv-accent-contrast);
+  display: inline-block;
+  padding-inline-end: 0.12em;
+  margin-inline-end: -0.12em;
 }
 
 /* Lede / Subtítulo — Usando tokens tipográficos de la arquitectura */

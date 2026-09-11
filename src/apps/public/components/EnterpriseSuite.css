@@ -60,12 +60,17 @@
   margin: 0 0 var(--ctv-space-4);
 }
 
+/* Ver nota en Hero.css: si el acento va en cursiva, background-clip: text
+   recorta el trazo inclinado de la ultima letra. */
 .es-title-accent {
   background: var(--ctv-gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: var(--ctv-accent-contrast);
+  display: inline-block;
+  padding-inline-end: 0.12em;
+  margin-inline-end: -0.12em;
 }
 
 .es-lede {
