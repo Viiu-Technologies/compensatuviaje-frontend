@@ -1,0 +1,22 @@
+# https://compensatuviaje.com/robots.txt
+User-agent: *
+Allow: /
+
+# Áreas privadas y flujos de cuenta: no aportan al índice.
+Disallow: /admin/
+Disallow: /partner/
+Disallow: /b2c/
+Disallow: /b2b/
+Disallow: /dashboard
+Disallow: /onboarding/
+Disallow: /company/
+Disallow: /auth/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /blog/confirmar/
+Disallow: /blog/baja/
+Disallow: /share/
+
+Sitemap: https://compensatuviaje.com/sitemap.xml
+Sitemap: https://compensatuviaje.com/blog/sitemap.xml

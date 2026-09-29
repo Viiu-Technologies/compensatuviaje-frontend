@@ -280,3 +280,273 @@
     font-size: clamp(2.2rem, 7vw, 3rem);
   }
 }
+
+/* ============================================================
+   Módulo de noticias — estilos añadidos
+   Usa las variables --ctv-* del sistema para no salirse de la marca.
+   ============================================================ */
+
+/* Filtros por categoría */
+.blog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter) 1.5rem;
+}
+
+.blog-filter {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: transparent;
+  color: var(--ctv-ink-soft);
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s var(--ctv-ease-out);
+}
+
+.blog-filter:hover {
+  border-color: var(--ctv-brand);
+  color: var(--ctv-ink);
+}
+
+.blog-filter--active {
+  background: var(--ctv-brand);
+  border-color: var(--ctv-brand);
+  color: #fff;
+}
+
+/* Imagen de tarjeta */
+.blog-card__figure {
+  margin: 0 0 1rem;
+}
+
+.blog-card__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+/* Etiqueta de imagen generada con IA: honestidad, no decoración */
+.blog-card__caption {
+  font-size: 0.7rem;
+  color: var(--ctv-ink-soft);
+  margin-top: 0.35rem;
+  opacity: 0.75;
+}
+
+/* "Por qué importa": el valor editorial propio */
+.blog-card__why {
+  margin-top: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--ctv-brand);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+  color: var(--ctv-ink-soft);
+  line-height: 1.6;
+}
+
+.blog-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-card__title a:hover {
+  color: var(--ctv-brand-deep);
+}
+
+/* Ficha individual */
+.blog-article {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 7rem var(--ctv-gutter) 3rem;
+}
+
+.blog-article__breadcrumb {
+  font-size: 0.85rem;
+  color: var(--ctv-ink-soft);
+  margin-bottom: 1.25rem;
+}
+
+.blog-article__breadcrumb a {
+  color: var(--ctv-brand-deep);
+  text-decoration: none;
+}
+
+.blog-article__title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(1.9rem, 4.5vw, 2.75rem);
+  line-height: 1.2;
+  color: var(--ctv-ink);
+  margin: 0 0 1rem;
+}
+
+.blog-article__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ctv-ink-soft);
+  margin-bottom: 1.75rem;
+}
+
+.blog-article__figure {
+  margin: 0 0 1.75rem;
+}
+
+.blog-article__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+}
+
+.blog-article__summary {
+  font-size: 1.1rem;
+  line-height: 1.75;
+  color: var(--ctv-ink);
+  margin-bottom: 1.5rem;
+}
+
+.blog-article__points {
+  margin: 0 0 1.75rem;
+  padding-left: 1.25rem;
+  color: var(--ctv-ink-soft);
+  line-height: 1.8;
+}
+
+.blog-article__why {
+  padding: 1.25rem 1.5rem;
+  border-left: 4px solid var(--ctv-brand);
+  background: rgba(0, 0, 0, 0.025);
+  border-radius: 0 12px 12px 0;
+  margin-bottom: 1.75rem;
+}
+
+.blog-article__why strong {
+  display: block;
+  color: var(--ctv-ink);
+  margin-bottom: 0.4rem;
+}
+
+.blog-article__why p {
+  margin: 0;
+  color: var(--ctv-ink-soft);
+  line-height: 1.7;
+}
+
+.blog-article__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.blog-article__source {
+  font-size: 0.85rem;
+  color: var(--ctv-ink-soft);
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.blog-article__source a {
+  color: var(--ctv-brand-deep);
+}
+
+.blog-related__title {
+  grid-column: 1 / -1;
+  font-family: var(--ctv-font-display);
+  font-size: 1.4rem;
+  color: var(--ctv-ink);
+  margin: 0 0 0.5rem;
+}
+
+/* Alta en el boletín */
+.blog-newsletter {
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 2rem var(--ctv-gutter) 5rem;
+}
+
+.blog-newsletter__panel {
+  background: var(--ctv-canvas);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.blog-newsletter__title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  color: var(--ctv-ink);
+  margin: 0 0 0.75rem;
+}
+
+.blog-newsletter__lead {
+  color: var(--ctv-ink-soft);
+  line-height: 1.7;
+  max-width: 34rem;
+  margin: 0 auto 1.5rem;
+}
+
+.blog-newsletter__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.blog-newsletter__input {
+  flex: 1 1 18rem;
+  max-width: 22rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--ctv-ink);
+  background: #fff;
+}
+
+.blog-newsletter__input:focus {
+  outline: 2px solid var(--ctv-brand);
+  outline-offset: 1px;
+}
+
+.blog-newsletter__success {
+  color: var(--ctv-brand-deep);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.blog-newsletter__error {
+  color: #b42318;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.blog-newsletter__legal {
+  font-size: 0.78rem;
+  color: var(--ctv-ink-soft);
+  opacity: 0.8;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .blog-article {
+    padding-top: 5.5rem;
+  }
+
+  .blog-newsletter__panel {
+    padding: 1.75rem 1.25rem;
+  }
+}

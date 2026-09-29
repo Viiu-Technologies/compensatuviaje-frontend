@@ -21,7 +21,11 @@ import {
   Settings,
   FileCheck,
   Package,
-  RefreshCw
+  RefreshCw,
+  Newspaper,
+  Activity,
+  Mail,
+  Rss,
 } from 'lucide-react';
 
 // ============================================
@@ -46,6 +50,7 @@ interface NavSection {
 const auditCenterItems: NavItem[] = [
   { path: '/admin/partners/kyb-evaluations', icon: FileCheck, label: 'Solicitudes KYB', end: true },
   { path: '/admin/proyectos-revision', icon: ClipboardCheck, label: 'Proyectos en Revisión' },
+  { path: '/admin/noticias', icon: Newspaper, label: 'Noticias', end: true },
 ];
 
 // B. Ecosistema de Oferta (Catálogo Activo)
@@ -65,6 +70,9 @@ const demandEcosystemItems: NavItem[] = [
 const traceabilityItems: NavItem[] = [
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { path: '/admin/nft-blockchain', icon: Blocks, label: 'NFT Blockchain' },
+  { path: '/admin/noticias/fuentes', icon: Rss, label: 'Fuentes de Noticias' },
+  { path: '/admin/noticias/boletin', icon: Mail, label: 'Boletín' },
+  { path: '/admin/noticias/salud', icon: Activity, label: 'Salud de Noticias' },
   { path: '/admin/settings', icon: Settings, label: 'Configuración' },
 ];
 

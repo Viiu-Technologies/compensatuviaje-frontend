@@ -1,75 +1,45 @@
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
+import { LEGAL, LEGAL_ROUTES } from '../../../shared/config/legal';
+import { subscribeToNewsletter } from '../services/newsService';
 import './Footer.css';
-
-// Decorative 3D brand object beside the newsletter. Lazy so three.js stays out of the
-// landing page's initial bundle -- it is an ornament, not content, and the footer is
-// below the fold.
-const LeaningCardsFooterScene = lazy(() => import('../../../threejs-assets/LeaningCardsFooterScene'));
-
-/**
- * Mounts the WebGL canvas only once the newsletter row is about to enter the
- * viewport. Every page that renders <Footer> (landing, blog, calculator,
- * contact, partners guide, payment methods) pays for this scene's shaders
- * and PBR textures the instant its lazy chunk resolves -- with no visibility
- * gate, that happened as soon as the page loaded, regardless of whether the
- * visitor ever scrolled this far. Same pattern as VirtualForestSection's
- * ForestCanvas gate.
- */
-function useIsNearViewport<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '200px 0px 200px 0px', threshold: 0.05 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, isVisible };
-}
 
 const SECTIONS = [
   {
     title: 'Servicios',
     links: [
-      { label: 'Calculadora de Carbono', href: '/calculadora' },
-      { label: 'Proyectos de Conservación', href: '/#proyectos' },
-      { label: 'Soluciones Empresas (B2B)', href: '/#empresas' },
-      { label: 'Métodos de Pago y Seguridad', href: '/pagos' },
+      { label: 'Calculadora CO₂', href: '#calculadora' },
     ],
   },
   {
     title: 'Información',
     links: [
-      { label: 'Blog de Impacto', href: '/blog' },
-      { label: 'Sé un Aliado', href: '/aliados' },
-      { label: 'Metodología DEFRA', href: '/#calculadora-content' },
-      { label: 'Preguntas Frecuentes', href: '/#faq' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Sé un aliado', href: '/aliados' },
+      { label: 'Transparencia', href: '#transparencia' },
+      { label: 'FAQ', href: '#faq' },
+      { label: 'Nosotros', href: '#nosotros' },
     ],
   },
   {
-    title: 'Atención y Consultas',
+    title: 'Contacto',
     links: [
-      { label: 'Formulario de Contacto', href: '/contacto' },
-      { label: 'Email Oficial', href: 'mailto:contacto@compensatuviaje.com' },
-      { label: 'Soporte y Verificación', href: '/contacto' },
-      { label: 'Postulación de Proyectos', href: '/aliados' },
+      { label: 'Contáctanos', href: `mailto:${LEGAL.emails.contact}` },
+      { label: 'Soporte', href: `mailto:${LEGAL.emails.support}?subject=Soporte` },
+      { label: 'Prensa', href: `mailto:${LEGAL.emails.contact}?subject=Prensa` },
+      { label: 'Empresas', href: `mailto:${LEGAL.emails.contact}?subject=Empresas` },
+      { label: 'Partners', href: `mailto:${LEGAL.emails.contact}?subject=Partners` },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Términos y Condiciones', href: LEGAL_ROUTES.terms },
+      { label: 'Privacidad', href: LEGAL_ROUTES.privacy },
+      { label: 'Reembolsos y Retracto', href: LEGAL_ROUTES.refunds },
+      { label: 'Cookies', href: LEGAL_ROUTES.cookies },
     ],
   },
 ];
@@ -77,7 +47,20 @@ const SECTIONS = [
 const Footer = () => {
   const year = new Date().getFullYear();
   const [email, setEmail] = useState('');
-  const { ref: sceneRowRef, isVisible: isSceneVisible } = useIsNearViewport<HTMLDivElement>();
+  const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  // Misma lista que el boletín del blog: doble opt-in, el backend solo envía
+  // el correo de confirmación.
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setStatus('sending');
+    const res = await subscribeToNewsletter(email.trim());
+    setMessage(res.message);
+    setStatus(res.ok ? 'done' : 'error');
+    if (res.ok) setEmail('');
+  };
 
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
@@ -112,35 +95,35 @@ const Footer = () => {
         <div className="ft-newsletter">
           <div className="ft-newsletter__copy">
             <p className="ft-newsletter__label">Newsletter</p>
-            <h3 className="ft-newsletter__title">Recibe historias de impacto cada mes.</h3>
+            <h3 className="ft-newsletter__title">Recibe novedades de sostenibilidad en tu correo.</h3>
           </div>
 
           <div className="ft-newsletter__row">
-            <form
-              className="ft-newsletter__form"
-              onSubmit={(e) => { e.preventDefault(); setEmail(''); }}
-            >
+            {status === 'done' ? (
+              <p className="ft-newsletter__msg" role="status">{message}</p>
+            ) : (
+            <form className="ft-newsletter__form" onSubmit={handleSubscribe}>
               <input
                 type="email"
                 required
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                aria-label="Correo electrónico"
                 className="ft-newsletter__input"
+                disabled={status === 'sending'}
               />
-              <button type="submit" className="ft-newsletter__btn">
-                Suscribirme
+              <button type="submit" className="ft-newsletter__btn" disabled={status === 'sending'}>
+                {status === 'sending' ? 'Enviando…' : 'Suscribirme'}
                 <HiArrowRight aria-hidden="true" />
               </button>
             </form>
-
-            <div className="ft-newsletter__scene-row" ref={sceneRowRef}>
-              {isSceneVisible && (
-                <Suspense fallback={null}>
-                  <LeaningCardsFooterScene />
-                </Suspense>
-              )}
-            </div>
+            )}
+            {status === 'error' && <p className="ft-newsletter__msg ft-newsletter__msg--error" role="alert">{message}</p>}
+            <p className="ft-newsletter__legal">
+              Te enviaremos un correo para confirmar. Puedes darte de baja cuando quieras.
+              Ver <a href={LEGAL_ROUTES.privacy}>Política de Privacidad</a>.
+            </p>
           </div>
         </div>
 
@@ -153,7 +136,7 @@ const Footer = () => {
               Si quieres ser parte de nuestra red de compensación, postula a Proyectos ESG. Envíanos un email para presentar tu iniciativa e iniciar conversaciones.
             </p>
           </div>
-          <a href="mailto:compensatuviaje@gmail.com?subject=Postulacion%20Proyecto%20ESG" className="ft-esg-banner__btn">
+          <a href={`mailto:${LEGAL.emails.contact}?subject=Postulacion%20Proyecto%20ESG`} className="ft-esg-banner__btn">
             Aplicar ahora
             <HiArrowRight aria-hidden="true" />
           </a>
@@ -179,11 +162,7 @@ const Footer = () => {
               <ul className="ft-col__list">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    {link.href.startsWith('/') ? (
-                      <Link to={link.href} className="ft-col__link">{link.label}</Link>
-                    ) : (
-                      <a href={link.href} className="ft-col__link">{link.label}</a>
-                    )}
+                    <a href={link.href} className="ft-col__link">{link.label}</a>
                   </li>
                 ))}
               </ul>
@@ -195,6 +174,9 @@ const Footer = () => {
         <div className="ft-bottom">
           <p className="ft-bottom__copy">
             © {year} CompensaTuViaje. Todos los derechos reservados.
+          </p>
+          <p className="ft-bottom__legal">
+            {LEGAL.legalName} · RUT {LEGAL.rut} · {LEGAL.address}
           </p>
         </div>
       </div>

@@ -20,6 +20,11 @@ import AIKybDetailPage from '../pages/AIKybDetailPage';
 import AICertDetailPage from '../pages/AICertDetailPage';
 import SettingsPage from '../pages/SettingsPage';
 import OrdenesB2BPage from '../pages/OrdenesB2BPage';
+import NewsQueuePage from '../pages/NewsQueuePage';
+import NewsHealthPage from '../pages/NewsHealthPage';
+import NewsArticleDetailPage from '../pages/NewsArticleDetailPage';
+import NewsCampaignsPage from '../pages/NewsCampaignsPage';
+import NewsSourcesPage from '../pages/NewsSourcesPage';
 
 const AdminRoutes = () => {
   return (
@@ -54,6 +59,14 @@ const AdminRoutes = () => {
         <Route path="proyectos" element={<ProyectosPage />} />
         <Route path="proyectos/:id" element={<AdminProjectDetailPage />} />
         <Route path="proyectos/:id/evidence" element={<MonthlyEvidenceReviewPage />} />
+
+        {/* Módulo de noticias: cola de revisión y salud */}
+        <Route path="noticias" element={<NewsQueuePage />} />
+        {/* /salud y /boletin van ANTES que /:id, o el id capturaria esas rutas */}
+        <Route path="noticias/salud" element={<NewsHealthPage />} />
+        <Route path="noticias/boletin" element={<NewsCampaignsPage />} />
+        <Route path="noticias/fuentes" element={<NewsSourcesPage />} />
+        <Route path="noticias/:id" element={<NewsArticleDetailPage />} />
 
         {/* Reportes y Exportación */}
         <Route path="reportes" element={<ReportesPage />} />

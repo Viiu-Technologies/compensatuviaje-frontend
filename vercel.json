@@ -4,19 +4,91 @@
       "source": "/share/profile/:userId",
       "destination": "https://compensatuviaje-backend-production.up.railway.app/api/public/share/profile/:userId"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/blog/feed.xml",
+      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/news/feed.xml"
+    },
+    {
+      "source": "/blog/sitemap.xml",
+      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/news/sitemap.xml"
+    },
+    {
+      "source": "/blog",
+      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/news/page"
+    },
+    {
+      "source": "/blog/confirmar/:token",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/baja/:token",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "https://compensatuviaje-backend-production.up.railway.app/api/news/page/:slug"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
+      "source": "/(admin|partner|b2c|b2b|dashboard|onboarding|company|auth|login|register|forgot-password|verify|impacto|share)(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/blog/(confirmar|baja)/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
       "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
       ]
     }
   ]

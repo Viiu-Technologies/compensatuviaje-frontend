@@ -25,7 +25,7 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--ctv-space-8);
+  gap: 2rem;
   padding-bottom: clamp(3rem, 6vw, 5rem);
   border-bottom: 1px solid rgba(247, 250, 248, 0.15);
 }
@@ -52,7 +52,7 @@
   padding: 1rem 1.75rem;
   background: var(--ctv-canvas);
   color: var(--ctv-brand-deep);
-  border-radius: var(--ctv-radius-pill);
+  border-radius: 999px;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -71,41 +71,34 @@
 .ft-newsletter {
   display: flex;
   flex-direction: column;
-  gap: var(--ctv-space-6);
+  gap: 1.5rem;
   padding: clamp(2rem, 5vw, 3.5rem) 0;
   border-bottom: 1px solid rgba(247, 250, 248, 0.15);
 }
 
 .ft-newsletter__row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(2rem, 4vw, 3.5rem);
+  display: block;
+  width: 100%;
 }
 
-/* ── 3D brand object ────────────────────────────────── */
-.ft-cards3d {
-  display: block;
-  width: min(100%, 760px);
-  height: clamp(280px, 38vw, 520px);
-  /* Decorative: never intercept clicks aimed at the newsletter form. */
-  pointer-events: none;
-  /* Slightly held back so it reads as an ornament behind the content hierarchy,
-     not a third competing element. */
-  opacity: 0.92;
+.ft-newsletter__msg {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ctv-brand-bright);
 }
-.ft-newsletter__scene-row {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  /* Reserves the 3D scene's own footprint (.ft-cards3d) before its canvas mounts --
-     the scene is now gated behind an IntersectionObserver (see Footer.tsx) so this
-     row would otherwise collapse to 0 height and cause a layout shift once it loads. */
-  min-height: clamp(280px, 38vw, 520px);
+.ft-newsletter__msg--error {
+  margin-top: 0.6rem;
+  color: #FCA5A5;
 }
-/* Motion in the scene itself is already gated on prefers-reduced-motion; this is the
-   belt-and-braces case where a user also wants less visual noise overall. */
-@media (prefers-reduced-motion: reduce) {
-  .ft-cards3d { opacity: 0.8; }
+
+.ft-newsletter__legal {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(247, 250, 248, 0.5);
+}
+.ft-newsletter__legal a {
+  color: rgba(247, 250, 248, 0.75);
+  text-underline-offset: 2px;
 }
 
 .ft-newsletter__label {
@@ -134,7 +127,7 @@
   align-items: center;
   background: rgba(247, 250, 248, 0.08);
   border: 1px solid rgba(247, 250, 248, 0.15);
-  border-radius: var(--ctv-radius-pill);
+  border-radius: 999px;
   padding: 0.4rem 0.4rem 0.4rem 1.25rem;
   transition: border-color 0.25s var(--ctv-ease-out);
 }
@@ -162,7 +155,7 @@
   background: var(--ctv-brand);
   color: var(--ctv-brand-deep);
   border: none;
-  border-radius: var(--ctv-radius-pill);
+  border-radius: 999px;
   padding: 0.65rem 1.25rem;
   font-family: var(--ctv-font-body);
   font-size: 0.85rem;
@@ -177,11 +170,14 @@
 .ft-cols {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--ctv-space-10);
+  gap: 2.5rem;
   padding: clamp(3rem, 6vw, 4.5rem) 0;
 }
-@media (min-width: 768px) {
-  .ft-cols { grid-template-columns: 2fr 1fr 1fr 1fr; }
+@media (min-width: 700px) {
+  .ft-cols { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .ft-cols { grid-template-columns: 2fr repeat(4, 1fr); }
 }
 
 .ft-col--brand { max-width: 32ch; }
@@ -215,7 +211,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ctv-space-3);
+  gap: 0.75rem;
 }
 
 .ft-col__link {
@@ -236,8 +232,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ctv-space-6);
-  padding-top: var(--ctv-space-8);
+  gap: 1.5rem;
+  padding-top: 2rem;
   border-top: 1px solid rgba(247, 250, 248, 0.15);
 }
 
@@ -247,15 +243,22 @@
   margin: 0;
 }
 
+/* Identificación del proveedor (Ley 19.496) */
+.ft-bottom__legal {
+  font-size: 0.8rem;
+  color: rgba(247, 250, 248, 0.5);
+  margin: 0;
+}
+
 .ft-bottom__social {
   display: flex;
-  gap: var(--ctv-space-2);
+  gap: 0.5rem;
 }
 
 .ft-bottom__icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--ctv-radius-full);
+  border-radius: 50%;
   background: rgba(247, 250, 248, 0.08);
   border: 1px solid rgba(247, 250, 248, 0.15);
   color: var(--ctv-canvas);
@@ -275,7 +278,7 @@
 
 .ft-bottom__legal {
   display: flex;
-  gap: var(--ctv-space-6);
+  gap: 1.5rem;
 }
 
 .ft-bottom__link {
@@ -292,12 +295,12 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ctv-space-8);
+  gap: 2rem;
   padding: 2.25rem 2.5rem;
   margin: 3rem 0 1.5rem;
   background: rgba(250, 250, 247, 0.04);
   border: 1px solid rgba(250, 250, 247, 0.08);
-  border-radius: var(--ctv-radius-xl);
+  border-radius: 24px;
 }
 
 .ft-esg-banner__copy {
@@ -315,8 +318,8 @@
   color: var(--ctv-brand);
   background: rgba(8, 174, 6, 0.1);
   border: 1px solid rgba(8, 174, 6, 0.2);
-  border-radius: var(--ctv-radius-pill);
-  margin-bottom: var(--ctv-space-4);
+  border-radius: 999px;
+  margin-bottom: 1rem;
 }
 
 .ft-esg-banner__title {
@@ -342,7 +345,7 @@
   padding: 0.9rem 1.65rem;
   background: var(--ctv-brand);
   color: #ffffff;
-  border-radius: var(--ctv-radius-pill);
+  border-radius: 999px;
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 600;

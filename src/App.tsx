@@ -48,6 +48,8 @@ const B2CAchievementsPage = lazy(() => import('./apps/b2c/pages/B2CAchievementsP
 const PublicImpactProfile  = lazy(() => import('./apps/b2c/pages/PublicImpactProfile'));
 const PaymentResultPage = lazy(() => import('./apps/b2c/pages/PaymentResultPage'));
 const BlogPage = lazy(() => import('./apps/public/pages/BlogPage'));
+const NewsDetailPage = lazy(() => import('./apps/public/pages/NewsDetailPage'));
+const NewsletterActionPage = lazy(() => import('./apps/public/pages/NewsletterActionPage'));
 const PartnersGuidePage = lazy(() => import('./apps/public/pages/PartnersGuidePage'));
 const CalculatorPage = lazy(() => import('./apps/public/pages/CalculatorPage'));
 const ContactPage = lazy(() => import('./apps/public/pages/ContactPage'));
@@ -109,7 +111,12 @@ function App() {
             {/* Public Blockchain Verification */}
             <Route path="/verify/:compensationId" element={<CertificateVerificationPage />} />
             <Route path="/verify/token/:tokenId" element={<CertificateVerificationPage />} />
+            {/* Noticias del sector. Las rutas de boletín deben ir ANTES de
+                /blog/:slug, o el slug capturaría "confirmar" y "baja". */}
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/confirmar/:token" element={<NewsletterActionPage action="confirm" />} />
+            <Route path="/blog/baja/:token" element={<NewsletterActionPage action="unsubscribe" />} />
+            <Route path="/blog/:slug" element={<NewsDetailPage />} />
             <Route path="/aliados" element={<PartnersGuidePage />} />
             <Route path="/calculadora" element={<CalculatorPage />} />
             <Route path="/contacto" element={<ContactPage />} />
