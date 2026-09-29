@@ -221,7 +221,7 @@ const NewsHealthPage: React.FC = () => {
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Éxito de llamadas</span>
                 <p className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">
-                  {stats.costoLlm.tasaExito ?? '—'}%
+                  {stats.costoLlm.tasaExito != null ? `${stats.costoLlm.tasaExito}%` : '—'}
                 </p>
               </div>
               <div>
