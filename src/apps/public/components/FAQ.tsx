@@ -24,7 +24,7 @@ const FAQS_B2C = [
   {
     id: 4,
     q: '¿Qué proyectos apoyan?',
-    a: 'Reforestación nativa, energía solar y eólica, conservación de bosques y economía circular. Todos certificados por Gold Standard o VCS.',
+    a: 'Reforestación nativa, energía solar y eólica, conservación de bosques y economía circular. Cada proyecto pasa por nuestra verificación documental con agentes de IA y revisión humana antes de publicarse.',
   },
   {
     id: 5,
@@ -52,7 +52,7 @@ const FAQS_B2B = [
   {
     id: 102,
     q: '¿Qué tipo de certificados entregan a empresas?',
-    a: 'Entregamos certificados corporativos auditables y registrados en blockchain, ideales para reportes ESG y memorias de sostenibilidad.',
+    a: 'Entregamos certificados corporativos emitidos por CompensaTuViaje y registrados en blockchain, que respaldan tus aportes en reportes ESG y memorias de sostenibilidad. No corresponden a créditos de carbono de registros internacionales.',
   },
   {
     id: 103,
@@ -75,7 +75,7 @@ const FAQS_PARTNER = [
   {
     id: 202,
     q: '¿Qué tipo de verificación requieren los proyectos?',
-    a: 'Todos los proyectos deben estar acreditados o en vías de acreditación por estándares reconocidos internacionalmente como Gold Standard, VCS (Verra) o el Mercado de Carbono correspondiente en Chile.',
+    a: 'Cada proyecto pasa por Veritas AI, nuestro proceso de verificación: agentes de IA revisan la documentación (titularidad, permisos, evidencia de impacto y coherencia de las cifras) y luego una persona de nuestro equipo la valida antes de aprobar la publicación.',
   },
   {
     id: 203,

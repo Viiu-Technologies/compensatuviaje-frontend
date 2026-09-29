@@ -1,0 +1,218 @@
+/* ==========================================================================
+   LegalLayout.css — Términos, Privacidad, Reembolsos, Cookies
+   ========================================================================== */
+@import '../landing/tokens.css';
+
+.lgl-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ctv-canvas);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+}
+
+.lgl-main {
+  flex: 1;
+  padding: 6.5rem 0 5rem;
+}
+
+.lgl-container {
+  width: 100%;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+.lgl-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--ctv-ink-soft);
+  text-decoration: none;
+}
+.lgl-back:hover { color: var(--ctv-accent-contrast); }
+
+/* ── Cabecera ─────────────────────────────────────── */
+.lgl-head {
+  max-width: 760px;
+  padding: 2rem 0 2.5rem;
+  border-bottom: 1px solid var(--ctv-rule);
+}
+
+.lgl-eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ctv-accent-contrast);
+}
+
+.lgl-title {
+  margin: 0;
+  font-family: var(--ctv-font-display);
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ctv-ink);
+}
+
+.lgl-meta {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: var(--ctv-ink-mute);
+}
+
+.lgl-intro {
+  margin-top: 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ctv-ink-soft);
+}
+.lgl-intro p { margin: 0 0 0.75rem; }
+
+/* ── Grid: índice + cuerpo ────────────────────────── */
+.lgl-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 3.5rem;
+  padding-top: 2.5rem;
+}
+
+.lgl-toc {
+  position: sticky;
+  top: 6rem;
+  align-self: start;
+  font-size: 0.875rem;
+}
+
+.lgl-toc__title {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-mute);
+}
+.lgl-toc__title--related { margin-top: 2rem; }
+
+.lgl-toc ol,
+.lgl-toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lgl-toc ol { counter-reset: toc; }
+.lgl-toc ol li {
+  counter-increment: toc;
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+}
+.lgl-toc ol li::before {
+  content: counter(toc) '.';
+  color: var(--ctv-ink-mute);
+}
+
+.lgl-toc li { padding: 0.3rem 0; }
+.lgl-toc a {
+  color: var(--ctv-ink-soft);
+  text-decoration: none;
+}
+.lgl-toc a:hover { color: var(--ctv-accent-contrast); }
+
+/* ── Cuerpo ───────────────────────────────────────── */
+.lgl-body {
+  max-width: 760px;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--ctv-ink-soft);
+}
+
+.lgl-section {
+  scroll-margin-top: 6rem;
+  padding-bottom: 2rem;
+}
+
+.lgl-section h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--ctv-font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ctv-ink);
+}
+
+.lgl-num { color: var(--ctv-accent-contrast); }
+
+.lgl-section h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ctv-ink);
+}
+
+.lgl-section p { margin: 0 0 0.9rem; }
+.lgl-section ul { margin: 0 0 0.9rem; padding-left: 1.25rem; }
+.lgl-section li { margin-bottom: 0.4rem; }
+.lgl-section strong { color: var(--ctv-ink); }
+
+.lgl-body a {
+  color: var(--ctv-accent-contrast);
+  text-underline-offset: 2px;
+}
+
+.lgl-callout {
+  margin: 0 0 1rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--ctv-brand);
+  border-radius: 0 var(--ctv-radius-sm) var(--ctv-radius-sm) 0;
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-ink);
+}
+
+/* Tablas (encargados de tratamiento, cookies) */
+.lgl-table-wrap {
+  margin: 0 0 1rem;
+  overflow-x: auto;
+}
+.lgl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.lgl-table th,
+.lgl-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--ctv-rule);
+  text-align: left;
+  vertical-align: top;
+}
+.lgl-table th {
+  font-weight: 600;
+  color: var(--ctv-ink);
+  background: var(--ctv-canvas-2);
+}
+
+.lgl-owner {
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ctv-rule);
+  font-size: 0.875rem;
+  color: var(--ctv-ink-mute);
+}
+
+@media (max-width: 860px) {
+  .lgl-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .lgl-toc {
+    position: static;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--ctv-rule);
+    border-radius: var(--ctv-radius-md);
+    background: #fff;
+  }
+}

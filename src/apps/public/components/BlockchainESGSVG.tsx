@@ -233,7 +233,7 @@ export const BlockchainESGSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props)
       <rect x="0" y="0" width="80" height="24" rx="12" fill="#ffffff" stroke="#8247E5" strokeWidth="1.5" opacity="0.95" />
       <circle cx="12" cy="12" r="5" fill="#8247E5" />
       <text x="46" y="16" fontSize="9" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="sans-serif">
-        VCS / GOLD STD
+        VERITAS AI
       </text>
     </g>
   </svg>

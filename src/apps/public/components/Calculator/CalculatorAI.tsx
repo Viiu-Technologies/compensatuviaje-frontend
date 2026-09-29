@@ -272,7 +272,7 @@ const CalculatorAI: React.FC = () => {
     addUserMessage('Quiero compensar mis emisiones 🌱');
     setTimeout(() => {
       addBotMessage(
-        '¡Excelente decisión! 🌿 Te redirigiremos al proceso de pago seguro para compensar tus emisiones con proyectos certificados en Chile y América Latina.'
+        '¡Excelente decisión! 🌿 Te redirigiremos al proceso de pago seguro para compensar tus emisiones con proyectos verificados en Chile y América Latina.'
       );
     }, 500);
   };
@@ -534,7 +534,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onCompensate, onNewCalc
       </motion.button>
 
       <p className="cta-subtitle">
-        <FaCheckCircle /> Proyectos certificados Gold Standard y VCS
+        <FaCheckCircle /> Proyectos verificados por IA y revisión humana
       </p>
     </motion.div>
   );

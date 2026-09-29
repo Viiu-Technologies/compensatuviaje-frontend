@@ -126,7 +126,7 @@ export const VirtualForestSection: React.FC = () => {
               <div className="vfs-telemetry-item">
                 <span className="vfs-telemetry-val">15.420</span>
                 <span className="vfs-telemetry-unit">toneladas CO₂e</span>
-                <span className="vfs-telemetry-sub">Neutralizadas auditadas</span>
+                <span className="vfs-telemetry-sub">Neutralizadas verificadas</span>
               </div>
               <div className="vfs-telemetry-item">
                 <span className="vfs-telemetry-val">~48.500</span>
@@ -143,7 +143,7 @@ export const VirtualForestSection: React.FC = () => {
             <footer className="vfs-telemetry-footer">
               <div className="vfs-telemetry-badge">
                 <HiShieldCheck className="vfs-badge-icon" />
-                <span>Verra VCS · Gold Standard · Retiro Inmutable</span>
+                <span>Veritas AI · Revisión humana · Registro en blockchain</span>
               </div>
               <button
                 type="button"

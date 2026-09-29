@@ -123,7 +123,7 @@ const Hero: React.FC = () => {
 
             <p className="hero-lede ctv-reveal">
               Calcula y neutraliza las emisiones de tus vuelos con factores oficiales del DEFRA y GHG Protocol,
-              respaldado por proyectos verificados internacionalmente con trazabilidad inmutable.
+              respaldado por proyectos verificados y un registro inmutable en blockchain.
             </p>
 
             <div className="hero-header-badges ctv-reveal">
@@ -133,7 +133,7 @@ const Hero: React.FC = () => {
               </div>
               <div className="hero-badge-pill">
                 <span className="hero-stat__pulse" />
-                <span>Retiro Criptográfico Inmutable</span>
+                <span>Certificado registrado en blockchain</span>
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@ const Hero: React.FC = () => {
           <div className="hero-stat-compact">
             <div className="hero-stat-compact__live">
               <span className="hero-stat__pulse" />
-              <span>Auditado en tiempo real</span>
+              <span>Trazable en tiempo real</span>
             </div>
             <div className="hero-stat-compact__val">
               <span className="hero-stat__number" data-value="15420">
@@ -184,7 +184,7 @@ const Hero: React.FC = () => {
               className="hero-sublink"
             >
               <HiShieldCheck aria-hidden="true" />
-              <span>Explorar proyectos certificados</span>
+              <span>Explorar proyectos verificados</span>
               <HiArrowRight aria-hidden="true" />
             </button>
           </div>
@@ -201,7 +201,7 @@ const Hero: React.FC = () => {
           </div>
           <div className="hero-meta__item">
             <span className="hero-meta__num">02</span>
-            <span className="hero-meta__txt">Proyectos registrados en Verra VCS y Gold Standard</span>
+            <span className="hero-meta__txt">Proyectos verificados por IA y revisión humana</span>
           </div>
           <div className="hero-meta__item">
             <span className="hero-meta__num">03</span>

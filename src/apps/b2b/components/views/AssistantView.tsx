@@ -81,7 +81,7 @@ const AssistantView: React.FC = () => {
     
     if (lowerMessage.includes('proyecto') || lowerMessage.includes('compensar') || lowerMessage.includes('compensación')) {
       return {
-        content: `🌳 **Proyectos de Compensación Recomendados:**\n\n**1. Reforestación Nativa Chile** 🇨🇱\n• Ubicación: Región de la Araucanía\n• Certificación: Gold Standard\n• Impacto: 15 tonCO₂/hectárea/año\n• Precio: $12 USD/tonCO₂\n\n**2. Energía Eólica Patagonia** 💨\n• Ubicación: Región de Magallanes\n• Certificación: VCS + CCB\n• Impacto: Desplaza 50,000 tonCO₂/año\n• Precio: $8 USD/tonCO₂\n\n**3. Conservación Bosque Valdiviano** 🌲\n• Ubicación: Región de Los Ríos\n• Certificación: REDD+\n• Impacto: Protege 5,000 hectáreas\n• Precio: $15 USD/tonCO₂\n\n¿Cuál te interesa conocer en detalle?`,
+        content: `🌳 **Proyectos de Compensación Recomendados:**\n\n**1. Reforestación Nativa Chile** 🇨🇱\n• Ubicación: Región de la Araucanía\n• Verificación: Veritas AI + revisión humana\n• Impacto: 15 tonCO₂/hectárea/año\n• Precio: $12 USD/tonCO₂\n\n**2. Energía Eólica Patagonia** 💨\n• Ubicación: Región de Magallanes\n• Verificación: Veritas AI + revisión humana\n• Impacto: Desplaza 50,000 tonCO₂/año\n• Precio: $8 USD/tonCO₂\n\n**3. Conservación Bosque Valdiviano** 🌲\n• Ubicación: Región de Los Ríos\n• Verificación: Veritas AI + revisión humana\n• Impacto: Protege 5,000 hectáreas\n• Precio: $15 USD/tonCO₂\n\n¿Cuál te interesa conocer en detalle?`,
         suggestions: [
           'Más sobre Reforestación Nativa',
           'Detalles de Energía Eólica',

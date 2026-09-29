@@ -12,11 +12,17 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ContactSection from '../components/ContactSection';
 import './ContactPage.css';
+import { useSeo } from '../../../shared/utils/useSeo';
 
 const ContactPage: React.FC = () => {
+  useSeo({
+    title: 'Contacto y Soporte',
+    description: 'Escríbenos para consultas de personas, empresas, aliados o prensa sobre compensación de huella de carbono.',
+    path: '/contacto',
+  });
+
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Atención y Consultas | CompensaTuViaje';
   }, []);
 
   return (

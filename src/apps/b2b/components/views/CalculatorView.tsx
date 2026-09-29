@@ -237,7 +237,7 @@ const CalculatorView: React.FC = () => {
         <div className={`!rounded-xl !p-4 !border ${isDark ? '!bg-green-900/20 !border-green-700/50' : '!bg-green-50 !border-green-200'}`}>
           <TreePine className="!w-6 !h-6 !text-green-600 !mb-2" />
           <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Proyectos verificados</h4>
-          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Compensaciones con certificación Gold Standard y VCS</p>
+          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Compensaciones en proyectos verificados por IA y revisión humana</p>
         </div>
         <div className={`!rounded-xl !p-4 !border sm:!col-span-2 lg:!col-span-1 ${isDark ? '!bg-purple-900/20 !border-purple-700/50' : '!bg-purple-50 !border-purple-200'}`}>
           <ShieldCheck className="!w-6 !h-6 !text-purple-600 !mb-2" />

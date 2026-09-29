@@ -8,9 +8,47 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/images/brand/icon-512.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#08AE06" />
-    <meta name="description" content="CompensaTuViaje - Plataforma de compensación de huella de carbono" />
+    <meta name="description" content="Calcula y compensa la huella de carbono de tus viajes con proyectos verificados. Certificado digital verificable para personas y empresas." />
     <link rel="apple-touch-icon" href="/images/brand/apple-touch-icon.png" />
-    <title>CompensaTuViaje</title>
+    <title>CompensaTuViaje | Calcula y compensa la huella de carbono de tus viajes</title>
+
+    <!-- Open Graph / Twitter: valores por defecto. LinkedIn y WhatsApp no ejecutan
+         JS, así que siempre ven estos; useSeo() los ajusta por página para Google.
+         PENDIENTE: reemplazar og:image por una imagen dedicada de 1200x630. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CompensaTuViaje" />
+    <meta property="og:locale" content="es_CL" />
+    <meta property="og:title" content="CompensaTuViaje | Calcula y compensa la huella de carbono de tus viajes" />
+    <meta property="og:description" content="Calcula y compensa la huella de carbono de tus viajes con proyectos verificados. Certificado digital verificable para personas y empresas." />
+    <meta property="og:url" content="https://compensatuviaje.com/" />
+    <meta property="og:image" content="https://compensatuviaje.com/images/brand/logo-horizontal.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- PENDIENTE: agregar "legalName" y "taxID" (RUT) cuando estén definidos
+         en src/shared/config/legal.ts. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://compensatuviaje.com/#organization",
+            "name": "CompensaTuViaje",
+            "url": "https://compensatuviaje.com/",
+            "logo": "https://compensatuviaje.com/images/brand/icon-512.png",
+            "areaServed": "CL"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://compensatuviaje.com/#website",
+            "url": "https://compensatuviaje.com/",
+            "name": "CompensaTuViaje",
+            "inLanguage": "es-CL",
+            "publisher": { "@id": "https://compensatuviaje.com/#organization" }
+          }
+        ]
+      }
+    </script>
     <!-- Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +61,18 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
   </head>
   <body>
-    <noscript>Necesitas habilitar JavaScript para usar esta aplicación.</noscript>
+    <noscript>
+      <h1>CompensaTuViaje</h1>
+      <p>Calcula y compensa la huella de carbono de tus viajes con proyectos verificados. Necesitas habilitar JavaScript para usar la plataforma.</p>
+      <nav>
+        <a href="/calculadora">Calculadora de huella de carbono</a> ·
+        <a href="/blog">Blog</a> ·
+        <a href="/aliados">Aliados</a> ·
+        <a href="/contacto">Contacto</a> ·
+        <a href="/terminos">Términos y Condiciones</a> ·
+        <a href="/privacidad">Política de Privacidad</a>
+      </nav>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>

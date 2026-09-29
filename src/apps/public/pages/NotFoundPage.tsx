@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { HiArrowRight } from 'react-icons/hi2';
 import './NotFoundPage.css';
+import { useSeo } from '../../../shared/utils/useSeo';
 
 /**
  * Página 404.
@@ -12,6 +13,10 @@ import './NotFoundPage.css';
  * ofrece las tres salidas útiles del producto.
  */
 const NotFoundPage: React.FC = () => {
+  // Vercel responde 200 a cualquier ruta (SPA); el noindex evita que Google
+  // indexe URLs inexistentes como páginas válidas (soft 404).
+  useSeo({ title: 'Página no encontrada', noindex: true });
+
   return (
     <main className="nf-page">
       <div className="nf-inner">

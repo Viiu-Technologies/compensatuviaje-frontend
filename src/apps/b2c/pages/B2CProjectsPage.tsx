@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { formatCLP, formatCLPPerTon } from '../../../utils/currency';
 import { calculateTonsFromUnits, calculateUnitsFromKg } from '../../../utils/carbon';
 import {
@@ -45,6 +45,9 @@ const B2CProjectsPage: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<B2CProject | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [payingProjectId, setPayingProjectId] = useState<string | null>(null);
+  // Aceptación explícita de términos y de la exclusión del retracto (Ley 19.496 art. 3 bis):
+  // sin ella la exclusión no es oponible al consumidor.
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Read calculator context from query params
   const calcId = searchParams.get('calcId');
@@ -344,7 +347,8 @@ const B2CProjectsPage: React.FC = () => {
               : null;
             const availableStock = selectedProject.monthlyStockRemaining ?? 0;
             const hasInsufficientStock = neededUnits !== null && neededUnits > availableStock;
-            const isCtaDisabled = selectedProjectIsSoldOut || hasInsufficientStock || payingProjectId === selectedProject.id;
+            const isCtaDisabled = selectedProjectIsSoldOut || hasInsufficientStock || payingProjectId === selectedProject.id
+              || (hasCalculation && !acceptedTerms);
 
             // Co-benefits: support array of strings OR object { key: true }
             const coBenefitsRaw = selectedProject.coBenefits;
@@ -431,7 +435,7 @@ const B2CProjectsPage: React.FC = () => {
                       <div className="!flex !items-center !gap-2 !bg-emerald-50 !border !border-emerald-200 !rounded-xl !px-4 !py-2.5">
                         <span className="!text-emerald-600 !text-base">🛡️</span>
                         <div>
-                          <span className="!text-xs !text-emerald-500 !font-medium !block !leading-none !mb-0.5">Auditado por Veritas AI</span>
+                          <span className="!text-xs !text-emerald-500 !font-medium !block !leading-none !mb-0.5">Verificado por Veritas AI</span>
                           <span className="!text-sm !font-bold !text-emerald-700">{veritasLabel}</span>
                         </div>
                         {selectedProject.certification && (
@@ -530,6 +534,24 @@ const B2CProjectsPage: React.FC = () => {
                           <span className="!font-bold">{availableStock.toLocaleString()} disponibles</span> este mes.
                         </p>
                       </div>
+                    )}
+
+                    {/* Aceptación de términos y retracto */}
+                    {hasCalculation && !selectedProjectIsSoldOut && !hasInsufficientStock && (
+                      <label className="!flex !items-start !gap-2.5 !text-xs !text-gray-600 !cursor-pointer !leading-relaxed">
+                        <input
+                          type="checkbox"
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
+                          className="!mt-0.5 !w-4 !h-4 !flex-shrink-0 !accent-emerald-600"
+                        />
+                        <span>
+                          Acepto los{' '}
+                          <Link to="/terminos" target="_blank" className="!text-emerald-700 !underline">Términos y Condiciones</Link>{' '}
+                          y entiendo que, al confirmarse el pago, la compensación se asigna de inmediato y{' '}
+                          <Link to="/reembolsos" target="_blank" className="!text-emerald-700 !underline">no aplica el derecho de retracto</Link>.
+                        </span>
+                      </label>
                     )}
 
                     {/* CTA button */}

@@ -10,7 +10,7 @@ export interface ProjectData {
   location: string;
   category: string;
   standard: string;
-  registryId: string;
+  registryId?: string;
   sdgs: string[];
   pricePerTon: number;
   metricLabel: string;
@@ -26,8 +26,7 @@ const PROJECTS: ProjectData[] = [
     title: 'Reforestación de Ecosistemas Nativos en Aysén',
     location: 'Patagonia, Chile',
     category: 'Soluciones Basadas en la Naturaleza',
-    standard: 'Verra VCS',
-    registryId: 'VCS-ID-2489',
+    standard: 'Verificado · Veritas AI',
     sdgs: ['ODS 13: Acción Climática', 'ODS 15: Vida Terrestre'],
     pricePerTon: 25,
     metricLabel: 'Hectáreas en restauración activa',
@@ -41,8 +40,7 @@ const PROJECTS: ProjectData[] = [
     title: 'Parque Solar Fotovoltaico Atacama Clean Power',
     location: 'Desierto de Atacama, Chile',
     category: 'Transición Energética',
-    standard: 'Gold Standard',
-    registryId: 'GS-ID-5104',
+    standard: 'Verificado · Veritas AI',
     sdgs: ['ODS 7: Energía Asequible', 'ODS 13: Acción Climática'],
     pricePerTon: 22,
     metricLabel: 'Emisiones desplazadas al año',
@@ -55,8 +53,7 @@ const PROJECTS: ProjectData[] = [
     title: 'Conservación de Turberas y Humedales Australes',
     location: 'Región de Magallanes, Chile',
     category: 'Reservorios de Carbono Azul y Turba',
-    standard: 'Mercado Voluntario Auditado',
-    registryId: 'REG-CL-9921',
+    standard: 'Verificado · Veritas AI',
     sdgs: ['ODS 13: Acción Climática', 'ODS 14: Vida Submarina'],
     pricePerTon: 28,
     metricLabel: 'Stock de carbono protegido',
@@ -84,12 +81,11 @@ export const ProjectsBento: React.FC = () => {
 
           <div className="pb-title-row">
             <h2 className="pb-title">
-              Proyectos reales auditados,{' '}
+              Proyectos reales verificados,{' '}
               <span className="pb-title-accent">con coordenadas y trazabilidad pública.</span>
             </h2>
             <p className="pb-lede">
-              Cada tonelada que compensas está asignada a un proyecto físico certificado bajo estándares
-              internacionales (Verra VCS o Gold Standard). Cero créditos fantasma.
+              Cada tonelada que compensas se asigna a un proyecto físico que pasó nuestra verificación documental: agentes de IA y revisión humana.
             </p>
           </div>
         </header>
@@ -111,7 +107,7 @@ export const ProjectsBento: React.FC = () => {
                   <HiShieldCheck aria-hidden="true" />
                   {featured.standard}
                 </span>
-                <span className="pb-badge pb-badge--registry">{featured.registryId}</span>
+                {featured.registryId && <span className="pb-badge pb-badge--registry">{featured.registryId}</span>}
               </div>
             </div>
 
@@ -145,7 +141,7 @@ export const ProjectsBento: React.FC = () => {
                 </div>
 
                 <div className="pb-price-block">
-                  <span className="pb-price-label">Valor de retiro</span>
+                  <span className="pb-price-label">Precio por tonelada</span>
                   <span className="pb-price-value">${featured.pricePerTon} USD / t</span>
                 </div>
 
@@ -176,7 +172,7 @@ export const ProjectsBento: React.FC = () => {
                       <HiShieldCheck aria-hidden="true" />
                       {proj.standard}
                     </span>
-                    <span className="pb-badge pb-badge--registry">{proj.registryId}</span>
+                    {proj.registryId && <span className="pb-badge pb-badge--registry">{proj.registryId}</span>}
                   </div>
                 </div>
 

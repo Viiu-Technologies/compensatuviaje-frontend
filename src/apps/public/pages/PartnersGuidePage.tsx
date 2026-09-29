@@ -27,6 +27,7 @@ import {
   Step6EsgCertificationArt,
 } from './PartnersGuideArt';
 import './PartnersGuidePage.css';
+import { useSeo } from '../../../shared/utils/useSeo';
 
 type Step = {
   num: string;
@@ -109,7 +110,7 @@ const CERTIFIED_SHOWCASE = [
     title: 'Parque Solar Fotovoltaico Atacama',
     location: 'Región de Antofagasta, Chile',
     category: 'Energía Renovable',
-    standard: 'Verra VCS & Gold Standard',
+    standard: 'Veritas AI · Revisión humana',
     metric: '45.000 t CO₂/año evitadas',
     image: '/images/atacama_solar_park.jpg',
     Icon: FaSun,
@@ -118,7 +119,7 @@ const CERTIFIED_SHOWCASE = [
     title: 'Reserva Biológica Selva Valdiviana',
     location: 'Región de Los Ríos, Chile',
     category: 'Conservación y Biodiversidad',
-    standard: 'Estándar VCS · Defra Audit',
+    standard: 'Veritas AI · Revisión humana',
     metric: '18.200 t CO₂ capturadas',
     image: '/images/realistic_forest_canopy.png',
     Icon: FaTree,
@@ -154,6 +155,12 @@ const FAQS = [
 ];
 
 const PartnersGuidePage = () => {
+  useSeo({
+    title: 'Sé un Aliado: publica tu proyecto ambiental',
+    description: 'Publica tu proyecto de reforestación, energía o conservación y recibe financiamiento de viajeros y empresas que compensan su huella.',
+    path: '/aliados',
+  });
+
   const heroRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set('.ctv-reveal', { autoAlpha: 1 });
     const tl = sectionTimeline(root, { scrollTrigger: undefined, delay: 0.1 });
@@ -359,7 +366,7 @@ const PartnersGuidePage = () => {
                 Proyectos de aliados que ya reciben compensaciones
               </h2>
               <p className="pg-showcase__lead">
-                Iniciativas auditadas con factores DEFRA 2024, GHG Protocol y registro inmutable en blockchain.
+                Iniciativas verificadas con factores DEFRA 2024, GHG Protocol y registro inmutable en blockchain.
               </p>
             </header>
 

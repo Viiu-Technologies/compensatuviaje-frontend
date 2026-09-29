@@ -15,7 +15,7 @@ import './CertificateSearch.css';
 
 const TRUST = [
   'Polygon Blockchain',
-  'Retiro Inmutable Auditado',
+  'Registro inmutable en blockchain',
   'Trazabilidad Pública',
 ];
 
@@ -161,7 +161,7 @@ const CertificateSearch: React.FC = () => {
 
                     <dl className="cs-stats">
                       <div className="cs-stat">
-                        <dt>ID de Retiro</dt>
+                        <dt>ID de certificado</dt>
                         <dd>#{result.certificate.tokenId}</dd>
                       </div>
                       <div className="cs-stat">
@@ -239,12 +239,12 @@ const CertificateSearch: React.FC = () => {
               <div className="cs-hologram-sheen" aria-hidden="true" />
               <BlockchainESGSVG className="cs-certificate-img" style={{ width: '270px', height: '270px' }} />
               <div className="cs-card-meta">
-                <span className="cs-card-meta__network">POLYGON MAINNET · RETIRO AUDITADO</span>
+                <span className="cs-card-meta__network">POLYGON MAINNET · REGISTRO VERIFICABLE</span>
                 <span className="cs-card-meta__hash">0x71C...4a9b</span>
               </div>
               <div className="cs-card-badge">
                 <FaShieldAlt className="cs-card-badge__icon" aria-hidden="true" />
-                <span>100% Seguro & Transparente</span>
+                <span>Verificable públicamente</span>
               </div>
             </div>
           </div>

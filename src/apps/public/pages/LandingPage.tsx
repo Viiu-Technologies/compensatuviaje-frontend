@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import StandardsRibbon from '../components/StandardsRibbon';
 import { useTheme } from '../../../shared/context/ThemeContext';
+import { useSeo } from '../../../shared/utils/useSeo';
 
 // Below-fold sections: lazy loaded for optimal Core Web Vitals (FCP / LCP)
 const Features = lazy(() => import('../components/Features'));
@@ -15,6 +16,11 @@ const FAQ = lazy(() => import('../components/FAQ'));
 const Footer = lazy(() => import('../components/Footer'));
 
 const LandingPage: React.FC = () => {
+  useSeo({
+    title: 'CompensaTuViaje | Calcula y compensa la huella de carbono de tus viajes',
+    path: '/',
+  });
+
   const { resolvedTheme } = useTheme();
 
   useLayoutEffect(() => {

@@ -19,6 +19,7 @@ import {
   type EstimateResponse 
 } from '../services/publicApi';
 import './CalculatorPage.css';
+import { useSeo } from '../../../shared/utils/useSeo';
 
 const CABIN_OPTIONS = [
   { value: 'economy', label: 'Económica', factor: '1.0x' },
@@ -59,8 +60,13 @@ const CalculatorPage: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Calculadora Oficial de Huella de Carbono | CompensaTuViaje';
   }, []);
+
+  useSeo({
+    title: 'Calculadora de Huella de Carbono de Vuelos',
+    description: 'Calcula gratis las emisiones de CO₂ de tu vuelo con factores DEFRA y compénsalas con proyectos verificados.',
+    path: '/calculadora',
+  });
 
   const originAirport = useMemo(
     () => POPULAR_AIRPORTS.find((a) => a.code === origin) || POPULAR_AIRPORTS[0],

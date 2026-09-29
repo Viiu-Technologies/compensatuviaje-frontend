@@ -164,7 +164,7 @@ const AccountTypeSelector: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <Leaf className="w-4 h-4" />
-            <span>Certificado Gold Standard</span>
+            <span>Certificado verificable en blockchain</span>
           </div>
         </motion.div>
       </div>

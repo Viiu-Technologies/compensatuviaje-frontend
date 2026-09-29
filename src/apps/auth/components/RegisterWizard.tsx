@@ -245,7 +245,8 @@ const RegisterWizard = () => {
           />
           <span>
             Acepto los{' '}
-            <Link to="/terms" target="_blank">términos y condiciones</Link>
+            <Link to="/terminos" target="_blank">términos y condiciones</Link> y la{' '}
+            <Link to="/privacidad" target="_blank">política de privacidad</Link>
           </span>
         </label>
         {validationErrors.acceptTerms && (

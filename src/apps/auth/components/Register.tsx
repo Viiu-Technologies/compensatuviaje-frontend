@@ -503,7 +503,7 @@ const Register: React.FC = () => {
                         <Check className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
                         <div>
                           <p className="!font-medium !text-white">Compensa tus emisiones</p>
-                          <p className="!text-sm !text-emerald-200/70">Proyectos certificados</p>
+                          <p className="!text-sm !text-emerald-200/70">Proyectos verificados</p>
                         </div>
                       </div>
                     </div>
@@ -570,7 +570,7 @@ const Register: React.FC = () => {
                           <Check className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
                         </div>
                         <span className="!text-emerald-200 group-hover:!text-white !transition-colors !text-sm">
-                          Acepto los <Link to="/terms" className="!text-emerald-400 hover:!underline">términos y condiciones</Link>
+                          Acepto los <Link to="/terminos" target="_blank" className="!text-emerald-400 hover:!underline">términos y condiciones</Link> y la <Link to="/privacidad" target="_blank" className="!text-emerald-400 hover:!underline">política de privacidad</Link>
                         </span>
                       </label>
                       {validationErrors.acceptTerms && <span className="!text-xs !text-red-300 !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}

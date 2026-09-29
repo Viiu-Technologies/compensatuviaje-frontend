@@ -83,7 +83,7 @@ export const EnterpriseSuite: React.FC = () => {
                   <span className="es-dot es-dot--g" />
                 </div>
                 <span className="es-mockup-title">CompensaTuViaje B2B: Portal Scope 3</span>
-                <span className="es-mockup-badge">Auditado GHG</span>
+                <span className="es-mockup-badge">Cálculo GHG Protocol</span>
               </div>
 
               {/* Contenido interactivo simulado */}
@@ -143,7 +143,7 @@ export const EnterpriseSuite: React.FC = () => {
                 {/* Footer del Mockup */}
                 <div className="es-mockup-footer">
                   <FaShieldAlt className="es-footer-shield" aria-hidden="true" />
-                  <span>Emisión de certificados corporativos con retiro irrevocable de créditos</span>
+                  <span>Emisión de certificados corporativos registrados en blockchain</span>
                 </div>
               </div>
             </div>

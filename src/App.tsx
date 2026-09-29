@@ -52,6 +52,10 @@ const PartnersGuidePage = lazy(() => import('./apps/public/pages/PartnersGuidePa
 const CalculatorPage = lazy(() => import('./apps/public/pages/CalculatorPage'));
 const ContactPage = lazy(() => import('./apps/public/pages/ContactPage'));
 const PaymentMethodsPage = lazy(() => import('./apps/public/pages/PaymentMethodsPage'));
+const TermsPage = lazy(() => import('./apps/public/pages/legal/TermsPage'));
+const PrivacyPage = lazy(() => import('./apps/public/pages/legal/PrivacyPage'));
+const RefundsPage = lazy(() => import('./apps/public/pages/legal/RefundsPage'));
+const CookiesPage = lazy(() => import('./apps/public/pages/legal/CookiesPage'));
 
 const CertificateVerificationPage = lazy(() => import('./shared/components/blockchain').then(m => ({ default: m.CertificateVerificationPage })));
 
@@ -110,6 +114,14 @@ function App() {
             <Route path="/calculadora" element={<CalculatorPage />} />
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/pagos" element={<PaymentMethodsPage />} />
+
+            {/* Legal */}
+            <Route path="/terminos" element={<TermsPage />} />
+            <Route path="/privacidad" element={<PrivacyPage />} />
+            <Route path="/reembolsos" element={<RefundsPage />} />
+            <Route path="/cookies" element={<CookiesPage />} />
+            <Route path="/terms" element={<Navigate to="/terminos" replace />} />
+            <Route path="/privacy" element={<Navigate to="/privacidad" replace />} />
 
             {/* TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off */}
             {/* Previews temporales de revision: solo en desarrollo. */}

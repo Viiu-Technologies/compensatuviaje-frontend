@@ -155,7 +155,7 @@ export const CarbonJourneySection: React.FC = () => {
             </p>
             <footer className="cj-card-meta">
               <span className="cj-meta-dot" />
-              <span>Estándar: DEFRA 2024 · Verra VCS · Gold Standard · Retiro Criptográfico Inmutable</span>
+              <span>Metodología: DEFRA 2024 · Verificación Veritas AI + revisión humana · Registro en blockchain</span>
             </footer>
           </article>
 
@@ -178,7 +178,7 @@ export const CarbonJourneySection: React.FC = () => {
                 className="cj-cta-btn"
                 onClick={() => scrollToSection('proyectos')}
               >
-                <span>Explorar proyectos certificados</span>
+                <span>Explorar proyectos verificados</span>
                 <HiArrowDown aria-hidden="true" />
               </button>
             </footer>

@@ -12,11 +12,17 @@ import {
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import './PaymentMethodsPage.css';
+import { useSeo } from '../../../shared/utils/useSeo';
 
 const PaymentMethodsPage: React.FC = () => {
+  useSeo({
+    title: 'Métodos de Pago y Seguridad',
+    description: 'Paga tu compensación de carbono con Webpay (Transbank). No almacenamos los datos de tu tarjeta.',
+    path: '/pagos',
+  });
+
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Métodos de Pago y Seguridad | CompensaTuViaje';
   }, []);
 
   return (
@@ -172,7 +178,7 @@ const PaymentMethodsPage: React.FC = () => {
             {/* CTA */}
             <div className="pmp-cta-wrap">
               <h3>¿Listo para calcular y compensar tu próximo viaje?</h3>
-              <p>Conoce las toneladas de CO₂ de tu ruta y neutralízalas con proyectos auditados.</p>
+              <p>Conoce las toneladas de CO₂ de tu ruta y neutralízalas con proyectos verificados.</p>
               <div className="pmp-cta-btns">
                 <Link to="/calculadora" className="pmp-btn pmp-btn--primary">
                   Ir a la Calculadora

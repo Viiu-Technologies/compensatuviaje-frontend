@@ -16,13 +16,13 @@ const STEPS = [
   {
     num: '02',
     title: 'Calcula con datos oficiales',
-    body: 'Aplicamos factores oficiales del DEFRA 2024, GHG Protocol e ICAO. Cálculo transparente y 100% auditable.',
+    body: 'Aplicamos factores oficiales del DEFRA 2024, GHG Protocol e ICAO. Cálculo transparente y trazable.',
     Illustration: StepCalculationSVG,
   },
   {
     num: '03',
     title: 'Compensa con proyectos verificados',
-    body: 'Apoya iniciativas certificadas bajo estándares Verra VCS o Gold Standard y recibe tu certificado digital inmutable.',
+    body: 'Apoya proyectos que pasan nuestra verificación documental (agentes de IA y revisión humana) y recibe un certificado digital verificable en blockchain.',
     Illustration: StepCompensationSVG,
   },
 ];
@@ -78,8 +78,8 @@ const Features = () => {
           </h2>
 
           <p className="ft-lede ctv-reveal">
-            Tres pasos. Cero opacidad. Datos oficiales del DEFRA, metodología certificada
-            y proyectos verificados internacionalmente.
+            Tres pasos. Cero opacidad. Factores de emisión del DEFRA, metodología pública
+            y proyectos verificados por IA y revisión humana.
           </p>
         </header>
 

@@ -29,16 +29,10 @@ const STANDARDS: StandardItem[] = [
     code: 'ICAO-UN',
   },
   {
-    name: 'Verra VCS',
-    category: 'Registro Internacional',
-    scope: 'Verified Carbon Standard Registries',
-    code: 'VCS-AUTH',
-  },
-  {
-    name: 'Gold Standard',
-    category: 'Certificación ODS',
-    scope: 'Climate Security & Sustainable Development',
-    code: 'GS-GLOBAL',
+    name: 'Veritas AI',
+    category: 'Verificación de Proyectos',
+    scope: 'Agentes de IA + revisión humana',
+    code: 'CTV-VERITAS',
   },
   {
     name: 'Polygon PoS',

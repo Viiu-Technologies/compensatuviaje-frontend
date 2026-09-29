@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { BsGoogle } from 'react-icons/bs';
 import { useAuth } from '../../b2c/context/AuthContext';
@@ -110,7 +110,7 @@ const B2CRegisterPage: React.FC = () => {
               </div>
               <div>
                 <p className="font-medium text-gray-900">Compensa tus emisiones</p>
-                <p className="text-sm text-gray-600">Participa en proyectos certificados de compensación</p>
+                <p className="text-sm text-gray-600">Participa en proyectos verificados de compensación</p>
               </div>
             </div>
 
@@ -140,7 +140,9 @@ const B2CRegisterPage: React.FC = () => {
 
           {/* Terms */}
           <p className="text-xs text-gray-500 text-center mt-4">
-            Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad
+            Al crear una cuenta, aceptas nuestros{' '}
+            <Link to="/terminos" target="_blank" className="underline hover:text-green-700">Términos y Condiciones</Link> y nuestra{' '}
+            <Link to="/privacidad" target="_blank" className="underline hover:text-green-700">Política de Privacidad</Link>.
           </p>
         </motion.div>
       </div>
