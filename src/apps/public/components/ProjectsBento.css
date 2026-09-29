@@ -466,3 +466,15 @@
   color: var(--ctv-accent-contrast);
   transform: translateX(2px);
 }
+
+/* Menos de 3 proyectos: dos tarjetas iguales o una centrada. */
+@media (min-width: 1024px) {
+  .pb-grid--pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pb-grid--solo {
+  max-width: 760px;
+  margin-inline: auto;
+}

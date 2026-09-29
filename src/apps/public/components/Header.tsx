@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence, type Transition } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig, type Transition } from 'framer-motion';
 import { useAuth } from '../../auth/context/AuthContext';
 import { 
   FaUser, 
@@ -165,6 +165,9 @@ const Header: React.FC = () => {
   // Grupo abierto por hover: el primer click sobre su trigger lo confirma en
   // vez de cerrarlo (antes hover abría y el click inmediato lo cerraba).
   const hoverOpenedRef = useRef<string | null>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const drawerPanelRef = useRef<HTMLDivElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
 
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
@@ -294,6 +297,35 @@ const Header: React.FC = () => {
     return () => mq.removeEventListener('change', onChange);
   }, [isMenuOpen]);
 
+  /* ── Foco del menú móvil: entra al botón de cerrar al abrir, Tab queda
+     dentro del panel y al cerrar vuelve a la hamburguesa ── */
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const panel = drawerPanelRef.current;
+    drawerCloseRef.current?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      // Solo si el foco seguía en el menú (al navegar, el foco ya cambió).
+      if (panel?.contains(document.activeElement)) hamburgerRef.current?.focus();
+    };
+  }, [isMenuOpen]);
+
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
     setActiveGroup(null);
@@ -345,8 +377,10 @@ const Header: React.FC = () => {
 
   const isHidden = hidden && !isExpanded && !isMenuOpen;
 
+  // reducedMotion="user": las animaciones de Motion (panel, chevrons, cards)
+  // respetan "reducir movimiento" del sistema, como ya lo hacía el CSS.
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       {/* ── Contenedor Único Liquid Glass ── */}
       {/* border-radius y box-shadow ya no se animan aqui via Framer Motion -- ambas
           propiedades fuerzan layout/paint en el hilo principal en cada frame del
@@ -416,7 +450,6 @@ const Header: React.FC = () => {
               onMouseEnter={() => prefetchRoute('calculator')}
             >
               <span>Calculadora</span>
-              <span className="ctv-badge ctv-badge--new">Nueva</span>
             </Link>
           </nav>
 
@@ -452,6 +485,13 @@ const Header: React.FC = () => {
                 >
                   Entrar
                 </Link>
+                <Link
+                  to="/register"
+                  className="ctv-btn-liquid ctv-btn-liquid--outline ctv-liquid-actions__register"
+                  onClick={() => setActiveGroup(null)}
+                >
+                  Registrarse
+                </Link>
                 <Link 
                   to="/calculadora" 
                   className="ctv-btn-liquid ctv-btn-liquid--glow"
@@ -467,6 +507,7 @@ const Header: React.FC = () => {
 
           {/* Botón Móvil */}
           <button
+            ref={hamburgerRef}
             className="ctv-liquid-hamburger"
             onClick={() => setIsMenuOpen((v) => !v)}
             aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
@@ -561,7 +602,13 @@ const Header: React.FC = () => {
       >
         <div className="ctv-liquid-drawer__overlay" onClick={closeMenu} />
 
-        <div className="ctv-liquid-drawer__panel">
+        <div
+          ref={drawerPanelRef}
+          className="ctv-liquid-drawer__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menú principal"
+        >
           <div className="ctv-liquid-drawer__top">
             <Link to="/" onClick={closeMenu} className="ctv-liquid-drawer__logo">
               <img
@@ -572,6 +619,7 @@ const Header: React.FC = () => {
               />
             </Link>
             <button 
+              ref={drawerCloseRef}
               className="ctv-liquid-drawer__close" 
               onClick={closeMenu} 
               aria-label="Cerrar menú"
@@ -704,7 +752,7 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+    </MotionConfig>
   );
 };
 

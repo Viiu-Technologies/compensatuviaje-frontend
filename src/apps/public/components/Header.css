@@ -232,19 +232,6 @@
   color: #ffffff;
 }
 
-/* Badge 'Nueva' estilo Wren ("New") */
-.ctv-badge--new {
-  background: rgba(245, 158, 11, 0.18);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.38);
-  font-size: 0.62rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 9999px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
 /* --------------------------------------------------------------------------
    Extensión Líquida Compacta Estilo Wren (Sin footer, poco espacio, conciso)
    -------------------------------------------------------------------------- */
@@ -451,6 +438,18 @@
 @media (min-width: 1024px) {
   .ctv-liquid-actions {
     display: flex;
+  }
+}
+
+/* Entre 1024 y 1199px no cabe un tercer botón junto a la navegación; ahí
+   "Registrarse" queda en el menú móvil y en la página de login. */
+.ctv-liquid-actions__register {
+  display: none !important;
+}
+
+@media (min-width: 1200px) {
+  .ctv-liquid-actions__register {
+    display: inline-flex !important;
   }
 }
 
@@ -852,6 +851,25 @@
   .ctv-liquid-drawer {
     display: none;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Accesibilidad: foco visible con teclado (antes no había ninguno y el de las
+   cards del panel estaba anulado con outline: none)
+   -------------------------------------------------------------------------- */
+.ctv-liquid-surface :focus-visible,
+.ctv-liquid-drawer :focus-visible {
+  outline: 2px solid var(--lq-neon);
+  outline-offset: 2px;
+}
+
+.ctv-liquid-card__link:focus-visible {
+  outline: none;
+}
+
+.ctv-liquid-card__link:focus-visible .ctv-liquid-card {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 2px var(--lq-neon);
 }
 
 /* --------------------------------------------------------------------------

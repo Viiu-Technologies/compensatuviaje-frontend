@@ -99,6 +99,32 @@ const coBenefitChips = (raw: unknown): string[] => {
   return [];
 };
 
+// impact_unit llega como texto libre desde el admin (p. ej. "tree"): se
+// traducen las unidades conocidas, con singular y plural.
+const UNIT_LABELS: Record<string, [string, string]> = {
+  tree: ['árbol', 'árboles'],
+  trees: ['árbol', 'árboles'],
+  arbol: ['árbol', 'árboles'],
+  árbol: ['árbol', 'árboles'],
+  árboles: ['árbol', 'árboles'],
+  panel: ['panel', 'paneles'],
+  panels: ['panel', 'paneles'],
+  paneles: ['panel', 'paneles'],
+  hectare: ['ha', 'ha'],
+  hectares: ['ha', 'ha'],
+  ha: ['ha', 'ha'],
+  m2: ['m²', 'm²'],
+  m3: ['m³', 'm³'],
+  ton: ['t', 't'],
+  tons: ['t', 't'],
+  t: ['t', 't'],
+};
+
+const formatUnits = (n: number, unit: string | null): string => {
+  const [one, many] = UNIT_LABELS[(unit ?? '').trim().toLowerCase()] ?? [unit || 'unidad', unit || 'unidades'];
+  return `${n.toLocaleString('es-CL')} ${n === 1 ? one : many}`;
+};
+
 const toProjectData = (p: B2CProject): ProjectData => ({
   id: p.id,
   title: p.name,
@@ -110,7 +136,7 @@ const toProjectData = (p: B2CProject): ProjectData => ({
   metricLabel: p.isSoldOut ? 'Disponibilidad' : 'Disponible este mes',
   metricValue: p.isSoldOut
     ? 'Agotado este mes'
-    : `${p.availableUnits.toLocaleString('es-CL')} ${p.impact_unit || 'uds'}`,
+    : formatUnits(p.availableUnits, p.impact_unit),
   description: p.description ?? '',
   imageUrl: p.photos?.[0]?.thumbnailUrl ?? p.photos?.[0]?.url ?? null,
   href: `/b2c/calculator?projectId=${encodeURIComponent(p.id)}`,
@@ -125,6 +151,112 @@ const ProjectImage: React.FC<{ src: string | null; alt: string; className: strin
       <FaTree />
     </div>
   );
+
+type CardProps = { project: ProjectData; isReference: boolean };
+
+const FeaturedCard: React.FC<CardProps> = ({ project, isReference }) => (
+  <article className="pb-card pb-card--featured">
+    <div className="pb-card-media">
+      <ProjectImage src={project.imageUrl} alt={project.title} className="pb-card-img" />
+      <div className="pb-card-overlay" />
+      <div className="pb-card-badges">
+        <span className={`pb-badge ${isReference ? 'pb-badge--reference' : 'pb-badge--standard'}`}>
+          {!isReference && <HiShieldCheck aria-hidden="true" />}
+          {project.badge}
+        </span>
+      </div>
+    </div>
+
+    <div className="pb-card-body">
+      <div className="pb-meta-top">
+        {project.location && (
+          <span className="pb-location">
+            <HiLocationMarker aria-hidden="true" />
+            {project.location}
+          </span>
+        )}
+        <span className="pb-category">{project.category}</span>
+      </div>
+
+      <h3 className="pb-card-title">{project.title}</h3>
+      <p className="pb-card-desc">{project.description}</p>
+
+      {/* Tags ODS / co-beneficios */}
+      {project.sdgs.length > 0 && (
+        <div className="pb-sdgs">
+          {project.sdgs.map((sdg) => (
+            <span key={sdg} className="pb-sdg-tag">
+              <FaCheck aria-hidden="true" />
+              {sdg}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Métricas y Acción */}
+      <div className="pb-card-footer">
+        <div className="pb-metric-block">
+          <span className="pb-metric-label">{project.metricLabel}</span>
+          <span className="pb-metric-value">{project.metricValue}</span>
+        </div>
+
+        <div className="pb-price-block">
+          <span className="pb-price-label">Precio por tonelada</span>
+          <span className="pb-price-value">{project.priceLabel}</span>
+        </div>
+
+        <Link to={project.href} className="pb-action-btn">
+          <FaTree aria-hidden="true" />
+          <span>{project.ctaLabel}</span>
+          <HiArrowRight aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
+  </article>
+);
+
+const SideCard: React.FC<CardProps> = ({ project, isReference }) => (
+  <article className="pb-card pb-card--side">
+    <div className="pb-side-media">
+      <ProjectImage src={project.imageUrl} alt={project.title} className="pb-side-img" />
+      <div className="pb-side-badges">
+        <span className={`pb-badge ${isReference ? 'pb-badge--reference' : 'pb-badge--standard'}`}>
+          {!isReference && <HiShieldCheck aria-hidden="true" />}
+          {project.badge}
+        </span>
+      </div>
+    </div>
+
+    <div className="pb-side-content">
+      {project.location && (
+        <div className="pb-meta-top">
+          <span className="pb-location">
+            <HiLocationMarker aria-hidden="true" />
+            {project.location}
+          </span>
+        </div>
+      )}
+
+      <h3 className="pb-side-title">{project.title}</h3>
+      <p className="pb-side-desc">{project.description}</p>
+
+      <div className="pb-side-footer">
+        <div className="pb-side-metric">
+          <span className="pb-metric-label">{project.metricLabel}</span>
+          <span className="pb-metric-val-sm">{project.metricValue}</span>
+        </div>
+
+        <div className="pb-side-price">
+          <span className="pb-side-price-tag">{project.priceLabel}</span>
+          <Link to={project.href} className="pb-side-link">
+            <span>{isReference ? 'Calcular' : 'Elegir'}</span>
+            <HiArrowRight aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  </article>
+);
 
 export const ProjectsBento: React.FC = () => {
   // null = cargando
@@ -155,6 +287,7 @@ export const ProjectsBento: React.FC = () => {
 
   const featured = projects?.[0];
   const sideProjects = projects?.slice(1) ?? [];
+  const count = projects?.length ?? 0;
 
   return (
     <section className="pb-section" id="proyectos" aria-label="Portafolio de proyectos de compensación">
@@ -191,114 +324,26 @@ export const ProjectsBento: React.FC = () => {
             </div>
           </div>
         ) : (
-        /* Bento Grid Asimétrico */
-        <div className="pb-grid">
-          {/* Card Destacada (Slot Principal 60%) */}
-          <article className="pb-card pb-card--featured">
-            <div className="pb-card-media">
-              <ProjectImage src={featured.imageUrl} alt={featured.title} className="pb-card-img" />
-              <div className="pb-card-overlay" />
-              <div className="pb-card-badges">
-                <span className={`pb-badge ${isReference ? 'pb-badge--reference' : 'pb-badge--standard'}`}>
-                  {!isReference && <HiShieldCheck aria-hidden="true" />}
-                  {featured.badge}
-                </span>
-              </div>
+        /* Layout según la cantidad de proyectos: el bento (1 destacado + 2
+           laterales) solo con 3. Con 2, una tarjeta lateral sola se estiraba
+           hasta la altura de la destacada y quedaba un hueco; ahora van dos
+           tarjetas iguales. Con 1, una sola tarjeta centrada. */
+        count >= 3 ? (
+          <div className="pb-grid">
+            <FeaturedCard project={featured} isReference={isReference} />
+            <div className="pb-side-column">
+              {sideProjects.map((proj) => (
+                <SideCard key={proj.id} project={proj} isReference={isReference} />
+              ))}
             </div>
-
-            <div className="pb-card-body">
-              <div className="pb-meta-top">
-                {featured.location && (
-                  <span className="pb-location">
-                    <HiLocationMarker aria-hidden="true" />
-                    {featured.location}
-                  </span>
-                )}
-                <span className="pb-category">{featured.category}</span>
-              </div>
-
-              <h3 className="pb-card-title">{featured.title}</h3>
-              <p className="pb-card-desc">{featured.description}</p>
-
-              {/* Tags ODS / co-beneficios */}
-              {featured.sdgs.length > 0 && (
-                <div className="pb-sdgs">
-                  {featured.sdgs.map((sdg) => (
-                    <span key={sdg} className="pb-sdg-tag">
-                      <FaCheck aria-hidden="true" />
-                      {sdg}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Métricas y Acción */}
-              <div className="pb-card-footer">
-                <div className="pb-metric-block">
-                  <span className="pb-metric-label">{featured.metricLabel}</span>
-                  <span className="pb-metric-value">{featured.metricValue}</span>
-                </div>
-
-                <div className="pb-price-block">
-                  <span className="pb-price-label">Precio por tonelada</span>
-                  <span className="pb-price-value">{featured.priceLabel}</span>
-                </div>
-
-                <Link to={featured.href} className="pb-action-btn">
-                  <FaTree aria-hidden="true" />
-                  <span>{featured.ctaLabel}</span>
-                  <HiArrowRight aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          </article>
-
-          {/* Columna Secundaria (2 Cards de Apoyo 40%) */}
-          <div className="pb-side-column">
-            {sideProjects.map((proj) => (
-              <article key={proj.id} className="pb-card pb-card--side">
-                <div className="pb-side-media">
-                  <ProjectImage src={proj.imageUrl} alt={proj.title} className="pb-side-img" />
-                  <div className="pb-side-badges">
-                    <span className={`pb-badge ${isReference ? 'pb-badge--reference' : 'pb-badge--standard'}`}>
-                      {!isReference && <HiShieldCheck aria-hidden="true" />}
-                      {proj.badge}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pb-side-content">
-                  {proj.location && (
-                    <div className="pb-meta-top">
-                      <span className="pb-location">
-                        <HiLocationMarker aria-hidden="true" />
-                        {proj.location}
-                      </span>
-                    </div>
-                  )}
-
-                  <h3 className="pb-side-title">{proj.title}</h3>
-                  <p className="pb-side-desc">{proj.description}</p>
-
-                  <div className="pb-side-footer">
-                    <div className="pb-side-metric">
-                      <span className="pb-metric-label">{proj.metricLabel}</span>
-                      <span className="pb-metric-val-sm">{proj.metricValue}</span>
-                    </div>
-
-                    <div className="pb-side-price">
-                      <span className="pb-side-price-tag">{proj.priceLabel}</span>
-                      <Link to={proj.href} className="pb-side-link">
-                        <span>{isReference ? 'Calcular' : 'Elegir'}</span>
-                        <HiArrowRight aria-hidden="true" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </article>
+          </div>
+        ) : (
+          <div className={`pb-grid ${count === 2 ? 'pb-grid--pair' : 'pb-grid--solo'}`}>
+            {projects?.map((proj) => (
+              <FeaturedCard key={proj.id} project={proj} isReference={isReference} />
             ))}
           </div>
-        </div>
+        )
         )}
       </div>
     </section>
