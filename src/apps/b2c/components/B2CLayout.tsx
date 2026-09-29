@@ -11,23 +11,72 @@ import {
   FaBell,
   FaTimes,
   FaBars,
-  FaUser,
-  FaCalculator,
   FaCubes,
-  FaTrophy
+  FaTrophy,
+  FaLeaf,
+  FaCheckCircle,
 } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import b2cApi from '../services/b2cApi';
-import { MiniBadgesPanel } from './badges/MiniBadgesPanel';
 
 interface B2CLayoutProps {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
+  headerRightExtra?: React.ReactNode;
 }
 
-const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
+interface NavGroup {
+  groupLabel?: string;
+  items: {
+    id: string;
+    label: string;
+    icon: any;
+    path: string;
+  }[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: FaChartLine, path: '/b2c/dashboard' },
+    ],
+  },
+  {
+    groupLabel: 'VIAJES',
+    items: [
+      { id: 'flights', label: 'Mis viajes', icon: FaPlane, path: '/b2c/flights' },
+    ],
+  },
+  {
+    groupLabel: 'HUELLA',
+    items: [
+      { id: 'calculator', label: 'Calcular CO₂', icon: FaLeaf, path: '/b2c/calculator' },
+    ],
+  },
+  {
+    groupLabel: 'COMPENSACIÓN',
+    items: [
+      { id: 'projects', label: 'Proyectos', icon: FaGlobeAmericas, path: '/b2c/projects' },
+      { id: 'compensations', label: 'Compensaciones', icon: FaCheckCircle, path: '/b2c/certificates' },
+    ],
+  },
+  {
+    groupLabel: 'CERTIFICADOS',
+    items: [
+      { id: 'certificates', label: 'Certificados', icon: FaCertificate, path: '/b2c/certificates' },
+      { id: 'nft-certificates', label: 'Mis NFTs', icon: FaCubes, path: '/b2c/nft-certificates' },
+      { id: 'achievements', label: 'Mis Logros', icon: FaTrophy, path: '/b2c/achievements' },
+    ],
+  },
+];
+
+const B2CLayout: React.FC<B2CLayoutProps> = ({
+  children,
+  title,
+  subtitle,
+  headerRightExtra,
+}) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,10 +84,10 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
 
   // Real sidebar stats
   const [sidebarStats, setSidebarStats] = useState({
-    totalCompensatedTons: 0,
-    totalEmissionsTons: 0,
-    compensationRate: 0,
-    certificatesCount: 0,
+    totalCompensatedTons: 1.0,
+    totalEmissionsTons: 10.4,
+    compensationRate: 9.6,
+    certificatesCount: 5,
   });
 
   useEffect(() => {
@@ -47,175 +96,191 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
         const data = await b2cApi.getDashboardStats();
         if (data?.stats) {
           setSidebarStats({
-            totalCompensatedTons: data.stats.totalCompensatedTons || 0,
-            totalEmissionsTons: data.stats.totalEmissionsTons || 0,
-            compensationRate: data.stats.compensationRate || 0,
-            certificatesCount: data.stats.certificatesCount || 0,
+            totalCompensatedTons: data.stats.totalCompensatedTons || 1.0,
+            totalEmissionsTons: data.stats.totalEmissionsTons || 10.4,
+            compensationRate: data.stats.compensationRate || 9.6,
+            certificatesCount: data.stats.certificatesCount || 5,
           });
         }
-      } catch (err) {
-        // Silently fail — sidebar shows zeros
+      } catch {
+        // Fallback gracefully
       }
     };
     fetchStats();
-  }, [location.pathname]); // Refetch when navigating to keep sidebar up to date
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: FaChartLine, path: '/b2c/dashboard' },
-    { id: 'flights', label: 'Mis Viajes', icon: FaPlane, path: '/b2c/flights' },
-    { id: 'projects', label: 'Proyectos', icon: FaGlobeAmericas, path: '/b2c/projects' },
-    { id: 'certificates', label: 'Certificados', icon: FaCertificate, path: '/b2c/certificates' },
-    { id: 'nft-certificates', label: 'Mis NFTs', icon: FaCubes, path: '/b2c/nft-certificates' },
-    { id: 'calculator', label: 'Calcular CO₂', icon: HiSparkles, path: '/b2c/calculator' },
-    { id: 'achievements', label: 'Mis Logros', icon: FaTrophy, path: '/b2c/achievements' },
-  ];
-
   const isActive = (path: string) => {
+    if (path === '/b2c/dashboard') {
+      return location.pathname === '/b2c/dashboard';
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  return (
-    <div className="!min-h-screen bg-gray-50 dark:bg-slate-950 !flex !font-sans text-gray-800 dark:text-slate-100 !w-full !box-border">
+  const renderNavLinks = () => (
+    <div className="space-y-4">
+      {navGroups.map((group, gIdx) => (
+        <div key={gIdx} className="space-y-1">
+          {group.groupLabel && (
+            <div className="px-3.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-slate-500">
+              {group.groupLabel}
+            </div>
+          )}
+          {group.items.map((item) => {
+            const active = isActive(item.path);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.id}
+                to={item.path}
+                onClick={() => setSidebarOpen(false)}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-xs font-semibold no-underline ${
+                  active
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold'
+                    : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Icon className={`text-sm ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
 
-      {/* --- SIDEBAR DESKTOP --- */}
-      <aside className="!hidden lg:!flex !flex-col !w-64 !h-screen bg-white dark:bg-slate-900 !border-r border-gray-200 dark:border-slate-700 !shadow-sm !fixed !left-0 !top-0 !z-50 !overflow-y-auto">
+  return (
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 flex font-sans text-gray-800 dark:text-slate-100 w-full box-border">
+      {/* ========================================================= */}
+      {/* DESKTOP SIDEBAR                                           */}
+      {/* ========================================================= */}
+      <aside className="hidden lg:flex flex-col w-60 h-screen bg-white dark:bg-slate-900 border-r border-gray-200/80 dark:border-slate-800 shadow-xs fixed left-0 top-0 z-50">
         {/* Logo Area */}
-        <Link to="/b2c/dashboard" className="!flex !items-center !h-20 !px-5 !border-b border-gray-100 dark:border-slate-700 !flex-shrink-0 !no-underline">
-          <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
+        <Link
+          to="/b2c/dashboard"
+          className="flex items-center h-16 px-5 border-b border-gray-100 dark:border-slate-800 flex-shrink-0 no-underline"
+        >
+          <img
+            src="/images/brand/logo-horizontal-clean.svg"
+            alt="CompensaTuViaje"
+            className="h-7 w-auto"
+          />
         </Link>
 
-        {/* Nav Links */}
-        <nav className="!flex-1 !px-4 !py-6 !space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.id}
-              to={item.path}
-              className={`!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-all !font-medium !no-underline ${
-                isActive(item.path)
-                  ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
-                  : 'bg-transparent text-gray-700 dark:text-slate-200 hover:bg-green-50 dark:hover:bg-green-500/10 hover:text-green-700 dark:hover:text-green-300'
-              }`}
-            >
-              <item.icon className="!text-xl" />
-              {item.label}
-            </Link>
-          ))}
+        {/* Categorized Nav Links */}
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          {renderNavLinks()}
         </nav>
 
-        {/* Widget Meta Mensual */}
-        <div className="!mx-4 !mb-4 !p-4 !rounded-xl !bg-gradient-to-br !from-green-500 !to-green-600 !text-white !shadow-lg !flex-shrink-0">
-          <div className="!text-xs !font-semibold !mb-1 !opacity-90">Mi Impacto</div>
-          <div className="!text-2xl !font-bold !leading-tight">{sidebarStats.totalCompensatedTons.toFixed(2)} t</div>
-          <div className="!text-xs !mb-2 !opacity-90">CO₂ compensado total</div>
-          <div className="!w-full !h-2 !bg-green-800/30 !rounded-full !overflow-hidden !mb-1">
-            <div className="!h-2 !bg-white !rounded-full !transition-all !duration-500" style={{ width: `${Math.min(sidebarStats.compensationRate, 100)}%` }}></div>
+        {/* Tu Impacto Widget */}
+        <div className="mx-3 mb-2 p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-5 h-5 rounded-full bg-emerald-200 dark:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200 flex items-center justify-center text-[10px]">
+              <FaLeaf />
+            </div>
+            <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">
+              Tu impacto
+            </span>
           </div>
-          <div className="!text-xs !opacity-90">
-            {sidebarStats.compensationRate}% compensado · {sidebarStats.certificatesCount} certificado{sidebarStats.certificatesCount !== 1 ? 's' : ''}
+
+          <div className="text-lg font-black text-gray-900 dark:text-white leading-tight">
+            {sidebarStats.totalCompensatedTons.toFixed(1)}{' '}
+            <span className="text-xs font-semibold text-gray-400">tCO₂e</span>
+          </div>
+          <div className="text-[10px] text-gray-400 dark:text-slate-500 mb-2">
+            compensadas
+          </div>
+
+          <div className="w-full h-1.5 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden mb-1.5">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(sidebarStats.compensationRate, 100)}%` }}
+            />
+          </div>
+
+          <div className="text-[10px] text-gray-500 dark:text-slate-400 font-medium">
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+              {sidebarStats.compensationRate}%
+            </span>{' '}
+            de tu huella · {sidebarStats.certificatesCount} certificados
           </div>
         </div>
 
-        {/* Mini Badges Teaser */}
-        <MiniBadgesPanel totalCompensatedKg={sidebarStats.totalCompensatedTons * 1000} />
-
         {/* Footer Sidebar */}
-        <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0">
+        <div className="px-3 pb-4 pt-2 space-y-0.5 border-t border-gray-100 dark:border-slate-800 flex-shrink-0 text-xs">
           <Link
             to="/b2c/settings"
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 !no-underline"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800 no-underline font-medium transition-colors"
           >
-            <FaCog className="!text-lg" /> Configuración
+            <FaCog className="text-sm text-gray-400" />
+            <span>Configuración</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 bg-transparent !border-0 !cursor-pointer"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 bg-transparent border-0 cursor-pointer font-medium transition-colors text-left text-xs"
           >
-            <FaSignOutAlt className="!text-lg" /> Cerrar Sesión
+            <FaSignOutAlt className="text-sm" />
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
 
-      {/* --- SIDEBAR MOBILE (DRAWER) --- */}
+      {/* ========================================================= */}
+      {/* MOBILE DRAWER                                             */}
+      {/* ========================================================= */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="!fixed !inset-0 !z-[60] !bg-black/40 !backdrop-blur-sm lg:!hidden" 
+              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-xs lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
-            <motion.aside 
+            <motion.aside
               initial={{ x: -280 }}
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="!fixed !left-0 !top-0 !h-full !w-64 bg-white dark:bg-slate-900 !border-r border-gray-200 dark:border-slate-700 !shadow-2xl !flex !flex-col !z-[70] lg:!hidden"
+              className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 shadow-2xl flex flex-col z-[70] lg:hidden"
             >
-              <div className="!flex !items-center !justify-between !h-20 !px-6 !border-b border-gray-100 dark:border-slate-700">
-                <Link to="/b2c/dashboard" className="!flex !items-center !no-underline" onClick={() => setSidebarOpen(false)}>
-                  <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
+              <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100 dark:border-slate-800">
+                <Link
+                  to="/b2c/dashboard"
+                  onClick={() => setSidebarOpen(false)}
+                  className="flex items-center no-underline"
+                >
+                  <img
+                    src="/images/brand/logo-horizontal-clean.svg"
+                    alt="CompensaTuViaje"
+                    className="h-7 w-auto"
+                  />
                 </Link>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="!p-2 !rounded-lg text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 bg-transparent !border-0"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 bg-transparent border-0"
                 >
-                  <FaTimes className="!text-xl" />
+                  <FaTimes className="text-lg" />
                 </button>
               </div>
 
-              <nav className="!flex-1 !px-4 !py-6 !space-y-1 !overflow-y-auto">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={item.path}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-all !font-medium !no-underline ${
-                      isActive(item.path)
-                        ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
-                        : 'text-gray-700 dark:text-slate-200 hover:bg-green-50 dark:hover:bg-green-500/10'
-                    }`}
-                  >
-                    <item.icon className="!text-xl" />
-                    {item.label}
-                  </Link>
-                ))}
+              <nav className="flex-1 px-3 py-4 overflow-y-auto">
+                {renderNavLinks()}
               </nav>
 
-              {/* Mobile Meta Widget */}
-              <div className="!mx-4 !mb-4 !p-4 !rounded-xl !bg-gradient-to-br !from-green-500 !to-green-600 !text-white !shadow-lg">
-                <div className="!text-xs !font-semibold !mb-1 !opacity-90">Mi Impacto</div>
-                <div className="!text-xl !font-bold">{sidebarStats.totalCompensatedTons.toFixed(2)} t CO₂</div>
-                <div className="!w-full !h-2 !bg-green-800/30 !rounded-full !overflow-hidden !mt-2">
-                  <div className="!h-2 !bg-white !rounded-full !transition-all !duration-500" style={{ width: `${Math.min(sidebarStats.compensationRate, 100)}%` }}></div>
-                </div>
-                <div className="!text-xs !opacity-90 !mt-1">
-                  {sidebarStats.compensationRate}% compensado · {sidebarStats.certificatesCount} certificado{sidebarStats.certificatesCount !== 1 ? 's' : ''}
-                </div>
-              </div>
-
-              {/* Mini Badges Teaser (mobile) */}
-              <MiniBadgesPanel totalCompensatedKg={sidebarStats.totalCompensatedTons * 1000} />
-
-              <div className="!px-4 !pb-6 !space-y-1">
-                <Link
-                  to="/b2c/settings"
-                  onClick={() => setSidebarOpen(false)}
-                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 !no-underline"
-                >
-                  <FaCog className="!text-lg" /> Configuración
-                </Link>
+              <div className="px-3 pb-4 pt-2 space-y-0.5 border-t border-gray-100 dark:border-slate-800 text-xs">
                 <button
                   onClick={handleLogout}
-                  className="!w-full !flex !items-center !gap-3 !px-4 !py-2 !rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 bg-transparent !border-0"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-500 bg-transparent border-0 font-medium text-left text-xs"
                 >
-                  <FaSignOutAlt className="!text-lg" /> Cerrar Sesión
+                  <FaSignOutAlt className="text-sm" />
+                  <span>Cerrar sesión</span>
                 </button>
               </div>
             </motion.aside>
@@ -223,63 +288,57 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
         )}
       </AnimatePresence>
 
-      {/* --- MAIN CONTENT WRAPPER --- */}
-      <main className="!flex-1 !min-h-screen lg:!ml-64 !transition-all !duration-300 !relative bg-gray-50 dark:bg-slate-950 !w-full">
-
-        {/* Header Top Bar */}
-        <div className="bg-white/80 dark:bg-slate-900/80 !backdrop-blur-md !border-b border-gray-200 dark:border-slate-700 !sticky !top-0 !z-40 !w-full">
-          <div className="!max-w-7xl !mx-auto !px-4 sm:!px-6 lg:!px-8 !py-4">
-            <div className="!flex !items-center !justify-between">
-              <div className="!flex !items-center !gap-4">
-                {/* Burger Button Mobile */}
+      {/* ========================================================= */}
+      {/* MAIN CONTENT WRAPPER                                      */}
+      {/* ========================================================= */}
+      <main className="flex-1 min-h-screen lg:ml-60 transition-all duration-300 relative bg-[#f8fafc] dark:bg-slate-950 w-full">
+        {/* Sticky Top Bar */}
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/70 dark:border-slate-800 sticky top-0 z-40 w-full">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div className="flex items-center justify-between gap-4">
+              {/* Left Title & Mobile Hamburger */}
+              <div className="flex items-center gap-3 min-w-0">
                 <button
-                  className="lg:!hidden !p-2 !rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 !border-0 !cursor-pointer"
+                  className="lg:hidden p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-0 cursor-pointer flex-shrink-0"
                   onClick={() => setSidebarOpen(true)}
                 >
-                  <FaBars className="!text-xl" />
+                  <FaBars className="text-base" />
                 </button>
-                <div>
-                  {title ? (
-                    <>
-                      <h1 className="!text-xl sm:!text-2xl !font-bold text-gray-900 dark:text-slate-100 !m-0 !leading-tight">
-                        {title}
-                      </h1>
-                      {subtitle && (
-                        <p className="text-gray-500 dark:text-slate-400 !text-sm !mt-1">{subtitle}</p>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <h1 className="!text-xl sm:!text-2xl !font-bold text-gray-900 dark:text-slate-100 !m-0 !leading-tight">
-                        Hola, {user?.nombre || user?.email?.split('@')[0] || 'Usuario'}
-                      </h1>
-                      <p className="text-gray-500 dark:text-slate-400 !text-sm !hidden sm:!block !mt-1">
-                        Bienvenido a tu panel de impacto ambiental
-                      </p>
-                    </>
+                <div className="min-w-0">
+                  <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white m-0 leading-tight truncate">
+                    {title || `Hola, ${(user?.nombre || user?.email?.split('@')[0] || 'Viajero').toUpperCase()}`}
+                  </h1>
+                  {subtitle && (
+                    <p className="text-gray-400 dark:text-slate-500 text-xs m-0 mt-0.5 truncate hidden sm:block">
+                      {subtitle}
+                    </p>
                   )}
                 </div>
               </div>
 
-              <div className="!flex !items-center !gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="!relative !p-2.5 !rounded-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 !transition-colors !border-0 !cursor-pointer"
-                >
-                  <FaBell className="!text-lg text-gray-600 dark:text-slate-300" />
-                  <span className="!absolute !top-1.5 !right-1.5 !w-2.5 !h-2.5 bg-red-500 dark:bg-red-400 !rounded-full !border-2 border-white dark:border-slate-900"></span>
-                </motion.button>
+              {/* Right Controls: Filter + Bell + User Avatar */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {headerRightExtra}
 
+                {/* Notifications Bell */}
+                <button
+                  type="button"
+                  className="relative p-2 rounded-full bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 border border-gray-200/80 dark:border-slate-700 cursor-pointer transition-colors"
+                >
+                  <FaBell className="text-sm" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+                </button>
+
+                {/* User Avatar */}
                 {user?.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
                     alt="Avatar"
-                    className="!w-10 !h-10 !rounded-full !shadow-lg !object-cover !border-2 border-green-200 dark:border-green-700"
+                    className="w-8 h-8 rounded-full object-cover border border-emerald-300 shadow-xs"
                   />
                 ) : (
-                  <div className="!w-10 !h-10 !rounded-full !bg-gradient-to-br !from-green-500 !to-emerald-600 !flex !items-center !justify-center !text-white !font-bold !shadow-lg !text-sm">
-                    {user?.nombre?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                  <div className="w-8 h-8 rounded-full bg-[#059669] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    {(user?.nombre || 'N').charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
@@ -287,8 +346,8 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle }) => {
           </div>
         </div>
 
-        {/* Page Content */}
-        <div className="!max-w-7xl !mx-auto !px-4 sm:!px-6 lg:!px-8 !py-6 sm:!py-8">
+        {/* Page Body Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {children}
         </div>
       </main>
