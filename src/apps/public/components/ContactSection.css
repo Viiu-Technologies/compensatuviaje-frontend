@@ -20,7 +20,9 @@
 /* ── Grid Layout ─────────────────────────────────────── */
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  /* minmax(0, 1fr): con 1fr la columna crecía al ancho mínimo del contenido
+     (382px) y en móvil la página tenía scroll horizontal. */
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(2rem, 4.5vw, 4rem);
   align-items: start;
 }
