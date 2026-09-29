@@ -551,7 +551,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
           <div className="bg-gray-50 dark:bg-slate-800 !rounded-xl !p-4 !text-center !text-sm text-gray-600 dark:text-slate-300">
             <p>
               Este certificado es válido y verificable. Tu contribución apoya proyectos de
-              reforestación y energías renovables certificados internacionalmente.
+              reforestación y energías renovables evaluados por Veritas AI y revisión humana.
             </p>
             <p className="!mt-2 !text-xs text-gray-400 dark:text-slate-500">
               www.compensatuviaje.cl | contacto@compensatuviaje.cl

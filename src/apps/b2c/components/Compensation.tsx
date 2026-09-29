@@ -15,14 +15,14 @@ const Compensation = () => {
     },
     {
       icon: FaCertificate,
-      title: 'Certificación Verificada',
-      description: 'Todos nuestros proyectos están certificados internacionalmente',
+      title: 'Proyectos Evaluados',
+      description: 'Cada proyecto pasa por Veritas AI, nuestra certificación agéntica, y una revisión humana',
       color: 'secondary'
     },
     {
       icon: FaChartLine,
       title: 'Impacto Medible',
-      description: 'Visualiza el impacto real de tu compensación en tiempo real',
+      description: 'Cada compensación queda registrada con su certificado verificable en blockchain',
       color: 'accent'
     },
     {
@@ -43,13 +43,6 @@ const Compensation = () => {
       description: 'Generamos empleos y desarrollo en comunidades locales',
       color: 'secondary'
     }
-  ];
-
-  const stats = [
-    { value: '15,420', label: 'Toneladas CO₂ Compensadas', suffix: '+' },
-    { value: '350', label: 'Hectáreas Reforestadas', suffix: '+' },
-    { value: '8,234', label: 'Viajeros Conscientes', suffix: '+' },
-    { value: '98', label: 'Satisfacción', suffix: '%' }
   ];
 
   return (
@@ -81,23 +74,8 @@ const Compensation = () => {
           </div>
         </ScrollReveal>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
-          {stats.map((stat, index) => (
-            <ScrollReveal key={index} direction="up" delay={index * 0.1}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="card-glass p-6 text-center"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-gradient-primary mb-2">
-                  {stat.value}
-                  <span className="text-primary-500">{stat.suffix}</span>
-                </div>
-                <p className="text-sm text-neutral-600 font-medium">{stat.label}</p>
-              </motion.div>
-            </ScrollReveal>
-          ))}
-        </div>
+        {/* Se quitó la grilla de estadísticas (15,420 t, 350 ha, 8,234
+            viajeros, 98 %): eran cifras fijas en el código, no datos reales. */}
 
         {/* Benefits Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

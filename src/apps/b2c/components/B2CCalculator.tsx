@@ -691,7 +691,7 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
                       </div>
                       <p className="!text-emerald-100 !text-sm !leading-relaxed !m-0">
                         Tu compensación financia proyectos de reforestación, energías renovables 
-                        y conservación certificados internacionalmente.
+                        y conservación evaluados por Veritas AI y revisión humana.
                       </p>
                     </div>
                   </motion.div>
