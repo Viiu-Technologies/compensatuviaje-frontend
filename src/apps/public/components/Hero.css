@@ -171,36 +171,6 @@
   font-weight: 400;
 }
 
-/* Badges de credenciales en cabecera */
-.hero-header-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ctv-space-3);
-  align-items: center;
-  margin-top: var(--ctv-space-1);
-}
-
-.hero-badge-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ctv-space-2);
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--ctv-brand-deep);
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(7, 61, 61, 0.12);
-  padding: 0.38rem 0.85rem;
-  border-radius: var(--ctv-radius-pill);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(7, 61, 61, 0.04);
-}
-
-.hero-badge-pill__icon {
-  font-size: 0.95rem;
-  color: var(--ctv-brand);
-}
-
 /* Columna del Planeta 3D */
 .hero__planet-col {
   display: flex;
@@ -215,8 +185,6 @@
   width: 100%;
   max-width: 1120px;
   margin: 1rem auto 1.5rem;
-  will-change: transform;
-  transform-style: preserve-3d;
 }
 
 /* ── Barra de Confianza y Auditoría ─────────────────────────── */
@@ -227,7 +195,7 @@
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
   gap: var(--ctv-space-4);
   padding: 0.85rem 1.4rem;
@@ -237,78 +205,6 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 2px 10px rgba(7, 61, 61, 0.04);
-}
-
-.hero-stat-compact {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-wrap: wrap;
-}
-
-.hero-stat-compact__live {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ctv-accent-contrast);
-  background: var(--ctv-brand-soft);
-  padding: 0.28rem 0.65rem;
-  border-radius: var(--ctv-radius-pill);
-  border: 1px solid rgba(8, 174, 6, 0.2);
-}
-
-.hero-stat__pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: var(--ctv-radius-full);
-  background: var(--ctv-brand);
-  position: relative;
-}
-
-.hero-stat__pulse::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: var(--ctv-radius-full);
-  border: 1.5px solid rgba(8, 174, 6, 0.45);
-  animation: ctvPulse 2s ease-out infinite;
-}
-
-@keyframes ctvPulse {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-.hero-stat-compact__val {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-.hero-stat__number {
-  font-family: var(--ctv-font-display);
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--ctv-brand-deep);
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.hero-stat__suffix {
-  font-size: 0.85rem;
-  color: var(--ctv-ink-soft);
-  font-weight: 500;
 }
 
 /* Enlaces Secundarios de Navegación */
@@ -339,46 +235,6 @@
   border-color: var(--ctv-accent-contrast);
   color: var(--ctv-brand-deep);
   transform: translateX(2px);
-}
-
-/* ── Separador ──────────────────────────────────────────────── */
-.hero-rule {
-  height: 1px;
-  background: linear-gradient(90deg, var(--ctv-brand) 0%, var(--ctv-rule) 30%, var(--ctv-rule) 100%);
-  margin: clamp(2.5rem, 6vw, 4rem) 0 1.5rem;
-}
-
-/* ── Meta inferior ──────────────────────────────────────────── */
-.hero-meta {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ctv-space-5);
-}
-
-@media (min-width: 768px) {
-  .hero-meta {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.hero-meta__item {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ctv-space-3);
-  font-size: 0.85rem;
-  color: var(--ctv-ink-soft);
-}
-
-.hero-meta__num {
-  font-family: var(--ctv-font-display);
-  font-size: 1.1rem;
-  color: var(--ctv-brand);
-  font-style: italic;
-  letter-spacing: 0.02em;
-}
-
-.hero-meta__txt {
-  letter-spacing: 0.02em;
 }
 
 

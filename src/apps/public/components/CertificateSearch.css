@@ -7,7 +7,7 @@
   background: var(--ctv-canvas-2);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  padding: clamp(4rem, 10vw, 8rem) 0;
+  padding: var(--ctv-section-y) 0;
   position: relative;
   overflow: hidden;
 }
@@ -133,39 +133,6 @@
   font-size: 0.85rem;
 }
 
-.cs-demo-chips {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  margin: -1.75rem 0 2rem;
-}
-
-.cs-demo-label {
-  font-size: 0.75rem;
-  color: var(--ctv-ink-mute);
-  font-weight: 500;
-}
-
-.cs-demo-chip {
-  background: rgba(8, 174, 6, 0.08);
-  border: 1px dashed rgba(8, 174, 6, 0.35);
-  color: var(--ctv-brand-deep);
-  font-size: 0.75rem;
-  font-weight: 600;
-  font-family: monospace;
-  padding: 0.3rem 0.75rem;
-  border-radius: var(--ctv-radius-sm);
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s, border-color 0.2s;
-}
-
-.cs-demo-chip:hover {
-  background: rgba(8, 174, 6, 0.18);
-  border-color: var(--ctv-brand);
-  transform: translateY(-1px);
-}
-
 /* ── Header ─────────────────────────────────────────── */
 .cs-header {
   margin: 0 0 clamp(2rem, 4vw, 3rem);
@@ -192,18 +159,13 @@
 .cs-title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: clamp(2rem, 5.5vw, 4rem);
-  line-height: 1;
-  letter-spacing: -0.015em;
+  font-size: var(--ctv-text-h1);
+  line-height: 1.08;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
   margin: 0 0 1.25rem;
-  max-width: 16ch;
 }
 
-.cs-title--accent .hero-line__inner em {
-  font-style: italic;
-  color: var(--ctv-brand);
-}
 
 .cs-sub {
   font-size: clamp(1rem, 1.2vw, 1.1rem);

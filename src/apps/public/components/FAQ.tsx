@@ -9,7 +9,7 @@ const FAQS_B2C = [
   {
     id: 1,
     q: '¿Cómo calculo mi huella de carbono?',
-    a: 'Selecciona el medio de transporte, la distancia y el número de pasajeros. Obtienes resultados instantáneos en kg de CO₂ con factores oficiales del DEFRA 2024.',
+    a: 'Ingresa tu vuelo: origen, destino, clase de cabina y número de pasajeros. Obtienes el resultado al instante en kg de CO₂e, calculado con los factores oficiales DEFRA 2024.',
   },
   {
     id: 2,
@@ -24,17 +24,17 @@ const FAQS_B2C = [
   {
     id: 4,
     q: '¿Qué proyectos apoyan?',
-    a: 'Reforestación nativa, energía solar y eólica, conservación de bosques y economía circular. Cada proyecto pasa por nuestra verificación documental con agentes de IA y revisión humana antes de publicarse.',
+    a: 'Reforestación nativa, energía solar y eólica, conservación de bosques y economía circular. Cada proyecto pasa por Veritas AI, nuestra certificación agéntica, y por una revisión humana antes de publicarse.',
   },
   {
     id: 5,
     q: '¿Mis datos están seguros?',
-    a: 'Sí. Encriptación de extremo a extremo, GDPR y Ley de Protección de Datos Personales de Chile. No compartimos información con terceros.',
+    a: 'Sí. Tus datos viajan cifrados (HTTPS) y los tratamos según la ley chilena de protección de datos personales. Solo los compartimos con quienes necesitamos para operar, como el procesador de pagos. El detalle está en nuestra Política de Privacidad.',
   },
   {
     id: 6,
     q: '¿Cuánto cuesta compensar un viaje?',
-    a: 'Aproximadamente USD 25 por tonelada de CO₂. Un vuelo Santiago a Buenos Aires ida y vuelta ronda USD 12,5. Calcula tu costo exacto en la calculadora.',
+    a: 'Depende de tu vuelo y del proyecto que elijas: cada proyecto tiene su propio precio por tonelada. La calculadora te muestra el monto exacto antes de pagar.',
   },
   {
     id: 7,
@@ -62,7 +62,7 @@ const FAQS_B2B = [
   {
     id: 104,
     q: '¿Los proyectos tienen beneficios tributarios?',
-    a: 'Dependiendo de la jurisdicción y la normativa local (como la Ley Marco de Cambio Climático en Chile), la compensación puede ayudar al cumplimiento normativo.',
+    a: 'No ofrecemos beneficios tributarios directos. Los certificados sirven como respaldo de tus aportes en reportes de sostenibilidad; si un aporte tiene efectos tributarios depende de tu caso, así que conviene revisarlo con tu asesor.',
   },
 ];
 
@@ -79,8 +79,8 @@ const FAQS_PARTNER = [
   },
   {
     id: 203,
-    q: '¿Cómo funciona la comercialización de créditos de carbono?',
-    a: 'Integramos la venta de tus créditos directo a nuestra plataforma B2B/B2C, automatizando la trazabilidad blockchain y entregando las liquidaciones correspondientes al desarrollador del proyecto.',
+    q: '¿Cómo reciben aportes los proyectos?',
+    a: 'Tu proyecto se publica en nuestra plataforma para personas y empresas. Cada compensación queda registrada en blockchain y te liquidamos lo recaudado según el acuerdo firmado. No emitimos ni vendemos créditos de carbono de registros internacionales.',
   },
   {
     id: 204,
@@ -175,10 +175,7 @@ const FAQ = () => {
           </span>
 
           <h2 className="faq-title">
-            <span className="hero-line"><span className="hero-line__inner">Lo que más</span></span>
-            <span className="hero-line faq-title--accent">
-              <span className="hero-line__inner"><em>preguntan</em>,</span>
-            </span>
+            <span className="hero-line"><span className="hero-line__inner">Lo que más preguntan,</span></span>
             <span className="hero-line"><span className="hero-line__inner">respondido.</span></span>
           </h2>
         </header>

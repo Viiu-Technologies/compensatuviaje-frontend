@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HiArrowRight, HiShieldCheck, HiLocationMarker, HiExternalLink } from 'react-icons/hi';
-import { FaTree, FaSun, FaWater, FaCheck } from 'react-icons/fa';
+import { HiArrowRight, HiShieldCheck, HiLocationMarker } from 'react-icons/hi';
+import { FaTree, FaCheck } from 'react-icons/fa';
+import { getPublicProjects, type B2CProject } from '../../b2c/services/b2cApi';
+import { formatCLPPerTon } from '../../../utils/currency';
 import './ProjectsBento.css';
 
 export interface ProjectData {
@@ -9,129 +11,226 @@ export interface ProjectData {
   title: string;
   location: string;
   category: string;
-  standard: string;
-  registryId?: string;
+  badge: string;
   sdgs: string[];
-  pricePerTon: number;
+  priceLabel: string;
   metricLabel: string;
   metricValue: string;
   description: string;
-  imageUrl: string;
-  featured?: boolean;
+  imageUrl: string | null;
+  href: string;
+  ctaLabel: string;
 }
 
-const PROJECTS: ProjectData[] = [
+const TYPE_LABELS: Record<string, string> = {
+  reforestation: 'Reforestación',
+  conservation: 'Conservación',
+  clean_water: 'Agua limpia',
+  water_security: 'Seguridad hídrica',
+  circular_economy: 'Economía circular',
+  waste_management: 'Gestión de residuos',
+  energy_efficiency: 'Eficiencia energética',
+  social_housing: 'Vivienda social',
+  community_development: 'Desarrollo comunitario',
+  renewable_energy: 'Energía renovable',
+  biodiversity: 'Biodiversidad',
+};
+
+// Respaldo cuando la API no responde o aún no hay proyectos publicados. Son
+// ejemplos del tipo de proyecto que evaluamos, no proyectos cargados en la
+// plataforma: por eso no llevan sello de Veritas AI y su CTA lleva a la
+// calculadora en vez de a compensar en un proyecto que no existe.
+const REFERENCE_PROJECTS: ProjectData[] = [
   {
-    id: 'patagonia-reforest',
-    title: 'Reforestación de Ecosistemas Nativos en Aysén',
-    location: 'Patagonia, Chile',
-    category: 'Soluciones Basadas en la Naturaleza',
-    standard: 'Verificado · Veritas AI',
+    id: 'ref-patagonia',
+    title: 'Reforestación de ecosistemas nativos',
+    location: 'Aysén, Chile',
+    category: 'Soluciones basadas en la naturaleza',
+    badge: 'Proyecto de referencia',
     sdgs: ['ODS 13: Acción Climática', 'ODS 15: Vida Terrestre'],
-    pricePerTon: 25,
-    metricLabel: 'Hectáreas en restauración activa',
-    metricValue: '1.240 ha',
-    description: 'Restauración ecológica con especies nativas (Lenga, Coihue y Ñirre) en cuencas degradadas, protegiendo biodiversidad y capturando carbono de largo plazo con monitoreo satelital.',
-    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80',
-    featured: true,
+    priceLabel: 'Según proyecto',
+    metricLabel: 'Tipo de impacto',
+    metricValue: 'Captura de carbono',
+    description: 'Restauración ecológica con especies nativas (lenga, coihue y ñirre) en cuencas degradadas, protegiendo biodiversidad y capturando carbono de largo plazo.',
+    imageUrl: '/images/projects/ref-patagonia.webp',
+    href: '/calculadora',
+    ctaLabel: 'Calcular mi huella',
   },
   {
-    id: 'atacama-solar',
-    title: 'Parque Solar Fotovoltaico Atacama Clean Power',
+    id: 'ref-atacama',
+    title: 'Energía solar fotovoltaica',
     location: 'Desierto de Atacama, Chile',
-    category: 'Transición Energética',
-    standard: 'Verificado · Veritas AI',
-    sdgs: ['ODS 7: Energía Asequible', 'ODS 13: Acción Climática'],
-    pricePerTon: 22,
-    metricLabel: 'Emisiones desplazadas al año',
-    metricValue: '8.750 t CO₂e',
-    description: 'Generación solar de alta radiación que reemplaza generación térmica a carbón en la red eléctrica nacional, con certificación de impacto social en comunidades locales.',
-    imageUrl: '/images/atacama_solar_park.jpg',
+    category: 'Transición energética',
+    badge: 'Proyecto de referencia',
+    sdgs: [],
+    priceLabel: 'Según proyecto',
+    metricLabel: 'Tipo de impacto',
+    metricValue: 'Emisiones evitadas',
+    description: 'Generación solar de alta radiación que reemplaza generación térmica a carbón en la red eléctrica.',
+    imageUrl: '/images/projects/ref-atacama.webp',
+    href: '/calculadora',
+    ctaLabel: 'Calcular',
   },
   {
-    id: 'magallanes-peatlands',
-    title: 'Conservación de Turberas y Humedales Australes',
-    location: 'Región de Magallanes, Chile',
-    category: 'Reservorios de Carbono Azul y Turba',
-    standard: 'Verificado · Veritas AI',
-    sdgs: ['ODS 13: Acción Climática', 'ODS 14: Vida Submarina'],
-    pricePerTon: 28,
-    metricLabel: 'Stock de carbono protegido',
-    metricValue: '24.000 t CO₂',
-    description: 'Protección estricta contra drenaje y fuego de turberas milenarias, los ecosistemas terrestres con mayor densidad de carbono por metro cuadrado del planeta.',
-    imageUrl: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+    // Antes "Turberas de Magallanes" con una foto de una higuera tropical:
+    // la imagen no correspondía al proyecto.
+    id: 'ref-bosque-nativo',
+    title: 'Conservación de bosque nativo',
+    location: 'Sur de Chile',
+    category: 'Conservación',
+    badge: 'Proyecto de referencia',
+    sdgs: [],
+    priceLabel: 'Según proyecto',
+    metricLabel: 'Tipo de impacto',
+    metricValue: 'Carbono conservado',
+    description: 'Protección de bosque nativo frente a la tala y los incendios, manteniendo el carbono almacenado y el hábitat de especies endémicas.',
+    imageUrl: '/images/projects/ref-bosque-nativo.webp',
+    href: '/calculadora',
+    ctaLabel: 'Calcular',
   },
 ];
 
-export const ProjectsBento: React.FC = () => {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('patagonia-reforest');
+// coBenefits llega como string[] o como { beneficio: true } (ver B2CProjectsPage).
+const coBenefitChips = (raw: unknown): string[] => {
+  if (Array.isArray(raw)) return raw.map(String);
+  if (raw && typeof raw === 'object') {
+    return Object.entries(raw as Record<string, unknown>).filter(([, v]) => v).map(([k]) => k);
+  }
+  return [];
+};
 
-  const featured = PROJECTS[0];
-  const sideProjects = PROJECTS.slice(1);
+const toProjectData = (p: B2CProject): ProjectData => ({
+  id: p.id,
+  title: p.name,
+  location: [p.region, p.country].filter(Boolean).join(', '),
+  category: TYPE_LABELS[p.projectType] ?? p.projectType,
+  badge: p.veritasAI ? 'Verificado · Veritas AI' : 'Proyecto aprobado',
+  sdgs: coBenefitChips(p.coBenefits).slice(0, 2),
+  priceLabel: formatCLPPerTon(p.pricePerTonCLP),
+  metricLabel: p.isSoldOut ? 'Disponibilidad' : 'Disponible este mes',
+  metricValue: p.isSoldOut
+    ? 'Agotado este mes'
+    : `${p.availableUnits.toLocaleString('es-CL')} ${p.impact_unit || 'uds'}`,
+  description: p.description ?? '',
+  imageUrl: p.photos?.[0]?.thumbnailUrl ?? p.photos?.[0]?.url ?? null,
+  href: `/b2c/calculator?projectId=${encodeURIComponent(p.id)}`,
+  ctaLabel: 'Compensar en este proyecto',
+});
+
+const ProjectImage: React.FC<{ src: string | null; alt: string; className: string }> = ({ src, alt, className }) =>
+  src ? (
+    <img src={src} alt={alt} className={className} loading="lazy" />
+  ) : (
+    <div className={`${className} pb-media-placeholder`} aria-hidden="true">
+      <FaTree />
+    </div>
+  );
+
+export const ProjectsBento: React.FC = () => {
+  // null = cargando
+  const [projects, setProjects] = useState<ProjectData[] | null>(null);
+  const [isReference, setIsReference] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPublicProjects()
+      .then((list) => {
+        if (cancelled) return;
+        // Primero los que tienen stock disponible este mes.
+        const sorted = [...list].sort((a, b) => Number(a.isSoldOut) - Number(b.isSoldOut));
+        if (sorted.length > 0) {
+          setProjects(sorted.slice(0, 3).map(toProjectData));
+        } else {
+          setProjects(REFERENCE_PROJECTS);
+          setIsReference(true);
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setProjects(REFERENCE_PROJECTS);
+        setIsReference(true);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const featured = projects?.[0];
+  const sideProjects = projects?.slice(1) ?? [];
 
   return (
-    <section className="pb-section" id="proyectos" aria-label="Portafolio de proyectos de compensación certificados">
+    <section className="pb-section" id="proyectos" aria-label="Portafolio de proyectos de compensación">
       <div className="pb-container">
         {/* Encabezado Editorial de Sección */}
         <header className="pb-header">
           <div className="pb-eyebrow">
             <span className="pb-eyebrow-line" />
-            <span>Portafolio de impacto verificado</span>
+            <span>Portafolio de proyectos</span>
           </div>
 
           <div className="pb-title-row">
             <h2 className="pb-title">
-              Proyectos reales verificados,{' '}
-              <span className="pb-title-accent">con coordenadas y trazabilidad pública.</span>
+              Proyectos concretos, evaluados antes de recibir tu compensación.
             </h2>
             <p className="pb-lede">
-              Cada tonelada que compensas se asigna a un proyecto físico que pasó nuestra verificación documental: agentes de IA y revisión humana.
+              Cada proyecto pasa por Veritas AI, nuestra certificación agéntica que evalúa su
+              evidencia documental, y por una revisión humana antes de poder recibir compensaciones.
+              {isReference && (
+                <span className="pb-reference-note">
+                  Los proyectos de abajo son ejemplos de referencia del tipo de iniciativa que evaluamos.
+                </span>
+              )}
             </p>
           </div>
         </header>
 
-        {/* Bento Grid Asimétrico */}
+        {!featured ? (
+          <div className="pb-grid pb-grid--loading" aria-busy="true" aria-label="Cargando proyectos">
+            <div className="pb-skeleton pb-skeleton--featured" />
+            <div className="pb-side-column">
+              <div className="pb-skeleton" />
+              <div className="pb-skeleton" />
+            </div>
+          </div>
+        ) : (
+        /* Bento Grid Asimétrico */
         <div className="pb-grid">
           {/* Card Destacada (Slot Principal 60%) */}
           <article className="pb-card pb-card--featured">
             <div className="pb-card-media">
-              <img
-                src={featured.imageUrl}
-                alt={featured.title}
-                className="pb-card-img"
-                loading="lazy"
-              />
+              <ProjectImage src={featured.imageUrl} alt={featured.title} className="pb-card-img" />
               <div className="pb-card-overlay" />
               <div className="pb-card-badges">
-                <span className="pb-badge pb-badge--standard">
-                  <HiShieldCheck aria-hidden="true" />
-                  {featured.standard}
+                <span className={`pb-badge ${isReference ? 'pb-badge--reference' : 'pb-badge--standard'}`}>
+                  {!isReference && <HiShieldCheck aria-hidden="true" />}
+                  {featured.badge}
                 </span>
-                {featured.registryId && <span className="pb-badge pb-badge--registry">{featured.registryId}</span>}
               </div>
             </div>
 
             <div className="pb-card-body">
               <div className="pb-meta-top">
-                <span className="pb-location">
-                  <HiLocationMarker aria-hidden="true" />
-                  {featured.location}
-                </span>
+                {featured.location && (
+                  <span className="pb-location">
+                    <HiLocationMarker aria-hidden="true" />
+                    {featured.location}
+                  </span>
+                )}
                 <span className="pb-category">{featured.category}</span>
               </div>
 
               <h3 className="pb-card-title">{featured.title}</h3>
               <p className="pb-card-desc">{featured.description}</p>
 
-              {/* Tags ODS */}
-              <div className="pb-sdgs">
-                {featured.sdgs.map((sdg) => (
-                  <span key={sdg} className="pb-sdg-tag">
-                    <FaCheck aria-hidden="true" />
-                    {sdg}
-                  </span>
-                ))}
-              </div>
+              {/* Tags ODS / co-beneficios */}
+              {featured.sdgs.length > 0 && (
+                <div className="pb-sdgs">
+                  {featured.sdgs.map((sdg) => (
+                    <span key={sdg} className="pb-sdg-tag">
+                      <FaCheck aria-hidden="true" />
+                      {sdg}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Métricas y Acción */}
               <div className="pb-card-footer">
@@ -142,19 +241,12 @@ export const ProjectsBento: React.FC = () => {
 
                 <div className="pb-price-block">
                   <span className="pb-price-label">Precio por tonelada</span>
-                  <span className="pb-price-value">${featured.pricePerTon} USD / t</span>
+                  <span className="pb-price-value">{featured.priceLabel}</span>
                 </div>
 
-                {/* Antes apuntaba a #calculadora, que a su vez enviaba de vuelta
-                    aqui: el usuario giraba en circulo sin llegar a compensar.
-                    Ahora lleva a la compensacion con el proyecto ya elegido. */}
-                <Link
-                  to={`/b2c/calculator?projectId=${encodeURIComponent(featured.id)}`}
-                  className="pb-action-btn"
-                  onClick={() => setSelectedProjectId(featured.id)}
-                >
+                <Link to={featured.href} className="pb-action-btn">
                   <FaTree aria-hidden="true" />
-                  <span>Compensar en este proyecto</span>
+                  <span>{featured.ctaLabel}</span>
                   <HiArrowRight aria-hidden="true" />
                 </Link>
               </div>
@@ -166,23 +258,24 @@ export const ProjectsBento: React.FC = () => {
             {sideProjects.map((proj) => (
               <article key={proj.id} className="pb-card pb-card--side">
                 <div className="pb-side-media">
-                  <img src={proj.imageUrl} alt={proj.title} className="pb-side-img" loading="lazy" />
+                  <ProjectImage src={proj.imageUrl} alt={proj.title} className="pb-side-img" />
                   <div className="pb-side-badges">
-                    <span className="pb-badge pb-badge--standard">
-                      <HiShieldCheck aria-hidden="true" />
-                      {proj.standard}
+                    <span className={`pb-badge ${isReference ? 'pb-badge--reference' : 'pb-badge--standard'}`}>
+                      {!isReference && <HiShieldCheck aria-hidden="true" />}
+                      {proj.badge}
                     </span>
-                    {proj.registryId && <span className="pb-badge pb-badge--registry">{proj.registryId}</span>}
                   </div>
                 </div>
 
                 <div className="pb-side-content">
-                  <div className="pb-meta-top">
-                    <span className="pb-location">
-                      <HiLocationMarker aria-hidden="true" />
-                      {proj.location}
-                    </span>
-                  </div>
+                  {proj.location && (
+                    <div className="pb-meta-top">
+                      <span className="pb-location">
+                        <HiLocationMarker aria-hidden="true" />
+                        {proj.location}
+                      </span>
+                    </div>
+                  )}
 
                   <h3 className="pb-side-title">{proj.title}</h3>
                   <p className="pb-side-desc">{proj.description}</p>
@@ -194,13 +287,9 @@ export const ProjectsBento: React.FC = () => {
                     </div>
 
                     <div className="pb-side-price">
-                      <span className="pb-side-price-tag">${proj.pricePerTon} USD / t</span>
-                      <Link
-                        to={`/b2c/calculator?projectId=${encodeURIComponent(proj.id)}`}
-                        className="pb-side-link"
-                        onClick={() => setSelectedProjectId(proj.id)}
-                      >
-                        <span>Elegir</span>
+                      <span className="pb-side-price-tag">{proj.priceLabel}</span>
+                      <Link to={proj.href} className="pb-side-link">
+                        <span>{isReference ? 'Calcular' : 'Elegir'}</span>
                         <HiArrowRight aria-hidden="true" />
                       </Link>
                     </div>
@@ -210,6 +299,7 @@ export const ProjectsBento: React.FC = () => {
             ))}
           </div>
         </div>
+        )}
       </div>
     </section>
   );

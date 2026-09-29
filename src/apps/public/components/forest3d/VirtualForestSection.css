@@ -8,7 +8,7 @@
   background: var(--ctv-canvas);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  padding: clamp(4.5rem, 8vh, 7rem) 0;
+  padding: var(--ctv-section-y) 0;
   overflow: hidden;
 }
 
@@ -28,40 +28,32 @@
   margin: 0 auto clamp(2.5rem, 5vh, 3.75rem);
 }
 
+/* Mismo eyebrow "línea + texto" que el resto de las secciones. */
 .vfs-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  font-size: 0.72rem;
+  gap: var(--ctv-space-3);
+  font-size: var(--ctv-text-caption);
   font-weight: 600;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #0b8a4a;
-  background: rgba(16, 185, 129, 0.10);
-  border: 1px solid rgba(16, 185, 129, 0.22);
-  padding: 0.38rem 0.95rem;
-  border-radius: var(--ctv-radius-pill);
-  margin-bottom: 1.15rem;
+  letter-spacing: 0.16em;
+  color: var(--ctv-ink-soft);
+  margin-bottom: var(--ctv-space-4);
 }
 
-.vfs-eyebrow__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--ctv-radius-full);
-  background: #10b981;
-  box-shadow: var(--ctv-focus-ring);
-}
-
-.vfs-eyebrow__icon {
-  font-size: 0.85rem;
+.vfs-eyebrow__line {
+  width: 28px;
+  height: 2px;
+  background: var(--ctv-brand);
+  display: inline-block;
 }
 
 .vfs-title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: clamp(2.2rem, 4.2vw, 3.4rem);
+  font-size: var(--ctv-text-h1);
   line-height: 1.08;
-  letter-spacing: -0.015em;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
   margin: 0 0 1.25rem;
 }

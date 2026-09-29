@@ -100,9 +100,9 @@ function EarthMesh() {
   const [dayTexture, nightTexture, cloudsTexture] = useLoader(
     THREE.TextureLoader,
     [
-      '/textures/earth-daymap-4k.jpg',
-      '/textures/earth-nightmap-4k.jpg',
-      '/textures/earth-clouds-4k.jpg',
+      '/textures/earth-daymap-2k.jpg',
+      '/textures/earth-nightmap-2k.jpg',
+      '/textures/earth-clouds-2k.jpg',
     ]
   );
 
@@ -354,7 +354,7 @@ export const HeroGlobe: React.FC = () => {
       <div className="hero-globe-badge">
         <span className="hero-globe-badge__dot" />
         <HiGlobeAlt className="hero-globe-badge__icon" />
-        <span>Monitoreo Global de Rutas Aéreas · Tiempo Real</span>
+        <span>Rutas aéreas desde Santiago</span>
       </div>
 
       <div className="hero-globe-canvas-box">
@@ -394,7 +394,7 @@ export const HeroGlobe: React.FC = () => {
       <div className="hero-globe-caption">
         <span className="hero-globe-caption__route">SCL ✈ MAD</span>
         <span className="hero-globe-caption__sep">·</span>
-        <span className="hero-globe-caption__val">1.84 t CO₂e neutralizadas</span>
+        <span className="hero-globe-caption__val">Ruta de ejemplo</span>
       </div>
     </div>
   );

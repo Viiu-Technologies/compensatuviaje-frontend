@@ -63,10 +63,6 @@ const CertificateSearch: React.FC = () => {
     }
   };
 
-  const handleDemoClick = (sampleCode: string) => {
-    setQuery(sampleCode);
-  };
-
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
@@ -74,15 +70,16 @@ const CertificateSearch: React.FC = () => {
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -12;
-    const rotateY = ((x - centerX) / centerX) * 12;
+    // Antes 12° más escala 1.03: demasiado movimiento para una tarjeta decorativa.
+    const rotateX = ((y - centerY) / centerY) * -4;
+    const rotateY = ((x - centerX) / centerX) * 4;
 
-    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.03, 1.03, 1.03)`;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
   };
 
   const handleCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = e.currentTarget;
-    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
   };
 
   return (
@@ -98,10 +95,8 @@ const CertificateSearch: React.FC = () => {
               </span>
 
               <h2 className="cs-title">
-                <span className="hero-line"><span className="hero-line__inner">Verifica tu</span></span>
-                <span className="hero-line cs-title--accent">
-                  <span className="hero-line__inner"><em>certificado</em> inmutable.</span>
-                </span>
+                <span className="hero-line"><span className="hero-line__inner">Verifica tu certificado</span></span>
+                <span className="hero-line"><span className="hero-line__inner">en blockchain.</span></span>
               </h2>
 
               <p className="cs-sub ctv-reveal">
@@ -132,17 +127,6 @@ const CertificateSearch: React.FC = () => {
                 Verificar
               </Button>
             </form>
-
-            {/* Chips de prueba rápida 1-Click */}
-            <div className="cs-demo-chips ctv-reveal">
-              <span className="cs-demo-label">Probar ejemplo:</span>
-              <button type="button" className="cs-demo-chip" onClick={() => handleDemoClick('CERT-2024-SCL-MIA-001')}>
-                CERT-2024-SCL-MIA-001
-              </button>
-              <button type="button" className="cs-demo-chip" onClick={() => handleDemoClick('CMP-84920-CL')}>
-                CMP-84920-CL
-              </button>
-            </div>
 
             {/* Resultados */}
             {searched && !loading && (
@@ -237,10 +221,9 @@ const CertificateSearch: React.FC = () => {
               onMouseLeave={handleCardMouseLeave}
             >
               <div className="cs-hologram-sheen" aria-hidden="true" />
-              <BlockchainESGSVG className="cs-certificate-img" style={{ width: '270px', height: '270px' }} />
+              <BlockchainESGSVG className="cs-certificate-img" style={{ width: '100%', maxWidth: '300px', height: 'auto' }} />
               <div className="cs-card-meta">
-                <span className="cs-card-meta__network">POLYGON MAINNET · REGISTRO VERIFICABLE</span>
-                <span className="cs-card-meta__hash">0x71C...4a9b</span>
+                <span className="cs-card-meta__network">REGISTRO VERIFICABLE EN POLYGON</span>
               </div>
               <div className="cs-card-badge">
                 <FaShieldAlt className="cs-card-badge__icon" aria-hidden="true" />

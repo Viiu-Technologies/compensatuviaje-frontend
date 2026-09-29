@@ -6,7 +6,7 @@
 .es-section {
   position: relative;
   background: var(--ctv-canvas);
-  padding: clamp(4.5rem, 9vw, 7.5rem) 0;
+  padding: var(--ctv-section-y) 0;
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
   border-top: 1px solid var(--ctv-rule);
@@ -34,20 +34,24 @@
 }
 
 /* ── Contenido Izquierdo ── */
+/* Mismo eyebrow "línea + texto" que el resto de las secciones. */
 .es-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: var(--ctv-space-2);
-  font-size: 0.72rem;
+  gap: var(--ctv-space-3);
+  font-size: var(--ctv-text-caption);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ctv-brand-deep);
-  background: rgba(7, 61, 61, 0.06);
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--ctv-radius-pill);
-  border: 1px solid rgba(7, 61, 61, 0.12);
-  margin-bottom: var(--ctv-space-5);
+  letter-spacing: 0.16em;
+  color: var(--ctv-ink-soft);
+  margin-bottom: var(--ctv-space-4);
+}
+
+.es-eyebrow__line {
+  width: 28px;
+  height: 2px;
+  background: var(--ctv-brand);
+  display: inline-block;
 }
 
 .es-title {
@@ -62,16 +66,6 @@
 
 /* Ver nota en Hero.css: si el acento va en cursiva, background-clip: text
    recorta el trazo inclinado de la ultima letra. */
-.es-title-accent {
-  background: var(--ctv-gradient-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: var(--ctv-accent-contrast);
-  display: inline-block;
-  padding-inline-end: 0.12em;
-  margin-inline-end: -0.12em;
-}
 
 .es-lede {
   font-family: var(--ctv-font-body);

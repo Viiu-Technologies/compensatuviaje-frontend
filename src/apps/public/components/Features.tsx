@@ -1,10 +1,7 @@
-import { lazy, Suspense, useState } from 'react';
 import { gsap, useGsapReveal, sectionTimeline } from '../hooks/useGsapReveal';
 import { StepTripInputSVG, StepCalculationSVG, StepCompensationSVG } from './Illustrations';
 import { BlobField } from './landing/EcoArt';
 import './Features.css';
-
-const CarbonCalculatorModal = lazy(() => import('../../b2c/components/CarbonCalculatorModal'));
 
 const STEPS = [
   {
@@ -22,14 +19,12 @@ const STEPS = [
   {
     num: '03',
     title: 'Compensa con proyectos verificados',
-    body: 'Apoya proyectos que pasan nuestra verificación documental (agentes de IA y revisión humana) y recibe un certificado digital verificable en blockchain.',
+    body: 'Elige un proyecto evaluado por Veritas AI y recibe un certificado digital verificable en blockchain.',
     Illustration: StepCompensationSVG,
   },
 ];
 
 const Features = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set('.ctv-reveal', { autoAlpha: 1 });
 
@@ -70,16 +65,13 @@ const Features = () => {
           </span>
 
           <h2 className="ft-title">
-            <span className="hero-line"><span className="hero-line__inner">La forma más</span></span>
-            <span className="hero-line ft-title--accent">
-              <span className="hero-line__inner"><em>transparente</em> de compensar</span>
-            </span>
-            <span className="hero-line"><span className="hero-line__inner">tu impacto.</span></span>
+            <span className="hero-line"><span className="hero-line__inner">La forma más transparente</span></span>
+            <span className="hero-line"><span className="hero-line__inner">de compensar tu impacto.</span></span>
           </h2>
 
           <p className="ft-lede ctv-reveal">
-            Tres pasos. Cero opacidad. Factores de emisión del DEFRA, metodología pública
-            y proyectos verificados por IA y revisión humana.
+            Tres pasos, sin letra chica: ingresas tu vuelo, lo calculamos con factores oficiales
+            y eliges el proyecto que quieres apoyar.
           </p>
         </header>
 
@@ -100,16 +92,6 @@ const Features = () => {
           })}
         </ol>
       </div>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <Suspense fallback={null}>
-          <CarbonCalculatorModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-          />
-        </Suspense>
-      )}
     </section>
   );
 };

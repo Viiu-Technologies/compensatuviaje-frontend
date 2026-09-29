@@ -419,7 +419,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           </div>
           <span className="qfc-verified-note">
             <HiSparkles aria-hidden="true" />
-            Compensable con créditos de carbono certificados
+            Compensable en proyectos evaluados por Veritas AI
           </span>
         </div>
 

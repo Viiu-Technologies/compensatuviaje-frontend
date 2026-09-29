@@ -11,7 +11,6 @@ const VirtualForestSection = lazy(() => import('../components/forest3d/VirtualFo
 const ProjectsBento = lazy(() => import('../components/ProjectsBento'));
 const EnterpriseSuite = lazy(() => import('../components/EnterpriseSuite'));
 const CertificateSearch = lazy(() => import('../components/CertificateSearch'));
-const Testimonials = lazy(() => import('../components/Testimonials'));
 const FAQ = lazy(() => import('../components/FAQ'));
 const Footer = lazy(() => import('../components/Footer'));
 
@@ -68,7 +67,6 @@ const LandingPage: React.FC = () => {
           <ProjectsBento />
           <EnterpriseSuite />
           <CertificateSearch />
-          <Testimonials />
           <FAQ />
         </Suspense>
       </main>

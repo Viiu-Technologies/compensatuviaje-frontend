@@ -238,12 +238,13 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
             />
           ))}
 
-          {/* Controles de Cámara Suaves e Intuitivos */}
+          {/* Controles de Cámara Suaves e Intuitivos. Sin zoom: con la rueda
+              activa, el canvas (~600px de alto) capturaba el scroll y la
+              página dejaba de bajar al pasar el mouse por encima. */}
           <OrbitControls
             target={[0, 3.2, 0]}
-            enableZoom={true}
-            minDistance={7}
-            maxDistance={28}
+            enableZoom={false}
+            enablePan={false}
             minPolarAngle={Math.PI / 4}
             maxPolarAngle={Math.PI / 2 - 0.05}
             autoRotate={true}

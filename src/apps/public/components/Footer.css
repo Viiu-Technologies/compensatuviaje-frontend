@@ -7,7 +7,7 @@
   background: var(--ctv-brand-deep);
   color: rgba(247, 250, 248, 0.85);
   font-family: var(--ctv-font-body);
-  padding: clamp(4rem, 10vw, 7rem) 0 2.5rem;
+  padding: var(--ctv-section-y) 0 2.5rem;
   position: relative;
   overflow: hidden;
 }
@@ -33,12 +33,11 @@
 .ft-display {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: clamp(2.5rem, 7vw, 6rem);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
+  font-size: var(--ctv-text-display);
+  line-height: 1.05;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-canvas);
   margin: 0;
-  max-width: 12ch;
 }
 .ft-display .hero-line__inner em {
   font-style: italic;
@@ -94,7 +93,7 @@
 .ft-newsletter__legal {
   margin: 0.75rem 0 0;
   font-size: 0.8rem;
-  color: rgba(247, 250, 248, 0.5);
+  color: rgba(247, 250, 248, 0.7);
 }
 .ft-newsletter__legal a {
   color: rgba(247, 250, 248, 0.75);
@@ -152,7 +151,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: var(--ctv-brand);
+  background: var(--ctv-brand-bright);
   color: var(--ctv-brand-deep);
   border: none;
   border-radius: 999px;
@@ -167,20 +166,22 @@
 .ft-newsletter__btn:hover { background: var(--ctv-canvas); transform: translateY(-1px); }
 
 /* ── Columnas ───────────────────────────────────────── */
+/* En móvil, 2 columnas de enlaces con la marca a lo ancho: con una sola
+   columna el footer apilaba 5 bloques y medía más de 2.000px. */
 .ft-cols {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem 1.5rem;
   padding: clamp(3rem, 6vw, 4.5rem) 0;
-}
-@media (min-width: 700px) {
-  .ft-cols { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 1000px) {
   .ft-cols { grid-template-columns: 2fr repeat(4, 1fr); }
 }
 
-.ft-col--brand { max-width: 32ch; }
+.ft-col--brand { max-width: 32ch; grid-column: 1 / -1; }
+@media (min-width: 1000px) {
+  .ft-col--brand { grid-column: auto; }
+}
 
 .ft-logo {
   height: 40px;
@@ -315,7 +316,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ctv-brand);
+  color: var(--ctv-brand-bright);
   background: rgba(8, 174, 6, 0.1);
   border: 1px solid rgba(8, 174, 6, 0.2);
   border-radius: 999px;
@@ -343,8 +344,8 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.9rem 1.65rem;
-  background: var(--ctv-brand);
-  color: #ffffff;
+  background: var(--ctv-brand-bright);
+  color: var(--ctv-brand-deep);
   border-radius: 999px;
   text-decoration: none;
   font-size: 0.9rem;
@@ -354,7 +355,7 @@
 }
 
 .ft-esg-banner__btn:hover {
-  background: var(--ctv-accent);
+  background: var(--ctv-canvas);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(8, 174, 6, 0.35);
 }

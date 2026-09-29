@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
@@ -6,11 +7,16 @@ import { LEGAL, LEGAL_ROUTES, ownerLine } from '../../../shared/config/legal';
 import { subscribeToNewsletter } from '../services/newsService';
 import './Footer.css';
 
+// Rutas absolutas (el footer también se usa fuera de la landing, donde un
+// "#faq" suelto no apunta a nada). Las anclas /#… las resuelve el Header.
+// "Nosotros" se quitó: no existe esa página ni esa sección.
 const SECTIONS = [
   {
     title: 'Servicios',
     links: [
-      { label: 'Calculadora CO₂', href: '#calculadora' },
+      { label: 'Calculadora CO₂', href: '/calculadora' },
+      { label: 'Proyectos', href: '/#proyectos' },
+      { label: 'Empresas', href: '/#empresas' },
     ],
   },
   {
@@ -18,9 +24,9 @@ const SECTIONS = [
     links: [
       { label: 'Blog', href: '/blog' },
       { label: 'Sé un aliado', href: '/aliados' },
-      { label: 'Transparencia', href: '#transparencia' },
-      { label: 'FAQ', href: '#faq' },
-      { label: 'Nosotros', href: '#nosotros' },
+      { label: 'Verificar certificado', href: '/#verificar' },
+      { label: 'Metodología', href: '/calculadora#metodologia' },
+      { label: 'FAQ', href: '/#faq' },
     ],
   },
   {
@@ -62,9 +68,7 @@ const Footer = () => {
     if (res.ok) setEmail('');
   };
 
-  const scopeRef = useGsapReveal<HTMLElement>((root) => {
-    gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
-
+  const scopeRef = useGsapReveal<HTMLElement>(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
     tl.from('.ft-display .hero-line__inner', {
       yPercent: 110, stagger: 0.08, duration: 0.9,
@@ -85,10 +89,10 @@ const Footer = () => {
             <span className="hero-line"><span className="hero-line__inner"><em>es posible</em>.</span></span>
           </h2>
 
-          <a href="#calculadora" className="ft-display-cta">
+          <Link to="/calculadora" className="ft-display-cta">
             Empieza ahora
             <HiArrowRight aria-hidden="true" />
-          </a>
+          </Link>
         </div>
 
         {/* ── Newsletter ── */}
@@ -122,7 +126,7 @@ const Footer = () => {
             {status === 'error' && <p className="ft-newsletter__msg ft-newsletter__msg--error" role="alert">{message}</p>}
             <p className="ft-newsletter__legal">
               Te enviaremos un correo para confirmar. Puedes darte de baja cuando quieras.
-              Ver <a href={LEGAL_ROUTES.privacy}>Política de Privacidad</a>.
+              Ver <Link to={LEGAL_ROUTES.privacy}>Política de Privacidad</Link>.
             </p>
           </div>
         </div>
@@ -162,7 +166,11 @@ const Footer = () => {
               <ul className="ft-col__list">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="ft-col__link">{link.label}</a>
+                    {link.href.startsWith('/') ? (
+                      <Link to={link.href} className="ft-col__link">{link.label}</Link>
+                    ) : (
+                      <a href={link.href} className="ft-col__link">{link.label}</a>
+                    )}
                   </li>
                 ))}
               </ul>

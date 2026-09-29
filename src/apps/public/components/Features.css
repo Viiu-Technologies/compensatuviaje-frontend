@@ -7,7 +7,7 @@
   background: var(--ctv-canvas-2);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  padding: clamp(4rem, 10vw, 8rem) 0;
+  padding: var(--ctv-section-y) 0;
   position: relative;
   overflow: hidden;
 }
@@ -58,18 +58,13 @@
 .ft-title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: clamp(2rem, 5.5vw, 4.25rem);
-  line-height: 1;
-  letter-spacing: -0.015em;
+  font-size: var(--ctv-text-h1);
+  line-height: 1.08;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
   margin: 0 0 1.5rem;
-  max-width: 16ch;
 }
 
-.ft-title--accent .hero-line__inner em {
-  font-style: italic;
-  color: var(--ctv-brand);
-}
 
 .ft-lede {
   font-size: clamp(1rem, 1.25vw, 1.125rem);

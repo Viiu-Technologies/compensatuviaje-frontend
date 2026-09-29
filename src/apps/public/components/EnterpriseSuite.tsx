@@ -1,27 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { HiArrowRight, HiOutlineDocumentReport, HiOutlineCloudUpload, HiOutlineCode, HiCheck } from 'react-icons/hi';
-import { FaBuilding, FaShieldAlt } from 'react-icons/fa';
+import { FaShieldAlt } from 'react-icons/fa';
 import './EnterpriseSuite.css';
 
 const B2B_BENEFITS = [
-  'Cumplimiento con Norma de Carácter General 461 de la CMF y estándares CSRD',
-  'Reportes auditables con desglose Scope 3 (Categoría 6: Viajes de Negocios)',
+  'Reportes con desglose Scope 3 (Categoría 6: viajes de negocio), útiles para informar bajo la NCG 461 de la CMF y la CSRD',
   'Certificados corporativos consolidados con trazabilidad en blockchain',
   'Beneficios de posicionamiento reputacional y sustentabilidad corporativa',
 ];
 
 export const EnterpriseSuite: React.FC = () => {
-  const scrollToContactB2B = () => {
-    const contactEl = document.getElementById('contacto');
-    if (contactEl) {
-      contactEl.scrollIntoView({ behavior: 'smooth' });
-      const subjectSelect = document.getElementById('contact-subject') as HTMLSelectElement;
-      if (subjectSelect) {
-        subjectSelect.value = 'b2b';
-      }
-    }
-  };
-
   return (
     <section className="es-section" id="empresas" aria-label="Soluciones corporativas de compensación para empresas">
       <div className="es-container">
@@ -29,18 +18,17 @@ export const EnterpriseSuite: React.FC = () => {
           {/* Columna Izquierda: Propuesta de Valor B2B */}
           <div className="es-content">
             <div className="es-eyebrow">
-              <FaBuilding aria-hidden="true" />
-              <span>Soluciones Corporativas B2B</span>
+              <span className="es-eyebrow__line" />
+              <span>Soluciones para empresas</span>
             </div>
 
             <h2 className="es-title">
-              Automatiza la huella Scope 3 de tu empresa,{' '}
-              <span className="es-title-accent">sin fricción y con rigor auditable.</span>
+              Automatiza la huella Scope 3 de los viajes de tu empresa.
             </h2>
 
             <p className="es-lede">
               Gestiona, mide y neutraliza las emisiones de viajes de negocios de toda tu organización.
-              Genera reportes ejecutivos listos para comités de sustentabilidad, memorias anuales y auditorías internacionales.
+              Genera reportes ejecutivos para comités de sustentabilidad, memorias anuales y procesos de auditoría.
             </p>
 
             <ul className="es-benefits">
@@ -55,20 +43,21 @@ export const EnterpriseSuite: React.FC = () => {
             </ul>
 
             <div className="es-actions">
-              <button
-                type="button"
+              {/* El formulario de contacto vive en /contacto (no en la landing):
+                  antes se buscaba #contacto aquí y el botón no hacía nada. */}
+              <Link
+                to="/contacto?asunto=b2b#contacto"
                 className="es-btn es-btn--primary"
-                onClick={scrollToContactB2B}
               >
                 <span>Agendar reunión corporativa</span>
                 <HiArrowRight aria-hidden="true" />
-              </button>
-              <a
-                href="#calculadora"
+              </Link>
+              <Link
+                to="/#calculadora"
                 className="es-btn es-btn--ghost"
               >
                 <span>Probar calculadora primero</span>
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -83,7 +72,8 @@ export const EnterpriseSuite: React.FC = () => {
                   <span className="es-dot es-dot--g" />
                 </div>
                 <span className="es-mockup-title">CompensaTuViaje B2B: Portal Scope 3</span>
-                <span className="es-mockup-badge">Cálculo GHG Protocol</span>
+                {/* Las cifras del mockup son ilustrativas, no de un cliente real. */}
+                <span className="es-mockup-badge">Vista de ejemplo</span>
               </div>
 
               {/* Contenido interactivo simulado */}
@@ -91,14 +81,14 @@ export const EnterpriseSuite: React.FC = () => {
                 {/* 3 Métricas Rápidas B2B */}
                 <div className="es-metrics-row">
                   <div className="es-m-card">
-                    <span className="es-m-label">Vuelos analizados</span>
+                    <span className="es-m-label">Vuelos</span>
                     <span className="es-m-val">1.482</span>
                     <span className="es-m-sub">Últimos 12 meses</span>
                   </div>
                   <div className="es-m-card">
-                    <span className="es-m-label">Emisiones Scope 3</span>
+                    <span className="es-m-label">Emisiones</span>
                     <span className="es-m-val">412,8 t</span>
-                    <span className="es-m-sub">DEFRA 2024</span>
+                    <span className="es-m-sub">Scope 3 · DEFRA 2024</span>
                   </div>
                   <div className="es-m-card es-m-card--accent">
                     <span className="es-m-label">Neutralizado</span>
@@ -124,8 +114,8 @@ export const EnterpriseSuite: React.FC = () => {
                       <HiOutlineDocumentReport aria-hidden="true" />
                     </div>
                     <div className="es-f-text">
-                      <h4>Dossier ESG listo para la CMF y CSRD</h4>
-                      <p>Descarga informes en PDF y Excel con metodología auditable por las Big 4.</p>
+                      <h4>Dossier ESG para tus reportes CMF y CSRD</h4>
+                      <p>Descarga informes en PDF y Excel con la metodología y los factores documentados para tu auditoría.</p>
                     </div>
                   </div>
 

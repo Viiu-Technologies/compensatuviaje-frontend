@@ -99,8 +99,8 @@ export const BlockchainESGSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props)
       <polygon points="0,14 38,-6 38,34 0,54" fill="url(#cube-right-grad)" stroke="#073D3D" strokeWidth="1.5" />
 
       {/* Sello de bloque en la cara superior */}
-      <circle cx="0" cy="-6" r="8" fill="#8247E5" opacity="0.85" />
-      <text x="0" y="-3" fontSize="6.5" fontWeight="bold" fill="#ffffff" textAnchor="middle" fontFamily="monospace">GEN</text>
+      <circle cx="0" cy="-6" r="11" fill="#8247E5" opacity="0.85" />
+      <text x="0" y="-2.5" fontSize="9" fontWeight="bold" fill="#ffffff" textAnchor="middle" fontFamily="monospace">GEN</text>
     </g>
 
     {/* ── BLOQUE BLOCKCHAIN 2: Lateral Izquierdo (Smart Contract / Retiro) ── */}
@@ -206,33 +206,32 @@ export const BlockchainESGSVG: React.FC<React.SVGProps<SVGSVGElement>> = (props)
       <polygon points="-42,-6 0,14 0,52 -42,32" fill="url(#cube-left-grad)" stroke="#073D3D" strokeWidth="1.5" />
       <polygon points="0,14 42,-6 42,32 0,52" fill="url(#cube-right-grad)" stroke="#073D3D" strokeWidth="1.5" />
 
-      {/* Hash grabado en la piedra base */}
-      <text x="0" y="3" fontSize="8" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="monospace">
-        BLOCK #84920
+      {/* Rótulo de la piedra base. Sin número de bloque ni hash: eran
+          inventados y se leían como un registro real. */}
+      <text x="0" y="4" fontSize="11" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="monospace">
+        REGISTRO
       </text>
-      <text x="-21" y="24" fontSize="6" fill="#A9C7C3" textAnchor="middle" fontFamily="monospace">
-        0x71C...4A9B
-      </text>
-      <text x="21" y="24" fontSize="6" fill="#3ED32B" textAnchor="middle" fontFamily="sans-serif" fontWeight="bold">
+      <text x="0" y="27" fontSize="10" fill="#3ED32B" textAnchor="middle" fontFamily="sans-serif" fontWeight="bold">
         POLYGON
       </text>
     </g>
 
     {/* ── BADGES FLOTANTES DE VERIFICACIÓN ESG ── */}
-    {/* Badge Flotante Izquierdo: Toneladas Verificadas */}
-    <g transform="translate(55, 125)">
-      <rect x="0" y="0" width="85" height="24" rx="12" fill="#ffffff" stroke="#08AE06" strokeWidth="1.5" opacity="0.95" />
-      <circle cx="12" cy="12" r="5" fill="#08AE06" filter="url(#esg-glow)" />
-      <text x="48" y="16" fontSize="9" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="sans-serif">
-        1.0 tCO₂e RETIRED
+    {/* Badge Flotante Izquierdo. Antes "1.0 tCO₂e RETIRED": "retirar" es
+        jerga de créditos de carbono, y los Términos aclaran que no lo son. */}
+    <g transform="translate(18, 120)">
+      <rect x="0" y="0" width="118" height="30" rx="15" fill="#ffffff" stroke="#08AE06" strokeWidth="1.5" opacity="0.95" />
+      <circle cx="15" cy="15" r="5.5" fill="#08AE06" filter="url(#esg-glow)" />
+      <text x="66" y="19.5" fontSize="12" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="sans-serif">
+        COMPENSADO
       </text>
     </g>
 
     {/* Badge Flotante Derecho: Estándar Certificado */}
-    <g transform="translate(265, 125)">
-      <rect x="0" y="0" width="80" height="24" rx="12" fill="#ffffff" stroke="#8247E5" strokeWidth="1.5" opacity="0.95" />
-      <circle cx="12" cy="12" r="5" fill="#8247E5" />
-      <text x="46" y="16" fontSize="9" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="sans-serif">
+    <g transform="translate(270, 120)">
+      <rect x="0" y="0" width="112" height="30" rx="15" fill="#ffffff" stroke="#8247E5" strokeWidth="1.5" opacity="0.95" />
+      <circle cx="15" cy="15" r="5.5" fill="#8247E5" />
+      <text x="63" y="19.5" fontSize="12" fontWeight="bold" fill="#073D3D" textAnchor="middle" fontFamily="sans-serif">
         VERITAS AI
       </text>
     </g>

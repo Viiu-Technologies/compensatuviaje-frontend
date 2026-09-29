@@ -7,15 +7,22 @@
   background: var(--ctv-canvas);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  padding: clamp(4rem, 10vw, 8rem) 0;
+  padding: var(--ctv-section-y) 0;
   position: relative;
 }
 
+/* Mismo contenedor que el resto de las secciones (así el título alinea a la
+   izquierda con ellas); el ancho de lectura se limita en la lista y el CTA. */
 .faq-container {
   width: 100%;
-  max-width: 920px;
+  max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
+}
+
+.faq-list,
+.faq-cta {
+  max-width: 920px;
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -44,18 +51,13 @@
 .faq-title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: clamp(2rem, 5.5vw, 4.25rem);
-  line-height: 1;
-  letter-spacing: -0.015em;
+  font-size: var(--ctv-text-h1);
+  line-height: 1.08;
+  letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
   margin: 0;
-  max-width: 18ch;
 }
 
-.faq-title--accent .hero-line__inner em {
-  font-style: italic;
-  color: var(--ctv-brand);
-}
 
 /* ── Tabs ───────────────────────────────────────────── */
 .faq-tabs {

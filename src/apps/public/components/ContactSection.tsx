@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiArrowRight, HiCheck, HiExclamation, HiMail, HiOutlineClock, HiShieldCheck } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
@@ -16,11 +17,18 @@ const SUBJECT_OPTIONS = [
 const OFFICIAL_CONTACT_EMAIL = 'contacto@compensatuviaje.com';
 
 export const ContactSection: React.FC = () => {
+  // ?asunto=b2b preselecciona el asunto (lo usa "Agendar reunión corporativa").
+  const [searchParams] = useSearchParams();
+  const subjectParam = searchParams.get('asunto');
+  const initialSubject = SUBJECT_OPTIONS.some((o) => o.value === subjectParam)
+    ? (subjectParam as string)
+    : 'general';
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     company: '',
-    subject: 'general',
+    subject: initialSubject,
     message: '',
   });
 

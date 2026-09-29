@@ -41,19 +41,20 @@ export const VirtualForestSection: React.FC = () => {
         {/* Cabecera Editorial */}
         <header className="vfs-header">
           <div className="vfs-eyebrow">
-            <span className="vfs-eyebrow__dot" />
-            <HiSparkles className="vfs-eyebrow__icon" />
-            <span>Entorno Virtual Verde · Custodia Digital Nativa</span>
+            <span className="vfs-eyebrow__line" />
+            <span>Visualización 3D · Bosque nativo</span>
           </div>
 
           <h2 className="vfs-title">
             Tu huella convertida en <em>bosque vivo</em>
           </h2>
 
+          {/* Antes decía "gemelo digital en tiempo real": la escena es una
+              recreación procedural, no está conectada a datos de campo. */}
           <p className="vfs-lede">
-            No compensas una transacción abstracta: financias la protección física y la custodia activa
-            de hectáreas de bosque nativo en la Selva Valdiviana y Patagonia. Este gemelo digital refleja
-            en tiempo real los ecosistemas protegidos con cada vuelo neutralizado.
+            No compensas una transacción abstracta: apoyas proyectos concretos de conservación y
+            restauración. Explora una recreación del bosque nativo del sur de Chile, como el que
+            protegen los proyectos de nuestra red.
           </p>
         </header>
 
@@ -115,35 +116,37 @@ export const VirtualForestSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Tarjeta de Telemetría Flotante (Glassmorphism) */}
+          {/* Tarjeta flotante: cómo se respalda cada compensación. Reemplaza la
+              antigua "telemetría" (15.420 t, ~48.500 árboles, Sentinel-2), que
+              eran cifras fijas en el código y no datos reales. */}
           <div className="vfs-telemetry-card">
             <div className="vfs-telemetry-header">
               <span className="vfs-telemetry-dot" />
-              <span>Telemetría de Impacto Verificado</span>
+              <span>Detrás de cada compensación</span>
             </div>
 
             <div className="vfs-telemetry-grid">
               <div className="vfs-telemetry-item">
-                <span className="vfs-telemetry-val">15.420</span>
-                <span className="vfs-telemetry-unit">toneladas CO₂e</span>
-                <span className="vfs-telemetry-sub">Neutralizadas verificadas</span>
+                <span className="vfs-telemetry-val">Veritas AI</span>
+                <span className="vfs-telemetry-unit">Evaluación agéntica</span>
+                <span className="vfs-telemetry-sub">De cada proyecto antes de publicarlo</span>
               </div>
               <div className="vfs-telemetry-item">
-                <span className="vfs-telemetry-val">~48.500</span>
-                <span className="vfs-telemetry-unit">árboles nativos</span>
-                <span className="vfs-telemetry-sub">Bajo custodia activa</span>
+                <span className="vfs-telemetry-val">Revisión</span>
+                <span className="vfs-telemetry-unit">Humana</span>
+                <span className="vfs-telemetry-sub">Valida el informe de Veritas AI</span>
               </div>
               <div className="vfs-telemetry-item">
-                <span className="vfs-telemetry-val">Sentinel-2</span>
-                <span className="vfs-telemetry-unit">Monitoreo cada 5 días</span>
-                <span className="vfs-telemetry-sub">Índice NDVI de biomasa</span>
+                <span className="vfs-telemetry-val">Polygon</span>
+                <span className="vfs-telemetry-unit">Certificado on-chain</span>
+                <span className="vfs-telemetry-sub">Verificable por cualquiera</span>
               </div>
             </div>
 
             <footer className="vfs-telemetry-footer">
               <div className="vfs-telemetry-badge">
                 <HiShieldCheck className="vfs-badge-icon" />
-                <span>Veritas AI · Revisión humana · Registro en blockchain</span>
+                <span>Proyectos en Chile con evidencia documental</span>
               </div>
               <button
                 type="button"
@@ -159,7 +162,7 @@ export const VirtualForestSection: React.FC = () => {
           {/* Pista de Interacción 3D */}
           <div className="vfs-orbit-hint" aria-hidden="true">
             <HiGlobeAlt className="vfs-orbit-hint__icon" />
-            <span>Arrastra para orbitar el bosque en 3D · Usa la rueda para acercar</span>
+            <span>Arrastra para orbitar el bosque en 3D</span>
           </div>
         </div>
       </div>
