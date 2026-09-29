@@ -2,7 +2,7 @@ import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { Tree as EZTree, TreePreset } from '../scrollytelling/lib/ez-tree';
+import { Tree as EZTree, TreePreset } from './ez-tree';
 import { HiSparkles } from 'react-icons/hi';
 
 export type TimeOfDay = 'morning' | 'sunset';
