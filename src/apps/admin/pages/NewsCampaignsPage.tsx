@@ -28,9 +28,6 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   cancelled: { label: 'Cancelada', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
 };
 
-const API_BASE =
-  import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || '';
-
 const NewsCampaignsPage: React.FC = () => {
   const [campaigns, setCampaigns] = useState<NewsCampaign[]>([]);
   const [subs, setSubs] = useState<SubscriberStats | null>(null);
@@ -38,6 +35,19 @@ const NewsCampaignsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
+
+  const openPreview = async (c: NewsCampaign) => {
+    try {
+      setBusy(c.id);
+      const html = await adminNewsApi.previewCampaign(c.id);
+      setPreview({ subject: c.subject, html });
+    } catch {
+      toast.error('No se pudo cargar la vista previa');
+    } finally {
+      setBusy(null);
+    }
+  };
   const [metrics, setMetrics] = useState<Record<string, CampaignMetrics>>({});
 
   const [form, setForm] = useState({ name: '', subject: '', preheader: '', articleIds: [] as string[] });
@@ -289,15 +299,15 @@ const NewsCampaignsPage: React.FC = () => {
                   </div>
 
                   <div className="!flex !items-center !gap-1.5 !flex-wrap">
-                    <a
-                      href={`${API_BASE}/admin/news/campaigns/${c.id}/preview`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm"
+                    <button
+                      onClick={() => openPreview(c)}
+                      disabled={busy === c.id}
+                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm disabled:!opacity-50"
                       title="Vista previa del correo"
                     >
-                      <Eye className="!w-4 !h-4" /> Vista previa
-                    </a>
+                      {busy === c.id ? <Loader2 className="!w-4 !h-4 !animate-spin" /> : <Eye className="!w-4 !h-4" />}
+                      Vista previa
+                    </button>
 
                     {['draft', 'pending_approval'].includes(c.status) && (
                       <button
@@ -367,6 +377,34 @@ const NewsCampaignsPage: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {preview && (
+        <div
+          className="!fixed !inset-0 !bg-black/50 !flex !items-center !justify-center !z-50 !p-4"
+          onClick={() => setPreview(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-800 !rounded-xl !w-full !max-w-3xl !h-[85vh] !flex !flex-col !overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="Vista previa del correo"
+          >
+            <div className="!flex !items-center !justify-between !gap-3 !px-5 !py-3 !border-b border-slate-200 dark:border-slate-700">
+              <p className="!text-sm !font-semibold text-slate-800 dark:text-slate-100 !truncate">{preview.subject}</p>
+              <button
+                onClick={() => setPreview(null)}
+                className="!p-1.5 !rounded text-slate-500 hover:!bg-slate-100 dark:hover:!bg-slate-700"
+                title="Cerrar"
+              >
+                <X className="!w-4 !h-4" />
+              </button>
+            </div>
+            {/* sandbox vacío: el HTML se muestra sin ejecutar scripts ni acceder
+                a la sesión del panel, igual que en un cliente de correo. */}
+            <iframe title="Vista previa del correo" sandbox="" srcDoc={preview.html} className="!flex-1 !w-full !bg-white" />
+          </div>
         </div>
       )}
     </div>

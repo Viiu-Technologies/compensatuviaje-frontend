@@ -133,6 +133,14 @@ export const cancelCampaign = async (id: string) =>
 /** Encola el envío (202). Respeta el tope diario del proveedor. */
 export const sendCampaign = async (id: string) => api.post(`${BASE}/campaigns/${id}/send`);
 
+/**
+ * HTML del correo tal como lo recibirá el suscriptor.
+ * Va por axios (y no por un <a href>) porque la ruta exige el Bearer token,
+ * que un enlace normal no envía.
+ */
+export const previewCampaign = async (id: string) =>
+  api.get(`${BASE}/campaigns/${id}/preview`, { responseType: 'text' }) as unknown as Promise<string>;
+
 export const getCampaignMetrics = async (id: string) =>
   api.get(`${BASE}/campaigns/${id}/metrics`) as unknown as Promise<{
     success: boolean;
@@ -165,6 +173,7 @@ export default {
   approveCampaign,
   cancelCampaign,
   sendCampaign,
+  previewCampaign,
   getCampaignMetrics,
   getSubscriberStats,
 };
