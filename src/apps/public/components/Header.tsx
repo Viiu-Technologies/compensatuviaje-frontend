@@ -117,7 +117,7 @@ const NAV_GROUPS: NavGroup[] = [
       {
         label: 'Aliados & Partners',
         href: '/aliados',
-        description: 'Red global de aerolíneas y hoteles.',
+        description: 'Programa para agencias, aerolíneas y hoteles.',
         icon: FaHandshake,
         iconTheme: 'orange',
         prefetchKey: 'partners',
@@ -142,14 +142,29 @@ const LIQUID_SPRING: Transition = {
   mass: 0.75,
 };
 
+// Auto-ocultado: por debajo de HIDE_AFTER_PX el header siempre se muestra;
+// SCROLL_DELTA_PX filtra el jitter del trackpad para no parpadear.
+const HIDE_AFTER_PX = 120;
+const SCROLL_DELTA_PX = 8;
+
+const prefetchGroup = (groupId: string) => {
+  NAV_GROUPS.find((g) => g.id === groupId)?.items.forEach((item) => {
+    if (item.prefetchKey) prefetchRoute(item.prefetchKey);
+  });
+};
+
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [mobileExpandedGroup, setMobileExpandedGroup] = useState<string | null>('soluciones');
 
   const headerRef = useRef<HTMLElement>(null);
   const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Grupo abierto por hover: el primer click sobre su trigger lo confirma en
+  // vez de cerrarlo (antes hover abría y el click inmediato lo cerraba).
+  const hoverOpenedRef = useRef<string | null>(null);
 
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
@@ -165,15 +180,59 @@ const Header: React.FC = () => {
           : user?.userType === 'b2b' ? '/b2b/dashboard'
             : '/dashboard';
 
-  /* ── Scroll effect ── */
+  /* ── Scroll effect: estado "scrolled" + ocultar al bajar / mostrar al subir ── */
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 20);
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      setScrolled(y > 20);
+
+      if (y <= HIDE_AFTER_PX) {
+        setHidden(false);
+        lastY = y;
+        return;
+      }
+      // lastY solo avanza al superar el umbral, así un scroll lento también acumula.
+      const delta = y - lastY;
+      if (Math.abs(delta) < SCROLL_DELTA_PX) return;
+      setHidden(delta > 0);
+      lastY = y;
     };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    };
+
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    update();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  /* ── Scroll a anclas (#proyectos, #metodologia…) tras navegar ──
+     Se difiere con setTimeout para correr después de los scrollTo(0, 0) que
+     hacen algunas páginas al montar, y reintenta porque varias secciones del
+     landing se cargan en diferido. */
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = decodeURIComponent(location.hash.slice(1));
+    let tries = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const tryScroll = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else if (++tries < 20) {
+        timer = setTimeout(tryScroll, 100);
+      }
+    };
+    timer = setTimeout(tryScroll, 0);
+    return () => clearTimeout(timer);
+  }, [location.pathname, location.hash, location.key]);
 
   /* ── Cerrar el panel ante un scroll deliberado del usuario ──
      Antes esto vivía en el mismo efecto que setScrolled, con `activeGroup`
@@ -205,6 +264,7 @@ const Header: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setActiveGroup(null);
+        setIsMenuOpen(false);
       }
     };
 
@@ -222,10 +282,27 @@ const Header: React.FC = () => {
     return () => { document.body.style.overflow = ''; };
   }, [isMenuOpen]);
 
+  /* ── El drawer se oculta por CSS a ≥1024px: cerrarlo también en estado,
+     o el body se queda con overflow: hidden y la página no scrollea ── */
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setIsMenuOpen(false);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [isMenuOpen]);
+
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
     setActiveGroup(null);
   }, []);
+
+  /* ── Cerrar todo al cambiar de ruta (incluye atrás/adelante del navegador) ── */
+  useEffect(() => {
+    closeMenu();
+  }, [location.pathname, closeMenu]);
 
   const handleLogout = () => {
     logout();
@@ -237,23 +314,26 @@ const Header: React.FC = () => {
   const toggleGroup = (groupId: string) => {
     if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
     if (activeGroup === groupId) {
+      if (hoverOpenedRef.current === groupId) {
+        hoverOpenedRef.current = null;
+        return;
+      }
       setActiveGroup(null);
     } else {
+      hoverOpenedRef.current = null;
       setActiveGroup(groupId);
-      const group = NAV_GROUPS.find((g) => g.id === groupId);
-      group?.items.forEach((item) => {
-        if (item.prefetchKey) prefetchRoute(item.prefetchKey);
-      });
+      prefetchGroup(groupId);
     }
   };
 
-  const handleMouseEnterGroup = (groupId: string) => {
+  // Solo mouse: en táctil el pointerenter llega justo antes del click y
+  // ambos eventos competirían por el mismo toque.
+  const handlePointerEnterGroup = (e: React.PointerEvent, groupId: string) => {
+    if (e.pointerType !== 'mouse') return;
     if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+    if (activeGroup !== groupId) hoverOpenedRef.current = groupId;
     setActiveGroup(groupId);
-    const group = NAV_GROUPS.find((g) => g.id === groupId);
-    group?.items.forEach((item) => {
-      if (item.prefetchKey) prefetchRoute(item.prefetchKey);
-    });
+    prefetchGroup(groupId);
   };
 
   const handleMouseLeaveHeader = () => {
@@ -263,18 +343,7 @@ const Header: React.FC = () => {
     }, 240);
   };
 
-  const handleItemClick = (href: string) => {
-    closeMenu();
-    if (href.startsWith('/#')) {
-      const anchorId = href.replace('/#', '');
-      if (location.pathname === '/') {
-        const el = document.getElementById(anchorId);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        navigate(href);
-      }
-    }
-  };
+  const isHidden = hidden && !isExpanded && !isMenuOpen;
 
   return (
     <>
@@ -286,10 +355,11 @@ const Header: React.FC = () => {
           --scrolled y --expanded en Header.css) que el navegador interpola por su
           cuenta; el spring de Motion se conserva solo para lo que si vale la pena
           animar con fisica (el panel desplegable, mas abajo). */}
-      <motion.header
+      <header
         ref={headerRef}
-        className={`ctv-liquid-surface${scrolled ? ' ctv-liquid-surface--scrolled' : ''}${isExpanded ? ' ctv-liquid-surface--expanded' : ''}`}
+        className={`ctv-liquid-surface${scrolled ? ' ctv-liquid-surface--scrolled' : ''}${isExpanded ? ' ctv-liquid-surface--expanded' : ''}${isHidden ? ' ctv-liquid-surface--hidden' : ''}`}
         onMouseLeave={handleMouseLeaveHeader}
+        onFocus={() => setHidden(false)}
       >
         {/* Capa de refracción óptica decorativa */}
         <div className="ctv-liquid-refraction" aria-hidden="true" />
@@ -321,9 +391,9 @@ const Header: React.FC = () => {
                     type="button"
                     className={`ctv-liquid-nav__trigger${isCurrentActive ? ' ctv-liquid-nav__trigger--expanded' : ''}${hasActiveChild ? ' ctv-liquid-nav__trigger--active' : ''}`}
                     onClick={() => toggleGroup(group.id)}
-                    onMouseEnter={() => handleMouseEnterGroup(group.id)}
+                    onPointerEnter={(e) => handlePointerEnterGroup(e, group.id)}
                     aria-expanded={isCurrentActive}
-                    aria-controls={`liquid-panel-${group.id}`}
+                    aria-controls={isCurrentActive ? 'liquid-panel' : undefined}
                   >
                     <span>{group.label}</span>
                     <motion.span
@@ -407,13 +477,13 @@ const Header: React.FC = () => {
         </div>
 
         {/* ── Extensión Líquida del Contenedor (Estilo Wren Compacto) ── */}
-        <AnimatePresence mode="wait">
+        {/* El contenedor queda montado mientras haya un grupo activo; al cambiar
+            de grupo solo se hace crossfade del contenido, sin colapsar la altura. */}
+        <AnimatePresence>
           {isExpanded && currentGroupData && (
             <motion.div
-              key={currentGroupData.id}
-              id={`liquid-panel-${currentGroupData.id}`}
-              role="region"
-              aria-label={currentGroupData.label}
+              key="liquid-panel"
+              id="liquid-panel"
               className="ctv-liquid-body"
               initial={{ opacity: 0, height: 0, y: -4, filter: 'blur(4px)' }}
               animate={{ opacity: 1, height: 'auto', y: 0, filter: 'blur(0px)' }}
@@ -424,6 +494,16 @@ const Header: React.FC = () => {
                 filter: { duration: 0.18 },
               }}
             >
+              <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={currentGroupData.id}
+                role="region"
+                aria-label={currentGroupData.label}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1 }}
+              >
               {/* Título de sección sutil estilo Wren */}
               <div className="ctv-liquid-section-title">{currentGroupData.label}</div>
 
@@ -431,7 +511,6 @@ const Header: React.FC = () => {
               <div className="ctv-liquid-grid">
                 {currentGroupData.items.map((item, idx) => {
                   const Icon = item.icon;
-                  const isInternalAnchor = item.href.startsWith('/#');
 
                   const cardInner = (
                     <motion.div
@@ -456,26 +535,6 @@ const Header: React.FC = () => {
                     </motion.div>
                   );
 
-                  if (isInternalAnchor) {
-                    return (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        className="ctv-liquid-card__link"
-                        onClick={(e) => {
-                          if (location.pathname === '/') {
-                            e.preventDefault();
-                            handleItemClick(item.href);
-                          } else {
-                            closeMenu();
-                          }
-                        }}
-                      >
-                        {cardInner}
-                      </a>
-                    );
-                  }
-
                   return (
                     <Link
                       key={item.href}
@@ -488,10 +547,12 @@ const Header: React.FC = () => {
                   );
                 })}
               </div>
+              </motion.div>
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.header>
+      </header>
 
       {/* ── Mobile Drawer (Panel lateral táctil para vista responsive) ── */}
       <div
@@ -539,7 +600,6 @@ const Header: React.FC = () => {
                     <div className="ctv-liquid-drawer__accordion-body">
                       {group.items.map((item) => {
                         const Icon = item.icon;
-                        const isInternalAnchor = item.href.startsWith('/#');
 
                         const inner = (
                           <>
@@ -552,26 +612,6 @@ const Header: React.FC = () => {
                             </div>
                           </>
                         );
-
-                        if (isInternalAnchor) {
-                          return (
-                            <a
-                              key={item.href}
-                              href={item.href}
-                              className="ctv-liquid-drawer__item"
-                              onClick={(e) => {
-                                if (location.pathname === '/') {
-                                  e.preventDefault();
-                                  handleItemClick(item.href);
-                                } else {
-                                  closeMenu();
-                                }
-                              }}
-                            >
-                              {inner}
-                            </a>
-                          );
-                        }
 
                         return (
                           <Link

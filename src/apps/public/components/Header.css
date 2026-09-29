@@ -40,7 +40,10 @@
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
   border: 1px solid var(--lq-border);
-  border-radius: 9999px;
+  /* Mitad de --lq-header-h: igual de redondo que 9999px, pero la transición a
+     24px al expandir es continua (desde 9999px el valor quedaba clavado en el
+     máximo casi toda la transición y saltaba al final). */
+  border-radius: calc(var(--lq-header-h) / 2);
   box-shadow:
     0 16px 40px -8px rgba(0, 0, 0, 0.55),
     0 0 20px -2px rgba(62, 211, 43, 0.08),
@@ -48,13 +51,25 @@
     inset 0 -1px 0 rgba(62, 211, 43, 0.12);
   overflow: hidden;
   will-change: transform;
-  animation: liquidHeaderSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* fill-mode "backwards" (no "both"): con "both" la animación retenía
+     transform: translateY(0) para siempre y anulaba el de --hidden. */
+  animation: liquidHeaderSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   /* border-radius y box-shadow se movieron aqui desde el animate={} de Framer
      Motion en Header.tsx: Motion interpolaba ambos valores en el hilo principal en
      cada frame via su bucle de rAF/JS; una transicion CSS deja que el navegador
      maneje la interpolacion internamente sin ese overhead de JS por frame. */
-  transition: border-radius 0.24s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+              top var(--lq-transition),
+              background-color var(--lq-transition),
+              border-color var(--lq-transition),
+              border-radius var(--lq-transition),
+              box-shadow var(--lq-transition);
+}
+
+/* Auto-ocultado al hacer scroll hacia abajo: sube su propio alto más el
+   offset superior y el halo de la sombra, para no dejar rastro visible. */
+.ctv-liquid-surface--hidden {
+  transform: translateY(calc(-100% - 48px));
 }
 
 @keyframes liquidHeaderSlideIn {

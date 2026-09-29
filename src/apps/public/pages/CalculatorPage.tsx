@@ -428,7 +428,7 @@ const CalculatorPage: React.FC = () => {
             </div>
 
             {/* Metodología y Fuentes Científicas */}
-            <div className="calcp-method-box">
+            <div className="calcp-method-box" id="metodologia">
               <div className="calcp-method-header">
                 <HiInformationCircle />
                 <h3>Bases científicas y estándares internacionales de cálculo</h3>
