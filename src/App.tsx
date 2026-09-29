@@ -30,6 +30,7 @@ const LoginPage = lazy(() => import('./apps/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('./apps/auth/pages/RegisterPage'));
 const B2BRegisterPage = lazy(() => import('./apps/auth/pages/B2BRegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./apps/auth/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./apps/auth/pages/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('./apps/auth/pages/DashboardPage'));
 const AuthCallbackPage = lazy(() => import('./apps/b2c/pages/AuthCallback'));
 
@@ -175,6 +176,19 @@ function App() {
                 </PublicRoute>
               } 
             />
+            {/* Destino del enlace del correo de recuperación (antes no existía
+                y el enlace caía en 404). Acepta ?token= o /:token. */}
+            {['/reset-password', '/reset-password/:token'].map((path) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
+                  </PublicRoute>
+                }
+              />
+            ))}
             
             {/* Auth Routes con prefijo /auth para compatibilidad */}
             <Route 

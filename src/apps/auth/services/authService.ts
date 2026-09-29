@@ -19,7 +19,8 @@ interface LoginRequest {
 }
 
 // Determinar tipo de usuario basado en la respuesta del backend
-const determineUserType = (userInfo: UserInfo): UserType => {
+// user_type es justo lo que se calcula aquí, así que no se exige en la entrada.
+const determineUserType = (userInfo: Omit<UserInfo, 'user_type'>): UserType => {
   // SuperAdmin
   if (userInfo.is_super_admin || userInfo.role === 'SUPERADMIN') {
     return 'superadmin';

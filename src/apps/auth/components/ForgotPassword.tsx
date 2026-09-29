@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
 import './ForgotPassword.css';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
+// Antes pedía forgotPassword a useAuth(), pero el AuthContext no la expone:
+// el envío fallaba siempre con "forgotPassword is not a function".
 const ForgotPassword = () => {
-  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setMessage(null);
 
     try {
-      await forgotPassword(email);
-      setMessage('Se ha enviado un email con las instrucciones para resetear tu contraseña.');
+      await authService.forgotPassword(email.trim());
+      // Mensaje genérico: no revela si el correo tiene cuenta.
+      setMessage('Si el correo está registrado, te enviaremos las instrucciones para restablecer tu contraseña.');
       setEmail('');
     } catch (err) {
       setError(getErrorMessage(err));
