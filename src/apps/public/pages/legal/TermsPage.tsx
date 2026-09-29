@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LegalLayout, { type LegalSection } from '../../components/legal/LegalLayout';
-import { LEGAL, LEGAL_ROUTES } from '../../../../shared/config/legal';
+import { LEGAL, LEGAL_ROUTES, OWNER_NAME } from '../../../../shared/config/legal';
 
 const sections: LegalSection[] = [
   {
@@ -10,7 +10,9 @@ const sections: LegalSection[] = [
     body: (
       <p>
         El sitio {LEGAL.site.replace('https://', '')} y la plataforma {LEGAL.brand} son operados por{' '}
-        <strong>{LEGAL.legalName}</strong>, RUT {LEGAL.rut}, con domicilio en {LEGAL.address} (en
+        <strong>{OWNER_NAME}</strong>
+        {LEGAL.rut && <>, RUT {LEGAL.rut}</>}
+        {LEGAL.address && <>, con domicilio en {LEGAL.address}</>} (en
         adelante, “{LEGAL.brand}”). Puedes escribirnos a{' '}
         <a href={`mailto:${LEGAL.emails.contact}`}>{LEGAL.emails.contact}</a>.
       </p>
@@ -187,7 +189,7 @@ const sections: LegalSection[] = [
     body: (
       <p>
         La marca {LEGAL.brand}, el logotipo, el diseño, el software y los contenidos del sitio
-        pertenecen a {LEGAL.legalName} o a sus licenciantes. Puedes compartir tus Certificados y
+        pertenecen a {OWNER_NAME} o a sus licenciantes. Puedes compartir tus Certificados y
         tu perfil de impacto, pero no puedes reproducir ni explotar comercialmente el resto del
         contenido sin autorización.
       </p>

@@ -6,13 +6,14 @@
 // vender en línea, así que estos valores deben estar completos antes de
 // desplegar.
 //
-// PENDIENTE: reemplazar todo lo que está entre [CORCHETES] con los datos reales.
+// PENDIENTE: completar legalName, rut y address. Mientras estén vacíos, los
+// textos los omiten y usan el nombre de marca (ver OWNER_NAME / ownerLine).
 
 export const LEGAL = {
   brand: 'CompensaTuViaje',
-  legalName: '[RAZÓN SOCIAL SpA]',
-  rut: '[RUT 76.xxx.xxx-x]',
-  address: '[Dirección, Comuna, Región], Chile',
+  legalName: '' as string, // p. ej. 'CompensaTuViaje SpA'
+  rut: '' as string, // p. ej. '76.123.456-7'
+  address: '' as string, // p. ej. 'Av. Providencia 1234, Providencia, Región Metropolitana, Chile'
   site: 'https://compensatuviaje.com',
 
   // Correos del dominio propio. Mientras no existan, cae al Gmail actual.
@@ -25,6 +26,13 @@ export const LEGAL = {
   // Fecha de la última revisión de los textos legales (se muestra en cada página).
   lastUpdated: '26 de septiembre de 2026',
 } as const;
+
+/** Nombre del titular: la razón social si está definida, si no la marca. */
+export const OWNER_NAME = LEGAL.legalName || LEGAL.brand;
+
+/** "Razón social · RUT x · Dirección", omitiendo lo que esté vacío. */
+export const ownerLine = (): string =>
+  [LEGAL.legalName, LEGAL.rut && `RUT ${LEGAL.rut}`, LEGAL.address].filter(Boolean).join(' · ');
 
 export const LEGAL_ROUTES = {
   terms: '/terminos',

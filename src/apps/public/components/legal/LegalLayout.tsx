@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { HiArrowLeft } from 'react-icons/hi';
 import Header from '../Header';
 import Footer from '../Footer';
-import { LEGAL, LEGAL_ROUTES } from '../../../../shared/config/legal';
+import { LEGAL, LEGAL_ROUTES, OWNER_NAME } from '../../../../shared/config/legal';
 import { useSeo } from '../../../../shared/utils/useSeo';
 import './LegalLayout.css';
 
@@ -86,10 +86,10 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ title, description, path, int
 
               <footer className="lgl-owner">
                 <p>
-                  <strong>{LEGAL.legalName}</strong> · RUT {LEGAL.rut}
+                  <strong>{OWNER_NAME}</strong>
+                  {LEGAL.rut && <> · RUT {LEGAL.rut}</>}
                   <br />
-                  {LEGAL.address}
-                  <br />
+                  {LEGAL.address && <>{LEGAL.address}<br /></>}
                   <a href={`mailto:${LEGAL.emails.contact}`}>{LEGAL.emails.contact}</a>
                 </p>
               </footer>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LegalLayout, { type LegalSection } from '../../components/legal/LegalLayout';
-import { LEGAL, LEGAL_ROUTES } from '../../../../shared/config/legal';
+import { LEGAL, LEGAL_ROUTES, OWNER_NAME } from '../../../../shared/config/legal';
 
 // Proveedores que tratan datos por cuenta de CompensaTuViaje. Mantener
 // sincronizado con las integraciones reales del backend.
@@ -23,8 +23,9 @@ const sections: LegalSection[] = [
     title: 'Responsable del tratamiento',
     body: (
       <p>
-        El responsable de tus datos personales es <strong>{LEGAL.legalName}</strong>, RUT{' '}
-        {LEGAL.rut}, con domicilio en {LEGAL.address}. Para cualquier consulta sobre privacidad
+        El responsable de tus datos personales es <strong>{OWNER_NAME}</strong>
+        {LEGAL.rut && <>, RUT {LEGAL.rut}</>}
+        {LEGAL.address && <>, con domicilio en {LEGAL.address}</>}. Para cualquier consulta sobre privacidad
         escríbenos a <a href={`mailto:${LEGAL.emails.privacy}`}>{LEGAL.emails.privacy}</a>.
       </p>
     ),

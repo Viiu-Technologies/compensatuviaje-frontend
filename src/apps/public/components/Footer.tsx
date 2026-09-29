@@ -2,7 +2,7 @@ import { useState } from 'react';
 import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
 import { useGsapReveal } from '../hooks/useGsapReveal';
-import { LEGAL, LEGAL_ROUTES } from '../../../shared/config/legal';
+import { LEGAL, LEGAL_ROUTES, ownerLine } from '../../../shared/config/legal';
 import { subscribeToNewsletter } from '../services/newsService';
 import './Footer.css';
 
@@ -175,9 +175,7 @@ const Footer = () => {
           <p className="ft-bottom__copy">
             © {year} CompensaTuViaje. Todos los derechos reservados.
           </p>
-          <p className="ft-bottom__legal">
-            {LEGAL.legalName} · RUT {LEGAL.rut} · {LEGAL.address}
-          </p>
+          {ownerLine() && <p className="ft-bottom__legal">{ownerLine()}</p>}
         </div>
       </div>
     </footer>
