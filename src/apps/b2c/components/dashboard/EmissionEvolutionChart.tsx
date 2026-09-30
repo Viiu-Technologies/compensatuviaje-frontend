@@ -32,7 +32,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, a
         <p className="font-semibold text-gray-500 dark:text-slate-400 mb-0.5">
           {label} {year ?? ''}
         </p>
-        <p className={`text-sm font-bold ${isEmissions ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'} m-0`}>
+        <p className={`text-sm font-bold ${isEmissions ? 'text-brand-900' : 'text-brand-700'} m-0`}>
           {value} tCO₂e
         </p>
       </div>
@@ -44,7 +44,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, a
 export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState<'emissions' | 'compensated'>('emissions');
 
-  const strokeColor = activeTab === 'emissions' ? '#10b981' : '#3b82f6';
+  const strokeColor = activeTab === 'emissions' ? '#073D3D' : '#079705';
   const gradientId = activeTab === 'emissions' ? 'colorEmissions' : 'colorCompensated';
   const isEmpty = data.every((m) => !m.emissions && !m.compensated);
 
@@ -53,7 +53,7 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
       {/* Header with Title and Toggle */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+          <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-300 flex items-center justify-center text-sm">
             <FaChartBar />
           </div>
           <h3 className="text-base font-bold text-gray-900 dark:text-white m-0">
@@ -68,7 +68,7 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
             onClick={() => setActiveTab('emissions')}
             className={`px-3 py-1.5 rounded-lg transition-all border-0 cursor-pointer ${
               activeTab === 'emissions'
-                ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs font-bold'
+                ? 'bg-white dark:bg-slate-900 text-brand-700 dark:text-brand-300 shadow-xs font-bold'
                 : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 bg-transparent'
             }`}
           >
@@ -79,7 +79,7 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
             onClick={() => setActiveTab('compensated')}
             className={`px-3 py-1.5 rounded-lg transition-all border-0 cursor-pointer ${
               activeTab === 'compensated'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                ? 'bg-white dark:bg-slate-900 text-brand-700 shadow-xs font-bold'
                 : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 bg-transparent'
             }`}
           >
@@ -100,12 +100,12 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
           <AreaChart data={data} margin={{ top: 10, right: 12, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorEmissions" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#073D3D" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#073D3D" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="colorCompensated" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#079705" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#079705" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.6} />

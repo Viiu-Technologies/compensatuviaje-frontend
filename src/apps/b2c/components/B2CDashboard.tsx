@@ -18,6 +18,7 @@ import EmissionBreakdownDonut from './dashboard/EmissionBreakdownDonut';
 import RecentTripsTable from './dashboard/RecentTripsTable';
 import NextActionAndAchievement from './dashboard/NextActionAndAchievement';
 import { useAuth } from '../context/AuthContext';
+import { btn, fmtNum, fmtPercent, fmtInt, firstName } from '../ui';
 
 const PERIOD_OPTIONS: { id: DashboardPeriod; label: string }[] = [
   { id: '30d', label: 'Últimos 30 días' },
@@ -37,11 +38,11 @@ const Delta: React.FC<{ value: number | null; suffix?: string; lowerIsBetter?: b
   const good = lowerIsBetter ? !up : up;
   return (
     <div
-      className={`inline-flex items-center gap-1 text-[11px] font-bold ${
+      className={`inline-flex items-center gap-1 text-xs font-bold ${
         good ? 'text-brand-700 dark:text-brand-400' : 'text-rose-600 dark:text-rose-400'
       }`}
     >
-      {up ? <FaArrowUp className="text-[9px]" /> : <FaArrowDown className="text-[9px]" />}
+      {up ? <FaArrowUp className="text-xs" /> : <FaArrowDown className="text-xs" />}
       <span>
         {Math.abs(value)}
         {suffix}
@@ -82,7 +83,7 @@ export const B2CDashboard: React.FC = () => {
     return (
       <B2CLayout>
         <div className="space-y-6 animate-pulse">
-          <div className="h-44 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
+          <div className="h-44 bg-gray-200 dark:bg-slate-800 rounded-2xl" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 h-72 bg-gray-200 dark:bg-slate-800 rounded-2xl" />
             <div className="lg:col-span-5 h-72 bg-gray-200 dark:bg-slate-800 rounded-2xl" />
@@ -95,7 +96,7 @@ export const B2CDashboard: React.FC = () => {
   if (error && !data) {
     return (
       <B2CLayout>
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200/80 dark:border-slate-800 p-8 text-center">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 p-8 text-center">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white m-0 mb-2">
             No pudimos cargar tu resumen
           </h2>
@@ -105,7 +106,7 @@ export const B2CDashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setReloadKey((k) => k + 1)}
-            className="inline-flex items-center gap-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold px-5 py-2.5 rounded-full border-0 cursor-pointer"
+            className={btn.primary}
           >
             Reintentar
           </button>
@@ -129,7 +130,7 @@ export const B2CDashboard: React.FC = () => {
   const activePeriodLabel =
     PERIOD_OPTIONS.find((p) => p.id === selectedPeriod)?.label || 'Últimos 30 días';
 
-  const displayName = (user?.nombre || data.user.nombre || '').toUpperCase();
+  const displayName = firstName(user?.nombre || data.user.nombre, user?.email);
 
   // Header Right Period Filter Dropdown
   const headerFilterElement = (
@@ -141,7 +142,7 @@ export const B2CDashboard: React.FC = () => {
       >
         <FaCalendarAlt className="text-gray-400 text-xs" />
         <span>{activePeriodLabel}</span>
-        <FaChevronDown className="text-[10px] text-gray-400" />
+        <FaChevronDown className="text-xs text-gray-400" />
       </button>
 
       {periodDropdownOpen && (
@@ -188,7 +189,7 @@ export const B2CDashboard: React.FC = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs relative overflow-hidden"
+          className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs relative overflow-hidden"
         >
           {/* Card Header */}
           <div className="flex items-center gap-3 mb-6">
@@ -216,7 +217,7 @@ export const B2CDashboard: React.FC = () => {
                   <span>Emisiones totales</span>
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-none">
-                  {stats.totalEmissionsTons.toFixed(1)}{' '}
+                  {fmtNum(stats.totalEmissionsTons)}{' '}
                   <span className="text-xs font-semibold text-gray-400">tCO₂e</span>
                 </div>
                 <Delta value={stats.emissionsDeltaPercentage} suffix="%" lowerIsBetter />
@@ -229,11 +230,11 @@ export const B2CDashboard: React.FC = () => {
                   <span>Compensadas</span>
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-none">
-                  {stats.totalCompensatedTons.toFixed(1)}{' '}
+                  {fmtNum(stats.totalCompensatedTons)}{' '}
                   <span className="text-xs font-semibold text-gray-400">tCO₂e</span>
                 </div>
-                <div className="text-[11px] font-bold text-brand-700 dark:text-brand-400">
-                  {stats.compensationRate}%{' '}
+                <div className="text-xs font-bold text-brand-700 dark:text-brand-400">
+                  {fmtPercent(stats.compensationRate)}{' '}
                   <span className="text-gray-500 dark:text-slate-400 font-normal">
                     de tu huella
                   </span>
@@ -247,12 +248,12 @@ export const B2CDashboard: React.FC = () => {
                   <span>Pendientes</span>
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-none">
-                  {stats.totalPendingTons.toFixed(1)}{' '}
+                  {fmtNum(stats.totalPendingTons)}{' '}
                   <span className="text-xs font-semibold text-gray-400">tCO₂e</span>
                 </div>
-                <div className="text-[11px] text-gray-500 dark:text-slate-400 font-medium">
+                <div className="text-xs text-gray-500 dark:text-slate-400 font-medium">
                   <span className="font-bold text-gray-700 dark:text-slate-300">
-                    {stats.pendingRate}%
+                    {fmtPercent(stats.pendingRate)}
                   </span>{' '}
                   por compensar
                 </div>
@@ -265,7 +266,7 @@ export const B2CDashboard: React.FC = () => {
                   <span>Viajes registrados</span>
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-none">
-                  {stats.totalFlights}
+                  {fmtInt(stats.totalFlights)}
                 </div>
                 <Delta value={stats.flightsDeltaCount} />
               </div>
@@ -286,7 +287,7 @@ export const B2CDashboard: React.FC = () => {
                   {stats.totalPendingTons > 0 ? (
                     <>
                       Te quedan{' '}
-                      <span className="font-bold">{stats.totalPendingTons.toFixed(1)} tCO₂e</span> por
+                      <span className="font-bold">{fmtNum(stats.totalPendingTons)} tCO₂e</span> por
                       compensar en este período.
                     </>
                   ) : stats.totalFlights > 0 ? (
@@ -299,7 +300,7 @@ export const B2CDashboard: React.FC = () => {
 
               <Link
                 to="/b2c/projects"
-                className="inline-flex items-center justify-center gap-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xs hover:shadow-md transition-all no-underline w-fit"
+                className={`${btn.primary} w-fit`}
               >
                 <FaLeaf className="text-xs" />
                 <span>Ver proyectos</span>

@@ -2,6 +2,7 @@ import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { FaClock, FaPlane } from 'react-icons/fa';
 import { EmissionCategoryItem } from '../../services/b2cApi';
+import { fmtNum } from '../../ui';
 
 interface EmissionBreakdownDonutProps {
   categories: EmissionCategoryItem[];
@@ -16,7 +17,7 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between h-full">
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-6">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+        <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-300 flex items-center justify-center text-sm">
           <FaClock />
         </div>
         <h3 className="text-base font-bold text-gray-900 dark:text-white m-0">
@@ -55,9 +56,9 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
           {/* Centered Total Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className="text-2xl font-black text-gray-900 dark:text-white leading-none">
-              {totalTons.toFixed(1)}
+              {fmtNum(totalTons)}
             </span>
-            <span className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 mt-1">
+            <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 mt-1">
               tCO₂e
             </span>
           </div>
@@ -85,7 +86,7 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
                   {cat.percentage}%
                 </span>
                 <span className="text-gray-400 dark:text-slate-500 min-w-[50px] text-right font-medium">
-                  {cat.tons.toFixed(1)} tCO₂e
+                  {fmtNum(cat.tons)} tCO₂e
                 </span>
               </div>
             </div>

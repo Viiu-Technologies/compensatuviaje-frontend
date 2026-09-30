@@ -79,7 +79,7 @@ export interface B2CCertificate {
   id: string;
   certificateNumber: string;
   date: string;
-  co2Compensated: number;      // kg CO2 congelados al momento de la compra (= co2_kg_compensated en BD)
+  co2Compensated: number;      // Toneladas de CO₂ (el backend envía tonsCompensated del certificado)
   unitsFinanced?: number;      // Unidades físicas congeladas (Ej: 50 árboles)
   impactUnit?: string | null;  // Nombre de la unidad (Ej: "árboles")
   project: string;
@@ -235,8 +235,8 @@ const ACHIEVEMENT_LEVELS = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  international: '#059669',
-  national: '#3b82f6',
+  international: '#046302',
+  national: '#93DC88',
 };
 
 /** Próximo nivel según lo compensado en todo el historial; null si ya tiene el máximo. */
@@ -314,7 +314,7 @@ export function normalizeDashboardData(raw: Partial<DashboardData>): DashboardDa
     monthlyEvolution: raw.monthlyEvolution ?? [],
     emissionsByCategory: (raw.emissionsByCategory ?? []).map((c) => ({
       ...c,
-      color: CATEGORY_COLORS[c.id] ?? '#10b981',
+      color: CATEGORY_COLORS[c.id] ?? '#079705',
       icon: 'plane',
     })),
     nextAchievement: nextAchievementFor(lifetimeCompensatedKg),

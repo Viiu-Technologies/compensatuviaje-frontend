@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlane, FaChevronRight, FaLeaf, FaTree } from 'react-icons/fa';
 import { RecentTripItem } from '../../services/b2cApi';
+import { fmtNum } from '../../ui';
 
 interface RecentTripsTableProps {
   trips: RecentTripItem[];
@@ -34,7 +35,7 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-300 flex items-center justify-center text-sm">
               <FaPlane />
             </div>
             <div>
@@ -51,7 +52,7 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
         {trips.length === 0 ? (
           <p className="text-xs text-gray-500 dark:text-slate-400 m-0 py-6 text-center">
             Todavía no registras viajes.{' '}
-            <Link to="/b2c/calculator" className="font-bold text-emerald-600 dark:text-emerald-400 no-underline">
+            <Link to="/b2c/calculator" className="font-bold text-brand-600 dark:text-brand-300 no-underline">
               Calcula tu primera huella
             </Link>
           </p>
@@ -84,9 +85,9 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
                       <span>{trip.origin} → {trip.destination}</span>
                       {trip.routeType && (
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                             trip.routeType === 'Internacional'
-                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                              ? 'bg-gray-100 text-gray-700 dark: dark:'
                               : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
                           }`}
                         >
@@ -106,11 +107,11 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
 
                   {/* Emisiones */}
                   <td className="py-3 px-3 font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                    {trip.co2Tons.toFixed(1)} tCO₂e
+                    {fmtNum(trip.co2Tons)} tCO₂e
                   </td>
 
                   {/* Action Arrow */}
-                  <td className="py-3 px-3 text-right text-gray-300 dark:text-slate-600 group-hover:text-emerald-600 transition-colors">
+                  <td className="py-3 px-3 text-right text-gray-300 dark:text-slate-600 group-hover:text-brand-600 transition-colors">
                     <FaChevronRight className="text-xs" />
                   </td>
                 </tr>
@@ -124,7 +125,7 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
         <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 text-right">
           <Link
             to="/b2c/flights"
-            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 inline-flex items-center gap-1.5 no-underline transition-colors"
+            className="text-xs font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-300 inline-flex items-center gap-1.5 no-underline transition-colors"
           >
             Ver todos los viajes →
           </Link>
@@ -133,9 +134,9 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
 
       {/* Tu huella vs el planeta Banner: solo si ya compensó algo */}
       {compensatedTons > 0 && (
-      <div className="bg-[#f0f9f4] dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div className="bg-[#f0f9f4] dark:bg-brand-950/20 border border-brand-100 dark:border-brand-800/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0 text-sm">
+          <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 flex items-center justify-center flex-shrink-0 text-sm">
             <FaLeaf />
           </div>
           <div>
@@ -143,18 +144,18 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
               Tu huella vs. el planeta
             </h4>
             <p className="text-xs text-gray-600 dark:text-slate-300 m-0 mt-0.5">
-              Con <span className="font-semibold">{compensatedTons.toFixed(1)} tCO₂e</span> compensadas, estás ayudando a proteger bosques y comunidades.
+              Con <span className="font-semibold">{fmtNum(compensatedTons)} tCO₂e</span> compensadas, estás ayudando a proteger bosques y comunidades.
             </p>
           </div>
         </div>
 
         <Link
           to="/b2c/projects"
-          className="inline-flex items-center gap-2 bg-emerald-100/80 dark:bg-emerald-900/60 hover:bg-emerald-200/80 dark:hover:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold no-underline transition-colors flex-shrink-0 self-end sm:self-center"
+          className="inline-flex items-center gap-2 bg-brand-100/80 dark:bg-brand-900/60 hover:bg-brand-200/80 dark:hover:bg-brand-800/60 text-brand-800 dark:text-brand-200 px-3.5 py-1.5 rounded-full text-xs font-bold no-underline transition-colors flex-shrink-0 self-end sm:self-center"
         >
-          <FaTree className="text-emerald-600 dark:text-emerald-400" />
+          <FaTree className="text-brand-600 dark:text-brand-300" />
           <span>= {treesEquivalent} árboles durante 1 año</span>
-          <FaChevronRight className="text-[10px]" />
+          <FaChevronRight className="text-xs" />
         </Link>
       </div>
       )}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaLeaf, FaTrophy, FaChevronRight } from 'react-icons/fa';
 import { NextAchievementItem } from '../../services/b2cApi';
+import { fmtNum, btn } from '../../ui';
 
 interface NextActionAndAchievementProps {
   pendingTons: number;
@@ -16,7 +17,7 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
   return (
     <div className="space-y-4">
       {/* 1. Tu próxima acción Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#ebf8f0] to-[#e0f5e9] dark:from-emerald-950/40 dark:to-emerald-900/30 border border-emerald-200/80 dark:border-emerald-800/40 rounded-2xl p-6 shadow-xs">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#ebf8f0] to-[#e0f5e9] dark:from-brand-950/40 dark:to-brand-900/30 border border-brand-200/80 dark:border-brand-800/40 rounded-2xl p-6 shadow-xs">
         {/* Subtle Decorative Tree SVGs in background corner */}
         <div className="absolute right-0 bottom-0 pointer-events-none opacity-40 dark:opacity-20 translate-x-2 translate-y-2">
           <svg width="180" height="110" viewBox="0 0 180 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -30,17 +31,17 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
         {/* Card Content */}
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-emerald-200/80 dark:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200 flex items-center justify-center text-xs">
+            <div className="w-7 h-7 rounded-full bg-brand-200/80 dark:bg-brand-800/60 text-brand-800 dark:text-brand-200 flex items-center justify-center text-xs">
               <FaLeaf />
             </div>
-            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+            <span className="text-xs font-bold text-brand-800 dark:text-brand-300">
               Tu próxima acción
             </span>
           </div>
 
           <h3 className="text-lg font-extrabold text-gray-900 dark:text-white m-0 mb-1.5 leading-snug">
             {pendingTons > 0
-              ? `Compensa ${pendingTons.toFixed(1)} tCO₂e restantes`
+              ? `Compensa ${fmtNum(pendingTons)} tCO₂e restantes`
               : 'No tienes emisiones pendientes'}
           </h3>
 
@@ -51,7 +52,7 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <Link
               to="/b2c/projects"
-              className="inline-flex items-center gap-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all no-underline"
+              className={btn.primary}
             >
               <FaLeaf className="text-xs" />
               <span>Ver proyectos</span>
@@ -59,10 +60,10 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
 
             <Link
               to="/b2c/certificates"
-              className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 inline-flex items-center gap-1 no-underline transition-colors"
+              className="text-xs font-bold text-brand-700 dark:text-brand-300 hover:text-brand-800 dark:hover:text-brand-200 inline-flex items-center gap-1 no-underline transition-colors"
             >
               <span>Ver todas las compensaciones</span>
-              <FaChevronRight className="text-[10px]" />
+              <FaChevronRight className="text-xs" />
             </Link>
           </div>
         </div>
@@ -89,17 +90,17 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
           <div className="w-full max-w-xs mt-3">
             <div className="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                className="h-full bg-brand-600 rounded-full transition-all duration-700"
                 style={{ width: `${nextAchievement.progressPercentage}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-slate-500 mt-1">
+            <div className="flex items-center justify-between text-xs text-gray-400 dark:text-slate-500 mt-1">
               <span>
                 {nextAchievement.currentKg > 0
                   ? `Te faltan ${nextAchievement.remainingKg} kg CO₂e`
                   : 'Aún no has compensado ningún viaje'}
               </span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="font-bold text-brand-600 dark:text-brand-300">
                 {nextAchievement.progressPercentage}%
               </span>
             </div>
@@ -107,17 +108,17 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
 
           <Link
             to="/b2c/achievements"
-            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 inline-flex items-center gap-1 mt-2.5 no-underline transition-colors"
+            className="text-xs font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-300 inline-flex items-center gap-1 mt-2.5 no-underline transition-colors"
           >
             <span>Ver todos los logros</span>
-            <FaChevronRight className="text-[10px]" />
+            <FaChevronRight className="text-xs" />
           </Link>
         </div>
 
         {/* Right Gold Ring Badge Graphic */}
         <div className="flex-shrink-0 relative w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 dark:from-amber-900/40 dark:to-amber-700/40 p-1 flex items-center justify-center shadow-inner">
           <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center border border-amber-300 dark:border-amber-600">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-lg shadow-xs">
+            <div className="w-10 h-10 rounded-full bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600 dark:text-brand-300 text-lg shadow-xs">
               🌱
             </div>
           </div>
