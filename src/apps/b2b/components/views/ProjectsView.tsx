@@ -27,10 +27,9 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../../../shared/context/ThemeContext';
 import { 
-  getProjects, 
-  getMockProjects,
-  filterMockProjects,
-  type Project 
+  getProjects,
+  filterProjects,
+  type Project
 } from '../../services/projectsService';
 import { createOrder, getBankDetails, getEmissionDebt, type BankDetails, type EmissionDebt } from '../../services/ordersService';
 import { calculateUnitsFromTons, calculateTonsFromUnits } from '../../../../utils/carbon';
@@ -340,24 +339,29 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [projects, setProjects] = useState<Project[]>([]);
   const [checkoutProject, setCheckoutProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const loadProjects = async () => {
       setIsLoading(true);
+      setLoadError(false);
       try {
         const realProjects = await getProjects({ type: filterType, status: filterStatus, search: searchQuery });
         setProjects(realProjects);
       } catch (error) {
+        // Sin proyectos de ejemplo: se podía iniciar una compra sobre uno que no existe.
         console.error('Error loading projects:', error);
-        setProjects(getMockProjects());
+        setProjects([]);
+        setLoadError(true);
       } finally {
         setIsLoading(false);
       }
     };
     loadProjects();
-  }, [filterType, filterStatus, searchQuery]);
+  }, [filterType, filterStatus, searchQuery, reloadKey]);
 
   const projectTypes = [
     { value: 'all', label: 'Todos', icon: Grid },
@@ -393,7 +397,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
     ));
   };
 
-  const filteredProjects = filterMockProjects(projects, {
+  const filteredProjects = filterProjects(projects, {
     search: searchQuery,
     type: filterType,
     status: filterStatus
@@ -707,11 +711,30 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ onNavigateToOrders }) => {
         </motion.div>
       </AnimatePresence>
 
-      {filteredProjects.length === 0 && (
+      {loadError ? (
+        <div className="!text-center !py-12">
+          <AlertCircle className={`!w-16 !h-16 !mx-auto !mb-4 ${isDark ? '!text-gray-600' : '!text-gray-300'}`} />
+          <h3 className={`!text-lg !font-semibold ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>No pudimos cargar los proyectos</h3>
+          <p className={`!text-sm !mb-4 ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Revisa tu conexión y vuelve a intentarlo.</p>
+          <button
+            type="button"
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="!px-5 !py-2 !rounded-xl !bg-green-600 hover:!bg-green-700 !text-white !text-sm !font-semibold !border-0 !cursor-pointer"
+          >
+            Reintentar
+          </button>
+        </div>
+      ) : filteredProjects.length === 0 && (
         <div className="!text-center !py-12">
           <TreePine className={`!w-16 !h-16 !mx-auto !mb-4 ${isDark ? '!text-gray-600' : '!text-gray-300'}`} />
-          <h3 className={`!text-lg !font-semibold ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>No se encontraron proyectos</h3>
-          <p className={`!text-sm ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>Intenta ajustar los filtros de búsqueda</p>
+          <h3 className={`!text-lg !font-semibold ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
+            {projects.length === 0 ? 'Aún no hay proyectos disponibles' : 'No se encontraron proyectos'}
+          </h3>
+          <p className={`!text-sm ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>
+            {projects.length === 0
+              ? 'Estamos verificando nuevos proyectos. Vuelve pronto.'
+              : 'Intenta ajustar los filtros de búsqueda'}
+          </p>
         </div>
       )}
     </div>
