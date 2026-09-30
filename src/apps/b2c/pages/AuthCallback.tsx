@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import authService from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
+import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
 
 const AuthCallback: React.FC = () => {
+  useTailwindSpacing();
+  useForceLightTheme();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
@@ -47,7 +51,7 @@ const AuthCallback: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           {status === 'processing' && (

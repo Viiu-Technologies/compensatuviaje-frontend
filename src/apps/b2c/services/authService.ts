@@ -114,10 +114,6 @@ class AuthService {
       if (error) throw error;
       if (!data.session) return null;
 
-      // LOG: Mostrar JWT de Supabase en consola
-      console.log('🔑 [B2C] Supabase JWT Token:', data.session.access_token);
-      console.log('👤 [B2C] Supabase User:', data.session.user);
-
       // Verificar token con nuestro backend
       const user = await this.verifyTokenWithBackend(data.session.access_token);
       
@@ -158,7 +154,6 @@ class AuthService {
       return null;
     }
 
-    console.log('🔍 [AuthService] Obteniendo sesión de Supabase...');
     
     try {
       // Timeout para evitar que se quede pegado indefinidamente
@@ -174,7 +169,6 @@ class AuthService {
         return null;
       }
       
-      console.log('✅ [AuthService] Sesión obtenida:', data.session ? 'Activa' : 'Ninguna');
       return data.session;
     } catch (error) {
       console.error('❌ [AuthService] Excepción en getSession:', error);
@@ -186,15 +180,12 @@ class AuthService {
    * Obtener datos del usuario actual del backend
    */
   async getCurrentUser(providedSession?: AuthSession | null): Promise<B2CUser | null> {
-    console.log('👤 [AuthService] getCurrentUser: Iniciando...');
     try {
       const session = providedSession || await this.getSession();
       if (!session) {
-        console.log('👤 [AuthService] getCurrentUser: No hay sesión activa.');
         return null;
       }
 
-      console.log('👤 [AuthService] getCurrentUser: Sesión encontrada, consultando backend...');
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
 
@@ -219,7 +210,6 @@ class AuthService {
         return null;
       }
       
-      console.log('✅ [AuthService] getCurrentUser: Usuario obtenido del backend:', data.data.user);
       return data.data.user;
     } catch (error: any) {
       if (error.name === 'AbortError') {

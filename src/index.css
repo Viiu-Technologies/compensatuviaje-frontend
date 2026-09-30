@@ -108,6 +108,15 @@
 /* Base Styles */
 * {
   box-sizing: border-box;
+}
+
+/* Este reset va sin capa y por eso les gana a las utilidades de Tailwind
+   (p-6, mt-4…), que viven en @layer utilities. Varias zonas se escribieron
+   contando con eso, así que se mantiene, salvo donde se activa
+   html.tw-spacing (el área B2C): ahí basta el preflight de Tailwind, que
+   también pone margin/padding en 0 pero dentro de @layer base.
+   :where() deja la especificidad en 0, igual que el * de antes. */
+:where(html:not(.tw-spacing)) * {
   margin: 0;
   padding: 0;
 }

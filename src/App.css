@@ -1,10 +1,13 @@
 @import './apps/public/components/landing/tokens.css';
 
-/* Reset y estilos globales */
+/* Reset y estilos globales. Mismo criterio que en index.css: no aplica
+   bajo html.tw-spacing (área B2C), donde rige el preflight de Tailwind. */
 * {
+  box-sizing: border-box;
+}
+:where(html:not(.tw-spacing)) * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
