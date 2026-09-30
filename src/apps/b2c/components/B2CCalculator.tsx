@@ -1,31 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { 
-  FaPlane, 
-  FaLeaf, 
-  FaTree, 
-  FaWater, 
-  FaHome,
-  FaTshirt,
-  FaMapMarkerAlt,
-  FaUsers,
-  FaExchangeAlt,
-  FaCheckCircle,
-  FaArrowLeft,
-  FaLock,
-  FaShieldAlt,
-  FaCertificate,
-  FaSpinner,
-  FaGlobeAmericas,
-  FaInfoCircle,
-  FaDownload
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  FaPlane, FaLeaf, FaMapMarkerAlt, FaUsers, FaExchangeAlt, FaCheckCircle, FaArrowLeft, FaSpinner, FaInfoCircle,
+  FaMinus, FaPlus, FaArrowRight,
 } from 'react-icons/fa';
-import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
-import CertificateGenerator from './CertificateGenerator';
+import B2CLayout from './B2CLayout';
+import { Card, CardHeader, btn, cx, fmtInt, fmtNum } from '../ui';
 
-// Types
+/**
+ * Calculadora de huella de un vuelo (área B2C).
+ *
+ * Cambios respecto de la versión anterior:
+ *  - Vive dentro del layout del área (menú lateral), no con encabezado propio.
+ *  - Sin emojis para las clases de cabina ni degradados.
+ *  - Se quitó el paso "¡Felicitaciones!": nunca se mostraba (el pago ocurre en
+ *    Proyectos y vuelve por PaymentResultPage) y generaba un certificado con
+ *    el proyecto escrito a mano ("Proyecto de Reforestación Nativa") y monto 0.
+ *  - Se quitaron las "equivalencias" del resultado (árboles, litros, m² de
+ *    vivienda, kg de textiles): eran proporciones fijas del backend, distintas
+ *    de las que usan los certificados (1 árbol por tonelada aquí, 50 allá) y no
+ *    dependían del proyecto. Lo que financia la compensación se ve en el paso
+ *    siguiente, con los datos reales de cada proyecto.
+ */
+
 interface Airport {
   code: string;
   name: string;
@@ -53,82 +51,59 @@ interface CalculationResult {
     factorUsed: number;
     passengers: number;
   };
-  equivalencies: {
-    trees: number;
-    waterLiters: number;
-    housingM2: number;
-    textileKg: number;
-  };
 }
 
-type Step = 'form' | 'result' | 'success';
+type Step = 'form' | 'result';
 
 interface B2CCalculatorProps {
   projectId?: string | null;
 }
 
 const CABIN_OPTIONS = [
-  { value: 'economy', label: 'Económica', icon: '💺', description: 'Clase estándar' },
-  { value: 'premium_economy', label: 'Premium', icon: '🛋️', description: 'Mayor espacio' },
-  { value: 'business', label: 'Business', icon: '💼', description: 'Clase ejecutiva' },
-  { value: 'first', label: 'Primera', icon: '👑', description: 'Máximo confort' }
+  { value: 'economy', label: 'Económica' },
+  { value: 'premium_economy', label: 'Premium económica' },
+  { value: 'business', label: 'Business' },
+  { value: 'first', label: 'Primera' },
 ];
 
-// Backend API URL - Puerto 3001
 const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Debounce Hook
 function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debounced, setDebounced] = useState(value);
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    const handler = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(handler);
   }, [value, delay]);
-  return debouncedValue;
+  return debounced;
 }
 
-// Airport Search Component - Mejorado
+/** Buscador de aeropuertos con sugerencias. */
 const AirportSearchInput: React.FC<{
+  id: string;
   value: Airport | null;
   onChange: (airport: Airport | null) => void;
   placeholder: string;
   label: string;
-  colorScheme: 'green' | 'orange';
-}> = ({ value, onChange, placeholder, label, colorScheme }) => {
+}> = ({ id, value, onChange, placeholder, label }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Airport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
 
-  const colors = {
-    green: {
-      icon: '!text-emerald-600',
-      bg: '!bg-emerald-50',
-      border: '!border-emerald-500',
-      ring: '!ring-emerald-500/20',
-      label: '!text-emerald-700'
-    },
-    orange: {
-      icon: '!text-orange-500',
-      bg: '!bg-orange-50',
-      border: '!border-orange-500',
-      ring: '!ring-orange-500/20',
-      label: '!text-orange-600'
-    }
-  };
-
-  const scheme = colors[colorScheme];
+  // Si el aeropuerto llega desde fuera (precarga desde "Mis viajes"), mostrarlo en el campo.
+  useEffect(() => {
+    if (value) setQuery(`${value.city} (${value.code})`);
+  }, [value]);
 
   useEffect(() => {
     if (debouncedQuery.length >= 2 && !value) {
       setIsLoading(true);
       fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(debouncedQuery)}`)
-        .then(res => res.json())
-        .then(data => {
-          // Backend retorna { success: true, data: airports[] }
-          const airports = data.success ? data.data : (data.airports || []);
+        .then((res) => res.json())
+        .then((data) => {
+          // El backend responde { success: true, data: airports[] }
+          const airports = data.success ? data.data : data.airports || [];
           setResults(airports);
           setShowResults(airports.length > 0);
         })
@@ -152,108 +127,95 @@ const AirportSearchInput: React.FC<{
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
-    if (value && val !== `${value.city} (${value.code})`) {
-      onChange(null);
-    }
+    if (value && val !== `${value.city} (${value.code})`) onChange(null);
   };
 
   return (
-    <div className="!relative">
-      <label className={`!flex !items-center !gap-2 !text-sm !font-semibold !mb-2 ${scheme.label}`}>
-        <FaMapMarkerAlt className={scheme.icon} />
+    <div className="relative">
+      <label htmlFor={id} className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+        <FaMapMarkerAlt className="text-gray-400" aria-hidden="true" />
         {label}
       </label>
-      <div className="!relative">
+      <div className="relative">
         <input
+          id={id}
           type="text"
+          autoComplete="off"
           value={query}
           onChange={handleInputChange}
-          onFocus={() => { setIsFocused(true); results.length > 0 && setShowResults(true); }}
-          onBlur={() => { setIsFocused(false); setTimeout(() => setShowResults(false), 200); }}
+          onFocus={() => results.length > 0 && setShowResults(true)}
+          onBlur={() => setTimeout(() => setShowResults(false), 200)}
           placeholder={placeholder}
-          className={`!w-full !px-4 !py-4 !rounded-xl !border-2 !transition-all !duration-300 !outline-none !text-gray-800 !font-medium !placeholder-gray-400 ${
-            value 
-              ? `${scheme.border} ${scheme.bg}` 
-              : isFocused
-                ? `${scheme.border} !bg-white !ring-4 ${scheme.ring}`
-                : '!border-gray-200 !bg-white hover:!border-gray-300'
-          }`}
+          aria-autocomplete="list"
+          aria-expanded={showResults}
+          className={cx(
+            'w-full rounded-xl border px-4 py-3 pr-10 text-gray-900 bg-white outline-none transition-colors placeholder:text-gray-400',
+            value ? 'border-brand-700 bg-brand-50/40' : 'border-gray-300 focus:border-brand-700',
+          )}
         />
-        <div className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !flex !items-center !gap-2">
-          {isLoading && (
-            <FaSpinner className={`${scheme.icon} !animate-spin !text-lg`} />
-          )}
-          {value && !isLoading && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className={`!w-7 !h-7 !rounded-full !bg-gradient-to-br !from-emerald-400 !to-emerald-600 !flex !items-center !justify-center !shadow-lg`}
-            >
-              <FaCheckCircle className="!text-white !text-sm" />
-            </motion.div>
-          )}
-        </div>
+        <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+          {isLoading ? (
+            <FaSpinner className="animate-spin text-gray-400" aria-hidden="true" />
+          ) : value ? (
+            <FaCheckCircle className="text-brand-700" aria-label="Aeropuerto seleccionado" />
+          ) : null}
+        </span>
       </div>
 
-      <AnimatePresence>
-        {showResults && results.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            className="!absolute !top-full !left-0 !right-0 !mt-2 !bg-white !rounded-2xl !shadow-2xl !border !border-gray-100 !max-h-72 !overflow-y-auto !z-50 !backdrop-blur-xl"
-          >
-            {results.map((airport, idx) => (
-              <motion.button
-                key={airport.code}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
+      {showResults && results.length > 0 && (
+        <ul className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-lg border border-gray-200 max-h-72 overflow-y-auto z-50 m-0 p-1 list-none" role="listbox">
+          {results.map((airport) => (
+            <li key={airport.code}>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(airport)}
-                className="!w-full !px-4 !py-3 !text-left hover:!bg-gradient-to-r hover:!from-emerald-50 hover:!to-green-50 !transition-all !duration-200 !border-b !border-gray-50 last:!border-0 !flex !items-center !gap-4 !cursor-pointer !bg-transparent"
+                className="w-full px-3 py-2.5 text-left rounded-lg hover:bg-gray-50 flex items-center gap-3 cursor-pointer bg-transparent border-0"
               >
-                <div className="!w-12 !h-12 !rounded-xl !bg-gradient-to-br !from-emerald-100 !to-green-100 !flex !items-center !justify-center !text-emerald-700 !font-bold !text-sm !shadow-sm">
+                <span className="w-12 h-9 rounded-lg bg-gray-100 text-gray-800 font-mono font-semibold text-sm flex items-center justify-center flex-shrink-0">
                   {airport.code}
-                </div>
-                <div className="!flex-1">
-                  <div className="!font-semibold !text-gray-800">{airport.city}</div>
-                  <div className="!text-sm !text-gray-500">{airport.name}</div>
-                </div>
-                <div className="!text-xs !text-gray-400 !bg-gray-100 !px-2 !py-1 !rounded-full">
-                  {airport.country}
-                </div>
-              </motion.button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className="block font-medium text-gray-900 truncate">{airport.city}</span>
+                  <span className="block text-sm text-gray-500 truncate">{airport.name}</span>
+                </span>
+                <span className="text-xs text-gray-500">{airport.country}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
 
-const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromProps }) => {
+const choice = (active: boolean) =>
+  cx(
+    'rounded-xl border px-3 py-2.5 text-sm font-medium cursor-pointer transition-colors text-center',
+    active ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+  );
+
+const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>('form');
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCertificate, setShowCertificate] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     origin: null as Airport | null,
     destination: null as Airport | null,
     cabinCode: 'economy',
     passengers: 1,
-    roundTrip: true
+    roundTrip: true,
   });
-  
+
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [calculationId, setCalculationId] = useState<string | null>(null);
   const [distance, setDistance] = useState(0);
-  const [paymentSuccess, setPaymentSuccess] = useState<any>(null);
 
-  // Precarga de datos desde query params (cuando viene desde "Mis Viajes")
+  // Precarga desde "Mis viajes" (query params)
   useEffect(() => {
     const origin = searchParams.get('origin');
     const destination = searchParams.get('destination');
@@ -263,72 +225,57 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
     const calcId = searchParams.get('calculationId');
 
     if (origin && destination) {
-      // Actualizar campos básicos de forma
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         cabinCode: cabin || 'economy',
         passengers: passengers ? parseInt(passengers) : 1,
-        roundTrip: roundTrip === 'true'
+        roundTrip: roundTrip === 'true',
       }));
-      
-      if (calcId) {
-        setCalculationId(calcId);
-      }
+      if (calcId) setCalculationId(calcId);
 
-      // Buscar los aeropuertos por código
       const fetchAirports = async () => {
         try {
           const [originRes, destRes] = await Promise.all([
             fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(origin)}`),
-            fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(destination)}`)
+            fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(destination)}`),
           ]);
-
           const originData = await originRes.json();
           const destData = await destRes.json();
-
-          const originAirports = originData.success ? originData.data : (originData.airports || []);
-          const destAirports = destData.success ? destData.data : (destData.airports || []);
-
-          // Seleccionar el primer resultado o exacta matchdel código
+          const originAirports = originData.success ? originData.data : originData.airports || [];
+          const destAirports = destData.success ? destData.data : destData.airports || [];
           const originAirport = originAirports.find((a: any) => a.code === origin) || originAirports[0];
           const destAirport = destAirports.find((a: any) => a.code === destination) || destAirports[0];
-
-          if (originAirport) {
-            setFormData(prev => ({ ...prev, origin: originAirport }));
-          }
-          if (destAirport) {
-            setFormData(prev => ({ ...prev, destination: destAirport }));
-          }
+          if (originAirport) setFormData((prev) => ({ ...prev, origin: originAirport }));
+          if (destAirport) setFormData((prev) => ({ ...prev, destination: destAirport }));
         } catch (err) {
           console.error('Error precargando aeropuertos:', err);
         }
       };
-
       fetchAirports();
     }
   }, [searchParams]);
 
-  // Calcular distancia cuando se seleccionan ambos aeropuertos
+  // Distancia de referencia (gran círculo) mientras se completa el formulario
   useEffect(() => {
     if (formData.origin?.lat && formData.destination?.lat) {
       const R = 6371;
-      const dLat = ((formData.destination.lat || 0) - (formData.origin.lat || 0)) * Math.PI / 180;
-      const dLon = ((formData.destination.lon || 0) - (formData.origin.lon || 0)) * Math.PI / 180;
-      const a = Math.sin(dLat / 2) ** 2 +
-        Math.cos((formData.origin.lat || 0) * Math.PI / 180) * 
-        Math.cos((formData.destination.lat || 0) * Math.PI / 180) *
-        Math.sin(dLon / 2) ** 2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      setDistance(Math.round(R * c));
+      const dLat = (((formData.destination.lat || 0) - (formData.origin.lat || 0)) * Math.PI) / 180;
+      const dLon = (((formData.destination.lon || 0) - (formData.origin.lon || 0)) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(((formData.origin.lat || 0) * Math.PI) / 180) *
+          Math.cos(((formData.destination.lat || 0) * Math.PI) / 180) *
+          Math.sin(dLon / 2) ** 2;
+      setDistance(Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))));
+    } else {
+      setDistance(0);
     }
   }, [formData.origin, formData.destination]);
 
   const handleCalculate = async () => {
     if (!formData.origin || !formData.destination) return;
-
     setIsCalculating(true);
     setError(null);
-    
     try {
       const response = await fetch(`${API_URL}/public/calculator/estimate`, {
         method: 'POST',
@@ -339,25 +286,21 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
           cabinCode: formData.cabinCode,
           passengers: formData.passengers,
           roundTrip: formData.roundTrip,
-          userId: user?.id // Enviar userId si está autenticado
-        })
+          userId: user?.id, // Enviar userId si está autenticado
+        }),
       });
-
       const data = await response.json();
-      
-      // El backend retorna directamente el resultado con status: 'success'
       if (data.status === 'success') {
         setResult(data);
-        if (data.calculationId) {
-          setCalculationId(data.calculationId);
-        }
+        if (data.calculationId) setCalculationId(data.calculationId);
         setCurrentStep('result');
       } else {
-        setError(data.message || 'Error al calcular emisiones');
+        setError(data.message || 'No pudimos calcular las emisiones de este vuelo.');
       }
     } catch (err) {
       console.error('Error calculating:', err);
-      setError('Error de conexión. Verifica que el servidor esté corriendo.');
+      // Antes: "Verifica que el servidor esté corriendo" (mensaje para desarrolladores).
+      setError('No pudimos calcular. Revisa tu conexión y vuelve a intentarlo.');
     } finally {
       setIsCalculating(false);
     }
@@ -373,632 +316,192 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = ({ projectId: projectIdFromP
     navigate(`/b2c/projects?${params.toString()}`);
   };
 
-  const resetCalculator = () => {
-    setFormData({
-      origin: null,
-      destination: null,
-      cabinCode: 'economy',
-      passengers: 1,
-      roundTrip: true
-    });
-    setResult(null);
-    setCalculationId(null);
-    setPaymentSuccess(null);
-    setCurrentStep('form');
-    setError(null);
-  };
-
-  const canCalculate = formData.origin && formData.destination;
+  const canCalculate = Boolean(formData.origin && formData.destination);
 
   return (
-    <div className="!min-h-screen !bg-gradient-to-br !from-slate-50 !via-emerald-50/40 !to-teal-50/30">
-      {/* Header Mejorado */}
-      <header className="!bg-white/70 !backdrop-blur-xl !border-b !border-gray-200/50 !sticky !top-0 !z-50">
-        <div className="!max-w-6xl !mx-auto !px-4 sm:!px-6 !py-4 !flex !items-center !justify-between">
-          <motion.button 
-            whileHover={{ x: -3 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate('/b2c/dashboard')}
-            className="!flex !items-center !gap-2 !text-gray-600 hover:!text-emerald-700 !transition-colors !bg-transparent !border-0 !cursor-pointer !font-medium"
-          >
-            <FaArrowLeft className="!text-lg" />
-            <span className="!hidden sm:!inline">Volver al Dashboard</span>
-          </motion.button>
-          
-          <div className="!flex !items-center !gap-3">
-            <motion.div 
-              whileHover={{ rotate: 15 }}
-              className="!w-11 !h-11 !rounded-xl !bg-gradient-to-br !from-emerald-500 !to-teal-600 !flex !items-center !justify-center !shadow-lg !shadow-emerald-500/30"
+    <B2CLayout title="Calcular CO₂" subtitle="Calcula la huella de un vuelo y compénsala con un proyecto verificado">
+      {currentStep === 'form' && (
+        <div className="grid lg:grid-cols-3 gap-6 items-start">
+          <Card className="p-6 lg:col-span-2">
+            <CardHeader icon={FaPlane} title="Datos del vuelo" subtitle="Busca por ciudad o código IATA" />
+            <form
+              className="space-y-6"
+              onSubmit={(e) => { e.preventDefault(); if (canCalculate && !isCalculating) handleCalculate(); }}
             >
-              <FaLeaf className="!text-white !text-xl" />
-            </motion.div>
-            <div className="!hidden sm:!block">
-              <h1 className="!font-bold !text-gray-900 !text-lg !m-0 !leading-tight">Calculadora CO₂</h1>
-              <p className="!text-xs !text-gray-500 !m-0">Compensa tu huella de carbono</p>
-            </div>
-          </div>
-          
-          <div className="!flex !items-center !gap-2 !px-3 !py-1.5 !rounded-full !bg-emerald-50 !text-emerald-700">
-            <FaShieldAlt className="!text-sm" />
-            <span className="!text-sm !font-medium !hidden sm:!inline">Pago seguro</span>
-          </div>
-        </div>
-      </header>
-
-      <main className="!max-w-6xl !mx-auto !px-4 sm:!px-6 !py-6 sm:!py-10">
-        <AnimatePresence mode="wait">
-          {/* ============= STEP: FORM ============= */}
-          {currentStep === 'form' && (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-            >
-              {/* Hero Section */}
-              <div className="!text-center !mb-8">
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-full !bg-emerald-100 !text-emerald-700 !text-sm !font-medium !mb-4"
-                >
-                  <HiSparkles className="!text-lg" />
-                  Calcula y compensa en minutos
-                </motion.div>
-                <h2 className="!text-2xl sm:!text-3xl !font-bold !text-gray-900 !mb-2">
-                  ¿Cuánto CO₂ genera tu vuelo?
-                </h2>
-                <p className="!text-gray-600 !max-w-xl !mx-auto">
-                  Ingresa los datos de tu viaje y calcula tu huella de carbono al instante
-                </p>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <AirportSearchInput
+                  id="calc-origin"
+                  value={formData.origin}
+                  onChange={(airport) => setFormData((prev) => ({ ...prev, origin: airport }))}
+                  placeholder="Ej.: Santiago o SCL"
+                  label="Origen"
+                />
+                <AirportSearchInput
+                  id="calc-destination"
+                  value={formData.destination}
+                  onChange={(airport) => setFormData((prev) => ({ ...prev, destination: airport }))}
+                  placeholder="Ej.: Madrid o MAD"
+                  label="Destino"
+                />
               </div>
 
-              <div className="!grid lg:!grid-cols-5 !gap-6 lg:!gap-8">
-                {/* Left Column - Form (3 cols) */}
-                <div className="lg:!col-span-3">
-                  <div className="!bg-white !rounded-3xl !shadow-xl !shadow-gray-200/50 !border !border-gray-100/80 !p-6 sm:!p-8 !relative !overflow-hidden">
-                    {/* Decorative gradient */}
-                    <div className="!absolute !top-0 !right-0 !w-40 !h-40 !bg-gradient-to-br !from-emerald-100/50 !to-transparent !rounded-full !blur-3xl !-translate-y-1/2 !translate-x-1/2" />
-                    
-                    <div className="!relative !z-10">
-                      {/* Section Header */}
-                      <div className="!flex !items-center !gap-4 !mb-8">
-                        <div className="!w-14 !h-14 !rounded-2xl !bg-gradient-to-br !from-emerald-500 !to-teal-600 !flex !items-center !justify-center !shadow-lg !shadow-emerald-500/25">
-                          <FaPlane className="!text-white !text-2xl" />
-                        </div>
-                        <div>
-                          <h3 className="!text-xl !font-bold !text-gray-900 !m-0">Datos del Vuelo</h3>
-                          <p className="!text-sm !text-gray-500 !m-0">Ingresa la información de tu viaje</p>
-                        </div>
-                      </div>
-
-                      <div className="!space-y-6">
-                        {/* Origin & Destination */}
-                        <div className="!grid sm:!grid-cols-2 !gap-4">
-                          <AirportSearchInput
-                            value={formData.origin}
-                            onChange={(airport) => setFormData(prev => ({ ...prev, origin: airport }))}
-                            placeholder="Ciudad o código IATA..."
-                            label="Origen"
-                            colorScheme="green"
-                          />
-                          <AirportSearchInput
-                            value={formData.destination}
-                            onChange={(airport) => setFormData(prev => ({ ...prev, destination: airport }))}
-                            placeholder="Ciudad o código IATA..."
-                            label="Destino"
-                            colorScheme="orange"
-                          />
-                        </div>
-
-                        {/* Distance Preview */}
-                        <AnimatePresence>
-                          {distance > 0 && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="!overflow-hidden"
-                            >
-                              <div className="!bg-gradient-to-r !from-blue-50 !via-indigo-50 !to-purple-50 !rounded-2xl !p-4 !border !border-blue-100">
-                                <div className="!flex !items-center !justify-between">
-                                  <div className="!flex !items-center !gap-3">
-                                    <div className="!w-10 !h-10 !rounded-xl !bg-white !shadow-sm !flex !items-center !justify-center">
-                                      <FaPlane className="!text-blue-600 !transform !rotate-45" />
-                                    </div>
-                                    <div>
-                                      <div className="!text-xs !text-blue-600 !font-semibold !uppercase !tracking-wide">Distancia</div>
-                                      <div className="!text-xl !font-bold !text-gray-900">{distance.toLocaleString()} km</div>
-                                    </div>
-                                  </div>
-                                  <div className="!text-right">
-                                    <div className="!text-xs !text-gray-500">Total del viaje</div>
-                                    <div className="!text-lg !font-semibold !text-blue-700">
-                                      {formData.roundTrip ? `${(distance * 2).toLocaleString()} km` : `${distance.toLocaleString()} km`}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        {/* Cabin Class */}
-                        <div>
-                          <label className="!block !text-sm !font-semibold !text-gray-700 !mb-3">
-                            Clase de Cabina
-                          </label>
-                          <div className="!grid !grid-cols-2 sm:!grid-cols-4 !gap-3">
-                            {CABIN_OPTIONS.map((cabin) => (
-                              <motion.button
-                                key={cabin.value}
-                                whileHover={{ scale: 1.03, y: -2 }}
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => setFormData(prev => ({ ...prev, cabinCode: cabin.value }))}
-                                className={`!p-4 !rounded-xl !border-2 !transition-all !duration-200 !text-center !cursor-pointer !relative !overflow-hidden ${
-                                  formData.cabinCode === cabin.value
-                                    ? '!border-emerald-500 !bg-gradient-to-br !from-emerald-50 !to-teal-50 !shadow-lg !shadow-emerald-500/20'
-                                    : '!border-gray-200 !bg-white hover:!border-gray-300 hover:!shadow-md'
-                                }`}
-                              >
-                                {formData.cabinCode === cabin.value && (
-                                  <motion.div
-                                    layoutId="cabin-selected"
-                                    className="!absolute !top-1 !right-1 !w-5 !h-5 !rounded-full !bg-emerald-500 !flex !items-center !justify-center"
-                                  >
-                                    <FaCheckCircle className="!text-white !text-xs" />
-                                  </motion.div>
-                                )}
-                                <span className="!text-2xl !block !mb-1">{cabin.icon}</span>
-                                <span className={`!text-sm !font-semibold !block ${
-                                  formData.cabinCode === cabin.value ? '!text-emerald-700' : '!text-gray-700'
-                                }`}>{cabin.label}</span>
-                              </motion.button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Passengers & Trip Type */}
-                        <div className="!grid sm:!grid-cols-2 !gap-6">
-                          {/* Passengers */}
-                          <div>
-                            <label className="!flex !items-center !gap-2 !text-sm !font-semibold !text-gray-700 !mb-3">
-                              <FaUsers className="!text-purple-500" />
-                              Pasajeros
-                            </label>
-                            <div className="!flex !items-center !gap-2">
-                              <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setFormData(prev => ({ ...prev, passengers: Math.max(1, prev.passengers - 1) }))}
-                                className="!w-14 !h-14 !rounded-xl !border-2 !border-gray-200 !bg-white hover:!bg-gray-50 !text-2xl !font-bold !text-gray-600 hover:!border-gray-300 !transition !cursor-pointer !shadow-sm"
-                              >
-                                −
-                              </motion.button>
-                              <div className="!flex-1 !h-14 !rounded-xl !bg-gradient-to-br !from-gray-50 !to-gray-100 !border-2 !border-gray-200 !flex !items-center !justify-center !font-bold !text-2xl !text-gray-800">
-                                {formData.passengers}
-                              </div>
-                              <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setFormData(prev => ({ ...prev, passengers: Math.min(10, prev.passengers + 1) }))}
-                                className="!w-14 !h-14 !rounded-xl !border-2 !border-gray-200 !bg-white hover:!bg-gray-50 !text-2xl !font-bold !text-gray-600 hover:!border-gray-300 !transition !cursor-pointer !shadow-sm"
-                              >
-                                +
-                              </motion.button>
-                            </div>
-                          </div>
-
-                          {/* Trip Type */}
-                          <div>
-                            <label className="!flex !items-center !gap-2 !text-sm !font-semibold !text-gray-700 !mb-3">
-                              <FaExchangeAlt className="!text-indigo-500" />
-                              Tipo de Viaje
-                            </label>
-                            <div className="!grid !grid-cols-2 !gap-2">
-                              <motion.button
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => setFormData(prev => ({ ...prev, roundTrip: true }))}
-                                className={`!p-4 !rounded-xl !border-2 !transition-all !duration-200 !flex !flex-col !items-center !justify-center !gap-1 !cursor-pointer ${
-                                  formData.roundTrip
-                                    ? '!border-emerald-500 !bg-emerald-50 !text-emerald-700 !shadow-lg !shadow-emerald-500/20'
-                                    : '!border-gray-200 !bg-white !text-gray-600 hover:!border-gray-300'
-                                }`}
-                              >
-                                <FaExchangeAlt className="!text-lg" />
-                                <span className="!font-semibold !text-sm">Ida y Vuelta</span>
-                              </motion.button>
-                              <motion.button
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => setFormData(prev => ({ ...prev, roundTrip: false }))}
-                                className={`!p-4 !rounded-xl !border-2 !transition-all !duration-200 !flex !flex-col !items-center !justify-center !gap-1 !cursor-pointer ${
-                                  !formData.roundTrip
-                                    ? '!border-blue-500 !bg-blue-50 !text-blue-700 !shadow-lg !shadow-blue-500/20'
-                                    : '!border-gray-200 !bg-white !text-gray-600 hover:!border-gray-300'
-                                }`}
-                              >
-                                <FaPlane className="!text-lg" />
-                                <span className="!font-semibold !text-sm">Solo Ida</span>
-                              </motion.button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Error Message */}
-                        <AnimatePresence>
-                          {error && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="!bg-red-50 !border !border-red-200 !rounded-xl !p-4 !flex !items-center !gap-3"
-                            >
-                              <FaInfoCircle className="!text-red-500 !text-lg !flex-shrink-0" />
-                              <p className="!text-red-700 !text-sm !m-0">{error}</p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        {/* Calculate Button */}
-                        <motion.button
-                          whileHover={{ scale: canCalculate ? 1.02 : 1 }}
-                          whileTap={{ scale: canCalculate ? 0.98 : 1 }}
-                          onClick={handleCalculate}
-                          disabled={!canCalculate || isCalculating}
-                          className={`!w-full !py-5 !rounded-2xl !font-bold !text-lg !transition-all !duration-300 !flex !items-center !justify-center !gap-3 !cursor-pointer !border-0 ${
-                            canCalculate
-                              ? '!bg-gradient-to-r !from-emerald-500 !via-emerald-600 !to-teal-600 !text-white !shadow-xl !shadow-emerald-500/30 hover:!shadow-2xl hover:!shadow-emerald-500/40'
-                              : '!bg-gray-200 !text-gray-500 !cursor-not-allowed'
-                          }`}
-                        >
-                          {isCalculating ? (
-                            <>
-                              <FaSpinner className="!animate-spin !text-xl" />
-                              Calculando emisiones...
-                            </>
-                          ) : (
-                            <>
-                              <HiSparkles className="!text-xl" />
-                              Calcular Huella de Carbono
-                            </>
-                          )}
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column - Info (2 cols) */}
-                <div className="lg:!col-span-2 !space-y-5">
-                  {/* Impact Card */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="!bg-gradient-to-br !from-emerald-600 !via-emerald-600 !to-teal-700 !rounded-3xl !p-6 !text-white !shadow-xl !shadow-emerald-600/30 !relative !overflow-hidden"
-                  >
-                    <div className="!absolute !top-0 !right-0 !w-32 !h-32 !bg-white/10 !rounded-full !blur-2xl !-translate-y-1/2 !translate-x-1/2" />
-                    <div className="!absolute !bottom-0 !left-0 !w-24 !h-24 !bg-teal-400/20 !rounded-full !blur-2xl !translate-y-1/2 !-translate-x-1/2" />
-                    
-                    <div className="!relative !z-10">
-                      <div className="!flex !items-center !gap-3 !mb-4">
-                        <div className="!w-12 !h-12 !rounded-xl !bg-white/20 !backdrop-blur-sm !flex !items-center !justify-center">
-                          <FaGlobeAmericas className="!text-2xl" />
-                        </div>
-                        <div>
-                          <h3 className="!font-bold !text-lg !m-0">Compensa tu Impacto</h3>
-                          <p className="!text-emerald-200 !text-sm !m-0">Apoya proyectos verificados</p>
-                        </div>
-                      </div>
-                      <p className="!text-emerald-100 !text-sm !leading-relaxed !m-0">
-                        Tu compensación financia proyectos de reforestación, energías renovables 
-                        y conservación evaluados por Veritas AI y revisión humana.
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  {/* What We Compensate */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="!bg-white !rounded-3xl !p-6 !shadow-lg !shadow-gray-200/50 !border !border-gray-100"
-                  >
-                    <h4 className="!font-bold !text-gray-900 !mb-4 !flex !items-center !gap-2 !text-base">
-                      <div className="!w-8 !h-8 !rounded-lg !bg-emerald-100 !flex !items-center !justify-center">
-                        <FaLeaf className="!text-emerald-600" />
-                      </div>
-                      ¿Qué compensamos?
-                    </h4>
-                    <div className="!space-y-3">
-                      {[
-                        { icon: FaTree, text: 'Plantación de árboles nativos', color: 'emerald' },
-                        { icon: FaWater, text: 'Conservación de ecosistemas', color: 'blue' },
-                        { icon: HiLightningBolt, text: 'Energías renovables', color: 'amber' }
-                      ].map((item, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.4 + idx * 0.1 }}
-                          className={`!flex !items-center !gap-3 !p-3 !rounded-xl ${
-                            item.color === 'emerald' ? '!bg-emerald-50' :
-                            item.color === 'blue' ? '!bg-blue-50' : '!bg-amber-50'
-                          }`}
-                        >
-                          <item.icon className={`!text-lg ${
-                            item.color === 'emerald' ? '!text-emerald-600' :
-                            item.color === 'blue' ? '!text-blue-600' : '!text-amber-600'
-                          }`} />
-                          <span className="!text-sm !font-medium !text-gray-700">{item.text}</span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-
-                  {/* Trust Badges */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="!grid !grid-cols-3 !gap-3"
-                  >
-                    {[
-                      { icon: FaLock, label: 'Pago Seguro', color: 'emerald' },
-                      { icon: FaCertificate, label: 'Certificado', color: 'blue' },
-                      { icon: FaShieldAlt, label: 'Verificado', color: 'purple' }
-                    ].map((badge, idx) => (
-                      <div key={idx} className="!bg-white !rounded-2xl !p-4 !text-center !shadow-md !shadow-gray-100 !border !border-gray-100">
-                        <badge.icon className={`!text-2xl !mx-auto !mb-2 ${
-                          badge.color === 'emerald' ? '!text-emerald-600' :
-                          badge.color === 'blue' ? '!text-blue-600' : '!text-purple-600'
-                        }`} />
-                        <span className="!text-xs !font-semibold !text-gray-600">{badge.label}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ============= STEP: RESULT ============= */}
-          {currentStep === 'result' && result && (
-            <motion.div
-              key="result"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="!max-w-4xl !mx-auto"
-            >
-              {/* Route Summary */}
-              <div className="!bg-white !rounded-3xl !shadow-xl !shadow-gray-200/50 !border !border-gray-100 !p-6 sm:!p-8 !mb-6">
-                <div className="!flex !items-center !justify-between !mb-6">
-                  <h3 className="!font-bold !text-gray-900 !text-xl !m-0">Tu Ruta</h3>
-                  <span className="!px-4 !py-1.5 !rounded-full !bg-emerald-100 !text-emerald-700 !text-sm !font-semibold">
-                    {result.meta.tripType === 'round_trip' ? '↔️ Ida y Vuelta' : '→ Solo Ida'}
+              {distance > 0 && (
+                <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Distancia aproximada</span>
+                  <span className="font-semibold text-gray-900">
+                    {fmtInt(distance)} km{formData.roundTrip && ` · ${fmtInt(distance * 2)} km ida y vuelta`}
                   </span>
                 </div>
-                <div className="!flex !items-center !justify-center !gap-4 sm:!gap-8 !py-6">
-                  <div className="!text-center">
-                    <div className="!text-4xl sm:!text-5xl !font-bold !text-gray-900">{result.meta.route.origin.code}</div>
-                    <div className="!text-sm !text-gray-500 !mt-1">{result.meta.route.origin.city}</div>
-                  </div>
-                  <div className="!flex-1 !flex !items-center !justify-center !max-w-xs">
-                    <div className="!h-0.5 !bg-gradient-to-r !from-emerald-200 !to-emerald-400 !flex-1"></div>
-                    <div className="!w-12 !h-12 !rounded-full !bg-emerald-100 !flex !items-center !justify-center !mx-3 !shadow-lg !shadow-emerald-200">
-                      <FaPlane className="!text-emerald-600 !text-lg" />
-                    </div>
-                    <div className="!h-0.5 !bg-gradient-to-r !from-emerald-400 !to-emerald-200 !flex-1"></div>
-                  </div>
-                  <div className="!text-center">
-                    <div className="!text-4xl sm:!text-5xl !font-bold !text-gray-900">{result.meta.route.destination.code}</div>
-                    <div className="!text-sm !text-gray-500 !mt-1">{result.meta.route.destination.city}</div>
-                  </div>
-                </div>
-                <div className="!text-center !text-sm !text-gray-500 !pt-4 !border-t !border-gray-100">
-                  <span className="!font-semibold !text-gray-700">{result.meta.distanceKmTotal.toLocaleString()} km</span> totales • 
-                  <span className="!font-semibold !text-gray-700"> {result.emissions.passengers}</span> pasajero(s)
-                </div>
-              </div>
+              )}
 
-              {/* Emissions Card */}
-              <div className="!bg-gradient-to-br !from-emerald-500 !via-emerald-600 !to-teal-600 !rounded-3xl !shadow-2xl !shadow-emerald-500/30 !p-8 sm:!p-10 !text-white !text-center !mb-6 !relative !overflow-hidden">
-                <div className="!absolute !top-0 !right-0 !w-48 !h-48 !bg-white/10 !rounded-full !blur-3xl !-translate-y-1/2 !translate-x-1/2"></div>
-                
-                <div className="!relative !z-10">
-                  <div className="!text-sm !font-semibold !text-emerald-200 !mb-3 !uppercase !tracking-wider">Tu Huella de Carbono</div>
-                  <div className="!text-7xl sm:!text-8xl !font-bold !mb-2">{result.emissions.kgCO2e.toLocaleString()}</div>
-                  <div className="!text-2xl !text-emerald-200 !font-medium">kg CO₂e</div>
-                  <div className="!mt-6 !text-emerald-100 !text-sm !bg-white/10 !rounded-full !px-4 !py-2 !inline-block">
-                    ≈ {result.emissions.tonCO2e.toFixed(2)} toneladas de CO₂
-                  </div>
-                </div>
-              </div>
-
-              {/* Equivalencies */}
-              <div className="!bg-white !rounded-3xl !shadow-xl !shadow-gray-200/50 !border !border-gray-100 !p-6 sm:!p-8 !mb-6">
-                <h3 className="!font-bold !text-gray-900 !mb-6 !text-lg">Equivalencias de Impacto</h3>
-                <div className="!grid !grid-cols-2 lg:!grid-cols-4 !gap-4">
-                  {[
-                    { icon: FaTree, value: result.equivalencies.trees, label: 'Árboles plantados', color: 'emerald' },
-                    { icon: FaWater, value: `${(result.equivalencies.waterLiters / 1000).toFixed(0)}K`, label: 'Litros de agua', color: 'blue' },
-                    { icon: FaHome, value: result.equivalencies.housingM2, label: 'm² de vivienda', color: 'amber' },
-                    { icon: FaTshirt, value: result.equivalencies.textileKg, label: 'kg de textiles', color: 'purple' }
-                  ].map((eq, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className={`!rounded-2xl !p-5 !text-center ${
-                        eq.color === 'emerald' ? '!bg-emerald-50' :
-                        eq.color === 'blue' ? '!bg-blue-50' :
-                        eq.color === 'amber' ? '!bg-amber-50' : '!bg-purple-50'
-                      }`}
+              <fieldset className="border-0 p-0 m-0">
+                <legend className="text-sm font-medium text-gray-700 mb-1.5">Clase de cabina</legend>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {CABIN_OPTIONS.map((cabin) => (
+                    <button
+                      key={cabin.value}
+                      type="button"
+                      aria-pressed={formData.cabinCode === cabin.value}
+                      onClick={() => setFormData((prev) => ({ ...prev, cabinCode: cabin.value }))}
+                      className={choice(formData.cabinCode === cabin.value)}
                     >
-                      <eq.icon className={`!text-3xl !mx-auto !mb-3 ${
-                        eq.color === 'emerald' ? '!text-emerald-600' :
-                        eq.color === 'blue' ? '!text-blue-600' :
-                        eq.color === 'amber' ? '!text-amber-600' : '!text-purple-600'
-                      }`} />
-                      <div className="!text-3xl !font-bold !text-gray-900">{eq.value}</div>
-                      <div className="!text-xs !text-gray-600 !mt-1 !font-medium">{eq.label}</div>
-                    </motion.div>
+                      {cabin.label}
+                    </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
-              {/* Actions */}
-              <div className="!bg-white !rounded-3xl !shadow-xl !shadow-gray-200/50 !border !border-gray-100 !p-6 sm:!p-8">
-                <div className="!text-center !mb-6">
-                  <p className="!text-gray-600 !text-sm !m-0">
-                    Elige un proyecto ambiental verificado para compensar tu huella de carbono
-                  </p>
-                </div>
-
-                <div className="!flex !flex-col sm:!flex-row !gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setCurrentStep('form')}
-                    className="!flex-1 !py-4 !rounded-xl !border-2 !border-gray-200 !bg-white !text-gray-700 !font-semibold !transition hover:!border-gray-300 hover:!bg-gray-50 !cursor-pointer !flex !items-center !justify-center !gap-2"
-                  >
-                    <FaArrowLeft />
-                    Modificar
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleViewProjects}
-                    disabled={!calculationId}
-                    className="!flex-[2] !py-4 !rounded-xl !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !font-bold !shadow-xl !shadow-emerald-500/30 hover:!shadow-2xl !transition !flex !items-center !justify-center !gap-3 !cursor-pointer !border-0"
-                  >
-                    <FaLeaf className="!text-xl" />
-                    Ver Proyectos para Compensar
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ============= STEP: SUCCESS ============= */}
-          {currentStep === 'success' && paymentSuccess && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="!max-w-lg !mx-auto"
-            >
-              <div className="!bg-white !rounded-3xl !shadow-2xl !shadow-gray-200/50 !border !border-emerald-100 !overflow-hidden">
-                {/* Success Header */}
-                <div className="!bg-gradient-to-br !from-emerald-500 !via-emerald-600 !to-teal-600 !p-10 !text-center !text-white !relative !overflow-hidden">
-                  <div className="!absolute !top-0 !right-0 !w-40 !h-40 !bg-white/10 !rounded-full !blur-3xl"></div>
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="!w-24 !h-24 !mx-auto !mb-5 !rounded-full !bg-white/20 !backdrop-blur-sm !flex !items-center !justify-center !shadow-xl"
-                  >
-                    <FaCheckCircle className="!text-5xl" />
-                  </motion.div>
-                  <h3 className="!text-3xl !font-bold !mb-2 !m-0">¡Felicitaciones! 🎉</h3>
-                  <p className="!text-emerald-100 !text-lg !m-0">Tu compensación fue exitosa</p>
-                </div>
-
-                {/* Details */}
-                <div className="!p-8">
-                  <div className="!bg-gradient-to-br !from-emerald-50 !to-teal-50 !rounded-2xl !p-6 !mb-6 !text-center !border !border-emerald-100">
-                    <div className="!text-sm !text-emerald-600 !font-semibold !mb-1">CO₂ Compensado</div>
-                    <div className="!text-5xl !font-bold !text-emerald-700">
-                      {paymentSuccess.emissions.kgCO2e?.toLocaleString()} kg
-                    </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div>
+                  <span className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                    <FaUsers className="text-gray-400" aria-hidden="true" /> Pasajeros
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, passengers: Math.max(1, prev.passengers - 1) }))}
+                      disabled={formData.passengers <= 1}
+                      className={cx(btn.icon, 'w-11 h-11 rounded-xl')}
+                      aria-label="Quitar un pasajero"
+                    >
+                      <FaMinus aria-hidden="true" />
+                    </button>
+                    <output className="flex-1 h-11 rounded-xl border border-gray-300 flex items-center justify-center text-lg font-semibold text-gray-900" aria-live="polite">
+                      {formData.passengers}
+                    </output>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, passengers: Math.min(10, prev.passengers + 1) }))}
+                      disabled={formData.passengers >= 10}
+                      className={cx(btn.icon, 'w-11 h-11 rounded-xl')}
+                      aria-label="Agregar un pasajero"
+                    >
+                      <FaPlus aria-hidden="true" />
+                    </button>
                   </div>
+                </div>
 
-                  <div className="!bg-gray-50 !rounded-2xl !p-5 !mb-6">
-                    <div className="!flex !items-center !gap-4">
-                      <div className="!w-16 !h-16 !rounded-xl !bg-emerald-100 !flex !items-center !justify-center">
-                        <FaCertificate className="!text-emerald-600 !text-3xl" />
-                      </div>
-                      <div>
-                        <div className="!text-xs !text-gray-500 !mb-1 !font-medium">Tu Certificado</div>
-                        <div className="!font-mono !text-xl !text-gray-800 !font-bold">{paymentSuccess.certificateId}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="!space-y-3">
-                    {/* Botón principal: Descargar Certificado PDF */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowCertificate(true)}
-                      className="!w-full !py-4 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !shadow-xl !shadow-emerald-500/30 hover:!shadow-2xl !cursor-pointer"
-                    >
-                      <FaDownload />
-                      Descargar Certificado PDF
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => navigate('/b2c/certificates')}
-                      className="!w-full !py-4 !bg-emerald-50 !text-emerald-700 !rounded-xl !font-semibold !transition !border-2 !border-emerald-200 !flex !items-center !justify-center !gap-2 !cursor-pointer hover:!bg-emerald-100"
-                    >
-                      <FaCertificate />
-                      Ver Mis Certificados
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={resetCalculator}
-                      className="!w-full !py-4 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !transition !border-0 !cursor-pointer hover:!bg-gray-200"
-                    >
-                      Calcular Otro Vuelo
-                    </motion.button>
-                    <Link to="/b2c/dashboard" className="!block">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="!w-full !py-3 !bg-transparent !text-gray-500 !rounded-xl !font-medium !transition !border-0 !text-sm !cursor-pointer hover:!text-gray-700"
-                      >
-                        Volver al Dashboard
-                      </motion.button>
-                    </Link>
+                <div>
+                  <span className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                    <FaExchangeAlt className="text-gray-400" aria-hidden="true" /> Tipo de viaje
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" aria-pressed={formData.roundTrip} onClick={() => setFormData((prev) => ({ ...prev, roundTrip: true }))} className={choice(formData.roundTrip)}>
+                      Ida y vuelta
+                    </button>
+                    <button type="button" aria-pressed={!formData.roundTrip} onClick={() => setFormData((prev) => ({ ...prev, roundTrip: false }))} className={choice(!formData.roundTrip)}>
+                      Solo ida
+                    </button>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
 
-      {/* Modal del Certificado */}
-      <AnimatePresence>
-        {showCertificate && paymentSuccess && result && formData.origin && formData.destination && (
-          <CertificateGenerator
-            data={{
-              certificateId: paymentSuccess.certificateId,
-              userName: user?.nombre || user?.email?.split('@')[0] || 'Usuario',
-              userEmail: user?.email,
-              emissionsTons: result.emissions.tonCO2e,
-              emissionsKg: result.emissions.kgCO2e,
-              origin: `${formData.origin.city} (${formData.origin.code})`,
-              destination: `${formData.destination.city} (${formData.destination.code})`,
-              compensationDate: new Date().toISOString(),
-              projectName: 'Proyecto de Reforestación Nativa',
-              projectType: 'Reforestación y Conservación',
-              equivalences: result.equivalencies ? {
-                treesPlanted: result.equivalencies.trees,
-                carKmAvoided: Math.round(result.emissions.kgCO2e * 5.5),
-              } : undefined,
-              amountPaid: 0,
-              currency: 'CLP'
-            }}
-            onClose={() => setShowCertificate(false)}
-          />
-        )}
-      </AnimatePresence>
-    </div>
+              {error && (
+                <div role="alert" className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 flex items-start gap-2 text-sm text-rose-700">
+                  <FaInfoCircle className="mt-0.5 flex-shrink-0" aria-hidden="true" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <button type="submit" disabled={!canCalculate || isCalculating} className={cx(btn.primary, 'w-full py-3 text-base')}>
+                {isCalculating ? (
+                  <><FaSpinner className="animate-spin" aria-hidden="true" /> Calculando…</>
+                ) : (
+                  'Calcular huella'
+                )}
+              </button>
+            </form>
+          </Card>
+
+          <Card className="p-6">
+            <CardHeader icon={FaLeaf} title="Cómo funciona" />
+            <ol className="m-0 p-0 list-none space-y-4 text-sm text-gray-600">
+              {[
+                ['Calcula', 'Estimamos las emisiones de tu vuelo según la distancia, la cabina y los pasajeros.'],
+                ['Elige un proyecto', 'Proyectos evaluados por Verita AI y revisión humana: reforestación, agua, conservación y más.'],
+                ['Compensa', 'Pagas con Webpay y recibes un certificado con lo que tu compensación financió.'],
+              ].map(([title, text], i) => (
+                <li key={title} className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-800 text-xs font-semibold flex items-center justify-center flex-shrink-0">{i + 1}</span>
+                  <span><b className="text-gray-900">{title}.</b> {text}</span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </div>
+      )}
+
+      {currentStep === 'result' && result && (
+        <div className="max-w-3xl mx-auto space-y-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-900 font-mono">{result.meta.route.origin.code}</div>
+                  <div className="text-sm text-gray-500">{result.meta.route.origin.city}</div>
+                </div>
+                <FaArrowRight className="text-gray-300" aria-hidden="true" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-900 font-mono">{result.meta.route.destination.code}</div>
+                  <div className="text-sm text-gray-500">{result.meta.route.destination.city}</div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600 text-right">
+                <div>{result.meta.tripType === 'round_trip' ? 'Ida y vuelta' : 'Solo ida'}</div>
+                <div>
+                  {fmtInt(result.meta.distanceKmTotal)} km · {fmtInt(result.emissions.passengers)}{' '}
+                  {result.emissions.passengers === 1 ? 'pasajero' : 'pasajeros'}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-xl bg-brand-50 border border-brand-100 p-6 text-center">
+              <div className="text-sm font-medium text-brand-800">Huella de este vuelo</div>
+              <div className="mt-1 text-5xl font-bold text-brand-800 tabular-nums">
+                {fmtInt(result.emissions.kgCO2e)} <span className="text-xl font-semibold">kg CO₂e</span>
+              </div>
+              <div className="mt-2 text-sm text-brand-800">{fmtNum(result.emissions.tonCO2e, 2)} toneladas</div>
+            </div>
+
+            <p className="mt-5 mb-0 text-sm text-gray-600 text-center">
+              En el siguiente paso eliges el proyecto y ves exactamente qué financia tu compensación y cuánto cuesta.
+            </p>
+
+            <div className="mt-5 flex flex-col-reverse sm:flex-row gap-3">
+              <button type="button" onClick={() => setCurrentStep('form')} className={cx(btn.secondary, 'sm:flex-1')}>
+                <FaArrowLeft aria-hidden="true" /> Modificar vuelo
+              </button>
+              <button type="button" onClick={handleViewProjects} disabled={!calculationId} className={cx(btn.primary, 'sm:flex-[2]')}>
+                <FaLeaf aria-hidden="true" /> Elegir proyecto para compensar
+              </button>
+            </div>
+            {!calculationId && (
+              <p className="mt-3 mb-0 text-xs text-gray-500 text-center">Para compensar necesitas iniciar sesión: el cálculo se guarda en tu cuenta.</p>
+            )}
+          </Card>
+        </div>
+      )}
+    </B2CLayout>
   );
 };
 

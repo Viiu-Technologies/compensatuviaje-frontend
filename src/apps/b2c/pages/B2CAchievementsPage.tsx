@@ -1,164 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import {
-  FaLock,
-  FaShareAlt,
-  FaLeaf,
-  FaTrophy,
-  FaLinkedin,
-  FaCopy,
-  FaCheck,
-} from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaShareAlt, FaLinkedin, FaCheck, FaLeaf } from 'react-icons/fa';
 import B2CLayout from '../components/B2CLayout';
-import { TrophyRoomPanel } from '../components/badges/TrophyRoomPanel';
+import { TrophyRoomPanel, BADGES } from '../components/badges/TrophyRoomPanel';
 import b2cApi from '../services/b2cApi';
 import { useAuth } from '../context/AuthContext';
+import { Card, CardHeader, Skeleton, btn, fmtTons } from '../ui';
 
-/* ── Badge thresholds (mirrors shareService.js) ──────────────── */
-const BADGE_LEVELS = [
-  { slug: 'guardian', title: 'Guardián del Clima', minKg: 5000 },
-  { slug: 'viajero',  title: 'Viajero Consciente', minKg: 1000 },
-  { slug: 'semilla',  title: 'Semilla Climática',  minKg: 0.001 },
-] as const;
-
-function getBadgeTitle(kg: number): string {
-  for (const level of BADGE_LEVELS) {
-    if (kg >= level.minKg) return level.title;
-  }
-  return 'Semilla Climática';
+/** Insignia más alta alcanzada; null si todavía no compensa nada. */
+function currentBadge(kg: number) {
+  return [...BADGES].reverse().find((b) => kg >= b.threshold) ?? null;
 }
 
-/* ── Tarjeta de función próximamente ─────────────────────────── */
-interface LockedFeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  hint: string;
-}
-
-function LockedFeatureCard({ icon, title, description, hint }: LockedFeatureCardProps) {
-  return (
-    <div className="!relative !bg-white !rounded-2xl !border !border-gray-100 !shadow-sm !p-6 !overflow-hidden !opacity-70">
-      <div className="!absolute !inset-0 !bg-gradient-to-br !from-gray-50 !to-white !pointer-events-none" />
-      <div className="!absolute !top-4 !right-4 !flex !items-center !gap-1.5 !bg-gray-100 !text-gray-500 !text-xs !font-semibold !px-3 !py-1 !rounded-full">
-        <FaLock className="!text-[10px]" />
-        Próximamente
-      </div>
-      <div className="!relative !flex !items-start !gap-4">
-        <div className="!w-12 !h-12 !rounded-xl !bg-gray-100 !flex !items-center !justify-center !text-gray-400 !text-xl !flex-shrink-0">
-          {icon}
-        </div>
-        <div>
-          <h3 className="!text-base !font-bold !text-gray-600 !mb-1">{title}</h3>
-          <p className="!text-sm !text-gray-400 !leading-relaxed">{description}</p>
-          <p className="!text-xs !text-green-500 !font-medium !mt-2 !italic">{hint}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Tarjeta de compartir (desbloqueada) ─────────────────────── */
-interface ShareCardProps {
-  userId: string;
-  totalKg: number;
-}
-
-function ShareCard({ userId, totalKg }: ShareCardProps) {
+/**
+ * Antes el botón de compartir aparecía aunque el usuario no hubiera
+ * compensado nada, con un texto que decía "Acabo de neutralizar mi huella
+ * de carbono y gané mi insignia oficial". Ahora solo aparece con una
+ * insignia desbloqueada y el texto dice cuánto compensó. También se quitó
+ * la tarjeta "Próximamente: reducción de temperatura", que no tenía nada
+ * detrás.
+ */
+function ShareCard({ userId, totalKg }: { userId: string; totalKg: number }) {
   const [copied, setCopied] = useState(false);
+  const badge = currentBadge(totalKg);
+  if (!badge) return null;
 
-  const API_BASE =
-    import.meta.env.VITE_API_URL ||
-    import.meta.env.VITE_APP_API_URL ||
-    'http://localhost:3001/api';
   const shareUrl = `${window.location.origin}/share/profile/${userId}`;
-  const badgeTitle = getBadgeTitle(totalKg);
-  const baseText = `Acabo de neutralizar mi huella de carbono y gané mi insignia oficial en Compensatuviaje. 🌱🌍 ¡Mide tu huella y únete a mí aquí!`;
+  const text = `Compensé ${fmtTons(totalKg / 1000)} de CO₂e de mis viajes y obtuve la insignia «${badge.title}» en CompensaTuViaje.`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: `Mi insignia: ${badgeTitle}`,
-          text: baseText, // solo texto, sin URL — la API nativa la añade por su cuenta
-          url: shareUrl,
-        });
+        await navigator.share({ title: `Mi insignia: ${badge.title}`, text, url: shareUrl });
       } catch {
-        // user cancelled — do nothing
+        // El usuario cerró el diálogo de compartir.
       }
     } else {
-      // Fallback para navegadores sin navigator.share: copiar texto completo con URL
-      await navigator.clipboard.writeText(`${baseText} ${shareUrl}`);
+      await navigator.clipboard.writeText(`${text} ${shareUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const handleLinkedIn = () => {
-    const year = new Date().getFullYear();
-    const month = new Date().getMonth() + 1;
-    // TODO: add &organizationId=XXXXX once LinkedIn company page is created
+    const now = new Date();
+    // Pendiente: agregar &organizationId= cuando exista la página de empresa en LinkedIn.
     const url =
-      `https://www.linkedin.com/profile/add` +
-      `?startTask=CERTIFICATION_NAME` +
-      `&name=${encodeURIComponent(badgeTitle)}` +
+      'https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME' +
+      `&name=${encodeURIComponent(badge.title)}` +
       `&organizationName=${encodeURIComponent('CompensaTuViaje')}` +
-      `&issueYear=${year}` +
-      `&issueMonth=${month}` +
+      `&issueYear=${now.getFullYear()}&issueMonth=${now.getMonth() + 1}` +
       `&certUrl=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <div className="!relative !bg-white !rounded-2xl !border !border-green-100 !shadow-sm !p-6 !overflow-hidden">
-      <div className="!absolute !inset-0 !bg-gradient-to-br !from-green-50/40 !to-white !pointer-events-none" />
-
-      <div className="!relative !flex !items-start !gap-4">
-        {/* Icono */}
-        <div className="!w-12 !h-12 !rounded-xl !bg-green-100 !flex !items-center !justify-center !text-green-600 !text-xl !flex-shrink-0">
-          <FaShareAlt />
-        </div>
-
-        <div className="!flex-1 !min-w-0">
-          <h3 className="!text-base !font-bold !text-gray-800 !mb-1">Compartir mi Impacto</h3>
-          <p className="!text-sm !text-gray-500 !leading-relaxed !mb-4">
-            Comparte tu insignia <span className="!font-semibold !text-green-700">{badgeTitle}</span> en redes sociales y muestra tu compromiso con el clima.
-          </p>
-
-          <div className="!flex !flex-wrap !gap-3">
-            {/* Botón compartir / copiar */}
-            <button
-              onClick={handleShare}
-              className="!flex !items-center !gap-2 !bg-green-600 hover:!bg-green-700 !text-white !text-sm !font-semibold !px-4 !py-2 !rounded-xl !transition-colors !cursor-pointer"
-            >
-              {copied ? <FaCheck className="!text-xs" /> : <FaShareAlt className="!text-xs" />}
-              {copied ? '¡Texto copiado!' : 'Compartir mi Impacto'}
-            </button>
-
-            {/* Botón LinkedIn */}
-            <button
-              onClick={handleLinkedIn}
-              className="!flex !items-center !gap-2 !bg-[#0A66C2] hover:!bg-[#004182] !text-white !text-sm !font-semibold !px-4 !py-2 !rounded-xl !transition-colors !cursor-pointer"
-            >
-              <FaLinkedin />
-              Añadir a LinkedIn
-            </button>
-
-            {/* Hint copiar en desktop */}
-            {!('share' in navigator) && !copied && (
-              <span className="!self-center !flex !items-center !gap-1 !text-xs !text-gray-400">
-                <FaCopy className="!text-[10px]" />
-                Se copiará el texto listo para pegar
-              </span>
-            )}
-          </div>
-        </div>
+    <Card>
+      <CardHeader
+        icon={FaShareAlt}
+        title="Comparte tu insignia"
+        subtitle={<>Tu insignia actual es <b className="text-gray-800">{badge.title}</b>.</>}
+      />
+      <p className="text-sm text-gray-600 m-0 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">{text}</p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button type="button" onClick={handleShare} className={btn.primary}>
+          {copied ? <FaCheck aria-hidden="true" /> : <FaShareAlt aria-hidden="true" />}
+          {copied ? 'Texto copiado' : 'Compartir'}
+        </button>
+        <button type="button" onClick={handleLinkedIn} className={btn.secondary}>
+          <FaLinkedin className="text-[#0A66C2]" aria-hidden="true" /> Añadir a LinkedIn
+        </button>
       </div>
-    </div>
+    </Card>
   );
 }
 
-/* ── Página principal ─────────────────────────────────────────── */
 const B2CAchievementsPage: React.FC = () => {
   const { user } = useAuth();
   const [totalKg, setTotalKg] = useState(0);
@@ -170,7 +86,7 @@ const B2CAchievementsPage: React.FC = () => {
         const data = await b2cApi.getDashboardStats('all');
         setTotalKg(data.stats.lifetimeCompensatedKg);
       } catch {
-        // silently degrade — badges still render with kg=0
+        // Sin datos, las insignias se muestran bloqueadas.
       } finally {
         setLoading(false);
       }
@@ -179,67 +95,23 @@ const B2CAchievementsPage: React.FC = () => {
   }, []);
 
   return (
-    <B2CLayout>
-      <div className="!max-w-3xl !mx-auto !px-4 !py-8 !space-y-8">
-
-        {/* Encabezado */}
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="!flex !items-center !gap-3"
-        >
-          <div className="!w-10 !h-10 !rounded-xl !bg-green-50 !flex !items-center !justify-center !text-green-600 !text-xl">
-            <FaTrophy />
-          </div>
-          <div>
-            <h1 className="!text-2xl !font-bold !text-gray-900">Mis Logros</h1>
-            <p className="!text-sm !text-gray-500">Tu historial de impacto y recompensas climáticas</p>
-          </div>
-        </motion.div>
-
-        {/* Insignias */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08 }}
-        >
-          {loading ? (
-            <div className="!bg-white !rounded-2xl !border !border-gray-100 !shadow-sm !p-12 !flex !justify-center">
-              <div className="!w-8 !h-8 !rounded-full !border-2 !border-green-500 !border-t-transparent !animate-spin" />
-            </div>
-          ) : (
+    <B2CLayout title="Mis logros" subtitle="Insignias según el CO₂e que compensaste">
+      <div className="space-y-6">
+        {loading ? (
+          <Skeleton className="h-72" />
+        ) : (
+          <>
             <TrophyRoomPanel totalCompensatedKg={totalKg} />
-          )}
-        </motion.div>
-
-        {/* Compartir + Funciones próximamente */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
-          className="!space-y-4"
-        >
-          <h2 className="!text-sm !font-bold !text-gray-400 !uppercase !tracking-wider !px-1">
-            Comparte tu impacto
-          </h2>
-
-          {/* Share card — only shown when user is loaded and has at least some kg */}
-          {user && !loading && (
-            <ShareCard userId={user.id} totalKg={totalKg} />
-          )}
-
-          <h2 className="!text-sm !font-bold !text-gray-400 !uppercase !tracking-wider !px-1 !pt-2">
-            Más funciones en camino
-          </h2>
-
-          <LockedFeatureCard
-            icon={<FaLeaf />}
-            title="Impacto Ecológico"
-            description="Visualiza métricas detalladas de tu impacto: árboles equivalentes, reducción de temperatura y más."
-            hint="En desarrollo"
-          />
-        </motion.div>
-
+            {user && totalKg > 0 ? (
+              <ShareCard userId={user.id} totalKg={totalKg} />
+            ) : (
+              <Card className="p-6 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-sm text-gray-600 m-0">Compensa tu primer viaje para desbloquear la insignia Semilla Climática.</p>
+                <Link to="/b2c/calculator" className={btn.primary}><FaLeaf aria-hidden="true" /> Calcular mi huella</Link>
+              </Card>
+            )}
+          </>
+        )}
       </div>
     </B2CLayout>
   );

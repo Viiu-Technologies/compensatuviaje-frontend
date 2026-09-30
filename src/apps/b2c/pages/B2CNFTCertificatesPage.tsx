@@ -1,40 +1,32 @@
 /**
- * CompensaTuViaje - Mis Certificados NFT (B2C)
- * Página para ver y gestionar certificados NFT del usuario
+ * Certificados NFT del usuario (registro en Polygon).
+ *
+ * Antes: portada en degradado violeta-índigo y el aviso "MetaMask no
+ * detectado" repetido dos veces (el botón de conexión estaba en la portada
+ * y en el estado vacío). Ahora hay un solo punto de conexión y los colores
+ * de la marca (petróleo para lo que es blockchain).
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import B2CLayout from '../components/B2CLayout';
 import { WalletConnectButton, NFTCertificateCard } from '../../../shared/components/blockchain';
 import { getWalletCertificates } from '../../../shared/services/blockchainApi';
 import walletService from '../../../shared/services/walletService';
 import type { WalletState, NFTCertificate, WalletCertificatesResponse } from '../../../types/blockchain.types';
-import {
-  FaCubes,
-  FaLeaf,
-  FaWallet,
-  FaExternalLinkAlt,
-  FaSearch,
-  FaSyncAlt,
-  FaCertificate,
-  FaInfoCircle
-} from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { FaCubes, FaLeaf, FaWallet, FaSearch, FaSyncAlt, FaInfoCircle } from 'react-icons/fa';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { Card, CardHeader, EmptyState, ErrorState, Skeleton, StatCard, btn, fmtInt, fmtKgAuto } from '../ui';
 
 const B2CNFTCertificatesPage: React.FC = () => {
   const [wallet, setWallet] = useState<WalletState>(walletService.getState());
   const [certificates, setCertificates] = useState<NFTCertificate[]>([]);
-  const [totalCO2, setTotalCO2] = useState(0);
+  const [totalKg, setTotalKg] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    const unsub = walletService.subscribe(setWallet);
-    return unsub;
-  }, []);
+  useEffect(() => walletService.subscribe(setWallet), []);
 
   const fetchCertificates = useCallback(async () => {
     if (!wallet.address) return;
@@ -43,8 +35,7 @@ const B2CNFTCertificatesPage: React.FC = () => {
     try {
       const res: WalletCertificatesResponse = await getWalletCertificates(wallet.address);
       if (res.success) {
-        // Normalize certificates to ensure co2AmountKg exists
-        const normalizedCerts = (res.certificates || []).map((c: any) => ({
+        const normalized = (res.certificates || []).map((c: any) => ({
           ...c,
           co2AmountGrams: c.co2AmountGrams ?? Number(c.co2Amount || 0),
           co2AmountKg: c.co2AmountKg ?? Number(c.co2Amount || 0) / 1000,
@@ -54,233 +45,132 @@ const B2CNFTCertificatesPage: React.FC = () => {
           explorerUrl: c.explorerUrl || '',
           openSeaUrl: c.openSeaUrl || '',
         }));
-        setCertificates(normalizedCerts);
-        // totalCO2 from API is an object { totalGrams, totalKg, totalTons }
-        const co2 = res.totalCO2;
-        if (typeof co2 === 'object' && co2 !== null) {
-          setTotalCO2(parseFloat((co2 as any).totalKg || '0'));
-        } else {
-          setTotalCO2(Number(co2) || 0);
-        }
+        setCertificates(normalized);
+        // totalCO2 llega como { totalGrams, totalKg, totalTons } o como número
+        const co2 = res.totalCO2 as any;
+        setTotalKg(typeof co2 === 'object' && co2 !== null ? parseFloat(co2.totalKg || '0') : Number(co2) || 0);
       } else {
-        setError('No se pudieron cargar los certificados');
+        setError('No se pudieron cargar los certificados.');
       }
     } catch (err: any) {
-      setError(getErrorMessage(err, 'Error al cargar certificados'));
+      setError(getErrorMessage(err, 'No se pudieron cargar los certificados.'));
     } finally {
       setLoading(false);
     }
   }, [wallet.address]);
 
   useEffect(() => {
-    if (wallet.connected && wallet.address) {
-      fetchCertificates();
-    } else {
+    if (wallet.connected && wallet.address) fetchCertificates();
+    else {
       setCertificates([]);
-      setTotalCO2(0);
+      setTotalKg(0);
     }
   }, [wallet.connected, wallet.address, fetchCertificates]);
 
-  const filtered = certificates.filter((c) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
+  const q = search.trim().toLowerCase();
+  const filtered = certificates.filter(
+    (c) =>
+      !q ||
       (c.tokenId || '').toLowerCase().includes(q) ||
       (c.projectName || '').toLowerCase().includes(q) ||
-      (c.compensationId || '').toLowerCase().includes(q)
-    );
-  });
+      (c.compensationId || '').toLowerCase().includes(q),
+  );
 
   return (
-    <B2CLayout title="Mis Certificados NFT" subtitle="Tus compensaciones inmutables en blockchain">
-      <div className="!space-y-6">
-        {/* Banner */}
-        <div className="!bg-gradient-to-r !from-purple-600 !via-violet-600 !to-indigo-600 !rounded-2xl !p-6 md:!p-8 !text-white !shadow-lg">
-          <div className="!flex !flex-col md:!flex-row !items-start md:!items-center !justify-between !gap-4">
-            <div className="!flex !items-center !gap-4">
-              <div className="!w-14 !h-14 !bg-white/20 !backdrop-blur-sm !rounded-2xl !flex !items-center !justify-center">
-                <FaCubes className="!text-3xl !text-white" />
+    <B2CLayout
+      title="Certificados NFT"
+      subtitle="Tus compensaciones registradas en la red Polygon"
+      headerRightExtra={
+        wallet.connected ? (
+          <WalletConnectButton onConnect={() => {}} onDisconnect={() => { setCertificates([]); setTotalKg(0); }} />
+        ) : undefined
+      }
+    >
+      <div className="space-y-6">
+        {!wallet.connected ? (
+          <Card>
+            <div className="text-center py-8 px-4 max-w-lg mx-auto">
+              <span className="mx-auto mb-4 w-12 h-12 rounded-full bg-brand-900/5 text-brand-900 flex items-center justify-center">
+                <FaWallet className="text-xl" aria-hidden="true" />
+              </span>
+              <h2 className="text-lg font-semibold text-gray-900 m-0">Conecta tu billetera</h2>
+              <p className="text-sm text-gray-500 m-0 mt-1.5">
+                Conecta MetaMask para ver los certificados NFT de tus compensaciones en la red Polygon.
+              </p>
+              <div className="mt-5 flex justify-center">
+                <WalletConnectButton />
               </div>
-              <div>
-                <h2 className="!text-2xl !font-bold">Certificados NFT</h2>
-                <p className="!text-white/80 !text-sm !mt-1">
-                  Cada compensación puede convertirse en un NFT verificable en Polygon
-                </p>
-              </div>
-            </div>
-            <WalletConnectButton
-              onConnect={() => {}}
-              onDisconnect={() => {
-                setCertificates([]);
-                setTotalCO2(0);
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Stats cards */}
-        {wallet.connected && (
-          <div className="!grid !grid-cols-1 sm:!grid-cols-3 !gap-4">
-            <div className="!bg-white !rounded-xl !p-5 !border !border-gray-200 !shadow-sm">
-              <div className="!flex !items-center !gap-3">
-                <div className="!w-10 !h-10 !bg-green-100 !rounded-lg !flex !items-center !justify-center">
-                  <FaCertificate className="!text-green-600" />
-                </div>
-                <div>
-                  <p className="!text-sm !text-gray-500">Total NFTs</p>
-                  <p className="!text-2xl !font-bold !text-gray-900">{certificates.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="!bg-white !rounded-xl !p-5 !border !border-gray-200 !shadow-sm">
-              <div className="!flex !items-center !gap-3">
-                <div className="!w-10 !h-10 !bg-emerald-100 !rounded-lg !flex !items-center !justify-center">
-                  <FaLeaf className="!text-emerald-600" />
-                </div>
-                <div>
-                  <p className="!text-sm !text-gray-500">CO₂ Total</p>
-                  <p className="!text-2xl !font-bold !text-gray-900">{totalCO2.toFixed(2)} <span className="!text-sm !font-normal !text-gray-500">kg</span></p>
-                </div>
-              </div>
-            </div>
-
-            <div className="!bg-white !rounded-xl !p-5 !border !border-gray-200 !shadow-sm">
-              <div className="!flex !items-center !gap-3">
-                <div className="!w-10 !h-10 !bg-purple-100 !rounded-lg !flex !items-center !justify-center">
-                  <FaWallet className="!text-purple-600" />
-                </div>
-                <div>
-                  <p className="!text-sm !text-gray-500">Wallet</p>
-                  <p className="!text-sm !font-mono !text-gray-900 !truncate !max-w-[140px]">
-                    {wallet.address ? walletService.shortenAddress(wallet.address) : '—'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Not connected state */}
-        {!wallet.connected && (
-          <div className="!bg-white !rounded-2xl !border !border-gray-200 !p-12 !text-center">
-            <div className="!w-20 !h-20 !mx-auto !mb-6 !bg-purple-100 !rounded-full !flex !items-center !justify-center">
-              <FaWallet className="!text-4xl !text-purple-600" />
-            </div>
-            <h3 className="!text-xl !font-bold !text-gray-900 !mb-2">Conecta tu Wallet</h3>
-            <p className="!text-gray-500 !mb-6 !max-w-md !mx-auto">
-              Conecta tu wallet MetaMask para ver tus certificados NFT de compensación de CO₂ en la blockchain de Polygon.
-            </p>
-            <div className="!flex !justify-center">
-              <WalletConnectButton />
-            </div>
-            <div className="!mt-8 !flex !items-start !gap-3 !p-4 !bg-blue-50 !rounded-xl !max-w-md !mx-auto !text-left">
-              <FaInfoCircle className="!text-blue-500 !mt-0.5 !flex-shrink-0" />
-              <p className="!text-sm !text-blue-700">
-                Los certificados NFT son registros inmutables de tu compensación en la blockchain. 
-                Puedes mintear NFTs desde la sección de <strong>Certificados</strong>.
+              <p className="mt-6 text-sm text-gray-500 flex items-start gap-2 text-left rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
+                <FaInfoCircle className="mt-0.5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                <span>
+                  Un NFT es un registro público e inalterable de tu compensación. Puedes crear uno para cada certificado desde{' '}
+                  <Link to="/b2c/certificates" className="text-brand-700 font-medium">Certificados</Link>.
+                </span>
               </p>
             </div>
-          </div>
-        )}
-
-        {/* Connected: Certificate list */}
-        {wallet.connected && (
+          </Card>
+        ) : (
           <>
-            {/* Search + Refresh */}
-            <div className="!flex !items-center !gap-3">
-              <div className="!relative !flex-1">
-                <FaSearch className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar por token, proyecto o ID..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="!w-full !pl-10 !pr-4 !py-2.5 !border !border-gray-200 !rounded-xl !text-sm !bg-white focus:!ring-2 focus:!ring-purple-300 focus:!border-purple-400 !outline-none"
-                />
-              </div>
-              <button
-                onClick={fetchCertificates}
-                disabled={loading}
-                className="!px-4 !py-2.5 !bg-gray-100 hover:!bg-gray-200 !text-gray-700 !rounded-xl !flex !items-center !gap-2 !text-sm !font-medium !border-0 !cursor-pointer !transition disabled:!opacity-50"
-              >
-                <FaSyncAlt className={`!text-sm ${loading ? '!animate-spin' : ''}`} />
-                Actualizar
-              </button>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StatCard label="NFT" value={fmtInt(certificates.length)} icon={FaCubes} />
+              <StatCard label="CO₂e registrado" value={fmtKgAuto(totalKg)} icon={FaLeaf} tone="good" />
+              <StatCard
+                label="Billetera"
+                value={<span className="text-base font-mono">{wallet.address ? walletService.shortenAddress(wallet.address) : '—'}</span>}
+                icon={FaWallet}
+              />
             </div>
 
-            {/* Loading */}
-            {loading && (
-              <div className="!text-center !py-12">
-                <div className="!w-10 !h-10 !border-3 !border-purple-200 !border-t-purple-600 !rounded-full !animate-spin !mx-auto !mb-4" />
-                <p className="!text-gray-500">Cargando certificados desde blockchain...</p>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && !loading && (
-              <div className="!bg-red-50 !border !border-red-200 !rounded-xl !p-4 !text-center">
-                <p className="!text-red-600 !text-sm">{error}</p>
-                <button
-                  onClick={fetchCertificates}
-                  className="!mt-2 !text-red-500 !underline !text-sm !bg-transparent !border-0 !cursor-pointer"
-                >
-                  Reintentar
-                </button>
-              </div>
-            )}
-
-            {/* Empty */}
-            {!loading && !error && filtered.length === 0 && (
-              <div className="!bg-white !rounded-2xl !border !border-gray-200 !p-12 !text-center">
-                <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-gray-100 !rounded-full !flex !items-center !justify-center">
-                  <HiSparkles className="!text-3xl !text-gray-400" />
-                </div>
-                <h3 className="!text-lg !font-bold !text-gray-900 !mb-2">
-                  {search ? 'Sin resultados' : 'Aún no tienes NFTs'}
-                </h3>
-                <p className="!text-gray-500 !text-sm !max-w-sm !mx-auto">
-                  {search
-                    ? 'Intenta con otro término de búsqueda'
-                    : 'Compensa tu huella de carbono y convierte tus certificados en NFTs inmutables.'}
-                </p>
-              </div>
-            )}
-
-            {/* Grid de certificados */}
-            {!loading && !error && filtered.length > 0 && (
-              <motion.div 
-                className="!grid !grid-cols-1 md:!grid-cols-2 xl:!grid-cols-3 !gap-6"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: {},
-                  visible: { transition: { staggerChildren: 0.1 } }
-                }}
-              >
-                <AnimatePresence>
-                  {filtered.map((cert) => (
-                    <motion.div
-                      key={cert.tokenId}
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0 }
-                      }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                    >
+            <Card className="p-0 overflow-hidden">
+              <CardHeader
+                className="px-6 pt-6 pb-5 border-b border-gray-100"
+                title="Tus NFT"
+                action={
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" aria-hidden="true" />
+                      <input
+                        type="search"
+                        aria-label="Buscar NFT"
+                        placeholder="Buscar por token o proyecto"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-56 pl-9 pr-3 py-2 rounded-full border border-gray-300 text-sm bg-white outline-none focus:border-brand-700"
+                      />
+                    </div>
+                    <button type="button" onClick={fetchCertificates} disabled={loading} className={btn.icon} aria-label="Actualizar" title="Actualizar">
+                      <FaSyncAlt className={loading ? 'animate-spin' : ''} aria-hidden="true" />
+                    </button>
+                  </div>
+                }
+              />
+              <div className="p-6">
+                {loading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-64" />)}</div>
+                ) : error ? (
+                  <ErrorState title="No pudimos leer tus NFT" text={error} onRetry={fetchCertificates} />
+                ) : filtered.length === 0 ? (
+                  <EmptyState
+                    icon={FaCubes}
+                    title={q ? 'Sin resultados' : 'Aún no tienes NFT'}
+                    text={q ? 'Prueba con otro término.' : 'Crea un NFT desde cualquiera de tus certificados.'}
+                    action={!q ? <Link to="/b2c/certificates" className={btn.primary}>Ir a Certificados</Link> : undefined}
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filtered.map((cert) => (
                       <NFTCertificateCard
+                        key={cert.tokenId}
                         certificate={cert}
                         explorerUrl={cert.explorerUrl}
                         openSeaUrl={cert.openSeaUrl}
-                        onViewDetails={() => {
-                          window.open(`/verify/${cert.compensationId}`, '_blank');
-                        }}
+                        onViewDetails={() => window.open(`/verify/${cert.compensationId}`, '_blank')}
                       />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
           </>
         )}
       </div>

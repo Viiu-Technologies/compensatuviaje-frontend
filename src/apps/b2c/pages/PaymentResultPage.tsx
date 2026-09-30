@@ -1,20 +1,70 @@
 import React from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaCertificate, FaPlane, FaArrowLeft } from 'react-icons/fa';
+import { useSearchParams, Link } from 'react-router-dom';
+import { FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaCertificate, FaPlane } from 'react-icons/fa';
+import type { IconType } from 'react-icons';
+import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
+import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
+import { btn, cx, fmtCLP, fmtKgAuto } from '../ui';
 
 /**
- * Página de resultado de pago Webpay
- * 
- * El backend redirige aquí después de confirmar con Transbank:
+ * Resultado del pago en Webpay. El backend redirige aquí después de
+ * confirmar con Transbank:
  * - /b2c/payment-result?status=success&certificate=CERT-XXX&amount=1902&tons=0.12
  * - /b2c/payment-result?status=rejected&reason=code_-1
  * - /b2c/payment-result?status=cancelled
  * - /b2c/payment-result?status=error&reason=...
+ *
+ * Los cuatro estados comparten una misma tarjeta; antes cada uno tenía su
+ * encabezado en degradado de otro color (verde, ámbar, rojo, gris).
  */
+
+type Tone = 'success' | 'warning' | 'danger' | 'neutral';
+
+const TONE: Record<Tone, string> = {
+  success: 'bg-brand-50 text-brand-700',
+  warning: 'bg-amber-50 text-amber-700',
+  danger: 'bg-rose-50 text-rose-700',
+  neutral: 'bg-gray-100 text-gray-600',
+};
+
+const ResultCard: React.FC<{ icon: IconType; tone: Tone; title: string; text: string; children?: React.ReactNode }> = ({
+  icon: Icon,
+  tone,
+  title,
+  text,
+  children,
+}) => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-8">
+      <Link to="/b2c/dashboard" className="block mb-6 w-fit">
+        <img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="h-7 w-auto" />
+      </Link>
+      <span className={cx('w-12 h-12 rounded-full flex items-center justify-center', TONE[tone])}>
+        <Icon className="text-2xl" aria-hidden="true" />
+      </span>
+      <h1 className="mt-4 text-2xl font-semibold text-gray-900 m-0">{title}</h1>
+      <p className="mt-2 text-gray-600 m-0">{text}</p>
+      {children}
+    </div>
+  </div>
+);
+
+/** Instrucciones del ambiente de pruebas de Transbank; solo en localhost. */
+const SandboxHelp: React.FC = () => (
+  <div className="mt-5 rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-900">
+    <p className="m-0 font-semibold">Ambiente de pruebas (solo en localhost)</p>
+    <ol className="mt-2 mb-0 pl-5 space-y-0.5">
+      <li>Tarjeta <span className="font-mono">4051 8842 3993 7852</span>, CVV <span className="font-mono">123</span>, cualquier fecha futura</li>
+      <li>En el banco simulado: RUT <span className="font-mono">11.111.111-1</span>, clave <span className="font-mono">123</span></li>
+      <li>Aceptar en ambas pantallas</li>
+    </ol>
+  </div>
+);
+
 const PaymentResultPage: React.FC = () => {
+  useTailwindSpacing();
+  useForceLightTheme();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const status = searchParams.get('status') || 'error';
   const certificate = searchParams.get('certificate');
@@ -22,328 +72,95 @@ const PaymentResultPage: React.FC = () => {
   const tons = searchParams.get('tons');
   const reason = searchParams.get('reason');
   const code = searchParams.get('code');
-  const order = searchParams.get('order');
 
   // Datos del vuelo para reintentar (vienen del backend en rejected/cancelled)
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
-  const cabin = searchParams.get('cabin');
-  const passengers = searchParams.get('passengers');
-  const roundTrip = searchParams.get('roundTrip');
-  const calculationId = searchParams.get('calculationId');
-
-  // Construir URL de reintento con datos del vuelo
   const retryUrl = (() => {
     const params = new URLSearchParams();
-    if (origin) params.set('origin', origin);
-    if (destination) params.set('destination', destination);
-    if (cabin) params.set('cabin', cabin);
-    if (passengers) params.set('passengers', passengers);
-    if (roundTrip) params.set('roundTrip', roundTrip);
-    if (calculationId) params.set('calculationId', calculationId);
+    for (const key of ['origin', 'destination', 'cabin', 'passengers', 'roundTrip', 'calculationId']) {
+      const v = searchParams.get(key);
+      if (v) params.set(key, v);
+    }
     const qs = params.toString();
     return `/b2c/calculator${qs ? `?${qs}` : ''}`;
   })();
+  const retryLabel = origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la calculadora';
 
-  // Detectar si estamos en entorno de desarrollo (sandbox)
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-  // ============================================
-  // PAGO EXITOSO
-  // ============================================
+  const secondaryActions = (
+    <Link to="/b2c/dashboard" className={cx(btn.secondary, 'w-full')}>Ir a mi resumen</Link>
+  );
+
   if (status === 'success') {
     return (
-      <div className="!min-h-screen !bg-gradient-to-b !from-gray-50 !to-white !flex !items-center !justify-center !p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="!max-w-lg !w-full"
-        >
-          <div className="!bg-white !rounded-3xl !shadow-2xl !shadow-gray-200/50 !border !border-emerald-100 !overflow-hidden">
-            {/* Header verde */}
-            <div className="!bg-gradient-to-br !from-emerald-500 !via-emerald-600 !to-teal-600 !p-10 !text-center !text-white !relative !overflow-hidden">
-              <div className="!absolute !top-0 !right-0 !w-40 !h-40 !bg-white/10 !rounded-full !blur-3xl"></div>
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className="!w-24 !h-24 !mx-auto !mb-5 !rounded-full !bg-white/20 !backdrop-blur-sm !flex !items-center !justify-center !shadow-xl"
-              >
-                <FaCheckCircle className="!text-5xl" />
-              </motion.div>
-              <h3 className="!text-3xl !font-bold !mb-2 !m-0">¡Pago Exitoso! 🎉</h3>
-              <p className="!text-emerald-100 !text-lg !m-0">Tu compensación fue procesada con éxito</p>
+      <ResultCard icon={FaCheckCircle} tone="success" title="Pago confirmado" text="Tu compensación quedó registrada y tu certificado ya está disponible.">
+        <dl className="mt-6 rounded-xl border border-gray-200 divide-y divide-gray-100 m-0">
+          {tons && (
+            <div className="flex justify-between gap-4 px-4 py-3">
+              <dt className="text-gray-500">CO₂e compensado</dt>
+              <dd className="m-0 font-semibold text-gray-900">{fmtKgAuto(Number(tons) * 1000)}</dd>
             </div>
-
-            {/* Detalles */}
-            <div className="!p-8">
-              {/* CO2 */}
-              {tons && (
-                <div className="!bg-gradient-to-br !from-emerald-50 !to-teal-50 !rounded-2xl !p-6 !mb-6 !text-center !border !border-emerald-100">
-                  <div className="!text-sm !text-emerald-600 !font-semibold !mb-1">CO₂ Compensado</div>
-                  <div className="!text-4xl !font-bold !text-emerald-700">
-                    {Number(tons) < 1
-                      ? `${(Number(tons) * 1000).toFixed(0)} kg`
-                      : `${Number(tons).toFixed(2)} toneladas`
-                    }
-                  </div>
-                </div>
-              )}
-
-              {/* Certificado */}
-              {certificate && (
-                <div className="!bg-gray-50 !rounded-2xl !p-5 !mb-4">
-                  <div className="!flex !items-center !gap-4">
-                    <div className="!w-16 !h-16 !rounded-xl !bg-emerald-100 !flex !items-center !justify-center">
-                      <FaCertificate className="!text-emerald-600 !text-3xl" />
-                    </div>
-                    <div>
-                      <div className="!text-xs !text-gray-500 !mb-1 !font-medium">Tu Certificado</div>
-                      <div className="!font-mono !text-xl !text-gray-800 !font-bold">{certificate}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Monto */}
-              {amount && (
-                <div className="!bg-gray-50 !rounded-2xl !p-5 !mb-6">
-                  <div className="!flex !items-center !justify-between">
-                    <span className="!text-gray-500 !font-medium">Monto pagado</span>
-                    <span className="!text-2xl !font-bold !text-gray-800">
-                      ${Number(amount).toLocaleString()} <span className="!text-sm !text-gray-500 !font-normal">CLP</span>
-                    </span>
-                  </div>
-                  <div className="!flex !items-center !justify-between !mt-2">
-                    <span className="!text-gray-400 !text-sm">Método de pago</span>
-                    <span className="!text-sm !text-gray-600 !font-medium">Webpay (Transbank)</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Botones */}
-              <div className="!space-y-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/b2c/certificates')}
-                  className="!w-full !py-4 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !shadow-xl !shadow-emerald-500/30 hover:!shadow-2xl !cursor-pointer"
-                >
-                  <FaCertificate />
-                  Ver Mis Certificados
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/b2c/calculator')}
-                  className="!w-full !py-4 !bg-emerald-50 !text-emerald-700 !rounded-xl !font-semibold !transition !border-2 !border-emerald-200 !flex !items-center !justify-center !gap-2 !cursor-pointer hover:!bg-emerald-100"
-                >
-                  <FaPlane />
-                  Calcular Otro Vuelo
-                </motion.button>
-                <Link
-                  to="/b2c/dashboard"
-                  className="!block !w-full !py-4 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !transition !text-center hover:!bg-gray-200 !no-underline"
-                >
-                  <FaArrowLeft className="!inline !mr-2" />
-                  Ir al Dashboard
-                </Link>
-              </div>
+          )}
+          {amount && (
+            <div className="flex justify-between gap-4 px-4 py-3">
+              <dt className="text-gray-500">Monto pagado</dt>
+              <dd className="m-0 font-semibold text-gray-900">{fmtCLP(Number(amount))} <span className="font-normal text-gray-500">· Webpay</span></dd>
             </div>
-          </div>
-        </motion.div>
-      </div>
+          )}
+          {certificate && (
+            <div className="flex justify-between gap-4 px-4 py-3">
+              <dt className="text-gray-500">Certificado</dt>
+              <dd className="m-0 font-mono font-semibold text-gray-900">{certificate}</dd>
+            </div>
+          )}
+        </dl>
+        <div className="mt-6 space-y-3">
+          <Link to="/b2c/certificates" className={cx(btn.primary, 'w-full')}>
+            <FaCertificate aria-hidden="true" /> Ver mi certificado
+          </Link>
+          <Link to="/b2c/calculator" className={cx(btn.secondary, 'w-full')}>
+            <FaPlane aria-hidden="true" /> Calcular otro vuelo
+          </Link>
+        </div>
+      </ResultCard>
     );
   }
 
-  // ============================================
-  // PAGO CANCELADO
-  // ============================================
   if (status === 'cancelled') {
     return (
-      <div className="!min-h-screen !bg-gradient-to-b !from-gray-50 !to-white !flex !items-center !justify-center !p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="!max-w-md !w-full"
-        >
-          <div className="!bg-white !rounded-3xl !shadow-xl !border !border-yellow-100 !overflow-hidden">
-            <div className="!bg-gradient-to-br !from-yellow-400 !via-amber-500 !to-orange-500 !p-10 !text-center !text-white !relative !overflow-hidden">
-              <div className="!absolute !top-0 !right-0 !w-40 !h-40 !bg-white/10 !rounded-full !blur-3xl"></div>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring' }}
-                className="!w-20 !h-20 !mx-auto !mb-4 !rounded-full !bg-white/20 !backdrop-blur-sm !flex !items-center !justify-center"
-              >
-                <FaExclamationTriangle className="!text-4xl" />
-              </motion.div>
-              <h3 className="!text-2xl !font-bold !mb-2 !m-0">Pago Cancelado</h3>
-              <p className="!text-yellow-100 !m-0">El pago fue cancelado antes de completarse</p>
-            </div>
-            <div className="!p-8">
-              <p className="!text-gray-600 !text-center !mb-6">
-                No se realizó ningún cargo a tu tarjeta. Puedes intentar nuevamente cuando lo desees.
-              </p>
-              <div className="!space-y-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(retryUrl)}
-                  className="!w-full !py-4 !bg-gradient-to-r !from-amber-500 !to-orange-500 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
-                >
-                  <FaPlane />
-                  {origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la Calculadora'}
-                </motion.button>
-                <Link
-                  to="/b2c/dashboard"
-                  className="!block !w-full !py-4 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !transition !text-center hover:!bg-gray-200 !no-underline"
-                >
-                  Ir al Dashboard
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+      <ResultCard icon={FaExclamationTriangle} tone="warning" title="Pago cancelado" text="Cancelaste el pago antes de completarlo. No se hizo ningún cargo a tu tarjeta.">
+        <div className="mt-6 space-y-3">
+          <Link to={retryUrl} className={cx(btn.primary, 'w-full')}>{retryLabel}</Link>
+          {secondaryActions}
+        </div>
+      </ResultCard>
     );
   }
 
-  // ============================================
-  // PAGO RECHAZADO
-  // ============================================
   if (status === 'rejected') {
     return (
-      <div className="!min-h-screen !bg-gradient-to-b !from-gray-50 !to-white !flex !items-center !justify-center !p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="!max-w-md !w-full"
-        >
-          <div className="!bg-white !rounded-3xl !shadow-xl !border !border-red-100 !overflow-hidden">
-            <div className="!bg-gradient-to-br !from-red-500 !via-red-600 !to-rose-600 !p-10 !text-center !text-white !relative !overflow-hidden">
-              <div className="!absolute !top-0 !right-0 !w-40 !h-40 !bg-white/10 !rounded-full !blur-3xl"></div>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring' }}
-                className="!w-20 !h-20 !mx-auto !mb-4 !rounded-full !bg-white/20 !backdrop-blur-sm !flex !items-center !justify-center"
-              >
-                <FaTimesCircle className="!text-4xl" />
-              </motion.div>
-              <h3 className="!text-2xl !font-bold !mb-2 !m-0">Pago Rechazado</h3>
-              <p className="!text-red-200 !m-0">La transacción no fue aprobada</p>
-            </div>
-            <div className="!p-8">
-              <p className="!text-gray-600 !text-center !mb-4">
-                Tu banco o tarjeta rechazó la transacción. Verifica que tengas fondos suficientes o intenta con otra tarjeta.
-              </p>
-              {(code || reason) && (
-                <div className="!bg-red-50 !rounded-xl !p-4 !mb-4 !text-center">
-                  <span className="!text-xs !text-red-400 !font-mono">Código: {code || reason}</span>
-                </div>
-              )}
-
-              {/* Instrucciones sandbox en desarrollo */}
-              {isDev && (
-                <div className="!bg-blue-50 !border !border-blue-200 !rounded-xl !p-4 !mb-4">
-                  <p className="!text-blue-800 !font-semibold !text-sm !mb-2 !m-0">🧪 Modo Sandbox — Instrucciones de prueba:</p>
-                  <ol className="!text-blue-700 !text-xs !space-y-1 !pl-4 !m-0">
-                    <li>Tarjeta: <span className="!font-mono">4051 8842 3993 7852</span></li>
-                    <li>CVV: <span className="!font-mono">123</span> — Exp: cualquier fecha futura</li>
-                    <li>En la página del banco simulado, hacer clic en <strong>"Aceptar"</strong></li>
-                    <li>RUT: <span className="!font-mono">11.111.111-1</span></li>
-                    <li>Clave: <span className="!font-mono">123</span></li>
-                    <li>Aceptar nuevamente para confirmar</li>
-                  </ol>
-                </div>
-              )}
-
-              <div className="!space-y-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(retryUrl)}
-                  className="!w-full !py-4 !bg-gradient-to-r !from-red-500 !to-rose-600 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
-                >
-                  {origin && destination ? `Reintentar ${origin} → ${destination}` : 'Intentar Nuevamente'}
-                </motion.button>
-                <Link
-                  to="/b2c/dashboard"
-                  className="!block !w-full !py-4 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !transition !text-center hover:!bg-gray-200 !no-underline"
-                >
-                  Ir al Dashboard
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+      <ResultCard icon={FaTimesCircle} tone="danger" title="Pago rechazado" text="Tu banco rechazó la transacción. Revisa que tengas saldo disponible o prueba con otra tarjeta.">
+        {(code || reason) && <p className="mt-3 mb-0 text-xs text-gray-500 font-mono">Código: {code || reason}</p>}
+        {isDev && <SandboxHelp />}
+        <div className="mt-6 space-y-3">
+          <Link to={retryUrl} className={cx(btn.primary, 'w-full')}>{retryLabel}</Link>
+          {secondaryActions}
+        </div>
+      </ResultCard>
     );
   }
 
-  // ============================================
-  // ERROR GENÉRICO
-  // ============================================
   return (
-    <div className="!min-h-screen !bg-gradient-to-b !from-gray-50 !to-white !flex !items-center !justify-center !p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="!max-w-md !w-full"
-      >
-        <div className="!bg-white !rounded-3xl !shadow-xl !border !border-gray-200 !overflow-hidden">
-          <div className="!bg-gradient-to-br !from-gray-600 !to-gray-800 !p-10 !text-center !text-white">
-            <div className="!w-20 !h-20 !mx-auto !mb-4 !rounded-full !bg-white/20 !flex !items-center !justify-center">
-              <FaExclamationTriangle className="!text-4xl" />
-            </div>
-            <h3 className="!text-2xl !font-bold !mb-2 !m-0">Error en el Pago</h3>
-            <p className="!text-gray-300 !m-0">Ocurrió un problema inesperado</p>
-          </div>
-          <div className="!p-8">
-            <p className="!text-gray-600 !text-center !mb-4">
-              No pudimos procesar tu pago. Por favor intenta nuevamente. Si el problema persiste, contáctanos.
-            </p>
-            {reason && (
-              <div className="!bg-gray-50 !rounded-xl !p-4 !mb-4 !text-center">
-                <span className="!text-xs !text-gray-400 !font-mono">{decodeURIComponent(reason)}</span>
-              </div>
-            )}
-
-            {/* Instrucciones sandbox en desarrollo */}
-            {isDev && (
-              <div className="!bg-blue-50 !border !border-blue-200 !rounded-xl !p-4 !mb-4">
-                <p className="!text-blue-800 !font-semibold !text-sm !mb-2 !m-0">🧪 Modo Sandbox — Instrucciones de prueba:</p>
-                <ol className="!text-blue-700 !text-xs !space-y-1 !pl-4 !m-0">
-                  <li>Tarjeta: <span className="!font-mono">4051 8842 3993 7852</span></li>
-                  <li>CVV: <span className="!font-mono">123</span> — Exp: cualquier fecha futura</li>
-                  <li>En la página del banco, clic en <strong>"Aceptar"</strong></li>
-                  <li>RUT: <span className="!font-mono">11.111.111-1</span> — Clave: <span className="!font-mono">123</span></li>
-                </ol>
-              </div>
-            )}
-
-            <div className="!space-y-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(retryUrl)}
-                className="!w-full !py-4 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl !font-bold !transition !border-0 !flex !items-center !justify-center !gap-2 !cursor-pointer"
-              >
-                <FaPlane />
-                {origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la Calculadora'}
-              </motion.button>
-              <Link
-                to="/b2c/dashboard"
-                className="!block !w-full !py-4 !bg-gray-100 !text-gray-700 !rounded-xl !font-semibold !transition !text-center hover:!bg-gray-200 !no-underline"
-              >
-                Ir al Dashboard
-              </Link>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
+    <ResultCard icon={FaExclamationTriangle} tone="neutral" title="No pudimos procesar el pago" text="Vuelve a intentarlo. Si el problema sigue, escríbenos y lo revisamos.">
+      {reason && <p className="mt-3 mb-0 text-xs text-gray-500 font-mono break-all">{decodeURIComponent(reason)}</p>}
+      {isDev && <SandboxHelp />}
+      <div className="mt-6 space-y-3">
+        <Link to={retryUrl} className={cx(btn.primary, 'w-full')}><FaPlane aria-hidden="true" /> {retryLabel}</Link>
+        {secondaryActions}
+      </div>
+    </ResultCard>
   );
 };
 
