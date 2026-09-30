@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { XCircle, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Modal } from '../../ui';
 
 interface RejectModalProps {
   isOpen: boolean;
@@ -12,12 +12,18 @@ interface RejectModalProps {
   requireReason?: boolean;
   /** Texto de la pregunta de confirmación cuando requireReason es false. */
   confirmMessage?: string;
-  /** Texto del botón de confirmar. Default: "Confirmar Rechazo" / "Confirmar". */
+  /** Texto del botón de confirmar. Default: "Confirmar rechazo" / "Confirmar". */
   confirmLabel?: string;
-  /** Estilo visual del modal. Default: 'danger' (rojo, para rechazar). 'primary' usa verde, para aprobar/confirmar. */
+  /** Estilo del botón de confirmar. Default: 'danger' (rechazar). 'primary' para aprobar/confirmar. */
   variant?: 'danger' | 'primary';
 }
 
+const MIN_REASON = 10;
+
+/**
+ * Confirmación de aprobar/rechazar del admin, sobre el Modal del sistema de
+ * diseño (Escape, foco y estilos comunes). Mantiene la API anterior.
+ */
 const RejectModal: React.FC<RejectModalProps> = ({
   isOpen,
   onClose,
@@ -31,116 +37,81 @@ const RejectModal: React.FC<RejectModalProps> = ({
   variant = 'danger',
 }) => {
   const [reason, setReason] = useState('');
-  const [error, setError] = useState('');
+  const [touched, setTouched] = useState(false);
 
-  if (!isOpen) return null;
+  // Cada apertura empieza con el campo vacío
+  useEffect(() => {
+    if (isOpen) {
+      setReason('');
+      setTouched(false);
+    }
+  }, [isOpen]);
 
-  const isPrimary = variant === 'primary';
+  const tooShort = requireReason && reason.trim().length < MIN_REASON;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (requireReason) {
-      if (reason.trim().length < 10) {
-        setError('El motivo debe tener al menos 10 caracteres');
-        return;
-      }
-      setError('');
-    }
+    setTouched(true);
+    if (tooShort) return;
     await onConfirm(reason);
   };
 
+  const formId = 'adm-reject-form';
+
   return (
-    <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !p-4 !bg-black/50 !backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-xl !max-w-md !w-full !overflow-hidden">
-        {/* Header */}
-        <div className={`!flex !items-center !justify-between !p-4 !border-b ${isPrimary ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30'}`}>
-          <div className={`!flex !items-center !gap-2 ${isPrimary ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-            {isPrimary ? <CheckCircle className="!w-5 !h-5" /> : <XCircle className="!w-5 !h-5" />}
-            <h3 className="!font-semibold">{title}</h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 !transition-colors"
-            disabled={loading}
-          >
-            <svg className="!w-5 !h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+    <Modal
+      open={isOpen}
+      title={title}
+      onClose={onClose}
+      busy={loading}
+      footer={
+        <>
+          <button type="button" className="adm-btn" onClick={onClose} disabled={loading}>
+            Cancelar
           </button>
-        </div>
+          <button
+            type="submit"
+            form={formId}
+            className={`adm-btn ${variant === 'primary' ? 'adm-btn--primary' : 'adm-btn--danger'}`}
+            disabled={loading || tooShort}
+          >
+            {loading
+              ? requireReason ? 'Rechazando…' : 'Procesando…'
+              : confirmLabel || (requireReason ? 'Confirmar rechazo' : 'Confirmar')}
+          </button>
+        </>
+      }
+    >
+      <form id={formId} onSubmit={handleSubmit} style={{ display: 'contents' }}>
+        <p>
+          {requireReason ? 'Vas a rechazar ' : confirmMessage ? `${confirmMessage} ` : 'Vas a confirmar esta acción para '}
+          <b>{itemName}</b>.
+        </p>
 
-        {/* Content */}
-        <form onSubmit={handleSubmit} className="!p-6 !space-y-4">
-          <p className="!text-sm text-slate-600 dark:text-slate-400">
-            {requireReason ? 'Estás a punto de rechazar: ' : (confirmMessage ? confirmMessage + ' ' : 'Vas a confirmar esta acción para: ')}
-            <span className="!font-medium text-slate-900 dark:text-slate-100">{itemName}</span>
-          </p>
-
-          {requireReason && (
-            <div>
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-300 !mb-1">
-                Motivo del rechazo <span className="text-red-500">*</span>
-              </label>
-              <p className="!text-xs text-slate-500 dark:text-slate-400 !mb-2">
-                Este mensaje será enviado al partner para que pueda corregir el problema.
-              </p>
-              <textarea
-                value={reason}
-                onChange={(e) => {
-                  setReason(e.target.value);
-                  if (e.target.value.length >= 10) setError('');
-                }}
-                placeholder="Explica detalladamente por qué se rechaza esta evaluación..."
-                className={`!w-full !p-3 !border !rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:!ring-2 focus:ring-red-500 focus:border-red-500 !min-h-[120px] ${
-                  error ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-slate-600'
-                }`}
-                disabled={loading}
-              />
-              {error && (
-                <div className="!flex !items-center !gap-1 !mt-1 text-red-600 dark:text-red-400 !text-xs">
-                  <AlertCircle className="!w-3 !h-3" />
-                  <span>{error}</span>
-                </div>
-              )}
-              <div className={`!text-right !text-xs !mt-1 ${reason.length < 10 ? 'text-red-500 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                {reason.length}/10 caracteres mínimo
-              </div>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className="!flex !items-center !justify-end !gap-3 !pt-4 !border-t border-slate-200 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={onClose}
+        {requireReason && (
+          <div className="adm-field">
+            <label className="adm-field__label" htmlFor="adm-reject-reason">Motivo del rechazo</label>
+            <span className="adm-field__hint">Se enviará al partner para que pueda corregir el problema.</span>
+            <textarea
+              id="adm-reject-reason"
+              className="adm-textarea"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              onBlur={() => setTouched(true)}
+              placeholder="Explica qué hay que corregir"
               disabled={loading}
-              className="!px-4 !py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 !rounded-lg !transition-colors !font-medium disabled:!opacity-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading || (requireReason && reason.trim().length < 10)}
-              className={`!px-4 !py-2 !text-white !rounded-lg !transition-colors !font-medium !flex !items-center !gap-2 disabled:!opacity-50 disabled:!cursor-not-allowed ${
-                isPrimary ? '!bg-green-600 hover:!bg-green-700' : '!bg-red-600 hover:!bg-red-700'
-              }`}
-            >
-              {loading ? (
-                <>
-                  <svg className="!w-4 !h-4 !animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="!opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="!opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  {requireReason ? 'Rechazando...' : 'Procesando...'}
-                </>
-              ) : (
-                confirmLabel || (requireReason ? 'Confirmar Rechazo' : 'Confirmar')
-              )}
-            </button>
+              aria-invalid={touched && tooShort}
+              aria-describedby="adm-reject-count"
+            />
+            <span id="adm-reject-count" className={touched && tooShort ? 'adm-field__error' : 'adm-field__hint'}>
+              {touched && tooShort
+                ? `Escribe al menos ${MIN_REASON} caracteres (${reason.trim().length}/${MIN_REASON}).`
+                : `Mínimo ${MIN_REASON} caracteres.`}
+            </span>
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+      </form>
+    </Modal>
   );
 };
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Inbox, type LucideIcon } from 'lucide-react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Inbox, Search, X, type LucideIcon } from 'lucide-react';
 import './admin-ui.css';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -169,3 +169,225 @@ export const Legend: React.FC<{ items: LegendItem[] }> = ({ items }) => (
 export const Skeleton: React.FC<{ height: number; className?: string }> = ({ height, className = '' }) => (
   <div className={`adm-skeleton ${className}`.trim()} style={{ height }} aria-hidden="true" />
 );
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Datos: búsqueda, filtro segmentado, paginación y filas de carga
+   ────────────────────────────────────────────────────────────────────────── */
+
+export interface SearchFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  label: string;
+}
+
+/** Campo de búsqueda con ícono. `label` queda para lectores de pantalla. */
+export const SearchField: React.FC<SearchFieldProps> = ({ label, ...rest }) => (
+  <div className="adm-search">
+    <Search aria-hidden="true" />
+    <input type="search" className="adm-input" aria-label={label} {...rest} />
+  </div>
+);
+
+export interface SegmentedOption {
+  value: string;
+  label: string;
+}
+
+export const Segmented: React.FC<{
+  label: string;
+  options: SegmentedOption[];
+  value: string;
+  onChange: (value: string) => void;
+}> = ({ label, options, value, onChange }) => (
+  <div className="adm-segmented" role="group" aria-label={label}>
+    {options.map((o) => (
+      <button key={o.value} type="button" aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
+        {o.label}
+      </button>
+    ))}
+  </div>
+);
+
+/** Páginas visibles: 1 … 4 5 6 … 12 */
+const pageWindow = (page: number, total: number): Array<number | 'gap'> => {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const set = new Set([1, total, page - 1, page, page + 1].filter((p) => p >= 1 && p <= total));
+  const sorted = [...set].sort((a, b) => a - b);
+  const out: Array<number | 'gap'> = [];
+  sorted.forEach((p, i) => {
+    if (i && p - sorted[i - 1] > 1) out.push('gap');
+    out.push(p);
+  });
+  return out;
+};
+
+export interface PaginationProps {
+  page: number;
+  totalPages: number;
+  total: number;
+  /** Filas en la página actual. */
+  shown: number;
+  /** Sustantivo en plural: "empresas". */
+  noun: string;
+  onPage: (page: number) => void;
+}
+
+export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, total, shown, noun, onPage }) => (
+  <nav className="adm-pagination" aria-label="Paginación">
+    <span>
+      Mostrando <b>{shown.toLocaleString('es-CL')}</b> de <b>{total.toLocaleString('es-CL')}</b> {noun}
+    </span>
+    {totalPages > 1 && (
+      <div className="adm-pagination__pages">
+        <button type="button" onClick={() => onPage(page - 1)} disabled={page <= 1} aria-label="Página anterior">
+          <ChevronLeft aria-hidden="true" />
+        </button>
+        {pageWindow(page, totalPages).map((p, i) =>
+          p === 'gap' ? (
+            <span key={`gap-${i}`} className="adm-pagination__gap" aria-hidden="true">…</span>
+          ) : (
+            <button key={p} type="button" onClick={() => onPage(p)} aria-current={p === page ? 'page' : undefined}>
+              {p}
+            </button>
+          )
+        )}
+        <button type="button" onClick={() => onPage(page + 1)} disabled={page >= totalPages} aria-label="Página siguiente">
+          <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    )}
+  </nav>
+);
+
+export const TableSkeletonRows: React.FC<{ rows?: number; columns: number }> = ({ rows = 5, columns }) => (
+  <>
+    {Array.from({ length: rows }, (_, i) => (
+      <tr key={i} className="adm-row-skeleton" aria-hidden="true">
+        <td colSpan={columns}><Skeleton height={14} /></td>
+      </tr>
+    ))}
+  </>
+);
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Modal
+   ────────────────────────────────────────────────────────────────────────── */
+
+export interface ModalProps {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  /** Mientras es true no se puede cerrar (acción en curso). */
+  busy?: boolean;
+  footer?: React.ReactNode;
+  children: React.ReactNode;
+}
+
+/**
+ * Diálogo modal: Escape y clic fuera cierran (salvo con busy), el foco entra
+ * al primer campo o botón y vuelve al elemento que lo abrió al cerrar.
+ */
+export const Modal: React.FC<ModalProps> = ({ open, title, onClose, busy = false, footer, children }) => {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // Refs para que Escape use siempre el busy/onClose actuales.
+  const busyRef = useRef(busy);
+  const onCloseRef = useRef(onClose);
+  busyRef.current = busy;
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    const first = dialog?.querySelector<HTMLElement>('textarea, input, select, button:not([data-modal-close])');
+    (first ?? dialog)?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !busyRef.current) onCloseRef.current();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      previous?.focus?.();
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="adm-modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
+      <div ref={dialogRef} className="adm-modal" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+        <div className="adm-modal__head">
+          <h2 id={titleId} className="adm-modal__title">{title}</h2>
+          <button type="button" className="adm-icon-btn" onClick={onClose} disabled={busy} aria-label="Cerrar" data-modal-close>
+            <X aria-hidden="true" />
+          </button>
+        </div>
+        <div className="adm-modal__body">{children}</div>
+        {footer && <div className="adm-modal__foot">{footer}</div>}
+      </div>
+    </div>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Confirmación con promesa (misma API que shared/components/ui/useConfirm,
+   pero dibujada con el Modal del admin)
+   ────────────────────────────────────────────────────────────────────────── */
+
+export interface AdminConfirmOptions {
+  title: string;
+  description?: React.ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  /** 'danger' para acciones destructivas. */
+  tone?: 'primary' | 'danger';
+}
+
+/**
+ * @example
+ *   const { confirm, dialog } = useAdminConfirm();
+ *   if (!(await confirm({ title: '¿Aprobar?' }))) return;
+ *   return <>{contenido}{dialog}</>;
+ */
+export function useAdminConfirm() {
+  const [options, setOptions] = useState<AdminConfirmOptions | null>(null);
+  const resolver = useRef<((ok: boolean) => void) | null>(null);
+
+  const confirm = useCallback((opts: AdminConfirmOptions) => {
+    setOptions(opts);
+    return new Promise<boolean>((resolve) => {
+      resolver.current = resolve;
+    });
+  }, []);
+
+  const close = useCallback((ok: boolean) => {
+    resolver.current?.(ok);
+    resolver.current = null;
+    setOptions(null);
+  }, []);
+
+  const dialog = (
+    <Modal
+      open={!!options}
+      title={options?.title ?? ''}
+      onClose={() => close(false)}
+      footer={
+        <>
+          <button type="button" className="adm-btn" onClick={() => close(false)}>
+            {options?.cancelLabel ?? 'Cancelar'}
+          </button>
+          <button
+            type="button"
+            className={`adm-btn ${options?.tone === 'danger' ? 'adm-btn--danger' : 'adm-btn--primary'}`}
+            onClick={() => close(true)}
+          >
+            {options?.confirmLabel ?? 'Confirmar'}
+          </button>
+        </>
+      }
+    >
+      {options?.description && <p>{options.description}</p>}
+    </Modal>
+  );
+
+  return { confirm, dialog };
+}
