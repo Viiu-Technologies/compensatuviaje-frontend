@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Newspaper, Check, X, Pencil, ExternalLink, ChevronUp, ChevronDown,
-  ShieldAlert, Send, Loader2, Keyboard, Copy, Image as ImageIcon, FileSearch,
+  Check, X, Pencil, ExternalLink, ChevronUp, ChevronDown,
+  Send, Keyboard, Image as ImageIcon, FileSearch, Newspaper,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import adminNewsApi from '../services/adminNewsApi';
 import type { AdminNewsArticle, NewsStatus } from '../../../types/news.types';
+import { EmptyState, Modal, PageHeader, Panel, Segmented, Skeleton, StatusBadge, type StatusTone } from '../ui';
 
 /**
  * Cola de revisión de noticias.
@@ -34,28 +35,23 @@ const MOTIVOS_RAPIDOS = [
   'Información insuficiente o poco fiable',
 ];
 
-const importanceColor = (n: number | null) => {
-  if (n === null) return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
-  if (n >= 5) return 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300';
-  if (n === 4) return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
-  if (n === 3) return 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300';
-  return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
-};
+const SHORTCUTS: Array<[string, string]> = [
+  ['J / K', 'Siguiente / anterior'],
+  ['A', 'Aprobar'],
+  ['P', 'Publicar (si está aprobado)'],
+  ['R', 'Rechazar'],
+  ['E', 'Editar'],
+  ['V', 'Ver el detalle y la evidencia'],
+  ['Enter', 'Abrir la fuente original'],
+  ['?', 'Mostrar u ocultar esta ayuda'],
+];
 
-const ConfidenceBadge: React.FC<{ score: number | null; needsReview: boolean }> = ({
-  score, needsReview,
-}) => {
-  if (score === null) return null;
-  const pct = Math.round(score * 100);
-  const cls = needsReview
-    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
-  return (
-    <span className={`!inline-flex !items-center !gap-1 !px-2 !py-0.5 !rounded-full !text-xs !font-medium ${cls}`}>
-      {needsReview && <ShieldAlert className="!w-3 !h-3" />}
-      {pct}% confianza
-    </span>
-  );
+/** Importancia alta pide atención; no es un error, así que no va en rojo. */
+const importanceTone = (n: number | null): StatusTone => {
+  if (n === null) return 'neutral';
+  if (n >= 4) return 'warning';
+  if (n === 3) return 'info';
+  return 'neutral';
 };
 
 const NewsQueuePage: React.FC = () => {
@@ -73,7 +69,7 @@ const NewsQueuePage: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   const navigate = useNavigate();
-  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const cardRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const load = useCallback(async () => {
     try {
@@ -198,340 +194,192 @@ const NewsQueuePage: React.FC = () => {
   }, [articles, cursor, editing, rejecting, navigate]);
 
   const fmt = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+    d ? new Date(d).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) : '—';
+
+  const closeReject = () => { setRejecting(null); setRejectReason(''); };
 
   return (
-    <div className="!space-y-6 bg-slate-50 dark:bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
-      {/* Cabecera */}
-      <div className="!flex !items-start !justify-between !flex-wrap !gap-4">
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100 !flex !items-center !gap-2">
-            <Newspaper className="!w-7 !h-7 text-emerald-600 dark:text-emerald-400" />
-            Cola de noticias
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">
-            Revisa lo que el pipeline clasificó y decide qué se publica. Nada sale sin tu aprobación.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowHelp((s) => !s)}
-          className="!flex !items-center !gap-2 !px-3 !py-2 !rounded-lg !text-sm bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 !border border-slate-200 dark:border-slate-700 hover:!bg-slate-100 dark:hover:!bg-slate-700"
-        >
-          <Keyboard className="!w-4 !h-4" />
-          Atajos
-        </button>
-      </div>
+    <div className="adm-page">
+      <PageHeader
+        title="Noticias"
+        description="Revisa lo que el pipeline clasificó y decide qué se publica. Nada sale sin tu aprobación."
+        actions={
+          <button type="button" className="adm-btn" onClick={() => setShowHelp((s) => !s)} aria-expanded={showHelp}>
+            <Keyboard aria-hidden="true" /> Atajos
+          </button>
+        }
+      />
 
       {showHelp && (
-        <div className="bg-white dark:bg-slate-800 !rounded-xl !p-4 !border border-slate-200 dark:border-slate-700">
-          <div className="!grid sm:!grid-cols-2 lg:!grid-cols-4 !gap-3 !text-sm text-slate-600 dark:text-slate-300">
-            {[
-              ['J / K', 'Siguiente / anterior'],
-              ['A', 'Aprobar'],
-              ['P', 'Publicar (si está aprobado)'],
-              ['R', 'Rechazar'],
-              ['E', 'Editar'],
-              ['V', 'Ver el detalle y la evidencia'],
-              ['Enter', 'Abrir la fuente original'],
-              ['?', 'Mostrar u ocultar esta ayuda'],
-            ].map(([k, d]) => (
-              <div key={k} className="!flex !items-center !gap-2">
-                <kbd className="!px-2 !py-0.5 !rounded bg-slate-100 dark:bg-slate-900 !font-mono !text-xs !border border-slate-300 dark:border-slate-600">{k}</kbd>
-                <span>{d}</span>
+        <Panel title="Atajos de teclado">
+          <dl className="adm-shortcuts">
+            {SHORTCUTS.map(([k, d]) => (
+              <div key={k}>
+                <dt><kbd className="adm-kbd">{k}</kbd></dt>
+                <dd>{d}</dd>
               </div>
             ))}
-          </div>
-        </div>
+          </dl>
+        </Panel>
       )}
 
-      {/* Pestañas */}
-      <div className="!flex !gap-2 !flex-wrap">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setStatus(tab.value)}
-            className={`!px-4 !py-2 !rounded-lg !text-sm !font-medium !transition-colors ${
-              status === tab.value
-                ? '!bg-emerald-600 !text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:!bg-slate-100 dark:hover:!bg-slate-700'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        label="Estado de los artículos"
+        options={STATUS_TABS}
+        value={status}
+        onChange={(v) => setStatus(v as NewsStatus | 'all')}
+      />
 
-      {/* Lista */}
       {loading ? (
-        <div className="!flex !items-center !justify-center !py-20 text-slate-400">
-          <Loader2 className="!w-6 !h-6 !animate-spin !mr-2" />
-          Cargando…
+        <div className="adm-stack-v">
+          {[0, 1, 2].map((i) => <Skeleton key={i} height={170} />)}
         </div>
       ) : articles.length === 0 ? (
-        <div className="!text-center !py-20">
-          <Newspaper className="!w-12 !h-12 !mx-auto text-slate-300 dark:text-slate-600" />
-          <p className="!mt-3 text-slate-500 dark:text-slate-400">
-            {status === 'pending' ? 'No hay nada por revisar. Al día.' : 'Sin artículos en este estado.'}
-          </p>
-        </div>
+        <section className="adm-panel">
+          <EmptyState
+            icon={Newspaper}
+            title={status === 'pending' ? 'No hay nada por revisar' : 'Sin artículos en este estado'}
+            text={status === 'pending' ? 'La cola está al día.' : undefined}
+          />
+        </section>
       ) : (
-        <div className="!space-y-4">
+        <div className="adm-stack-v">
           {articles.map((a, i) => {
             const active = i === cursor;
             const isEditing = editing === a.id;
 
             return (
-              <div
+              <article
                 key={a.id}
                 ref={(el) => { cardRefs.current[a.id] = el; }}
                 onClick={() => setCursor(i)}
-                className={`bg-white dark:bg-slate-800 !rounded-xl !p-5 !border !transition-all ${
-                  active
-                    ? '!border-emerald-500 !ring-2 !ring-emerald-500/20'
-                    : 'border-slate-200 dark:border-slate-700'
-                } ${busy === a.id ? '!opacity-50' : ''}`}
+                className={`adm-news-card${active ? ' adm-news-card--active' : ''}${busy === a.id ? ' adm-news-card--busy' : ''}`}
+                aria-current={active ? 'true' : undefined}
               >
-                {/* Metadatos */}
-                <div className="!flex !items-center !gap-2 !flex-wrap !mb-3 !text-xs">
+                <div className="adm-news-card__meta">
                   {a.importance !== null && (
-                    <span className={`!px-2 !py-0.5 !rounded-full !font-medium ${importanceColor(a.importance)}`}>
-                      Importancia {a.importance}/5
-                    </span>
+                    <StatusBadge tone={importanceTone(a.importance)}>Importancia {a.importance}/5</StatusBadge>
                   )}
-                  <ConfidenceBadge score={a.confidenceScore} needsReview={a.needsReview} />
-                  {a.isRegulatory && (
-                    <span className="!px-2 !py-0.5 !rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 !font-medium">
-                      Regulatorio
-                    </span>
+                  {a.confidenceScore !== null && (
+                    <StatusBadge tone={a.needsReview ? 'warning' : 'neutral'}>
+                      {Math.round(a.confidenceScore * 100)} % de confianza{a.needsReview ? ' · revisar' : ''}
+                    </StatusBadge>
                   )}
-                  {a.affectsTransport && (
-                    <span className="!px-2 !py-0.5 !rounded-full bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300 !font-medium">
-                      Afecta transporte
-                    </span>
-                  )}
-                  {a.contentSource === 'feed_only' && (
-                    <span className="!px-2 !py-0.5 !rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                      Solo resumen del feed
-                    </span>
-                  )}
-                  <span className="text-slate-400 dark:text-slate-500 !ml-auto">
-                    {a.source?.name} · {fmt(a.discoveredAt)}
-                  </span>
+                  {a.isRegulatory && <StatusBadge tone="info">Regulatorio</StatusBadge>}
+                  {a.affectsTransport && <StatusBadge tone="neutral">Afecta al transporte</StatusBadge>}
+                  {a.contentSource === 'feed_only' && <StatusBadge tone="neutral">Solo resumen del feed</StatusBadge>}
+                  <span className="adm-news-card__source">{a.source?.name} · {fmt(a.discoveredAt)}</span>
                 </div>
 
                 {isEditing ? (
-                  <div className="!space-y-3">
-                    <input
-                      value={draft.title}
-                      onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                      className="!w-full !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !font-semibold"
-                      placeholder="Titular"
-                    />
-                    <textarea
-                      value={draft.summary}
-                      onChange={(e) => setDraft({ ...draft, summary: e.target.value })}
-                      rows={4}
-                      className="!w-full !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 !text-sm"
-                      placeholder="Resumen"
-                    />
-                    <textarea
-                      value={draft.whyItMatters}
-                      onChange={(e) => setDraft({ ...draft, whyItMatters: e.target.value })}
-                      rows={2}
-                      className="!w-full !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 !text-sm"
-                      placeholder="Por qué importa"
-                    />
-                    <div className="!flex !gap-2">
-                      <button
-                        onClick={() => saveEdit(a)}
-                        className="!px-4 !py-2 !rounded-lg !bg-emerald-600 !text-white !text-sm !font-medium hover:!bg-emerald-700"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        onClick={() => setEditing(null)}
-                        className="!px-4 !py-2 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm"
-                      >
-                        Cancelar
-                      </button>
+                  <div className="adm-stack-v">
+                    <div className="adm-field">
+                      <label className="adm-field__label" htmlFor={`nq-title-${a.id}`}>Titular</label>
+                      <input id={`nq-title-${a.id}`} className="adm-input" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+                    </div>
+                    <div className="adm-field">
+                      <label className="adm-field__label" htmlFor={`nq-summary-${a.id}`}>Resumen</label>
+                      <textarea id={`nq-summary-${a.id}`} className="adm-textarea" rows={4} value={draft.summary} onChange={(e) => setDraft({ ...draft, summary: e.target.value })} />
+                    </div>
+                    <div className="adm-field">
+                      <label className="adm-field__label" htmlFor={`nq-why-${a.id}`}>Por qué importa</label>
+                      <textarea id={`nq-why-${a.id}`} className="adm-textarea" rows={2} value={draft.whyItMatters} onChange={(e) => setDraft({ ...draft, whyItMatters: e.target.value })} />
+                    </div>
+                    <div className="adm-actions-row">
+                      <button type="button" className="adm-btn adm-btn--primary" onClick={() => saveEdit(a)} disabled={busy === a.id}>Guardar</button>
+                      <button type="button" className="adm-btn" onClick={() => setEditing(null)}>Cancelar</button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !leading-snug">
-                      <Link
-                        to={`/admin/noticias/${a.id}`}
-                        className="hover:!text-emerald-600 dark:hover:!text-emerald-400"
-                      >
-                        {a.title}
-                      </Link>
+                    <h2 className="adm-news-card__title">
+                      <Link to={`/admin/noticias/${a.id}`}>{a.title}</Link>
                     </h2>
-
                     {a.originalTitle && a.originalTitle !== a.title && (
-                      <p className="!mt-1 !text-xs text-slate-400 dark:text-slate-500 !flex !items-start !gap-1">
-                        <Copy className="!w-3 !h-3 !mt-0.5 !shrink-0" />
-                        <span>Titular del medio: {a.originalTitle}</span>
-                      </p>
+                      <p className="adm-news-card__original">Titular del medio: {a.originalTitle}</p>
                     )}
-
-                    {a.summary && (
-                      <p className="!mt-2 !text-sm text-slate-600 dark:text-slate-300 !leading-relaxed">
-                        {a.summary}
-                      </p>
-                    )}
-
+                    {a.summary && <p className="adm-news-card__summary">{a.summary}</p>}
                     {a.whyItMatters && (
-                      <p className="!mt-3 !p-3 !rounded-lg bg-slate-50 dark:bg-slate-900 !border-l-2 !border-emerald-500 !text-sm text-slate-600 dark:text-slate-300">
-                        <strong className="text-slate-800 dark:text-slate-100">Por qué importa: </strong>
-                        {a.whyItMatters}
-                      </p>
+                      <p className="adm-news-card__why"><b>Por qué importa:</b> {a.whyItMatters}</p>
+                    )}
+                    {a.categories.length > 0 && (
+                      <div className="adm-chips">
+                        {a.categories.map((c) => <span key={c} className="adm-tag">{c}</span>)}
+                      </div>
                     )}
 
-                    <div className="!flex !gap-1.5 !flex-wrap !mt-3">
-                      {a.categories.map((c) => (
-                        <span key={c} className="!px-2 !py-0.5 !rounded !text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                          {c}
-                        </span>
-                      ))}
+                    <div className="adm-news-card__actions">
+                      {a.status === 'pending' && (
+                        <button type="button" className="adm-btn adm-btn--sm adm-btn--primary" onClick={() => approve(a)} disabled={busy === a.id}>
+                          <Check aria-hidden="true" /> Aprobar <kbd className="adm-kbd adm-kbd--inverse">A</kbd>
+                        </button>
+                      )}
+                      {a.status === 'approved' && (
+                        <button type="button" className="adm-btn adm-btn--sm adm-btn--primary" onClick={() => publish(a)} disabled={busy === a.id}>
+                          <Send aria-hidden="true" /> Publicar <kbd className="adm-kbd adm-kbd--inverse">P</kbd>
+                        </button>
+                      )}
+                      {a.status !== 'rejected' && (
+                        <button type="button" className="adm-btn adm-btn--sm" onClick={() => setRejecting(a)}>
+                          <X aria-hidden="true" /> Rechazar <kbd className="adm-kbd">R</kbd>
+                        </button>
+                      )}
+                      <button type="button" className="adm-btn adm-btn--sm" onClick={() => startEdit(a)}>
+                        <Pencil aria-hidden="true" /> Editar <kbd className="adm-kbd">E</kbd>
+                      </button>
+                      <button type="button" className="adm-btn adm-btn--sm" onClick={() => regenerate(a)} title="Vuelve a redactar el resumen y regenera la imagen">
+                        <ImageIcon aria-hidden="true" /> Regenerar
+                      </button>
+                      <Link to={`/admin/noticias/${a.id}`} className="adm-btn adm-btn--sm" title="Ver la evidencia de extracción">
+                        <FileSearch aria-hidden="true" /> Detalle <kbd className="adm-kbd">V</kbd>
+                      </Link>
+                      <a href={a.url} target="_blank" rel="noopener noreferrer nofollow" className="adm-link adm-news-card__external">
+                        Ver original <ExternalLink aria-hidden="true" />
+                      </a>
                     </div>
                   </>
                 )}
-
-                {/* Acciones */}
-                {!isEditing && (
-                  <div className="!flex !items-center !gap-2 !flex-wrap !mt-4 !pt-4 !border-t border-slate-100 dark:border-slate-700">
-                    {a.status === 'pending' && (
-                      <button
-                        onClick={() => approve(a)}
-                        disabled={busy === a.id}
-                        className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg !bg-emerald-600 !text-white !text-sm !font-medium hover:!bg-emerald-700 disabled:!opacity-50"
-                      >
-                        <Check className="!w-4 !h-4" /> Aprobar
-                        <kbd className="!ml-1 !text-xs !opacity-70">A</kbd>
-                      </button>
-                    )}
-
-                    {a.status === 'approved' && (
-                      <button
-                        onClick={() => publish(a)}
-                        disabled={busy === a.id}
-                        className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg !bg-sky-600 !text-white !text-sm !font-medium hover:!bg-sky-700 disabled:!opacity-50"
-                      >
-                        <Send className="!w-4 !h-4" /> Publicar
-                        <kbd className="!ml-1 !text-xs !opacity-70">P</kbd>
-                      </button>
-                    )}
-
-                    {a.status !== 'rejected' && (
-                      <button
-                        onClick={() => setRejecting(a)}
-                        className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 !text-sm !border border-rose-200 dark:border-slate-600 hover:!bg-rose-50 dark:hover:!bg-slate-600"
-                      >
-                        <X className="!w-4 !h-4" /> Rechazar
-                        <kbd className="!ml-1 !text-xs !opacity-70">R</kbd>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => startEdit(a)}
-                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm hover:!bg-slate-200 dark:hover:!bg-slate-600"
-                    >
-                      <Pencil className="!w-4 !h-4" /> Editar
-                      <kbd className="!ml-1 !text-xs !opacity-70">E</kbd>
-                    </button>
-
-                    <button
-                      onClick={() => regenerate(a)}
-                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm hover:!bg-slate-200 dark:hover:!bg-slate-600"
-                      title="Vuelve a redactar el resumen y regenera la imagen"
-                    >
-                      <ImageIcon className="!w-4 !h-4" /> Regenerar
-                    </button>
-
-                    <Link
-                      to={`/admin/noticias/${a.id}`}
-                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm hover:!bg-slate-200 dark:hover:!bg-slate-600"
-                      title="Ver la evidencia de extracción"
-                    >
-                      <FileSearch className="!w-4 !h-4" /> Detalle
-                      <kbd className="!ml-1 !text-xs !opacity-70">V</kbd>
-                    </Link>
-
-                    <a
-                      href={a.url}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg text-slate-500 dark:text-slate-400 !text-sm hover:!bg-slate-100 dark:hover:!bg-slate-700 !ml-auto"
-                    >
-                      <ExternalLink className="!w-4 !h-4" /> Ver original
-                    </a>
-                  </div>
-                )}
-              </div>
+              </article>
             );
           })}
 
-          {/* Navegación */}
-          <div className="!flex !items-center !justify-center !gap-3 !text-sm text-slate-400 !pt-2">
-            <button onClick={() => setCursor((c) => Math.max(c - 1, 0))} className="!p-1 hover:text-slate-600 dark:hover:text-slate-200">
-              <ChevronUp className="!w-4 !h-4" />
+          <div className="adm-news-nav">
+            <button type="button" className="adm-icon-btn" onClick={() => setCursor((c) => Math.max(c - 1, 0))} aria-label="Artículo anterior">
+              <ChevronUp aria-hidden="true" />
             </button>
             <span>{cursor + 1} de {articles.length}</span>
-            <button onClick={() => setCursor((c) => Math.min(c + 1, articles.length - 1))} className="!p-1 hover:text-slate-600 dark:hover:text-slate-200">
-              <ChevronDown className="!w-4 !h-4" />
+            <button type="button" className="adm-icon-btn" onClick={() => setCursor((c) => Math.min(c + 1, articles.length - 1))} aria-label="Artículo siguiente">
+              <ChevronDown aria-hidden="true" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Diálogo de rechazo — el motivo es obligatorio */}
-      {rejecting && (
-        <div className="!fixed !inset-0 !bg-black/50 !flex !items-center !justify-center !z-50 !p-4" onClick={() => setRejecting(null)}>
-          <div className="bg-white dark:bg-slate-800 !rounded-xl !p-6 !max-w-lg !w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Rechazar artículo</h3>
-            <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">
-              El motivo es obligatorio: es lo que permite ajustar los filtros después con datos.
-            </p>
-
-            <div className="!flex !flex-wrap !gap-2 !mt-4">
-              {MOTIVOS_RAPIDOS.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setRejectReason(m)}
-                  className="!px-2.5 !py-1 !rounded-lg !text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:!bg-slate-200 dark:hover:!bg-slate-600"
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              autoFocus
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              rows={3}
-              className="!w-full !mt-3 !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 !text-sm"
-              placeholder="Motivo del rechazo"
-            />
-
-            <div className="!flex !gap-2 !mt-4 !justify-end">
-              <button
-                onClick={() => { setRejecting(null); setRejectReason(''); }}
-                className="!px-4 !py-2 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmReject}
-                disabled={!rejectReason.trim()}
-                className="!px-4 !py-2 !rounded-lg !bg-rose-600 !text-white !text-sm !font-medium hover:!bg-rose-700 disabled:!opacity-40"
-              >
-                Rechazar
-              </button>
-            </div>
-          </div>
+      {/* Rechazo: el motivo es obligatorio */}
+      <Modal
+        open={!!rejecting}
+        title="Rechazar artículo"
+        onClose={closeReject}
+        footer={
+          <>
+            <button type="button" className="adm-btn" onClick={closeReject}>Cancelar</button>
+            <button type="button" className="adm-btn adm-btn--danger" onClick={confirmReject} disabled={!rejectReason.trim()}>Rechazar</button>
+          </>
+        }
+      >
+        <p>El motivo es obligatorio: permite ajustar los filtros después con datos.</p>
+        <div className="adm-chips">
+          {MOTIVOS_RAPIDOS.map((m) => (
+            <button key={m} type="button" className="adm-tag adm-tag--button" aria-pressed={rejectReason === m} onClick={() => setRejectReason(m)}>
+              {m}
+            </button>
+          ))}
         </div>
-      )}
+        <div className="adm-field">
+          <label className="adm-field__label" htmlFor="nq-reject">Motivo del rechazo</label>
+          <textarea id="nq-reject" className="adm-textarea" rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />
+        </div>
+      </Modal>
     </div>
   );
 };

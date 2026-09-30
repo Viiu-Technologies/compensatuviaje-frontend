@@ -1,39 +1,13 @@
 import { useEffect, useState } from 'react';
+import { AlertTriangle, Download, FileBarChart } from 'lucide-react';
 import {
-  FileBarChart,
-  Download,
-  Calendar,
-  Filter,
-  TrendingUp,
-  Building2,
-  Users,
-  Leaf,
-  DollarSign,
-  ChevronDown,
-  FileText,
-  Table as TableIcon,
-  PieChart as PieChartIcon,
-  Activity,
-  ArrowUpRight,
-  ArrowDownRight,
-  Globe
-} from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  AreaChart,
-  Area
 } from 'recharts';
 import {
   getEmissionsReport,
@@ -42,660 +16,427 @@ import {
   getB2CReport,
   exportReport,
   downloadCSV,
-  ReportFilters
+  ReportFilters,
 } from '../services/adminApi';
 import { toast } from 'sonner';
-
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+import {
+  ADMIN_COLORS,
+  BarList,
+  EmptyState,
+  KpiCard,
+  PageHeader,
+  Panel,
+  Segmented,
+  Skeleton,
+  StatusBadge,
+  COMPANY_STATUS,
+  authProviderLabel,
+  companyStatusLabel,
+  formatCLP,
+  formatCLPCompact,
+  formatDayLong,
+  formatDayShort,
+  formatInt,
+  industryLabel,
+  kgToTonnes,
+} from '../ui';
 
 type ReportType = 'emissions' | 'financial' | 'companies' | 'b2c';
 
-interface ReportTab {
-  id: ReportType;
-  label: string;
-  icon: React.ElementType;
-}
-
-const reportTabs: ReportTab[] = [
-  { id: 'emissions', label: 'Emisiones', icon: Leaf },
-  { id: 'financial', label: 'Financiero', icon: DollarSign },
-  { id: 'companies', label: 'Empresas', icon: Building2 },
-  { id: 'b2c', label: 'Usuarios B2C', icon: Users },
+const REPORT_TABS = [
+  { value: 'emissions', label: 'Emisiones' },
+  { value: 'financial', label: 'Financiero' },
+  { value: 'companies', label: 'Empresas' },
+  { value: 'b2c', label: 'Usuarios B2C' },
 ];
+
+const GROUP_LABELS: Record<string, string> = {
+  time: 'Fecha',
+  company: 'Empresa',
+  project: 'Proyecto',
+  type: 'Tipo',
+  source: 'Fuente',
+};
+
+/** Filas visibles en la tabla; el resto va en el CSV. */
+const TABLE_LIMIT = 50;
+
+const rowLabel = (item: any, groupBy: string) => {
+  switch (groupBy) {
+    case 'time': return item.date ? formatDayLong(item.date) : '—';
+    case 'company': return item.companyName || '—';
+    case 'project': return item.projectName || '—';
+    case 'type': return item.type || '—';
+    case 'source': return item.source || '—';
+    default: return item.name || '—';
+  }
+};
 
 export default function ReportesPage() {
   const [activeTab, setActiveTab] = useState<ReportType>('emissions');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
-  
-  // Filtros
+
   const [period, setPeriod] = useState('all');
   const [groupBy, setGroupBy] = useState('time');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [showCustomDates, setShowCustomDates] = useState(false);
+  // Rango aplicado. Antes existía showCustomDates, pero nunca pasaba a true
+  // y las fechas personalizadas no se enviaban.
+  const [appliedRange, setAppliedRange] = useState<{ from: string; to: string } | null>(null);
+
+  const isCustom = period === 'custom';
+  const hasGrouping = activeTab === 'emissions' || activeTab === 'financial';
+
+  const filters = (): ReportFilters => ({
+    period,
+    groupBy,
+    dateFrom: isCustom ? appliedRange?.from : undefined,
+    dateTo: isCustom ? appliedRange?.to : undefined,
+  });
 
   useEffect(() => {
+    // Con "Personalizado" se espera a que se apliquen las fechas
+    if (isCustom && !appliedRange) return;
     loadReport();
-  }, [activeTab, period, groupBy]);
+  }, [activeTab, period, groupBy, appliedRange]);
 
   const loadReport = async () => {
     setLoading(true);
     try {
-      const filters: ReportFilters = {
-        period,
-        groupBy,
-        dateFrom: showCustomDates && dateFrom ? dateFrom : undefined,
-        dateTo: showCustomDates && dateTo ? dateTo : undefined
+      const f = filters();
+      const loaders = {
+        emissions: getEmissionsReport,
+        financial: getFinancialReport,
+        companies: getCompaniesReport,
+        b2c: getB2CReport,
       };
-
-      let data;
-      switch (activeTab) {
-        case 'emissions':
-          data = await getEmissionsReport(filters);
-          break;
-        case 'financial':
-          data = await getFinancialReport(filters);
-          break;
-        case 'companies':
-          data = await getCompaniesReport(filters);
-          break;
-        case 'b2c':
-          data = await getB2CReport(filters);
-          break;
-        default:
-          data = await getEmissionsReport(filters);
-      }
-      console.log(`[Reports] Tab ${activeTab} data:`, data);
-      setReportData(data);
+      setReportData(await loaders[activeTab](f));
+      setLoadError(false);
     } catch (error) {
       console.error('Error loading report:', error);
+      setLoadError(true);
+      setReportData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExport = async (format: 'csv' | 'excel' | 'pdf') => {
+  // Antes: el interceptor de la API ya devuelve el archivo, pero se buscaba
+  // response.data (inexistente), así que nunca se descargaba y el aviso
+  // decía "Exportación completada". Excel y PDF devolvían JSON sin archivo.
+  const handleExport = async () => {
     setExporting(true);
     try {
-      const response = await exportReport({
-        reportType: activeTab,
-        format,
-        period,
-        dateFrom: showCustomDates && dateFrom ? dateFrom : undefined,
-        dateTo: showCustomDates && dateTo ? dateTo : undefined
-      });
-
-      if (format === 'csv' && response.data instanceof Blob) {
-        downloadCSV(response.data, `reporte_${activeTab}_${Date.now()}.csv`);
-      } else {
-        console.log('Export result:', response.data);
-        toast.success('Exportación completada.');
-      }
+      const f = filters();
+      const res: any = await exportReport({ reportType: activeTab, format: 'csv', period, dateFrom: f.dateFrom, dateTo: f.dateTo });
+      const blob: unknown = res instanceof Blob ? res : res?.data;
+      if (!(blob instanceof Blob)) throw new Error('La respuesta no es un archivo');
+      downloadCSV(blob, `reporte_${activeTab}_${new Date().toISOString().slice(0, 10)}.csv`);
+      toast.success('Reporte descargado');
     } catch (error) {
       console.error('Error exporting:', error);
+      toast.error('No se pudo exportar el reporte. Vuelve a intentarlo.');
     } finally {
       setExporting(false);
     }
   };
 
-  const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      maximumFractionDigits: 0
-    }).format(num);
+  const applyRange = () => {
+    if (!dateFrom || !dateTo) {
+      toast.error('Elige fecha de inicio y de término.');
+      return;
+    }
+    if (dateFrom > dateTo) {
+      toast.error('La fecha de inicio es posterior a la de término.');
+      return;
+    }
+    setAppliedRange({ from: dateFrom, to: dateTo });
   };
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
+  const report: any[] = reportData?.report ?? [];
+  const totals = reportData?.totals;
+  const stats = reportData?.stats;
+  const valueKey = activeTab === 'emissions' ? (groupBy === 'time' ? 'emissionsKg' : 'totalEmissionsKg') : 'revenueCLP';
+  const valueOf = (item: any) => (activeTab === 'emissions' ? item.emissionsKg ?? item.totalEmissionsKg ?? 0 : item.revenueCLP ?? 0);
+  const formatValue = (n: number) => (activeTab === 'emissions' ? `${kgToTonnes(n)} t` : formatCLP(n));
+
+  const renderKpis = () => {
+    if (activeTab === 'emissions' && totals) {
+      return (
+        <div className="adm-kpis">
+          <KpiCard label="Emisiones calculadas" value={kgToTonnes(totals.totalEmissionsKg)} unit="t CO₂e" />
+          <KpiCard label="Certificados" value={formatInt(totals.totalCertificates)} />
+          <KpiCard label="Ingresos" value={formatCLP(totals.totalRevenueCLP)} />
+        </div>
+      );
+    }
+    if (activeTab === 'financial' && totals) {
+      return (
+        <div className="adm-kpis">
+          <KpiCard label="Ingresos" value={formatCLP(totals.totalRevenueCLP)} />
+          <KpiCard label="Transacciones" value={formatInt(totals.totalTransactions)} />
+          <KpiCard label="Ticket promedio" value={formatCLP(totals.averageTransactionCLP)} />
+        </div>
+      );
+    }
+    if (activeTab === 'companies' && stats) {
+      const by = stats.byStatus || {};
+      return (
+        <div className="adm-kpis">
+          <KpiCard label="Empresas" value={formatInt(stats.total)} />
+          <KpiCard label="Activas" value={formatInt(by.active)} />
+          <KpiCard label="Por avanzar" value={formatInt((by.registered ?? 0) + (by.pending_contract ?? 0))} context="Registradas o con contrato pendiente" />
+          <KpiCard label="Suspendidas" value={formatInt(by.suspended)} />
+        </div>
+      );
+    }
+    if (activeTab === 'b2c' && stats) {
+      return (
+        <div className="adm-kpis">
+          <KpiCard label="Usuarios" value={formatInt(stats.total)} />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderCharts = () => {
+    if (hasGrouping) {
+      if (!report.length) return null;
+      if (groupBy === 'time') {
+        return (
+          <Panel
+            title={activeTab === 'emissions' ? 'Emisiones calculadas por día' : 'Ingresos por día'}
+            description={activeTab === 'emissions' ? 'Toneladas de CO₂e' : 'Pesos chilenos'}
+          >
+            <div style={{ height: 280 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={report} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke={ADMIN_COLORS.grid} />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: ADMIN_COLORS.axis, fontSize: 12 }} tickFormatter={formatDayShort} minTickGap={32} dy={6} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: ADMIN_COLORS.axis, fontSize: 12 }} width={64}
+                    tickFormatter={(v: number) => (activeTab === 'emissions' ? kgToTonnes(v, 0) : formatCLPCompact(v))} />
+                  <Tooltip
+                    labelFormatter={(l) => formatDayLong(String(l))}
+                    formatter={(v: number) => [formatValue(v), activeTab === 'emissions' ? 'Emisiones' : 'Ingresos']}
+                    contentStyle={{ borderRadius: 6, border: `1px solid ${ADMIN_COLORS.neutral}`, fontSize: 12 }}
+                  />
+                  <Area type="monotone" dataKey={valueKey} stroke={ADMIN_COLORS.series1} fill={ADMIN_COLORS.series1} fillOpacity={0.12} strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
+        );
+      }
+      return (
+        <Panel title={`${activeTab === 'emissions' ? 'Emisiones' : 'Ingresos'} por ${GROUP_LABELS[groupBy].toLowerCase()}`} description="Los 10 mayores">
+          <BarList items={report.map((r) => ({ label: rowLabel(r, groupBy), value: valueOf(r) }))} format={formatValue} showShare max={10} />
+        </Panel>
+      );
+    }
+    if (activeTab === 'companies' && stats) {
+      return (
+        <div className="adm-grid adm-grid--1-1">
+          <Panel title="Por estado">
+            <BarList items={Object.entries(stats.byStatus || {}).map(([k, v]) => ({ label: companyStatusLabel(k), value: v as number }))} showShare />
+          </Panel>
+          <Panel title="Por industria">
+            <BarList items={Object.entries(stats.byIndustry || {}).map(([k, v]) => ({ label: industryLabel(k), value: v as number }))} showShare max={10} />
+          </Panel>
+        </div>
+      );
+    }
+    if (activeTab === 'b2c' && stats) {
+      return (
+        <div className="adm-grid adm-grid--1-1">
+          <Panel title="Por método de acceso">
+            <BarList items={Object.entries(stats.byAuthProvider || {}).map(([k, v]) => ({ label: authProviderLabel(k), value: v as number }))} showShare />
+          </Panel>
+          <Panel title="Por país">
+            <BarList items={Object.entries(stats.byCountry || {}).map(([k, v]) => ({ label: k, value: v as number }))} showShare max={10} />
+          </Panel>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderTable = () => {
+    let head: React.ReactNode;
+    let rows: React.ReactNode[] = [];
+    let total = 0;
+    if (hasGrouping) {
+      total = report.length;
+      head = (
+        <tr>
+          <th scope="col">{GROUP_LABELS[groupBy]}</th>
+          <th scope="col" className="adm-col-num">{activeTab === 'emissions' ? 'Emisiones (t CO₂e)' : 'Ingresos (CLP)'}</th>
+          <th scope="col" className="adm-col-num">{activeTab === 'emissions' ? 'Certificados' : 'Transacciones'}</th>
+        </tr>
+      );
+      rows = report.slice(0, TABLE_LIMIT).map((item, i) => (
+        <tr key={i}>
+          <td>{rowLabel(item, groupBy)}</td>
+          <td className="adm-col-num">{activeTab === 'emissions' ? kgToTonnes(valueOf(item)) : formatCLP(valueOf(item))}</td>
+          <td className="adm-col-num">{formatInt(activeTab === 'emissions' ? item.count ?? item.certificatesCount : item.transactions)}</td>
+        </tr>
+      ));
+    } else if (activeTab === 'companies') {
+      const list: any[] = reportData?.companies ?? [];
+      total = list.length;
+      head = (
+        <tr>
+          <th scope="col">Empresa</th><th scope="col">RUT</th><th scope="col">Industria</th><th scope="col">Tamaño</th><th scope="col">Estado</th>
+        </tr>
+      );
+      rows = list.slice(0, TABLE_LIMIT).map((c, i) => (
+        <tr key={i}>
+          <td className="adm-cell-title">{c.companyName || c.name || '—'}</td>
+          <td>{c.rut || '—'}</td>
+          <td>{industryLabel(c.industry)}</td>
+          <td>{c.companySize || c.size || '—'}</td>
+          <td><StatusBadge tone={COMPANY_STATUS[c.status]?.tone ?? 'neutral'}>{companyStatusLabel(c.status || '—')}</StatusBadge></td>
+        </tr>
+      ));
+    } else {
+      const list: any[] = reportData?.users ?? [];
+      total = list.length;
+      head = (
+        <tr>
+          <th scope="col">Nombre</th><th scope="col">Email</th><th scope="col">Acceso</th><th scope="col">Registro</th>
+        </tr>
+      );
+      rows = list.slice(0, TABLE_LIMIT).map((u, i) => (
+        <tr key={i}>
+          <td className="adm-cell-title">{u.name || u.displayName || '—'}</td>
+          <td>{u.email || '—'}</td>
+          <td>{authProviderLabel(u.authProvider || u.provider)}</td>
+          <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-CL') : '—'}</td>
+        </tr>
+      ));
+    }
+
+    const cols = hasGrouping ? 3 : activeTab === 'companies' ? 5 : 4;
+    return (
+      <section className="adm-table-card">
+        <div className="adm-panel__head" style={{ paddingBottom: 12 }}>
+          <div>
+            <h2 className="adm-panel__title">Detalle</h2>
+            <p className="adm-panel__desc">Registros del período seleccionado</p>
+          </div>
+          <span className="adm-panel__aside">{formatInt(total)} registros</span>
+        </div>
+        <div className="adm-table-scroll">
+          <table className="adm-table">
+            <thead>{head}</thead>
+            <tbody>
+              {rows.length ? rows : (
+                <tr><td colSpan={cols}><EmptyState icon={FileBarChart} title="Sin registros en este período" text="Prueba con otro período o agrupación." /></td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {/* Antes decía "Listado completo" y mostraba 10 filas sin avisar */}
+        {total > TABLE_LIMIT && (
+          <p className="adm-table-note">
+            Se muestran {formatInt(TABLE_LIMIT)} de {formatInt(total)} registros. Exporta el CSV para ver el detalle completo.
+          </p>
+        )}
+      </section>
+    );
   };
 
   return (
-    <div className="!space-y-8 !animate-in !fade-in !duration-700">
-      {/* Header Section */}
-      <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className="!text-4xl !font-black text-slate-900 dark:text-slate-100 !tracking-tight !mb-2">
-            Centro de <span className="text-emerald-600 dark:text-emerald-400">Reportes</span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 !font-medium">
-            Analiza el impacto ambiental y el rendimiento financiero de la plataforma.
-          </p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          <div className="!relative !group">
-            <button
-              disabled={exporting}
-              className="!flex !items-center !gap-2 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white !px-6 !py-3 !rounded-2xl !font-bold !transition-all !shadow-lg !shadow-slate-200 dark:!shadow-none !active:scale-95"
-            >
-              <Download className="!w-5 !h-5" />
-              {exporting ? 'Exportando...' : 'Exportar Datos'}
-              <ChevronDown className="!w-4 !h-4" />
-            </button>
-            <div className="!absolute !right-0 !mt-2 !w-56 bg-white dark:bg-slate-800 !rounded-2xl !shadow-2xl !border border-slate-100 dark:border-slate-700 !py-2 !z-50 !opacity-0 !invisible !group-hover:opacity-100 !group-hover:visible !transition-all !translate-y-2 !group-hover:translate-y-0">
-              <button
-                onClick={() => handleExport('csv')}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
-              >
-                <TableIcon className="!w-4 !h-4 text-emerald-500 dark:text-emerald-400" />
-                Exportar CSV
-              </button>
-              <button
-                onClick={() => handleExport('excel')}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
-              >
-                <FileText className="!w-4 !h-4 text-blue-500 dark:text-blue-400" />
-                Exportar Excel
-              </button>
-              <button
-                onClick={() => handleExport('pdf')}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !text-sm !font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-colors"
-              >
-                <FileBarChart className="!w-4 !h-4 text-red-500 dark:text-red-400" />
-                Exportar PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="bg-white dark:bg-slate-800 !p-2 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !flex !flex-wrap !gap-2">
-        {reportTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`!flex !items-center !gap-2 !px-6 !py-3 !rounded-2xl !font-bold !transition-all ${
-              activeTab === tab.id
-                ? 'bg-emerald-600 text-white !shadow-lg !shadow-emerald-100 dark:!shadow-none'
-                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
-            }`}
-          >
-            <tab.icon className="!w-5 !h-5" />
-            {tab.label}
+    <div className="adm-page">
+      <PageHeader
+        title="Reportes"
+        description="Emisiones, ingresos, empresas y usuarios de la plataforma por período."
+        actions={
+          <button type="button" className="adm-btn" onClick={handleExport} disabled={exporting || loading}>
+            <Download aria-hidden="true" />
+            {exporting ? 'Exportando…' : 'Exportar CSV'}
           </button>
-        ))}
-      </div>
+        }
+      />
 
-      {/* Filters Bar */}
-      <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700">
-        <div className="!flex !flex-col lg:!flex-row !gap-6 !items-center">
-          <div className="!flex !items-center !gap-3 !w-full lg:!w-auto">
-            <div className="!w-10 !h-10 bg-slate-100 dark:bg-slate-700 !rounded-xl !flex !items-center !justify-center">
-              <Calendar className="!w-5 !h-5 text-slate-500 dark:text-slate-400" />
-            </div>
-            <select
-              value={period}
-              onChange={(e) => {
-                setPeriod(e.target.value);
-                if (e.target.value !== 'custom') setShowCustomDates(false);
-              }}
-              className="!flex-1 lg:!w-48 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500 !cursor-pointer"
-            >
-              <option value="all">Todos</option>
-              <option value="7d">Últimos 7 días</option>
-              <option value="30d">Últimos 30 días</option>
-              <option value="90d">Últimos 90 días</option>
-              <option value="365d">Último año</option>
-              <option value="ytd">Año actual</option>
-              <option value="custom">Personalizado</option>
-            </select>
-          </div>
-
-          {period === 'custom' && (
-            <div className="!flex !items-center !gap-3 !w-full lg:!w-auto !animate-in !slide-in-from-left-4">
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="!flex-1 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500"
-              />
-              <span className="text-slate-400 dark:text-slate-500 !font-black">/</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="!flex-1 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500"
-              />
-              <button
-                onClick={() => { setShowCustomDates(true); loadReport(); }}
-                className="bg-emerald-600 text-white !px-6 !py-3 !rounded-2xl !font-bold hover:bg-emerald-700 !transition-all"
-              >
-                Aplicar
-              </button>
-            </div>
-          )}
-
-          {(activeTab === 'emissions' || activeTab === 'financial') && (
-            <div className="!flex !items-center !gap-3 !w-full lg:!w-auto">
-              <div className="!w-10 !h-10 bg-slate-100 dark:bg-slate-700 !rounded-xl !flex !items-center !justify-center">
-                <Filter className="!w-5 !h-5 text-slate-500 dark:text-slate-400" />
-              </div>
+      <section className="adm-panel">
+        <div className="adm-toolbar" style={{ borderBottom: 0 }}>
+          <Segmented label="Reporte" options={REPORT_TABS} value={activeTab} onChange={(v) => setActiveTab(v as ReportType)} />
+          <div className="adm-filters">
+            <div className="adm-field">
+              <label className="adm-field__label" htmlFor="rp-period">Período</label>
               <select
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value)}
-                className="!flex-1 lg:!w-48 bg-slate-50 dark:bg-slate-900 !border-none !rounded-2xl !px-4 !py-3 !font-bold text-slate-700 dark:text-slate-200 focus:!ring-2 focus:ring-emerald-500 !cursor-pointer"
+                id="rp-period"
+                className="adm-select"
+                value={period}
+                onChange={(e) => { setPeriod(e.target.value); setAppliedRange(null); }}
               >
-                <option value="time">Por Tiempo</option>
-                <option value="company">Por Empresa</option>
-                <option value="project">Por Proyecto</option>
-                {activeTab === 'emissions' && <option value="type">Por Tipo</option>}
-                {activeTab === 'financial' && <option value="source">Por Fuente</option>}
+                <option value="all">Todo</option>
+                <option value="7d">Últimos 7 días</option>
+                <option value="30d">Últimos 30 días</option>
+                <option value="90d">Últimos 90 días</option>
+                <option value="365d">Último año</option>
+                <option value="ytd">Año en curso</option>
+                <option value="custom">Personalizado</option>
               </select>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      {loading ? (
-        <div className="!space-y-8">
-          <div className="!grid !grid-cols-1 md:!grid-cols-3 !gap-6">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="!h-32 bg-slate-100 dark:bg-slate-800 !rounded-3xl !animate-pulse" />
-            ))}
+            {isCustom && (
+              <>
+                <div className="adm-field">
+                  <label className="adm-field__label" htmlFor="rp-from">Desde</label>
+                  <input id="rp-from" type="date" className="adm-input adm-input--date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                </div>
+                <div className="adm-field">
+                  <label className="adm-field__label" htmlFor="rp-to">Hasta</label>
+                  <input id="rp-to" type="date" className="adm-input adm-input--date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                </div>
+                <button type="button" className="adm-btn adm-btn--primary" onClick={applyRange}>Aplicar</button>
+              </>
+            )}
+            {hasGrouping && (
+              <div className="adm-field">
+                <label className="adm-field__label" htmlFor="rp-group">Agrupar por</label>
+                <select id="rp-group" className="adm-select" value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
+                  <option value="time">Fecha</option>
+                  <option value="company">Empresa</option>
+                  <option value="project">Proyecto</option>
+                  {activeTab === 'emissions' && <option value="type">Tipo</option>}
+                  {activeTab === 'financial' && <option value="source">Fuente</option>}
+                </select>
+              </div>
+            )}
           </div>
-          <div className="!h-[400px] bg-slate-100 dark:bg-slate-800 !rounded-3xl !animate-pulse" />
         </div>
+      </section>
+
+      {loadError && (
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <AlertTriangle aria-hidden="true" />
+          <div><b>No se pudo cargar el reporte.</b> Revisa la conexión y vuelve a intentar.</div>
+        </div>
+      )}
+
+      {isCustom && !appliedRange ? (
+        <section className="adm-panel">
+          <EmptyState icon={FileBarChart} title="Elige un rango de fechas" text="Selecciona desde y hasta, y presiona Aplicar." />
+        </section>
+      ) : loading ? (
+        <>
+          <div className="adm-kpis">{[0, 1, 2].map((i) => <Skeleton key={i} height={96} />)}</div>
+          <Skeleton height={320} />
+        </>
       ) : (
-        <div className="!space-y-8">
-          {/* KPI Cards */}
-          {(reportData?.totals || reportData?.stats) && (
-            <div className="!grid !grid-cols-1 sm:!grid-cols-2 lg:!grid-cols-4 !gap-6">
-              {activeTab === 'emissions' && (
-                <>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-emerald-50 dark:bg-emerald-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Leaf className="!w-6 !h-6 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Emisiones Totales</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">
-                        {formatNumber(reportData.totals.totalEmissionsKg)} <span className="!text-sm !font-medium text-slate-400 dark:text-slate-500">kg</span>
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-blue-50 dark:bg-blue-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-blue-100 dark:bg-blue-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <FileBarChart className="!w-6 !h-6 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Certificados</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData.totals.totalCertificates}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-amber-50 dark:bg-amber-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-amber-100 dark:bg-amber-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <DollarSign className="!w-6 !h-6 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ingresos</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{formatCurrency(reportData.totals.totalRevenueCLP)}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-purple-50 dark:bg-purple-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-purple-100 dark:bg-purple-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <TrendingUp className="!w-6 !h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Impacto</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">High</h3>
-                    </div>
-                  </div>
-                </>
-              )}
-              
-              {activeTab === 'financial' && (
-                <>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-emerald-50 dark:bg-emerald-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <DollarSign className="!w-6 !h-6 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{formatCurrency(reportData.totals.totalRevenueCLP)}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-blue-50 dark:bg-blue-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-blue-100 dark:bg-blue-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Globe className="!w-6 !h-6 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ingresos CLP</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">${formatNumber(reportData.totals.totalRevenueCLP)}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-purple-50 dark:bg-purple-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-purple-100 dark:bg-purple-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Activity className="!w-6 !h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Transacciones</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData.totals.totalTransactions}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-amber-50 dark:bg-amber-500/10 !rounded-bl-full !-mr-8 !-mt-8 !transition-transform !group-hover:scale-110" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-amber-100 dark:bg-amber-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <TrendingUp className="!w-6 !h-6 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Ticket Promedio</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{formatCurrency(reportData.totals.averageTransactionCLP)}</h3>
-                    </div>
-                  </div>
-                </>
-              )}
-              
-              {activeTab === 'companies' && (
-                <>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-indigo-50 dark:bg-indigo-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-indigo-100 dark:bg-indigo-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Building2 className="!w-6 !h-6 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Total Empresas</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.total ?? 0}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-emerald-50 dark:bg-emerald-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-emerald-100 dark:bg-emerald-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <TrendingUp className="!w-6 !h-6 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Activas</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.byStatus?.active ?? 0}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-amber-50 dark:bg-amber-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-amber-100 dark:bg-amber-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Activity className="!w-6 !h-6 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Pendientes</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{(reportData?.stats?.byStatus?.registered ?? 0) + (reportData?.stats?.byStatus?.pending_contract ?? 0)}</h3>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-red-50 dark:bg-red-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-red-100 dark:bg-red-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Globe className="!w-6 !h-6 text-red-600 dark:text-red-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Suspendidas</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.byStatus?.suspended ?? 0}</h3>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'b2c' && (
-                <>
-                  <div className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                    <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-purple-50 dark:bg-purple-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
-                    <div className="!relative">
-                      <div className="!w-12 !h-12 bg-purple-100 dark:bg-purple-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                        <Users className="!w-6 !h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">Total Usuarios</p>
-                      <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{reportData?.stats?.total ?? 0}</h3>
-                    </div>
-                  </div>
-                  {Object.entries(reportData?.stats?.byAuthProvider || {}).map(([provider, count]) => (
-                    <div key={provider} className="bg-white dark:bg-slate-800 !p-6 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group">
-                      <div className="!absolute !top-0 !right-0 !w-24 !h-24 bg-blue-50 dark:bg-blue-500/10 !rounded-bl-full !-mr-8 !-mt-8" />
-                      <div className="!relative">
-                        <div className="!w-12 !h-12 bg-blue-100 dark:bg-blue-500/20 !rounded-2xl !flex !items-center !justify-center !mb-4">
-                          <Globe className="!w-6 !h-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <p className="text-slate-500 dark:text-slate-400 !text-sm !font-bold !uppercase !tracking-wider">{provider}</p>
-                        <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !mt-1">{count as number}</h3>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Charts Section - Emissions/Financial */}
-          {(activeTab === 'emissions' || activeTab === 'financial') && reportData?.report?.length > 0 && (
-          <div className="!grid lg:!grid-cols-3 !gap-8">
-            <div className="lg:!col-span-2 bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
-              <div className="!mb-8">
-                <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100">Tendencia Temporal</h3>
-                <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium">Visualización de datos por período seleccionado.</p>
-              </div>
-              <div className="!h-[350px] !w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  {groupBy === 'time' ? (
-                    <AreaChart data={reportData?.report || []}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} dy={10}
-                        tickFormatter={(value) => { const d = new Date(value); return `${d.getDate()}/${d.getMonth()+1}`; }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => formatNumber(v)} />
-                      <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', padding: '12px' }}
-                        formatter={(value: number, name: string) => [activeTab === 'financial' ? formatCurrency(value) : `${formatNumber(value)} kg`, name === 'emissionsKg' ? 'Emisiones' : 'Ingresos']} />
-                      <Area type="monotone" dataKey={activeTab === 'emissions' ? 'emissionsKg' : 'revenueCLP'} stroke={activeTab === 'emissions' ? '#10b981' : '#f59e0b'} strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
-                    </AreaChart>
-                  ) : (
-                    <BarChart data={reportData?.report || []}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey={groupBy === 'company' ? 'companyName' : groupBy === 'project' ? 'projectName' : groupBy === 'type' ? 'type' : groupBy === 'source' ? 'source' : 'name'}
-                        axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} angle={-45} textAnchor="end" height={80} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => formatNumber(v)} />
-                      <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                      <Bar dataKey={activeTab === 'emissions' ? 'totalEmissionsKg' : 'revenueCLP'} fill={activeTab === 'emissions' ? '#10b981' : '#f59e0b'} radius={[8, 8, 0, 0]} barSize={40} />
-                    </BarChart>
-                  )}
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
-              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Distribución</h3>
-              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Reparto porcentual por categoría.</p>
-              <div className="!h-[300px] !w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={reportData?.report?.slice(0, 5) || []} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8}
-                      dataKey={activeTab === 'emissions' ? (groupBy === 'time' ? 'emissionsKg' : 'totalEmissionsKg') : 'revenueCLP'}>
-                      {(reportData?.report || []).map((_entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip /><Legend verticalAlign="bottom" height={36}/>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-          )}
-
-          {/* Charts Section - Companies */}
-          {activeTab === 'companies' && reportData?.stats && Object.keys(reportData.stats.byStatus || {}).length > 0 && (
-          <div className="!grid lg:!grid-cols-2 !gap-8">
-            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
-              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por Estado</h3>
-              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución de empresas por estado.</p>
-              <div className="!h-[300px] !w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={Object.entries(reportData?.stats?.byStatus || {}).map(([name, value]) => ({ name, value }))}
-                      cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8} dataKey="value">
-                      {Object.keys(reportData?.stats?.byStatus || {}).map((_k: string, i: number) => (
-                        <Cell key={`s-${i}`} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip /><Legend verticalAlign="bottom" height={36}/>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
-              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por Industria</h3>
-              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución de empresas por sector.</p>
-              <div className="!h-[300px] !w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={Object.entries(reportData?.stats?.byIndustry || {}).map(([name, value]) => ({ name, value }))}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} angle={-45} textAnchor="end" height={80} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]} barSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-          )}
-
-          {/* Charts Section - B2C */}
-          {activeTab === 'b2c' && reportData?.stats && Object.keys(reportData.stats.byAuthProvider || {}).length > 0 && (
-          <div className="!grid lg:!grid-cols-2 !gap-8">
-            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
-              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por Proveedor</h3>
-              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución por método de autenticación.</p>
-              <div className="!h-[300px] !w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={Object.entries(reportData?.stats?.byAuthProvider || {}).map(([name, value]) => ({ name, value }))}
-                      cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={8} dataKey="value">
-                      {Object.keys(reportData?.stats?.byAuthProvider || {}).map((_k: string, i: number) => (
-                        <Cell key={`p-${i}`} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip /><Legend verticalAlign="bottom" height={36}/>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-800 !p-8 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700">
-              <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Por País</h3>
-              <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-8">Distribución de usuarios por país.</p>
-              <div className="!h-[300px] !w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={Object.entries(reportData?.stats?.byCountry || {}).map(([name, value]) => ({ name, value }))}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                    <Bar dataKey="value" fill="#8b5cf6" radius={[8, 8, 0, 0]} barSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-          )}
-
-          {/* Detailed Data Table */}
-          <div className="bg-white dark:bg-slate-800 !rounded-[2.5rem] !shadow-sm !border border-slate-100 dark:border-slate-700 !overflow-hidden">
-            <div className="!p-8 border-b border-slate-100 dark:border-slate-700 !flex !items-center !justify-between bg-slate-50/50 dark:bg-slate-800/50">
-              <div>
-                <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100">Desglose Detallado</h3>
-                <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium">Listado completo de registros para el período.</p>
-              </div>
-            </div>
-            <div className="!overflow-x-auto">
-              <table className="!w-full !text-left !border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/30 dark:bg-slate-800">
-                    {(activeTab === 'emissions' || activeTab === 'financial') && (
-                      <>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">
-                          {groupBy === 'time' ? 'Fecha' : groupBy === 'company' ? 'Empresa' : 'Proyecto'}
-                        </th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">
-                          {activeTab === 'emissions' ? 'Emisiones (kg)' : 'Ingresos (CLP)'}
-                        </th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">
-                          {activeTab === 'emissions' ? 'Certificados' : 'Transacciones'}
-                        </th>
-                      </>
-                    )}
-                    {activeTab === 'companies' && (
-                      <>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Empresa</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">RUT</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Industria</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Tamaño</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">Estado</th>
-                      </>
-                    )}
-                    {activeTab === 'b2c' && (
-                      <>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Nombre</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Email</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest">Proveedor</th>
-                        <th className="!px-8 !py-4 text-slate-500 dark:text-slate-400 !font-bold !text-xs !uppercase !tracking-widest !text-right">Registro</th>
-                      </>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                  {(activeTab === 'emissions' || activeTab === 'financial') && (reportData?.report || []).slice(0, 10).map((item: any, index: number) => (
-                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
-                      <td className="!px-8 !py-5 !font-bold text-slate-900 dark:text-slate-100">
-                        {groupBy === 'time' ? (item.date ? new Date(item.date).toLocaleDateString('es-CL') : '-') : groupBy === 'company' ? item.companyName : item.projectName}
-                      </td>
-                      <td className="!px-8 !py-5 !text-right !font-black text-slate-700 dark:text-slate-200">
-                        {activeTab === 'emissions' ? formatNumber(item.emissionsKg || item.totalEmissionsKg || 0) : formatCurrency(item.revenueCLP || 0)}
-                      </td>
-                      <td className="!px-8 !py-5 !text-right !font-bold text-slate-500 dark:text-slate-400">
-                        {activeTab === 'emissions' ? (item.count || item.certificatesCount || 0) : (item.transactions || 0)}
-                      </td>
-                    </tr>
-                  ))}
-                  {activeTab === 'companies' && (reportData?.companies || []).slice(0, 15).map((c: any, index: number) => {
-                    const sc: Record<string, string> = { active: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300', registered: 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300', pending_contract: 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300', signed: 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300', suspended: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300' };
-                    return (
-                      <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
-                        <td className="!px-8 !py-5 !font-bold text-slate-900 dark:text-slate-100">{c.companyName || c.name || '-'}</td>
-                        <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{c.rut || '-'}</td>
-                        <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{c.industry || '-'}</td>
-                        <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{c.companySize || c.size || '-'}</td>
-                        <td className="!px-8 !py-5 !text-right">
-                          <span className={`!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider ${sc[c.status] || 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>{c.status || '-'}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {activeTab === 'b2c' && (reportData?.users || []).slice(0, 15).map((u: any, index: number) => (
-                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 !transition-colors">
-                      <td className="!px-8 !py-5 !font-bold text-slate-900 dark:text-slate-100">{u.name || u.displayName || '-'}</td>
-                      <td className="!px-8 !py-5 text-slate-700 dark:text-slate-300 !font-medium">{u.email || '-'}</td>
-                      <td className="!px-8 !py-5">
-                        <span className="!inline-flex !items-center !px-3 !py-1 !rounded-full !text-[10px] !font-black !uppercase !tracking-wider bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300">{u.authProvider || u.provider || '-'}</span>
-                      </td>
-                      <td className="!px-8 !py-5 !text-right text-slate-500 dark:text-slate-400 !font-medium">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-CL') : '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        !loadError && (
+          <>
+            {renderKpis()}
+            {renderCharts()}
+            {renderTable()}
+          </>
+        )
       )}
     </div>
   );
 }
-

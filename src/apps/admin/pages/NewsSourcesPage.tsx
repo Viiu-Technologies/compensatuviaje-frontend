@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Rss, Plus, Search, Check, X, PlayCircle, Trash2, Loader2,
-  AlertTriangle, CheckCircle2, Globe,
-} from 'lucide-react';
+import { Rss, Plus, Search, Check, X, PlayCircle, Trash2, AlertTriangle, CheckCircle2, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../../shared/services/api';
 import adminNewsApi from '../services/adminNewsApi';
 import type { AdminNewsSourceFull } from '../../../types/news.types';
+import { EmptyState, PageHeader, Panel, StatusBadge, TableSkeletonRows, formatInt, useAdminConfirm } from '../ui';
 
 /**
  * Gestión de fuentes.
@@ -29,14 +27,21 @@ interface DiscoverResult {
 }
 
 /** Guía para elegir la confianza: decide quién gana ante una noticia duplicada. */
-const TRUST_HINTS: Array<{ value: number; label: string }> = [
-  { value: 0.95, label: 'Organismo oficial — es la fuente primaria del hecho' },
-  { value: 0.85, label: 'Organismo internacional de referencia' },
-  { value: 0.7, label: 'Gremio o prensa especializada' },
-  { value: 0.6, label: 'Prensa general' },
+const TRUST_HINTS: Array<{ value: number; label: string; short: string }> = [
+  { value: 0.95, label: 'Organismo oficial: es la fuente primaria del hecho', short: 'Organismo oficial' },
+  { value: 0.85, label: 'Organismo internacional de referencia', short: 'Organismo internacional' },
+  { value: 0.7, label: 'Gremio o prensa especializada', short: 'Prensa especializada' },
+  { value: 0.6, label: 'Prensa general', short: 'Prensa general' },
 ];
 
+const trustText = (v: number) => {
+  const hint = TRUST_HINTS.find((t) => t.value === v);
+  const num = Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return hint ? `${num} · ${hint.short}` : num;
+};
+
 const NewsSourcesPage: React.FC = () => {
+  const { confirm, dialog } = useAdminConfirm();
   const [sources, setSources] = useState<AdminNewsSourceFull[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -166,253 +171,187 @@ const NewsSourcesPage: React.FC = () => {
     }
   };
 
+
+  // Antes borraba al primer clic, sin confirmar.
+  const confirmRemove = async (s: AdminNewsSourceFull) => {
+    const ok = await confirm({
+      title: `¿Eliminar ${s.name}?`,
+      description: 'Solo se puede eliminar una fuente sin contenido. Si ya trajo artículos, desactívala.',
+      confirmLabel: 'Eliminar fuente',
+      tone: 'danger',
+    });
+    if (ok) remove(s);
+  };
+
   const activas = sources.filter((s) => s.active).length;
   const conProblemas = sources.filter((s) => s.active && s.consecutiveFailures > 0).length;
+  const cancelAdd = () => { setAdding(false); setResult(null); setDomain(''); };
 
   return (
-    <div className="!space-y-6 bg-slate-50 dark:bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
-      <div className="!flex !items-start !justify-between !flex-wrap !gap-4">
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100 !flex !items-center !gap-2">
-            <Rss className="!w-7 !h-7 text-emerald-600 dark:text-emerald-400" />
-            Fuentes
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">
-            {activas} activas de {sources.length}
-            {conProblemas > 0 && ` · ${conProblemas} con fallos recientes`}
-          </p>
-        </div>
-        <button
-          onClick={() => setAdding((a) => !a)}
-          className="!flex !items-center !gap-2 !px-4 !py-2 !rounded-lg !bg-emerald-600 !text-white !text-sm !font-medium hover:!bg-emerald-700"
-        >
-          <Plus className="!w-4 !h-4" /> Añadir fuente
-        </button>
-      </div>
+    <div className="adm-page">
+      <PageHeader
+        title="Fuentes de noticias"
+        description={`${formatInt(activas)} activas de ${formatInt(sources.length)}${conProblemas > 0 ? ` · ${formatInt(conProblemas)} con fallos recientes` : ''}`}
+        actions={
+          <button type="button" className="adm-btn adm-btn--primary" onClick={() => setAdding((a) => !a)} aria-expanded={adding}>
+            <Plus aria-hidden="true" /> Añadir fuente
+          </button>
+        }
+      />
 
-      {/* Alta */}
       {adding && (
-        <div className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700 !space-y-4">
-          <div>
-            <h2 className="!text-base !font-semibold text-slate-800 dark:text-slate-100">Añadir fuente</h2>
-            <p className="!text-xs text-slate-500 dark:text-slate-400 !mt-0.5">
-              Escribe el dominio y buscamos el feed por ti. No hace falta que sepas la URL.
-            </p>
-          </div>
-
-          <div className="!flex !gap-2 !flex-wrap">
-            <div className="!flex-1 !min-w-64 !relative">
-              <Globe className="!w-4 !h-4 !absolute !left-3 !top-1/2 !-translate-y-1/2 text-slate-400" />
-              <input
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && discover()}
-                placeholder="mma.gob.cl"
-                className="!w-full !pl-9 !pr-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-              />
+        <Panel title="Añadir fuente" description="Escribe el dominio y buscamos el feed. No hace falta saber la URL.">
+          <div className="adm-stack-v">
+            <div className="adm-actions-row">
+              <div className="adm-search" style={{ maxWidth: 420 }}>
+                <Globe aria-hidden="true" />
+                <input
+                  className="adm-input"
+                  aria-label="Dominio de la fuente"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && discover()}
+                  placeholder="mma.gob.cl"
+                />
+              </div>
+              <button type="button" className="adm-btn" onClick={discover} disabled={discovering || !domain.trim()}>
+                <Search aria-hidden="true" /> {discovering ? 'Buscando…' : 'Buscar feed'}
+              </button>
             </div>
-            <button
-              onClick={discover}
-              disabled={discovering || !domain.trim()}
-              className="!flex !items-center !gap-2 !px-4 !py-2 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 !text-sm !font-medium disabled:!opacity-50"
-            >
-              {discovering ? <Loader2 className="!w-4 !h-4 !animate-spin" /> : <Search className="!w-4 !h-4" />}
-              Buscar feed
-            </button>
-          </div>
 
-          {/* Resultado de la búsqueda */}
-          {result && (
-            <div
-              className={`!p-4 !rounded-lg !border ${
-                result.found
-                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900'
-                  : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900'
-              }`}
-            >
-              {result.found ? (
-                <>
-                  <p className="!flex !items-center !gap-2 !text-sm !font-medium text-slate-800 dark:text-slate-100">
-                    <CheckCircle2 className="!w-4 !h-4 text-emerald-600" />
-                    Feed encontrado · {result.items} entradas
-                  </p>
-                  <p className="!text-xs !font-mono text-slate-600 dark:text-slate-300 !mt-1 !break-all">
-                    {result.feedUrl}
-                  </p>
-                  {result.titles && result.titles.length > 0 && (
-                    <div className="!mt-3">
-                      <p className="!text-xs text-slate-500 dark:text-slate-400 !mb-1">
-                        Últimos titulares — comprueba que es la fuente correcta:
-                      </p>
-                      <ul className="!text-xs text-slate-600 dark:text-slate-300 !space-y-0.5">
-                        {result.titles.map((t, i) => <li key={i}>· {t}</li>)}
-                      </ul>
-                    </div>
+            {result && (
+              <div className={`adm-alert ${result.found ? 'adm-alert--success' : 'adm-alert--warning'}`}>
+                {result.found ? <CheckCircle2 aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
+                <div>
+                  {result.found ? (
+                    <>
+                      <b>Feed encontrado · {formatInt(result.items)} entradas</b>
+                      <div className="adm-alert__detail adm-mono" style={{ wordBreak: 'break-all' }}>{result.feedUrl}</div>
+                      {result.titles && result.titles.length > 0 && (
+                        <div className="adm-alert__detail">
+                          Últimos titulares, para comprobar que es la fuente correcta:
+                          <ul className="adm-plain-list">
+                            {result.titles.map((t, i) => <li key={i}>{t}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                      {result.warning && <div className="adm-alert__detail">{result.warning}</div>}
+                    </>
+                  ) : (
+                    result.message
                   )}
-                  {result.warning && (
-                    <p className="!text-xs text-amber-700 dark:text-amber-400 !mt-2">{result.warning}</p>
-                  )}
-                </>
-              ) : (
-                <p className="!flex !items-start !gap-2 !text-sm text-slate-700 dark:text-slate-200">
-                  <AlertTriangle className="!w-4 !h-4 text-amber-600 !shrink-0 !mt-0.5" />
-                  <span>{result.message}</span>
+                </div>
+              </div>
+            )}
+
+            {result && (
+              <>
+                <div className="adm-form-grid">
+                  <div className="adm-field">
+                    <label className="adm-field__label" htmlFor="ns-name">Nombre</label>
+                    <input id="ns-name" className="adm-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  </div>
+                  <div className="adm-field">
+                    <label className="adm-field__label" htmlFor="ns-country">País (código ISO)</label>
+                    <input id="ns-country" className="adm-input" value={form.country} placeholder="CL" onChange={(e) => setForm({ ...form, country: e.target.value.toUpperCase().slice(0, 2) })} />
+                  </div>
+                  <div className="adm-field">
+                    <label className="adm-field__label" htmlFor="ns-trust">Confianza</label>
+                    <select id="ns-trust" className="adm-select" value={form.trustScore} onChange={(e) => setForm({ ...form, trustScore: Number(e.target.value) })}>
+                      {TRUST_HINTS.map((t) => <option key={t.value} value={t.value}>{trustText(t.value)}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <p className="adm-field__hint">
+                  La confianza decide qué versión se conserva cuando dos fuentes publican la misma noticia.{' '}
+                  {TRUST_HINTS.find((t) => t.value === form.trustScore)?.label}.
                 </p>
-              )}
-            </div>
-          )}
-
-          {/* Datos de la fuente */}
-          {result && (
-            <>
-              <div className="!grid sm:!grid-cols-3 !gap-3">
-                <div>
-                  <label className="!text-xs text-slate-500 dark:text-slate-400">Nombre</label>
-                  <input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="!w-full !mt-1 !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-                  />
+                <div className="adm-actions-row">
+                  <button type="button" className="adm-btn adm-btn--primary" onClick={save} disabled={busy === 'new'}>
+                    {result.found ? 'Añadir y activar' : 'Añadir (queda inactiva)'}
+                  </button>
+                  <button type="button" className="adm-btn" onClick={cancelAdd}>Cancelar</button>
                 </div>
-                <div>
-                  <label className="!text-xs text-slate-500 dark:text-slate-400">País</label>
-                  <input
-                    value={form.country}
-                    onChange={(e) => setForm({ ...form, country: e.target.value.toUpperCase().slice(0, 2) })}
-                    placeholder="CL"
-                    className="!w-full !mt-1 !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="!text-xs text-slate-500 dark:text-slate-400">Confianza</label>
-                  <select
-                    value={form.trustScore}
-                    onChange={(e) => setForm({ ...form, trustScore: Number(e.target.value) })}
-                    className="!w-full !mt-1 !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-                  >
-                    {TRUST_HINTS.map((t) => (
-                      <option key={t.value} value={t.value}>{t.value.toFixed(2)} — {t.label.split('—')[0].trim()}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <p className="!text-xs text-slate-400 dark:text-slate-500">
-                La confianza decide qué versión se conserva cuando dos fuentes publican la misma
-                noticia. {TRUST_HINTS.find((t) => t.value === form.trustScore)?.label}
-              </p>
-
-              <div className="!flex !gap-2">
-                <button
-                  onClick={save}
-                  disabled={busy === 'new'}
-                  className="!px-4 !py-2 !rounded-lg !bg-emerald-600 !text-white !text-sm !font-medium disabled:!opacity-50"
-                >
-                  {result.found ? 'Añadir y activar' : 'Añadir (inactiva)'}
-                </button>
-                <button
-                  onClick={() => { setAdding(false); setResult(null); setDomain(''); }}
-                  className="!px-4 !py-2 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
+        </Panel>
       )}
 
-      {/* Listado */}
-      {loading ? (
-        <div className="!flex !items-center !justify-center !py-20 text-slate-400">
-          <Loader2 className="!w-6 !h-6 !animate-spin !mr-2" /> Cargando…
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-slate-800 !rounded-xl !border border-slate-200 dark:border-slate-700 !overflow-x-auto">
-          <table className="!w-full !text-sm">
+      <section className="adm-table-card">
+        <div className="adm-table-scroll">
+          <table className="adm-table">
             <thead>
-              <tr className="!text-left text-slate-500 dark:text-slate-400 !text-xs !border-b border-slate-100 dark:border-slate-700">
-                <th className="!p-3">Fuente</th>
-                <th className="!p-3">Confianza</th>
-                <th className="!p-3">Último éxito</th>
-                <th className="!p-3 !text-right">Acciones</th>
+              <tr>
+                <th scope="col">Fuente</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Confianza</th>
+                <th scope="col">Último éxito</th>
+                <th scope="col" className="adm-col-actions"><span className="sr-only">Acciones</span></th>
               </tr>
             </thead>
             <tbody>
-              {sources.map((s) => (
-                <tr key={s.id} className="!border-b border-slate-50 dark:border-slate-700/50 last:!border-0">
-                  <td className="!p-3">
-                    <div className="!flex !items-center !gap-2">
-                      <span className={`!w-2 !h-2 !rounded-full !shrink-0 ${s.active ? '!bg-emerald-500' : '!bg-slate-300 dark:!bg-slate-600'}`} />
-                      <div className="!min-w-0">
-                        <p className="text-slate-800 dark:text-slate-100 !font-medium">{s.name}</p>
-                        <p className="!text-xs text-slate-400 dark:text-slate-500">
-                          {s.domain}
-                          {!s.feedUrl && <span className="!ml-1.5 text-amber-600 dark:text-amber-400">sin feed</span>}
-                          {s.consecutiveFailures > 0 && (
-                            <span className="!ml-1.5 text-rose-600 dark:text-rose-400">
-                              {s.consecutiveFailures} fallo(s)
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="!p-3">
-                    <select
-                      value={s.trustScore}
-                      onChange={(e) => setTrust(s, Number(e.target.value))}
-                      className="!px-2 !py-1 !rounded !text-xs !border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
-                    >
-                      {TRUST_HINTS.map((t) => (
-                        <option key={t.value} value={t.value}>{t.value.toFixed(2)}</option>
-                      ))}
-                      {!TRUST_HINTS.some((t) => t.value === s.trustScore) && (
-                        <option value={s.trustScore}>{Number(s.trustScore).toFixed(2)}</option>
-                      )}
-                    </select>
-                  </td>
-                  <td className="!p-3 text-slate-500 dark:text-slate-400 !text-xs">
-                    {s.lastSuccessAt ? new Date(s.lastSuccessAt).toLocaleDateString('es-CL') : 'nunca'}
-                  </td>
-                  <td className="!p-3 !text-right !whitespace-nowrap">
-                    <button
-                      onClick={() => test(s)}
-                      disabled={!s.feedUrl}
-                      className="!p-1.5 !rounded text-slate-500 hover:!bg-slate-100 dark:hover:!bg-slate-700 disabled:!opacity-30"
-                      title="Buscar noticias ahora"
-                    >
-                      <PlayCircle className="!w-4 !h-4" />
-                    </button>
-                    <button
-                      onClick={() => toggle(s)}
-                      disabled={busy === s.id}
-                      className="!p-1.5 !rounded text-slate-500 hover:!bg-slate-100 dark:hover:!bg-slate-700"
-                      title={s.active ? 'Desactivar' : 'Activar'}
-                    >
-                      {s.active ? <X className="!w-4 !h-4" /> : <Check className="!w-4 !h-4" />}
-                    </button>
-                    <button
-                      onClick={() => remove(s)}
-                      disabled={busy === s.id}
-                      className="!p-1.5 !rounded text-slate-400 hover:!bg-rose-50 hover:!text-rose-600 dark:hover:!bg-slate-700"
-                      title="Eliminar (solo si no tiene contenido)"
-                    >
-                      <Trash2 className="!w-4 !h-4" />
-                    </button>
+              {loading ? (
+                <TableSkeletonRows columns={5} />
+              ) : sources.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    <EmptyState icon={Rss} title="Aún no hay fuentes" text="Añade la primera con el botón de arriba." />
                   </td>
                 </tr>
-              ))}
+              ) : (
+                sources.map((s) => (
+                  <tr key={s.id}>
+                    <td>
+                      <span className="adm-cell-title">{s.name}</span>
+                      <span className="adm-cell-sub">{s.domain}</span>
+                    </td>
+                    <td>
+                      <div className="adm-chips">
+                        <StatusBadge tone={s.active ? 'success' : 'neutral'}>{s.active ? 'Activa' : 'Inactiva'}</StatusBadge>
+                        {!s.feedUrl && <StatusBadge tone="warning">Sin feed</StatusBadge>}
+                        {s.consecutiveFailures > 0 && (
+                          <StatusBadge tone="danger">{formatInt(s.consecutiveFailures)} {s.consecutiveFailures === 1 ? 'fallo' : 'fallos'}</StatusBadge>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <select
+                        className="adm-select"
+                        aria-label={`Confianza de ${s.name}`}
+                        value={s.trustScore}
+                        onChange={(e) => setTrust(s, Number(e.target.value))}
+                      >
+                        {TRUST_HINTS.map((t) => <option key={t.value} value={t.value}>{trustText(t.value)}</option>)}
+                        {!TRUST_HINTS.some((t) => t.value === s.trustScore) && (
+                          <option value={s.trustScore}>{trustText(s.trustScore)}</option>
+                        )}
+                      </select>
+                    </td>
+                    <td>{s.lastSuccessAt ? new Date(s.lastSuccessAt).toLocaleDateString('es-CL') : <span className="adm-cell-mute">Nunca</span>}</td>
+                    <td className="adm-col-actions">
+                      <button type="button" className="adm-icon-btn" onClick={() => test(s)} disabled={!s.feedUrl} title="Buscar noticias ahora" aria-label={`Buscar noticias ahora en ${s.name}`}>
+                        <PlayCircle aria-hidden="true" />
+                      </button>
+                      <button type="button" className="adm-icon-btn" onClick={() => toggle(s)} disabled={busy === s.id} title={s.active ? 'Desactivar' : 'Activar'} aria-label={`${s.active ? 'Desactivar' : 'Activar'} ${s.name}`}>
+                        {s.active ? <X aria-hidden="true" /> : <Check aria-hidden="true" />}
+                      </button>
+                      <button type="button" className="adm-icon-btn" onClick={() => confirmRemove(s)} disabled={busy === s.id} title="Eliminar (solo si no tiene contenido)" aria-label={`Eliminar ${s.name}`}>
+                        <Trash2 aria-hidden="true" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-      )}
-
-      <p className="!text-xs text-slate-400 dark:text-slate-500">
-        Una fuente que falla 10 veces seguidas se desactiva sola: insistir contra un sitio que
-        bloquea es la forma más rápida de acabar en su lista negra. Al reactivarla, el contador
-        se pone a cero.
-      </p>
+        <p className="adm-table-note">
+          Una fuente que falla 10 veces seguidas se desactiva sola: insistir contra un sitio que bloquea es la forma más
+          rápida de terminar en su lista negra. Al reactivarla, el contador vuelve a cero.
+        </p>
+      </section>
+      {dialog}
     </div>
   );
 };

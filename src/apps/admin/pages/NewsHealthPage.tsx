@@ -1,79 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Activity, AlertTriangle, CheckCircle2, Rss, DollarSign, Inbox,
-  Loader2, RefreshCw, ShieldCheck, ShieldAlert,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, RefreshCw, Rss } from 'lucide-react';
 import { toast } from 'sonner';
 import adminNewsApi from '../services/adminNewsApi';
-import type {
-  NewsHealth, NewsStats, AdminNewsSourceFull,
-} from '../../../types/news.types';
+import type { NewsHealth, NewsStats, AdminNewsSourceFull } from '../../../types/news.types';
+import {
+  KpiCard,
+  PageHeader,
+  Panel,
+  Skeleton,
+  StatusBadge,
+  formatInt,
+  formatTime,
+} from '../ui';
 
 /**
  * Salud del módulo de noticias.
  *
  * El embudo es el diagnóstico de un vistazo: si "extraídos" cae mucho respecto
- * a "descubiertos" hay un problema de extracción; si "aprobados" se estanca,
- * nadie está revisando.
+ * a "descubiertos" hay un problema de extracción; si "publicados" se estanca,
+ * nadie está revisando. Los descartes van en gris y con sangría: antes usaban
+ * el mismo verde que las etapas que avanzan y parecían progreso.
  */
-
-type IconComponent = React.ComponentType<{ className?: string }>;
-
-const Stat: React.FC<{
-  icon: IconComponent;
-  label: string;
-  value: React.ReactNode;
-  hint?: string;
-  tone?: 'ok' | 'warn' | 'bad';
-}> = ({ icon: Icon, label, value, hint, tone = 'ok' }) => {
-  const toneCls: Record<'ok' | 'warn' | 'bad', string> = {
-    ok: 'text-emerald-600 dark:text-emerald-400',
-    warn: 'text-amber-600 dark:text-amber-400',
-    bad: 'text-rose-600 dark:text-rose-400',
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-800 !rounded-xl !p-4 !border border-slate-200 dark:border-slate-700">
-      <div className="!flex !items-center !gap-2 !text-xs text-slate-500 dark:text-slate-400">
-        <Icon className={`!w-4 !h-4 ${toneCls[tone]}`} />
-        {label}
-      </div>
-      <div className="!mt-2 !text-2xl !font-bold text-slate-800 dark:text-slate-100">{value}</div>
-      {hint && <div className="!mt-1 !text-xs text-slate-400 dark:text-slate-500">{hint}</div>}
-    </div>
-  );
-};
-
-const FunnelBar: React.FC<{ label: string; value: number; max: number; hint?: string }> = ({
-  label, value, max, hint,
-}) => {
-  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
-  return (
-    <div>
-      <div className="!flex !justify-between !text-sm !mb-1">
-        <span className="text-slate-600 dark:text-slate-300">{label}</span>
-        <span className="text-slate-800 dark:text-slate-100 !font-medium">
-          {value}
-          {hint && <span className="text-slate-400 !ml-1 !text-xs">{hint}</span>}
-        </span>
-      </div>
-      <div className="!h-2 !rounded-full bg-slate-100 dark:bg-slate-700 !overflow-hidden">
-        <div className="!h-full !bg-emerald-500 !rounded-full !transition-all" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-};
 
 // Montos en dólares con formato chileno (coma decimal): "US$ 0,0012".
 const usd = (n: number | null | undefined, maxDecimals = 4) =>
   `US$ ${(n ?? 0).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: maxDecimals })}`;
+
+const FunnelRow: React.FC<{ label: string; value: number; max: number; discard?: boolean }> = ({ label, value, max, discard }) => {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  return (
+    <li className={`adm-funnel__row${discard ? ' adm-funnel__row--discard' : ''}`}>
+      <span className="adm-funnel__label">{discard ? `− ${label}` : label}</span>
+      <span className="adm-funnel__track" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
+      <span className="adm-funnel__value">
+        {formatInt(value)}
+        <small>{pct} %</small>
+      </span>
+    </li>
+  );
+};
 
 const NewsHealthPage: React.FC = () => {
   const [health, setHealth] = useState<NewsHealth | null>(null);
   const [stats, setStats] = useState<NewsStats | null>(null);
   const [sources, setSources] = useState<AdminNewsSourceFull[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   const load = async () => {
     try {
@@ -86,6 +59,7 @@ const NewsHealthPage: React.FC = () => {
       setHealth(h.data);
       setStats(s.data);
       setSources(src.data || []);
+      setUpdatedAt(new Date());
     } catch {
       toast.error('No se pudo cargar el estado del módulo');
     } finally {
@@ -95,214 +69,173 @@ const NewsHealthPage: React.FC = () => {
 
   useEffect(() => { load(); }, []);
 
-  if (loading) {
+  const header = (
+    <PageHeader
+      title="Salud de noticias"
+      description="Embudo, costo y fuentes del módulo de noticias. Las alertas también llegan por Telegram."
+      actions={
+        <button type="button" className="adm-btn" onClick={load} disabled={loading}>
+          <RefreshCw aria-hidden="true" />
+          {updatedAt ? `Actualizado ${formatTime(updatedAt)}` : 'Actualizar'}
+        </button>
+      }
+    />
+  );
+
+  if (loading && !health) {
     return (
-      <div className="!flex !items-center !justify-center !py-20 text-slate-400">
-        <Loader2 className="!w-6 !h-6 !animate-spin !mr-2" /> Cargando…
+      <div className="adm-page" aria-busy="true">
+        {header}
+        <div className="adm-kpis">{[0, 1, 2, 3].map((i) => <Skeleton key={i} height={110} />)}</div>
+        <Skeleton height={300} />
       </div>
     );
   }
 
   const embudo = stats?.embudo;
   const max = embudo?.descubiertos || 1;
+  const alertas = health?.alertas ?? [];
+  const failing = sources.filter((s) => s.active && s.consecutiveFailures > 0);
+  const pending = health?.revisionPendiente ?? 0;
+  const overBudget = (health?.gasto24hUsd ?? 0) >= (health?.presupuestoDiarioUsd ?? Infinity);
 
   return (
-    <div className="!space-y-6 bg-slate-50 dark:bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
-      <div className="!flex !items-start !justify-between !flex-wrap !gap-4">
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100 !flex !items-center !gap-2">
-            <Activity className="!w-7 !h-7 text-emerald-600 dark:text-emerald-400" />
-            Salud del módulo de noticias
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">
-            Embudo, costo y fuentes. Las alertas también llegan por Telegram.
-          </p>
-        </div>
-        <button
-          onClick={load}
-          className="!flex !items-center !gap-2 !px-3 !py-2 !rounded-lg !text-sm bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 !border border-slate-200 dark:border-slate-700 hover:!bg-slate-100 dark:hover:!bg-slate-700"
-        >
-          <RefreshCw className="!w-4 !h-4" /> Actualizar
-        </button>
-      </div>
+    <div className="adm-page">
+      {header}
 
-      {/* Alertas */}
-      {(health?.alertas?.length ?? 0) > 0 && (
-        <div className="!space-y-2">
-          {health!.alertas.map((a, i) => (
-            <div
-              key={i}
-              className={`!flex !items-start !gap-3 !p-4 !rounded-xl !border ${
-                a.nivel === 'critical'
-                  ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900'
-                  : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900'
-              }`}
-            >
-              <AlertTriangle className={`!w-5 !h-5 !shrink-0 !mt-0.5 ${a.nivel === 'critical' ? 'text-rose-600' : 'text-amber-600'}`} />
-              <div>
-                <p className="!text-sm !font-medium text-slate-800 dark:text-slate-100">{a.mensaje}</p>
-                {a.detalle && a.detalle.length > 0 && (
-                  <p className="!text-xs text-slate-500 dark:text-slate-400 !mt-1">
-                    {a.detalle.slice(0, 8).join(' · ')}
-                    {a.detalle.length > 8 && ` …y ${a.detalle.length - 8} más`}
-                  </p>
-                )}
+      {alertas.map((a, i) => (
+        <div key={i} role="alert" className={`adm-alert ${a.nivel === 'critical' ? 'adm-alert--danger' : 'adm-alert--warning'}`}>
+          <AlertTriangle aria-hidden="true" />
+          <div>
+            <b>{a.mensaje}</b>
+            {a.detalle && a.detalle.length > 0 && (
+              <div className="adm-alert__detail">
+                {a.detalle.slice(0, 8).join(' · ')}
+                {a.detalle.length > 8 && ` … y ${a.detalle.length - 8} más`}
               </div>
-            </div>
-          ))}
+            )}
+          </div>
+        </div>
+      ))}
+
+      {health && alertas.length === 0 && (
+        <div role="status" className="adm-alert adm-alert--success">
+          <CheckCircle2 aria-hidden="true" />
+          <div>Todo en orden. No hay alertas activas.</div>
         </div>
       )}
 
-      {health && (health.alertas?.length ?? 0) === 0 && (
-        <div className="!flex !items-center !gap-3 !p-4 !rounded-xl bg-emerald-50 dark:bg-emerald-950/40 !border border-emerald-200 dark:border-emerald-900">
-          <CheckCircle2 className="!w-5 !h-5 text-emerald-600" />
-          <p className="!text-sm text-slate-700 dark:text-slate-200">Todo en orden. Sin alertas activas.</p>
-        </div>
-      )}
-
-      {/* Indicadores */}
-      <div className="!grid sm:!grid-cols-2 lg:!grid-cols-4 !gap-4">
-        <Stat
-          icon={Rss}
+      <div className="adm-kpis">
+        <KpiCard
           label="Fuentes activas"
-          value={`${health?.fuentes?.activas ?? 0}/${health?.fuentes?.totales ?? 0}`}
-          hint={health?.fuentes?.sinResultados ? `${health.fuentes.sinResultados} sin resultados` : 'todas trayendo'}
-          tone={health?.fuentes?.sinResultados ? 'warn' : 'ok'}
+          value={`${formatInt(health?.fuentes?.activas)} de ${formatInt(health?.fuentes?.totales)}`}
+          context={health?.fuentes?.sinResultados
+            ? <StatusBadge tone="warning">{formatInt(health.fuentes.sinResultados)} sin resultados</StatusBadge>
+            : 'Todas trayendo artículos'}
         />
-        <Stat
-          icon={Inbox}
+        <KpiCard
           label="Por revisar"
-          value={health?.revisionPendiente ?? 0}
-          hint={(health?.revisionPendiente ?? 0) > 50 ? 'cola acumulada' : undefined}
-          tone={(health?.revisionPendiente ?? 0) > 50 ? 'warn' : 'ok'}
+          value={formatInt(pending)}
+          context={pending > 50 ? <StatusBadge tone="warning">Cola acumulada</StatusBadge> : 'Artículos esperando revisión'}
         />
-        <Stat
-          icon={DollarSign}
-          label="Gasto LLM 24 h"
-          value={usd(health?.gasto24hUsd)}
-          hint={`de ${usd(health?.presupuestoDiarioUsd, 2)}`}
-          tone={
-            (health?.gasto24hUsd ?? 0) >= (health?.presupuestoDiarioUsd ?? 1) ? 'bad' : 'ok'
-          }
+        <KpiCard
+          label="Gasto de IA, últimas 24 h"
+          value={usd(health?.gasto24hUsd, 2)}
+          context={overBudget
+            ? <StatusBadge tone="danger">Superó el presupuesto de {usd(health?.presupuestoDiarioUsd, 2)}</StatusBadge>
+            : `Presupuesto diario: ${usd(health?.presupuestoDiarioUsd, 2)}`}
         />
-        <Stat
-          icon={health?.aislamientoCredenciales ? ShieldCheck : ShieldAlert}
+        <KpiCard
           label="Aislamiento de credenciales"
-          value={health?.aislamientoCredenciales ? 'Activo' : 'Sin rol'}
-          hint={health?.aislamientoCredenciales ? 'rol dedicado' : 'usa las credenciales del API'}
-          tone={health?.aislamientoCredenciales ? 'ok' : 'warn'}
+          value={health?.aislamientoCredenciales ? 'Activo' : 'Inactivo'}
+          context={health?.aislamientoCredenciales
+            ? 'Usa un rol dedicado'
+            : <StatusBadge tone="warning">Usa las credenciales del API</StatusBadge>}
         />
       </div>
 
-      {/* Embudo */}
       {embudo && (
-        <div className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700">
-          <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">
-            Embudo · últimos {embudo.periodoDias} días
-          </h2>
-          <div className="!space-y-3">
-            <FunnelBar label="Descubiertos" value={embudo.descubiertos} max={max} />
-            <FunnelBar
-              label="Descartados por el filtro léxico"
-              value={embudo.descartadosPorLexico}
-              max={max}
-              hint={embudo.descubiertos ? `${Math.round((embudo.descartadosPorLexico / embudo.descubiertos) * 100)}%` : ''}
-            />
-            <FunnelBar label="Extraídos" value={embudo.extraidos} max={max} />
-            <FunnelBar label="Descartados en triage" value={embudo.descartadosPorTriage} max={max} />
-            <FunnelBar label="Clasificados" value={embudo.clasificados} max={max} />
-            <FunnelBar label="Publicados" value={embudo.publicados} max={max} />
-          </div>
+        <Panel
+          title={`Embudo de los últimos ${embudo.periodoDias} días`}
+          description="Porcentaje sobre los artículos descubiertos"
+        >
+          <ul className="adm-funnel">
+            <FunnelRow label="Descubiertos" value={embudo.descubiertos} max={max} />
+            <FunnelRow label="Descartados por el filtro léxico" value={embudo.descartadosPorLexico} max={max} discard />
+            <FunnelRow label="Extraídos" value={embudo.extraidos} max={max} />
+            <FunnelRow label="Descartados en triage" value={embudo.descartadosPorTriage} max={max} discard />
+            <FunnelRow label="Clasificados" value={embudo.clasificados} max={max} />
+            <FunnelRow label="Publicados" value={embudo.publicados} max={max} />
+          </ul>
 
           {stats && (
-            <div className="!grid sm:!grid-cols-3 !gap-4 !mt-5 !pt-5 !border-t border-slate-100 dark:border-slate-700 !text-sm">
+            <dl className="adm-summary">
               <div>
-                <span className="text-slate-500 dark:text-slate-400">Costo LLM 30 d</span>
-                <p className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">
-                  {usd(stats.costoLlm?.totalUsd)}
-                </p>
+                <dt>Costo de IA, 30 días</dt>
+                <dd>{usd(stats.costoLlm?.totalUsd)}</dd>
               </div>
               <div>
-                <span className="text-slate-500 dark:text-slate-400">Éxito de llamadas</span>
-                <p className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">
-                  {stats.costoLlm?.tasaExito != null ? `${stats.costoLlm.tasaExito}%` : '—'}
-                </p>
+                <dt>Llamadas exitosas</dt>
+                <dd>{stats.costoLlm?.tasaExito != null ? `${stats.costoLlm.tasaExito} %` : '—'}</dd>
               </div>
               <div>
-                <span className="text-slate-500 dark:text-slate-400">Confianza media</span>
-                <p className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">
-                  {stats.confianzaMedia !== null ? `${Math.round(stats.confianzaMedia * 100)}%` : '—'}
-                </p>
+                <dt>Confianza media</dt>
+                <dd>{stats.confianzaMedia !== null ? `${Math.round(stats.confianzaMedia * 100)} %` : '—'}</dd>
               </div>
-            </div>
+            </dl>
           )}
-        </div>
+        </Panel>
       )}
 
-      {/* Costo por paso */}
       {(stats?.costoLlm?.porPaso?.length ?? 0) > 0 && (
-        <div className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700 !overflow-x-auto">
-          <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">Costo por paso</h2>
-          <table className="!w-full !text-sm">
-            <thead>
-              <tr className="!text-left text-slate-500 dark:text-slate-400 !text-xs">
-                <th className="!pb-2">Paso</th>
-                <th className="!pb-2 !text-right">Llamadas</th>
-                <th className="!pb-2 !text-right">Costo</th>
-                <th className="!pb-2 !text-right">Latencia media</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats!.costoLlm.porPaso.map((p) => (
-                <tr key={p.paso} className="!border-t border-slate-100 dark:border-slate-700">
-                  <td className="!py-2 text-slate-700 dark:text-slate-200">{p.paso}</td>
-                  <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">{p.llamadas}</td>
-                  <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">{usd(p.costoUsd, 5)}</td>
-                  <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">{p.latenciaMediaMs} ms</td>
+        <section className="adm-table-card">
+          <div className="adm-panel__head" style={{ paddingBottom: 12 }}>
+            <h2 className="adm-panel__title">Costo por paso</h2>
+          </div>
+          <div className="adm-table-scroll">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th scope="col">Paso</th>
+                  <th scope="col" className="adm-col-num">Llamadas</th>
+                  <th scope="col" className="adm-col-num">Costo</th>
+                  <th scope="col" className="adm-col-num">Latencia media</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {stats!.costoLlm.porPaso.map((p) => (
+                  <tr key={p.paso}>
+                    <td>{p.paso}</td>
+                    <td className="adm-col-num">{formatInt(p.llamadas)}</td>
+                    <td className="adm-col-num">{usd(p.costoUsd, 5)}</td>
+                    <td className="adm-col-num">{formatInt(p.latenciaMediaMs)} ms</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
-      {/* Fuentes — la gestión vive en su propia página, aquí solo el resumen */}
-      <div className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700">
-        <div className="!flex !items-center !justify-between !flex-wrap !gap-3">
-          <div>
-            <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Fuentes</h2>
-            <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-0.5">
-              {sources.filter((s) => s.active).length} activas de {sources.length}
-              {sources.filter((s) => s.active && s.consecutiveFailures > 0).length > 0 &&
-                ` · ${sources.filter((s) => s.active && s.consecutiveFailures > 0).length} con fallos`}
-            </p>
-          </div>
-          <Link
-            to="/admin/noticias/fuentes"
-            className="!flex !items-center !gap-2 !px-4 !py-2 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 !text-sm !font-medium hover:!bg-slate-200 dark:hover:!bg-slate-600"
-          >
-            <Rss className="!w-4 !h-4" /> Gestionar fuentes
+      <Panel
+        title="Fuentes"
+        description={`${formatInt(sources.filter((s) => s.active).length)} activas de ${formatInt(sources.length)}${failing.length ? ` · ${formatInt(failing.length)} con fallos` : ''}`}
+        aside={
+          <Link to="/admin/noticias/fuentes" className="adm-btn adm-btn--sm">
+            <Rss aria-hidden="true" /> Gestionar fuentes
           </Link>
-        </div>
-
-        {sources.filter((s) => s.active && s.consecutiveFailures > 0).length > 0 && (
-          <div className="!mt-4 !pt-4 !border-t border-slate-100 dark:border-slate-700">
-            <p className="!text-xs text-slate-500 dark:text-slate-400 !mb-2">Con fallos recientes:</p>
-            <div className="!flex !flex-wrap !gap-2">
-              {sources
-                .filter((s) => s.active && s.consecutiveFailures > 0)
-                .map((s) => (
-                  <span
-                    key={s.id}
-                    className="!px-2.5 !py-1 !rounded-full !text-xs bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                  >
-                    {s.domain} · {s.consecutiveFailures}
-                  </span>
-                ))}
-            </div>
+        }
+      >
+        {failing.length > 0 ? (
+          <div className="adm-chips">
+            {failing.map((s) => (
+              <StatusBadge key={s.id} tone="warning">{s.domain} · {formatInt(s.consecutiveFailures)} fallos</StatusBadge>
+            ))}
           </div>
+        ) : (
+          <p className="adm-cell-mute">Ninguna fuente activa tiene fallos recientes.</p>
         )}
-      </div>
+      </Panel>
     </div>
   );
 };

@@ -24,36 +24,10 @@ import {
   StatusBadge,
   TableSkeletonRows,
   formatInt,
-  type StatusTone,
+  COMPANY_STATUS,
+  companyStatusLabel,
+  industryLabel,
 } from '../ui';
-
-const industryLabels: Record<string, string> = {
-  aerolineas: 'Aerolíneas',
-  maritimo: 'Transporte Marítimo',
-  terrestre: 'Transporte Terrestre',
-  mineria_energia: 'Minería y Energía',
-  tecnologia: 'Tecnología',
-  retail: 'Retail',
-  manufactura: 'Manufactura',
-  construccion: 'Construcción',
-  hoteleria_turismo: 'Hotelería y Turismo',
-  servicios_financieros: 'Servicios Financieros',
-  salud: 'Salud',
-  educacion: 'Educación',
-  alimentacion: 'Alimentación',
-  telecomunicaciones: 'Telecomunicaciones',
-  gobierno: 'Gobierno',
-  consultoria: 'Consultoría',
-  otra: 'Otra',
-};
-
-const statusConfig: Record<string, { label: string; tone: StatusTone }> = {
-  registered: { label: 'Registrada', tone: 'neutral' },
-  pending_contract: { label: 'Pendiente de contrato', tone: 'warning' },
-  signed: { label: 'Contrato firmado', tone: 'info' },
-  active: { label: 'Activa', tone: 'success' },
-  suspended: { label: 'Suspendida', tone: 'danger' },
-};
 
 const STATUS_FILTERS = [
   { value: '', label: 'Todas' },
@@ -88,7 +62,8 @@ const TRANSITION_ICONS: Record<string, LucideIcon> = {
   registered: Clock,
 };
 
-const statusLabel = (s: string) => statusConfig[s]?.label ?? s;
+const statusConfig = COMPANY_STATUS;
+const statusLabel = companyStatusLabel;
 
 export default function EmpresasPage() {
   const navigate = useNavigate();
@@ -277,7 +252,7 @@ export default function EmpresasPage() {
                       <td>{company.rut || <span className="adm-cell-mute">—</span>}</td>
                       <td>
                         {company.industry
-                          ? industryLabels[company.industry] || company.industry
+                          ? industryLabel(company.industry)
                           : <span className="adm-cell-mute">Sin categoría</span>}
                       </td>
                       <td>

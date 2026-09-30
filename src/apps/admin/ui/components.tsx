@@ -278,6 +278,8 @@ export interface ModalProps {
   /** Mientras es true no se puede cerrar (acción en curso). */
   busy?: boolean;
   footer?: React.ReactNode;
+  /** lg: para vistas previas (correo, documentos). */
+  size?: 'md' | 'lg';
   children: React.ReactNode;
 }
 
@@ -285,7 +287,7 @@ export interface ModalProps {
  * Diálogo modal: Escape y clic fuera cierran (salvo con busy), el foco entra
  * al primer campo o botón y vuelve al elemento que lo abrió al cerrar.
  */
-export const Modal: React.FC<ModalProps> = ({ open, title, onClose, busy = false, footer, children }) => {
+export const Modal: React.FC<ModalProps> = ({ open, title, onClose, busy = false, footer, size = 'md', children }) => {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   // Refs para que Escape use siempre el busy/onClose actuales.
@@ -314,7 +316,7 @@ export const Modal: React.FC<ModalProps> = ({ open, title, onClose, busy = false
 
   return (
     <div className="adm-modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
-      <div ref={dialogRef} className="adm-modal" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <div ref={dialogRef} className={`adm-modal${size === 'lg' ? ' adm-modal--lg' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
         <div className="adm-modal__head">
           <h2 id={titleId} className="adm-modal__title">{title}</h2>
           <button type="button" className="adm-icon-btn" onClick={onClose} disabled={busy} aria-label="Cerrar" data-modal-close>
@@ -391,3 +393,41 @@ export function useAdminConfirm() {
 
   return { confirm, dialog };
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Barras horizontales: ranking legible sin etiquetas en diagonal
+   ────────────────────────────────────────────────────────────────────────── */
+
+export interface BarListItem {
+  label: string;
+  value: number;
+}
+
+export const BarList: React.FC<{
+  items: BarListItem[];
+  format?: (n: number) => string;
+  /** Muestra además el porcentaje sobre el total. */
+  showShare?: boolean;
+  max?: number;
+}> = ({ items, format = (n) => n.toLocaleString('es-CL'), showShare = false, max }) => {
+  const sorted = [...items].sort((a, b) => b.value - a.value);
+  const top = max ? sorted.slice(0, max) : sorted;
+  const peak = Math.max(...top.map((i) => i.value), 0) || 1;
+  const total = items.reduce((a, i) => a + i.value, 0) || 1;
+  return (
+    <ul className="adm-barlist">
+      {top.map((i) => (
+        <li key={i.label}>
+          <span className="adm-barlist__label" title={i.label}>{i.label}</span>
+          <span className="adm-barlist__track" aria-hidden="true">
+            <span style={{ width: `${(i.value / peak) * 100}%` }} />
+          </span>
+          <span className="adm-barlist__value">
+            {format(i.value)}
+            {showShare && <small>{Math.round((i.value / total) * 100)} %</small>}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+};

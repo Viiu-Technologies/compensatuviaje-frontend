@@ -89,12 +89,19 @@ const navSections: NavSection[] = [
   { title: 'Trazabilidad', items: traceabilityItems },
 ];
 
-/** Sección e ítem del menú que corresponden a la ruta (el prefijo más largo). */
+/**
+ * Sección e ítem del menú que corresponden a la ruta (el prefijo más largo).
+ * A diferencia del menú, aquí `end` no impide que una página de detalle
+ * (/admin/noticias/:id) herede la miga de su listado; solo la raíz /admin es exacta.
+ */
 function findCurrent(pathname: string) {
   let best: { section?: string; label: string; len: number } | null = null;
   for (const section of navSections) {
     for (const item of section.items) {
-      const matches = item.end ? pathname === item.path || pathname === `${item.path}/` : pathname.startsWith(item.path);
+      const matches =
+        pathname === item.path ||
+        pathname === `${item.path}/` ||
+        (item.path !== '/admin' && pathname.startsWith(`${item.path}/`));
       if (matches && (!best || item.path.length > best.len)) {
         best = { section: section.title, label: item.label, len: item.path.length };
       }

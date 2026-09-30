@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Mail, Plus, Check, Send, X, Eye, Users, Loader2, BarChart3, AlertTriangle,
-} from 'lucide-react';
+import { Mail, Plus, Check, Send, X, Eye, BarChart3, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import adminNewsApi from '../services/adminNewsApi';
 import type {
   NewsCampaign, SubscriberStats, AdminNewsArticle, CampaignMetrics,
 } from '../../../types/news.types';
+import {
+  EmptyState, KpiCard, Modal, PageHeader, Panel, Skeleton, StatusBadge, type StatusTone,
+  formatInt, formatPercent, useAdminConfirm,
+} from '../ui';
 
 /**
  * Campañas del boletín.
@@ -19,16 +21,19 @@ import type {
  * lo procesa respetando el tope diario del proveedor.
  */
 
-const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  draft: { label: 'Borrador', cls: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' },
-  pending_approval: { label: 'Por aprobar', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
-  approved: { label: 'Aprobada', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
-  sending: { label: 'Enviando', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' },
-  sent: { label: 'Enviada', cls: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' },
-  cancelled: { label: 'Cancelada', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
+const STATUS_LABEL: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: 'Borrador', tone: 'neutral' },
+  pending_approval: { label: 'Por aprobar', tone: 'warning' },
+  approved: { label: 'Aprobada', tone: 'success' },
+  sending: { label: 'Enviando', tone: 'info' },
+  sent: { label: 'Enviada', tone: 'success' },
+  cancelled: { label: 'Cancelada', tone: 'neutral' },
 };
 
+const pct = (n: number | null) => (n !== null ? formatPercent(n) : '—');
+
 const NewsCampaignsPage: React.FC = () => {
+  const { confirm, dialog } = useAdminConfirm();
   const [campaigns, setCampaigns] = useState<NewsCampaign[]>([]);
   const [subs, setSubs] = useState<SubscriberStats | null>(null);
   const [published, setPublished] = useState<AdminNewsArticle[]>([]);
@@ -121,292 +126,226 @@ const NewsCampaignsPage: React.FC = () => {
     }
   };
 
+  // Enviar llega a personas reales y cancelar no se deshace: ambas piden confirmación.
+  const confirmSend = async (c: NewsCampaign) => {
+    const ok = await confirm({
+      title: c.status === 'sending' ? '¿Continuar el envío?' : '¿Enviar la campaña?',
+      description: `«${c.subject}» se enviará a ${formatInt(subs?.elegibles)} suscriptores confirmados. Una vez enviado, el correo no se puede retirar.`,
+      confirmLabel: c.status === 'sending' ? 'Continuar envío' : 'Enviar ahora',
+    });
+    if (ok) act(c.id, () => adminNewsApi.sendCampaign(c.id), 'Envío encolado');
+  };
+
+  const confirmCancel = async (c: NewsCampaign) => {
+    const ok = await confirm({
+      title: '¿Cancelar la campaña?',
+      description: `«${c.subject}» quedará cancelada y no se podrá enviar. Para reutilizar los artículos habrá que crear otra.`,
+      confirmLabel: 'Cancelar campaña',
+      cancelLabel: 'Volver',
+      tone: 'danger',
+    });
+    if (ok) act(c.id, () => adminNewsApi.cancelCampaign(c.id), 'Campaña cancelada');
+  };
+
+  const header = (
+    <PageHeader
+      title="Boletín"
+      description="Solo se envían artículos ya publicados, y siempre con aprobación previa."
+      actions={
+        <button type="button" className="adm-btn adm-btn--primary" onClick={() => setCreating((c) => !c)} aria-expanded={creating}>
+          <Plus aria-hidden="true" /> Nueva campaña
+        </button>
+      }
+    />
+  );
+
   if (loading) {
     return (
-      <div className="!flex !items-center !justify-center !py-20 text-slate-400">
-        <Loader2 className="!w-6 !h-6 !animate-spin !mr-2" /> Cargando…
+      <div className="adm-page" aria-busy="true">
+        {header}
+        <div className="adm-kpis">{[0, 1, 2, 3].map((i) => <Skeleton key={i} height={104} />)}</div>
+        <Skeleton height={220} />
       </div>
     );
   }
 
   return (
-    <div className="!space-y-6 bg-slate-50 dark:bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
-      <div className="!flex !items-start !justify-between !flex-wrap !gap-4">
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100 !flex !items-center !gap-2">
-            <Mail className="!w-7 !h-7 text-emerald-600 dark:text-emerald-400" />
-            Boletín
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">
-            Solo se envían artículos ya publicados, y siempre con aprobación previa.
-          </p>
-        </div>
-        <button
-          onClick={() => setCreating((c) => !c)}
-          className="!flex !items-center !gap-2 !px-4 !py-2 !rounded-lg !bg-emerald-600 !text-white !text-sm !font-medium hover:!bg-emerald-700"
-        >
-          <Plus className="!w-4 !h-4" /> Nueva campaña
-        </button>
-      </div>
+    <div className="adm-page">
+      {header}
 
       {/* Suscriptores */}
       {subs && (
-        <div className="!grid sm:!grid-cols-2 lg:!grid-cols-5 !gap-3">
-          {[
-            ['Elegibles', subs.elegibles, 'confirmados y activos'],
-            ['Sin confirmar', subs.sinConfirmar, 'no reciben nada'],
-            ['Bajas', subs.bajas, ''],
-            ['Suprimidos', subs.suprimidos, 'rebote duro o queja'],
-            ['Total', subs.total, ''],
-          ].map(([label, value, hint]) => (
-            <div key={label as string} className="bg-white dark:bg-slate-800 !rounded-xl !p-4 !border border-slate-200 dark:border-slate-700">
-              <div className="!flex !items-center !gap-1.5 !text-xs text-slate-500 dark:text-slate-400">
-                <Users className="!w-3.5 !h-3.5" /> {label}
-              </div>
-              <div className="!mt-1.5 !text-2xl !font-bold text-slate-800 dark:text-slate-100">{value}</div>
-              {hint && <div className="!text-xs text-slate-400 dark:text-slate-500">{hint}</div>}
-            </div>
-          ))}
+        <div className="adm-kpis">
+          <KpiCard label="Suscriptores elegibles" value={formatInt(subs.elegibles)} context="Confirmados y activos: reciben el boletín" />
+          <KpiCard label="Sin confirmar" value={formatInt(subs.sinConfirmar)} context="No reciben nada hasta confirmar" />
+          <KpiCard label="Bajas" value={formatInt(subs.bajas)} context={`De ${formatInt(subs.total)} registros en total`} />
+          <KpiCard label="Suprimidos" value={formatInt(subs.suprimidos)} context="Rebote duro o queja de spam" />
         </div>
       )}
 
       {subs && subs.elegibles === 0 && (
-        <div className="!flex !items-start !gap-3 !p-4 !rounded-xl bg-amber-50 dark:bg-amber-950/40 !border border-amber-200 dark:border-amber-900">
-          <AlertTriangle className="!w-5 !h-5 text-amber-600 !shrink-0 !mt-0.5" />
-          <p className="!text-sm text-slate-700 dark:text-slate-200">
-            No hay suscriptores confirmados todavía. Se pueden crear campañas, pero el envío no
-            llegará a nadie hasta que alguien confirme su suscripción.
-          </p>
+        <div role="status" className="adm-alert adm-alert--warning">
+          <AlertTriangle aria-hidden="true" />
+          <div>
+            No hay suscriptores confirmados todavía. Se pueden crear campañas, pero el envío no llegará a nadie
+            hasta que alguien confirme su suscripción.
+          </div>
         </div>
       )}
 
       {/* Nueva campaña */}
       {creating && (
-        <div className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700 !space-y-4">
-          <h2 className="!text-base !font-semibold text-slate-800 dark:text-slate-100">Nueva campaña</h2>
-
-          <div className="!grid sm:!grid-cols-2 !gap-3">
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Nombre interno (opcional)"
-              className="!px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-            />
-            <input
-              value={form.subject}
-              onChange={(e) => setForm({ ...form, subject: e.target.value })}
-              placeholder="Asunto del correo *"
-              className="!px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-            />
-          </div>
-
-          <input
-            value={form.preheader}
-            onChange={(e) => setForm({ ...form, preheader: e.target.value })}
-            placeholder="Preheader — el texto que se ve junto al asunto en la bandeja"
-            className="!w-full !px-3 !py-2 !rounded-lg !border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 !text-sm"
-          />
-
-          <div>
-            <p className="!text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-              Artículos publicados ({form.articleIds.length} seleccionados)
-            </p>
-            {published.length === 0 ? (
-              <p className="!text-sm text-slate-400">
-                No hay artículos publicados todavía. Publica alguno antes de crear una campaña.
-              </p>
-            ) : (
-              <div className="!max-h-64 !overflow-y-auto !space-y-1.5 !pr-1">
-                {published.map((a, i) => (
-                  <label
-                    key={a.id}
-                    className={`!flex !items-start !gap-2.5 !p-2.5 !rounded-lg !cursor-pointer !border ${
-                      form.articleIds.includes(a.id)
-                        ? '!border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                        : 'border-slate-200 dark:border-slate-700 hover:!bg-slate-50 dark:hover:!bg-slate-700/50'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.articleIds.includes(a.id)}
-                      onChange={() => toggleArticle(a.id)}
-                      className="!mt-0.5"
-                    />
-                    <div className="!min-w-0">
-                      <p className="!text-sm text-slate-800 dark:text-slate-100 !leading-snug">
-                        {form.articleIds.indexOf(a.id) === 0 && (
-                          <span className="!text-xs text-emerald-600 dark:text-emerald-400 !font-medium">[destacado] </span>
-                        )}
-                        {a.title}
-                      </p>
-                      <p className="!text-xs text-slate-400">{a.source?.name}</p>
-                    </div>
-                  </label>
-                ))}
+        <Panel title="Nueva campaña">
+          <div className="adm-stack-v">
+            <div className="adm-form-grid">
+              <div className="adm-field">
+                <label className="adm-field__label" htmlFor="nc-subject">Asunto del correo</label>
+                <input id="nc-subject" className="adm-input" required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
               </div>
-            )}
-            <p className="!text-xs text-slate-400 !mt-2">
-              El primero que selecciones será el destacado del correo, con imagen grande.
-            </p>
-          </div>
+              <div className="adm-field">
+                <label className="adm-field__label" htmlFor="nc-name">Nombre interno <span className="adm-cell-mute">(opcional)</span></label>
+                <input id="nc-name" className="adm-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </div>
+            </div>
+            <div className="adm-field">
+              <label className="adm-field__label" htmlFor="nc-pre">Preheader</label>
+              <input id="nc-pre" className="adm-input" aria-describedby="nc-pre-hint" value={form.preheader} onChange={(e) => setForm({ ...form, preheader: e.target.value })} />
+              <span id="nc-pre-hint" className="adm-field__hint">El texto que se ve junto al asunto en la bandeja de entrada.</span>
+            </div>
 
-          <div className="!flex !gap-2">
-            <button
-              onClick={create}
-              disabled={busy === 'new'}
-              className="!px-4 !py-2 !rounded-lg !bg-emerald-600 !text-white !text-sm !font-medium disabled:!opacity-50"
-            >
-              Crear borrador
-            </button>
-            <button
-              onClick={() => setCreating(false)}
-              className="!px-4 !py-2 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm"
-            >
-              Cancelar
-            </button>
+            <fieldset className="adm-field">
+              <legend className="adm-field__label">
+                Artículos publicados · {formatInt(form.articleIds.length)} {form.articleIds.length === 1 ? 'seleccionado' : 'seleccionados'}
+              </legend>
+              {published.length === 0 ? (
+                <p className="adm-cell-mute">No hay artículos publicados todavía. Publica alguno antes de crear una campaña.</p>
+              ) : (
+                <div className="adm-pick-list">
+                  {published.map((a) => {
+                    const on = form.articleIds.includes(a.id);
+                    return (
+                      <label key={a.id} className={`adm-pick${on ? ' adm-pick--on' : ''}`}>
+                        <input type="checkbox" checked={on} onChange={() => toggleArticle(a.id)} />
+                        <span>
+                          <span className="adm-pick__title">{a.title}</span>
+                          <span className="adm-pick__meta" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
+                            {form.articleIds.indexOf(a.id) === 0 && <StatusBadge tone="info">Destacado</StatusBadge>}
+                            {a.source?.name}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              <span className="adm-field__hint">El primero que selecciones será el destacado del correo, con imagen grande.</span>
+            </fieldset>
+
+            <div className="adm-actions-row">
+              <button type="button" className="adm-btn adm-btn--primary" onClick={create} disabled={busy === 'new'}>
+                Crear borrador
+              </button>
+              <button type="button" className="adm-btn" onClick={() => setCreating(false)}>Cancelar</button>
+            </div>
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* Listado */}
       {campaigns.length === 0 ? (
-        <div className="!text-center !py-16">
-          <Mail className="!w-12 !h-12 !mx-auto text-slate-300 dark:text-slate-600" />
-          <p className="!mt-3 text-slate-500 dark:text-slate-400">Aún no hay campañas.</p>
-        </div>
+        <section className="adm-panel">
+          <EmptyState icon={Mail} title="Aún no hay campañas" text="Crea la primera con «Nueva campaña»." />
+        </section>
       ) : (
-        <div className="!space-y-3">
+        <div className="adm-stack-v">
           {campaigns.map((c) => {
             const st = STATUS_LABEL[c.status] ?? STATUS_LABEL.draft;
             const m = metrics[c.id];
+            const n = c.articleIds.length;
 
             return (
-              <div key={c.id} className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700">
-                <div className="!flex !items-start !justify-between !gap-3 !flex-wrap">
-                  <div className="!min-w-0">
-                    <div className="!flex !items-center !gap-2 !flex-wrap">
-                      <span className={`!px-2 !py-0.5 !rounded-full !text-xs !font-medium ${st.cls}`}>
-                        {st.label}
-                      </span>
-                      <span className="!text-xs text-slate-400">
-                        {c.articleIds.length} artículo(s) · {c.recipientCount ?? 0} destinatarios
-                      </span>
-                    </div>
-                    <h3 className="!text-base !font-semibold text-slate-800 dark:text-slate-100 !mt-1.5">
-                      {c.subject}
-                    </h3>
-                    <p className="!text-xs text-slate-400">{c.name}</p>
-                  </div>
-
-                  <div className="!flex !items-center !gap-1.5 !flex-wrap">
-                    <button
-                      onClick={() => openPreview(c)}
-                      disabled={busy === c.id}
-                      className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm disabled:!opacity-50"
-                      title="Vista previa del correo"
-                    >
-                      {busy === c.id ? <Loader2 className="!w-4 !h-4 !animate-spin" /> : <Eye className="!w-4 !h-4" />}
-                      Vista previa
-                    </button>
-
-                    {['draft', 'pending_approval'].includes(c.status) && (
-                      <button
-                        onClick={() => act(c.id, () => adminNewsApi.approveCampaign(c.id), 'Campaña aprobada')}
-                        disabled={busy === c.id}
-                        className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg !bg-emerald-600 !text-white !text-sm disabled:!opacity-50"
-                      >
-                        <Check className="!w-4 !h-4" /> Aprobar
-                      </button>
-                    )}
-
-                    {['approved', 'sending'].includes(c.status) && (
-                      <button
-                        onClick={() => act(c.id, () => adminNewsApi.sendCampaign(c.id), 'Envío encolado')}
-                        disabled={busy === c.id}
-                        className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg !bg-sky-600 !text-white !text-sm disabled:!opacity-50"
-                      >
-                        <Send className="!w-4 !h-4" />
-                        {c.status === 'sending' ? 'Continuar envío' : 'Enviar'}
-                      </button>
-                    )}
-
-                    {c.status === 'sent' && (
-                      <button
-                        onClick={() => loadMetrics(c.id)}
-                        className="!flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 !text-sm"
-                      >
-                        <BarChart3 className="!w-4 !h-4" /> Métricas
-                      </button>
-                    )}
-
-                    {!['sent', 'cancelled'].includes(c.status) && (
-                      <button
-                        onClick={() => act(c.id, () => adminNewsApi.cancelCampaign(c.id), 'Campaña cancelada')}
-                        disabled={busy === c.id}
-                        className="!p-1.5 !rounded-lg text-slate-400 hover:!bg-slate-100 dark:hover:!bg-slate-700"
-                        title="Cancelar"
-                      >
-                        <X className="!w-4 !h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {m && (
-                  <div className="!grid sm:!grid-cols-5 !gap-3 !mt-4 !pt-4 !border-t border-slate-100 dark:border-slate-700 !text-sm">
-                    {[
-                      ['Enviados', m.sent ?? 0],
-                      ['Entregados', m.delivered ?? 0],
-                      ['Aperturas', m.tasaApertura !== null ? `${m.tasaApertura}%` : '—'],
-                      ['Clics', m.tasaClic !== null ? `${m.tasaClic}%` : '—'],
-                      ['Rebotes', m.tasaRebote !== null ? `${m.tasaRebote}%` : '—'],
-                    ].map(([k, v]) => (
-                      <div key={k as string}>
-                        <p className="!text-xs text-slate-500 dark:text-slate-400">{k}</p>
-                        <p className="!font-semibold text-slate-800 dark:text-slate-100">{v}</p>
+              <section key={c.id} className="adm-panel">
+                <div className="adm-panel__body">
+                  <div className="adm-campaign">
+                    <div style={{ minWidth: 0 }}>
+                      <div className="adm-chips">
+                        <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+                        <span className="adm-campaign__meta">
+                          {formatInt(n)} {n === 1 ? 'artículo' : 'artículos'}
+                          {['sending', 'sent'].includes(c.status) && ` · ${formatInt(c.recipientCount)} destinatarios`}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <h2 className="adm-campaign__title">{c.subject}</h2>
+                      {c.name && <p className="adm-campaign__meta">{c.name}</p>}
+                    </div>
 
-                {c.status === 'sending' && (
-                  <p className="!mt-3 !text-xs text-sky-700 dark:text-sky-400">
-                    Envío en curso. Si el tope diario lo cortó, se reanuda solo al día siguiente.
-                  </p>
-                )}
-              </div>
+                    <div className="adm-actions-row">
+                      <button type="button" className="adm-btn adm-btn--sm" onClick={() => openPreview(c)} disabled={busy === c.id}>
+                        <Eye aria-hidden="true" /> Vista previa
+                      </button>
+                      {['draft', 'pending_approval'].includes(c.status) && (
+                        <button
+                          type="button"
+                          className="adm-btn adm-btn--sm adm-btn--primary"
+                          onClick={() => act(c.id, () => adminNewsApi.approveCampaign(c.id), 'Campaña aprobada')}
+                          disabled={busy === c.id}
+                        >
+                          <Check aria-hidden="true" /> Aprobar
+                        </button>
+                      )}
+                      {['approved', 'sending'].includes(c.status) && (
+                        <button type="button" className="adm-btn adm-btn--sm adm-btn--primary" onClick={() => confirmSend(c)} disabled={busy === c.id}>
+                          <Send aria-hidden="true" /> {c.status === 'sending' ? 'Continuar envío' : 'Enviar'}
+                        </button>
+                      )}
+                      {c.status === 'sent' && !m && (
+                        <button type="button" className="adm-btn adm-btn--sm" onClick={() => loadMetrics(c.id)}>
+                          <BarChart3 aria-hidden="true" /> Métricas
+                        </button>
+                      )}
+                      {!['sent', 'cancelled'].includes(c.status) && (
+                        <button
+                          type="button"
+                          className="adm-icon-btn"
+                          onClick={() => confirmCancel(c)}
+                          disabled={busy === c.id}
+                          title="Cancelar campaña"
+                          aria-label={`Cancelar la campaña ${c.subject}`}
+                        >
+                          <X aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {m && (
+                    <dl className="adm-summary">
+                      <div><dt>Enviados</dt><dd>{formatInt(m.sent)}</dd></div>
+                      <div><dt>Entregados</dt><dd>{formatInt(m.delivered)}</dd></div>
+                      <div><dt>Aperturas</dt><dd>{pct(m.tasaApertura)}</dd></div>
+                      <div><dt>Clics</dt><dd>{pct(m.tasaClic)}</dd></div>
+                      <div><dt>Rebotes</dt><dd>{pct(m.tasaRebote)}</dd></div>
+                    </dl>
+                  )}
+
+                  {c.status === 'sending' && (
+                    <p className="adm-field__hint" style={{ marginTop: 12 }}>
+                      Envío en curso. Si el tope diario lo cortó, se reanuda solo al día siguiente.
+                    </p>
+                  )}
+                </div>
+              </section>
             );
           })}
         </div>
       )}
 
-      {preview && (
-        <div
-          className="!fixed !inset-0 !bg-black/50 !flex !items-center !justify-center !z-50 !p-4"
-          onClick={() => setPreview(null)}
-        >
-          <div
-            className="bg-white dark:bg-slate-800 !rounded-xl !w-full !max-w-3xl !h-[85vh] !flex !flex-col !overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-label="Vista previa del correo"
-          >
-            <div className="!flex !items-center !justify-between !gap-3 !px-5 !py-3 !border-b border-slate-200 dark:border-slate-700">
-              <p className="!text-sm !font-semibold text-slate-800 dark:text-slate-100 !truncate">{preview.subject}</p>
-              <button
-                onClick={() => setPreview(null)}
-                className="!p-1.5 !rounded text-slate-500 hover:!bg-slate-100 dark:hover:!bg-slate-700"
-                title="Cerrar"
-              >
-                <X className="!w-4 !h-4" />
-              </button>
-            </div>
-            {/* sandbox vacío: el HTML se muestra sin ejecutar scripts ni acceder
-                a la sesión del panel, igual que en un cliente de correo. */}
-            <iframe title="Vista previa del correo" sandbox="" srcDoc={preview.html} className="!flex-1 !w-full !bg-white" />
-          </div>
-        </div>
-      )}
+      <Modal open={!!preview} title={preview?.subject ?? 'Vista previa'} onClose={() => setPreview(null)} size="lg">
+        {/* sandbox vacío: el HTML se muestra sin ejecutar scripts ni acceder
+            a la sesión del panel, igual que en un cliente de correo. */}
+        {preview && <iframe title="Vista previa del correo" sandbox="" srcDoc={preview.html} className="adm-preview-frame" />}
+      </Modal>
+      {dialog}
     </div>
   );
 };

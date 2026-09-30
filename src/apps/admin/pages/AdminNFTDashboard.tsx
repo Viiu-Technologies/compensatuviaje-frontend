@@ -1,28 +1,37 @@
 /**
  * CompensaTuViaje - Admin NFT Dashboard
- * Panel de administración para monitorear certificados NFT en tiempo real
+ * Certificados NFT emitidos en Polygon y estado de la conexión con el contrato.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  FaCubes,
-  FaLeaf,
-  FaUsers,
-  FaCheckCircle,
-  FaSyncAlt,
-  FaExternalLinkAlt,
-  FaCertificate,
-  FaNetworkWired,
-  FaClock,
-  FaHashtag,
-  FaWallet,
-} from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
+import { AlertTriangle, BadgeCheck, ExternalLink, RefreshCw } from 'lucide-react';
 import { getBlockchainStats, getBlockchainStatus } from '../../../shared/services/blockchainApi';
 import type { BlockchainStatsResponse, BlockchainStatusResponse, RecentMint } from '../../../types/blockchain.types';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import {
+  EmptyState,
+  KpiCard,
+  PageHeader,
+  Panel,
+  Skeleton,
+  StatusBadge,
+  formatInt,
+  formatTime,
+} from '../ui';
 
-const AUTO_REFRESH_INTERVAL = 30_000; // 30 seconds
+const AUTO_REFRESH_INTERVAL = 30_000; // 30 segundos
+
+const shortAddress = (addr?: string | null) => (addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : '—');
+
+const formatTons = (n?: number | null) =>
+  typeof n === 'number' ? n.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleString('es-CL', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  });
+};
 
 const AdminNFTDashboard: React.FC = () => {
   const [stats, setStats] = useState<BlockchainStatsResponse | null>(null);
@@ -36,15 +45,12 @@ const AdminNFTDashboard: React.FC = () => {
     if (!silent) setLoading(true);
     setError(null);
     try {
-      const [statusRes, statsRes] = await Promise.all([
-        getBlockchainStatus(),
-        getBlockchainStats()
-      ]);
+      const [statusRes, statsRes] = await Promise.all([getBlockchainStatus(), getBlockchainStats()]);
       setStatus(statusRes);
       setStats(statsRes);
       setLastUpdated(new Date());
     } catch (err: any) {
-      setError(getErrorMessage(err, 'Error al cargar datos de blockchain'));
+      setError(getErrorMessage(err, 'No se pudieron cargar los datos de blockchain.'));
     } finally {
       setLoading(false);
     }
@@ -54,309 +60,139 @@ const AdminNFTDashboard: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  // Auto-refresh every 30s
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(() => fetchData(true), AUTO_REFRESH_INTERVAL);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchData]);
 
-  const shortAddress = (addr: string) =>
-    addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '—';
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('es-CL', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const kpiCards = [
-    {
-      label: 'Certificados NFT',
-      value: stats?.totalCertificates ?? 0,
-      icon: FaCertificate,
-      bg: 'bg-purple-50 dark:bg-purple-500/10',
-      iconBg: 'bg-purple-100 dark:bg-purple-500/20',
-      iconColor: 'text-purple-600 dark:text-purple-300',
-      valueColor: 'text-purple-700 dark:text-purple-300',
-    },
-    {
-      label: 'CO₂ Total (ton)',
-      value: typeof stats?.totalCO2Tons === 'number' ? stats.totalCO2Tons.toFixed(2) : '0.00',
-      icon: FaLeaf,
-      bg: 'bg-green-50 dark:bg-green-500/10',
-      iconBg: 'bg-green-100 dark:bg-green-500/20',
-      iconColor: 'text-green-600 dark:text-green-300',
-      valueColor: 'text-green-700 dark:text-green-300',
-    },
-    {
-      label: 'Titulares únicos',
-      value: stats?.uniqueHolders ?? 0,
-      icon: FaUsers,
-      bg: 'bg-blue-50 dark:bg-blue-500/10',
-      iconBg: 'bg-blue-100 dark:bg-blue-500/20',
-      iconColor: 'text-blue-600 dark:text-blue-300',
-      valueColor: 'text-blue-700 dark:text-blue-300',
-    },
-    {
-      label: 'Verificados',
-      value: stats?.verifiedCount ?? 0,
-      icon: FaCheckCircle,
-      bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-      iconBg: 'bg-emerald-100 dark:bg-emerald-500/20',
-      iconColor: 'text-emerald-600 dark:text-emerald-300',
-      valueColor: 'text-emerald-700 dark:text-emerald-300',
-    },
-  ];
+  const mints = stats?.recentMints ?? [];
 
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !flex-col md:!flex-row !items-start md:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className="!text-2xl !font-bold text-gray-900 dark:text-slate-100 !flex !items-center !gap-3">
-            <FaCubes className="!text-purple-600" />
-            Gestión NFT Blockchain
-          </h1>
-          <p className="text-gray-500 dark:text-slate-400 !text-sm !mt-1">
-            Monitoreo de certificados NFT en la red Polygon
-          </p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          {lastUpdated && (
-            <span className="!text-xs text-gray-400 dark:text-slate-500 !flex !items-center !gap-1">
-              <FaClock className="!text-[10px]" />
-              {lastUpdated.toLocaleTimeString('es-CL')}
-            </span>
-          )}
-          <label className="!flex !items-center !gap-2 !text-xs text-gray-500 dark:text-slate-400 !cursor-pointer !select-none">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="!accent-purple-600"
-            />
-            Auto (30s)
-          </label>
-          <button
-            onClick={() => fetchData()}
-            disabled={loading}
-            className="!px-4 !py-2.5 !bg-purple-600 hover:!bg-purple-700 !text-white !rounded-xl !flex !items-center !gap-2 !text-sm !font-bold !border-0 !cursor-pointer !transition disabled:!opacity-50"
-          >
-            <FaSyncAlt className={`!text-sm ${loading ? '!animate-spin' : ''}`} />
-            Actualizar
-          </button>
-        </div>
-      </div>
+    <div className="adm-page">
+      <PageHeader
+        title="NFT Blockchain"
+        description="Certificados de compensación emitidos como NFT en Polygon."
+        actions={
+          <>
+            <label className="adm-check">
+              <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
+              Actualizar cada 30 s
+            </label>
+            <button type="button" className="adm-btn" onClick={() => fetchData()} disabled={loading}>
+              <RefreshCw aria-hidden="true" />
+              {lastUpdated ? `Actualizado ${formatTime(lastUpdated)}` : 'Actualizar'}
+            </button>
+          </>
+        }
+      />
 
-      {/* Network Status */}
-      <div className="bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !p-4 !shadow-sm">
-        <div className="!flex !items-center !gap-4 !flex-wrap">
-          <div className="!flex !items-center !gap-2">
-            <div className={`!w-3 !h-3 !rounded-full ${status?.available ? '!bg-green-500 !animate-pulse' : '!bg-red-500'}`} />
-            <span className="!text-sm !font-medium text-gray-700 dark:text-slate-200">
-              {status?.available ? 'Blockchain Activa' : 'Blockchain Inactiva'}
-            </span>
-          </div>
-          <div className="!h-4 !w-px bg-gray-300 dark:bg-slate-600" />
-          <div className="!flex !items-center !gap-2">
-            <FaNetworkWired className="text-gray-400 dark:text-slate-500" />
-            <span className="!text-sm text-gray-600 dark:text-slate-300">Red: {status?.network || '—'}</span>
-          </div>
-          <div className="!h-4 !w-px bg-gray-300 dark:bg-slate-600" />
-          <div className="!flex !items-center !gap-2">
-            <FaCubes className="text-gray-400 dark:text-slate-500" />
-            <span className="!text-sm text-gray-600 dark:text-slate-300 !font-mono !text-xs">
-              Contrato: {status?.contractAddress ? shortAddress(status.contractAddress) : '—'}
-            </span>
-          </div>
+      {error && !loading && (
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <AlertTriangle aria-hidden="true" />
+          <div><b>{error}</b> <button type="button" className="adm-link" onClick={() => fetchData()}>Reintentar</button></div>
+        </div>
+      )}
+
+      {/* Estado de la conexión con el contrato */}
+      <section className="adm-panel">
+        <div className="adm-inline-meta">
+          <StatusBadge tone={status?.available ? 'success' : 'danger'}>
+            {status?.available ? 'Conectada' : 'Sin conexión'}
+          </StatusBadge>
+          <span>Red: <b>{status?.network || '—'}</b></span>
+          <span>Contrato: <b className="adm-mono">{shortAddress(status?.contractAddress)}</b></span>
           {status?.contractAddress && (
-            <a
-              href={`https://polygonscan.com/address/${status.contractAddress}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="!text-purple-600 hover:!text-purple-700 !text-sm !flex !items-center !gap-1 !no-underline"
-            >
-              <FaExternalLinkAlt className="!text-xs" /> Ver contrato
+            <a className="adm-link" href={`https://polygonscan.com/address/${status.contractAddress}`} target="_blank" rel="noopener noreferrer">
+              Ver en Polygonscan <ExternalLink aria-hidden="true" />
             </a>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* Loading */}
-      {loading && !stats && (
-        <div className="!text-center !py-12">
-          <div className="!w-10 !h-10 !border-3 !border-purple-200 !border-t-purple-600 !rounded-full !animate-spin !mx-auto !mb-3" />
-          <p className="text-gray-500 dark:text-slate-400 !text-sm">Consultando blockchain...</p>
-        </div>
-      )}
+      {loading && !stats ? (
+        <div className="adm-kpis">{[0, 1, 2, 3].map((i) => <Skeleton key={i} height={96} />)}</div>
+      ) : stats && (
+        <>
+          <div className="adm-kpis">
+            <KpiCard label="Certificados emitidos" value={formatInt(stats.totalCertificates)} />
+            <KpiCard label="CO₂e certificado" value={formatTons(stats.totalCO2Tons)} unit="t" />
+            <KpiCard label="Titulares únicos" value={formatInt(stats.uniqueHolders)} context="Wallets distintas" />
+            <KpiCard label="Verificados" value={formatInt(stats.verifiedCount)} />
+          </div>
 
-      {/* Error */}
-      {error && !loading && (
-        <div className="bg-red-50 dark:bg-red-500/10 !border border-red-200 dark:border-red-500/30 !rounded-xl !p-4 !text-center">
-          <p className="text-red-600 dark:text-red-300 !text-sm">{error}</p>
-          <button
-            onClick={() => fetchData()}
-            className="!mt-2 !text-red-500 !underline !text-sm !bg-transparent !border-0 !cursor-pointer"
-          >
-            Reintentar
-          </button>
-        </div>
-      )}
-
-      {/* KPI Cards */}
-      {stats && (
-        <div className="!grid !grid-cols-1 sm:!grid-cols-2 xl:!grid-cols-4 !gap-4">
-          {kpiCards.map((kpi) => (
-            <div
-              key={kpi.label}
-              className={`!rounded-xl border border-gray-200 dark:border-slate-700 !p-5 !shadow-sm ${kpi.bg}`}
-            >
-              <div className="!flex !items-center !gap-3">
-                <div className={`!w-11 !h-11 ${kpi.iconBg} !rounded-lg !flex !items-center !justify-center`}>
-                  <kpi.icon className={`!text-xl ${kpi.iconColor}`} />
-                </div>
-                <div>
-                  <p className="!text-xs text-gray-500 dark:text-slate-400 !font-medium">{kpi.label}</p>
-                  <p className={`!text-2xl !font-bold ${kpi.valueColor}`}>{kpi.value}</p>
-                </div>
+          <div className="adm-grid adm-grid--2-1">
+            <section className="adm-table-card">
+              <div className="adm-panel__head" style={{ paddingBottom: 12 }}>
+                <h2 className="adm-panel__title">Últimos NFT emitidos</h2>
+                <span className="adm-panel__aside">{formatInt(mints.length)} registros</span>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Recent Mints Table + Features */}
-      {stats && (
-        <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-6">
-          {/* Recent Mints */}
-          <div className="lg:!col-span-2 bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !shadow-sm !overflow-hidden">
-            <div className="!px-6 !py-4 !border-b border-gray-100 dark:border-slate-700 !flex !items-center !justify-between">
-              <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !flex !items-center !gap-2">
-                <FaClock className="!text-purple-600" />
-                Últimos NFT emitidos
-              </h3>
-              <span className="!text-xs text-gray-400 dark:text-slate-500">{stats.recentMints?.length || 0} registros</span>
-            </div>
-
-            {(!stats.recentMints || stats.recentMints.length === 0) ? (
-              <div className="!p-8 !text-center">
-                <FaCertificate className="!text-4xl text-gray-300 dark:text-slate-600 !mx-auto !mb-3" />
-                <p className="text-gray-500 dark:text-slate-400 !text-sm">Aún no se han emitido certificados NFT</p>
-              </div>
-            ) : (
-              <div className="!overflow-x-auto">
-                <table className="!w-full">
+              <div className="adm-table-scroll">
+                <table className="adm-table">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-slate-900 !text-left">
-                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">
-                        <FaHashtag className="!inline !mr-1 !text-[10px]" />Token
-                      </th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">Certificado</th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">CO₂ (ton)</th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">
-                        <FaWallet className="!inline !mr-1 !text-[10px]" />Wallet
-                      </th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase">Fecha</th>
-                      <th className="!px-4 !py-3 !text-xs !font-semibold text-gray-500 dark:text-slate-400 !uppercase"></th>
+                    <tr>
+                      <th scope="col">Token</th>
+                      <th scope="col">Certificado</th>
+                      <th scope="col" className="adm-col-num">CO₂e (t)</th>
+                      <th scope="col">Wallet</th>
+                      <th scope="col">Emitido</th>
+                      <th scope="col" className="adm-col-actions"><span className="sr-only">Transacción</span></th>
                     </tr>
                   </thead>
-                  <tbody className="!divide-y divide-gray-100 dark:divide-slate-700">
-                    {stats.recentMints!.map((mint: RecentMint, i: number) => (
-                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 !transition-colors">
-                        <td className="!px-4 !py-3">
-                          <span className="!inline-flex !items-center !gap-1 bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 !text-xs !font-bold !px-2.5 !py-1 !rounded-full">
-                            #{mint.tokenId}
-                          </span>
-                        </td>
-                        <td className="!px-4 !py-3 !text-sm !font-mono text-gray-700 dark:text-slate-300">
-                          {mint.certificateNumber}
-                        </td>
-                        <td className="!px-4 !py-3">
-                          <span className="!text-sm !font-bold text-green-700 dark:text-green-300">
-                            {mint.tonsCompensated?.toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="!px-4 !py-3 !text-xs !font-mono text-gray-500 dark:text-slate-400">
-                          {mint.walletAddress ? shortAddress(mint.walletAddress) : '—'}
-                        </td>
-                        <td className="!px-4 !py-3 !text-xs text-gray-500 dark:text-slate-400">
-                          {formatDate(mint.mintedAt)}
-                        </td>
-                        <td className="!px-4 !py-3">
-                          {mint.txHash && (
-                            <a
-                              href={`https://polygonscan.com/tx/${mint.txHash}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="!text-purple-500 hover:!text-purple-700 !text-xs !no-underline"
-                              title="Ver en Polygonscan"
-                            >
-                              <FaExternalLinkAlt />
-                            </a>
-                          )}
+                  <tbody>
+                    {mints.length === 0 ? (
+                      <tr>
+                        <td colSpan={6}>
+                          <EmptyState icon={BadgeCheck} title="Aún no se han emitido certificados NFT" />
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      mints.map((mint: RecentMint, i: number) => (
+                        <tr key={mint.txHash || i}>
+                          <td className="adm-mono">#{mint.tokenId}</td>
+                          <td className="adm-mono">{mint.certificateNumber}</td>
+                          <td className="adm-col-num">{formatTons(mint.tonsCompensated)}</td>
+                          <td className="adm-mono">{shortAddress(mint.walletAddress)}</td>
+                          <td>{formatDate(mint.mintedAt)}</td>
+                          <td className="adm-col-actions">
+                            {mint.txHash && (
+                              <a
+                                className="adm-icon-btn"
+                                href={`https://polygonscan.com/tx/${mint.txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Ver transacción en Polygonscan"
+                                aria-label={`Ver transacción del token ${mint.tokenId} en Polygonscan`}
+                              >
+                                <ExternalLink aria-hidden="true" />
+                              </a>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+            </section>
 
-          {/* Right column: Contract Info + Features */}
-          <div className="!space-y-6">
-            {/* Contract Info */}
-            <div className="bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !p-6 !shadow-sm">
-              <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !mb-4 !flex !items-center !gap-2">
-                <FaCubes className="!text-purple-600" />
-                Smart Contract
-              </h3>
-              <div className="!space-y-3">
-                {[
-                  { label: 'Tipo', value: 'ERC-721 (NFT)' },
-                  { label: 'Blockchain', value: 'Polygon' },
-                  { label: 'Chain ID', value: status?.chainId || '137' },
-                  { label: 'Contrato', value: status?.contractAddress ? `${status.contractAddress.slice(0, 12)}...` : '—', mono: true },
-                ].map((row) => (
-                  <div key={row.label} className="!flex !justify-between !items-center !py-2 !border-b border-gray-100 dark:border-slate-700 last:!border-0">
-                    <span className="!text-sm text-gray-500 dark:text-slate-400">{row.label}</span>
-                    <span className={`!text-sm text-gray-900 dark:text-slate-100 !font-medium ${row.mono ? '!font-mono !text-xs bg-gray-100 dark:bg-slate-700 !px-2 !py-1 !rounded' : ''}`}>
-                      {row.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Features */}
-            <div className="bg-white dark:bg-slate-800 !rounded-xl border border-gray-200 dark:border-slate-700 !p-6 !shadow-sm">
-              <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !mb-4 !flex !items-center !gap-2">
-                <HiSparkles className="!text-purple-600" />
-                Características
-              </h3>
-              <div className="!space-y-3">
-                {[
-                  { icon: FaCertificate, text: 'ERC-721 en Polygon', color: '!text-purple-600' },
-                  { icon: FaLeaf, text: 'Metadata IPFS con CO₂', color: '!text-green-600' },
-                  { icon: FaCheckCircle, text: 'Verificación pública', color: '!text-blue-600' },
-                  { icon: FaUsers, text: 'Transferibles', color: '!text-indigo-600' },
-                  { icon: FaExternalLinkAlt, text: 'OpenSea + Polygonscan', color: '!text-pink-600' },
-                ].map((feat, i) => (
-                  <div key={i} className="!flex !items-center !gap-3">
-                    <feat.icon className={`!text-sm ${feat.color}`} />
-                    <span className="!text-sm text-gray-700 dark:text-slate-300">{feat.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Antes mostraba "Chain ID 137" fijo aunque no hubiera conexión y
+                una tarjeta de "Características" (OpenSea, transferibles) que
+                era contenido de marketing, no información operativa. */}
+            <Panel title="Contrato">
+              <dl className="adm-dl">
+                <dt>Estándar</dt>
+                <dd>ERC-721</dd>
+                <dt>Red</dt>
+                <dd>{status?.network || '—'}</dd>
+                <dt>Chain ID</dt>
+                <dd>{status?.chainId || '—'}</dd>
+                <dt>Dirección</dt>
+                <dd className="adm-mono">{shortAddress(status?.contractAddress)}</dd>
+              </dl>
+            </Panel>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
