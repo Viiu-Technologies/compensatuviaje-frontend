@@ -1499,7 +1499,6 @@ a.adm-cell-main:hover .adm-cell-title {
   margin: 0;
   font-weight: 600;
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .adm-subhead {
@@ -2137,3 +2136,30 @@ fieldset.adm-field > legend { margin-bottom: 6px; }
 @media (max-width: 640px) {
   .adm-evidence__row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
+
+/* Páginas de detalle */
+a.adm-back { text-decoration: none; }
+.adm-prewrap { white-space: pre-line; font-size: 14px; line-height: 1.6; color: var(--adm-ink-soft); }
+.adm-inline-icon { display: inline-flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--adm-ink); }
+.adm-inline-icon svg { flex: none; width: 16px; height: 16px; margin-top: 2px; color: var(--adm-ink-mute); }
+.adm-link-plain { color: inherit; text-decoration: none; }
+.adm-link-plain:hover { text-decoration: underline; }
+
+/* Historial de estados */
+.adm-timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--adm-border); }
+.adm-timeline__item { position: relative; padding: 0 0 20px 14px; }
+.adm-timeline__item:last-child { padding-bottom: 0; }
+.adm-timeline__item::before {
+  content: '';
+  position: absolute;
+  left: -25px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--adm-surface);
+  border: 2px solid var(--adm-accent);
+}
+.adm-timeline__arrow { align-self: center; width: 14px; height: 14px; color: var(--adm-ink-mute); }
+.adm-timeline__note { margin-top: 6px; font-size: 14px; color: var(--adm-ink); }
+.adm-timeline__meta { margin-top: 4px; font-size: 12px; color: var(--adm-ink-mute); }

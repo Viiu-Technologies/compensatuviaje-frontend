@@ -41,6 +41,7 @@ import {
   TableSkeletonRows,
   formatCLP,
   formatInt,
+  projectTypeLabel,
   useAdminConfirm,
 } from '../ui';
 
@@ -83,21 +84,6 @@ interface ProjectsResponse {
     totalPages: number;
   };
 }
-
-const projectTypeLabels: Record<string, string> = {
-  reforestation: 'Reforestación',
-  conservation: 'Conservación',
-  clean_water: 'Agua limpia',
-  water_security: 'Seguridad hídrica',
-  circular_economy: 'Economía circular',
-  waste_management: 'Gestión de residuos',
-  energy_efficiency: 'Eficiencia energética',
-  social_housing: 'Vivienda social',
-  community_development: 'Desarrollo comunitario',
-  renewable_energy: 'Energía renovable',
-  biodiversity: 'Biodiversidad',
-  other: 'Otro',
-};
 
 // Antes se mostraba "1 Árbol" para toda unidad distinta de "other".
 const UNIT_LABELS: Record<string, string> = {
@@ -404,7 +390,7 @@ export default function ProjectsReviewPage() {
 
         <PageHeader
           title={selectedProject.name}
-          description={`${selectedProject.partner.name} · ${projectTypeLabels[selectedProject.type] || selectedProject.type} · Código ${selectedProject.code}`}
+          description={`${selectedProject.partner.name} · ${projectTypeLabel(selectedProject.type)} · Código ${selectedProject.code}`}
           actions={
             <button type="button" className="adm-btn" onClick={() => setShowRejectModal(true)}>
               Rechazar proyecto
@@ -635,7 +621,7 @@ export default function ProjectsReviewPage() {
                       <span className="adm-cell-sub">{project.code}</span>
                     </td>
                     <td>{project.partner.name}</td>
-                    <td>{projectTypeLabels[project.type] || project.type}</td>
+                    <td>{projectTypeLabel(project.type)}</td>
                     <td>{project.region ? `${project.region}, ${project.country}` : project.country}</td>
                     {isPendingTab ? (
                       <td>{formatDate(project.submitted_at || project.created_at)}</td>

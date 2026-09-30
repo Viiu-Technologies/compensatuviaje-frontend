@@ -625,6 +625,8 @@ export interface Partner {
   projects_count?: number;
   total_projects?: number;
   total_active_projects?: number;
+  /** El backend lo envía cuando hay datos bancarios pero no los expone. */
+  bank_details_configured?: boolean;
 }
 
 export interface PartnerDetail extends Partner {

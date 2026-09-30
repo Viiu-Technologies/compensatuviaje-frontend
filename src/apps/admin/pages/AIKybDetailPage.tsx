@@ -1,22 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle, Building2, FileText, Download, User, Calendar, ExternalLink } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Check, CheckCircle2, XCircle, FileText, ExternalLink, FileQuestion } from 'lucide-react';
+import { toast } from 'sonner';
 import adminAIApi from '../services/adminAIApi';
 import { AdminKybEvaluationDetail, AdminPartnerContext } from '../../../types/admin-evaluations.types';
 import AdminPendingBadge from '../components/shared/AdminPendingBadge';
 import RejectModal from '../components/shared/RejectModal';
-import { KYB_TIER_LABELS, KYB_TIER_COLORS } from '../../../types/kyb.types';
+import { KYB_TIER_LABELS } from '../../../types/kyb.types';
+import {
+  EmptyState, PageHeader, Panel, Skeleton, StatusBadge, formatInt, partnerStatus, useAdminConfirm,
+} from '../ui';
+
+/**
+ * Detalle de una solicitud KYB: lo que envió el partner, el análisis de la IA
+ * y la decisión del admin. La IA solo recomienda; la decisión es humana.
+ */
+
+// Antes volvía a /admin/partners/evaluations, que redirige a Proyectos en revisión.
+const LIST_PATH = '/admin/partners/kyb-evaluations';
+
+const DIMENSIONS: Array<{ key: 'legal' | 'financial' | 'technical' | 'references'; label: string }> = [
+  { key: 'legal', label: 'Documentación legal' },
+  { key: 'financial', label: 'Solidez financiera' },
+  { key: 'technical', label: 'Capacidad técnica' },
+  { key: 'references', label: 'Referencias comerciales' },
+];
+
+const NOTES: Array<{ key: 'legal_notes' | 'financial_notes' | 'technical_notes' | 'references_notes'; label: string }> = [
+  { key: 'legal_notes', label: 'Legal' },
+  { key: 'financial_notes', label: 'Financiero' },
+  { key: 'technical_notes', label: 'Técnico' },
+  { key: 'references_notes', label: 'Referencias' },
+];
+
+const scoreTone = (n: number) => (n >= 80 ? 'success' : n >= 60 ? 'warning' : 'danger');
+
+const fmtDate = (d?: string | null) =>
+  d ? new Date(d).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+
+const ScoreRow: React.FC<{ label: string; value: number }> = ({ label, value }) => (
+  <li className="adm-funnel__row">
+    <span className="adm-funnel__label">{label}</span>
+    <span className="adm-funnel__track" aria-hidden="true">
+      <span style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+    </span>
+    <span className="adm-funnel__value">{formatInt(value)}<small>de 100</small></span>
+  </li>
+);
 
 const AIKybDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const { confirm, dialog } = useAdminConfirm();
 
   const [evaluation, setEvaluation] = useState<AdminKybEvaluationDetail | null>(null);
   const [context, setContext] = useState<AdminPartnerContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [showApproveModal, setShowApproveModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -31,7 +71,7 @@ const AIKybDetailPage: React.FC = () => {
       setLoading(true);
       const evalRes = await adminAIApi.getKybEvaluationDetail(id!);
       setEvaluation(evalRes.data);
-      
+
       if (evalRes.data?.partner?.id) {
         try {
           const contextRes = await adminAIApi.getPartnerContext(evalRes.data.partner.id);
@@ -49,14 +89,20 @@ const AIKybDetailPage: React.FC = () => {
 
   const handleApprove = async () => {
     if (!evaluation) return;
+    const ok = await confirm({
+      title: '¿Aprobar la verificación KYB?',
+      description: `${evaluation.organization_name} quedará verificada como Impact Partner y podrá publicar proyectos.`,
+      confirmLabel: 'Aprobar verificación',
+    });
+    if (!ok) return;
     try {
       setActionLoading(true);
       setActionError(null);
       await adminAIApi.approveKybEvaluation(evaluation.id);
-      setShowApproveModal(false);
+      toast.success('Verificación aprobada');
       await loadData(); // Reload to get updated status
     } catch (err: any) {
-      setActionError(err.response?.data?.message || 'Error al aprobar');
+      setActionError(err.response?.data?.message || 'No se pudo aprobar la verificación');
     } finally {
       setActionLoading(false);
     }
@@ -69,191 +115,177 @@ const AIKybDetailPage: React.FC = () => {
       setActionError(null);
       await adminAIApi.rejectKybEvaluation(evaluation.id, reason);
       setShowRejectModal(false);
+      toast.success('Verificación rechazada');
       await loadData(); // Reload to get updated status
     } catch (err: any) {
-      setActionError(err.response?.data?.message || 'Error al rechazar');
+      setActionError(err.response?.data?.message || 'No se pudo rechazar la verificación');
     } finally {
       setActionLoading(false);
     }
   };
 
+  const back = (
+    <Link to={LIST_PATH} className="adm-back">
+      <ArrowLeft aria-hidden="true" /> Volver a Solicitudes KYB
+    </Link>
+  );
+
   if (loading) {
-    return <div className="!p-12 !text-center !text-slate-500 dark:!text-slate-400">Cargando detalles...</div>;
+    return (
+      <div className="adm-page" aria-busy="true">
+        {back}
+        <Skeleton height={64} />
+        <div className="adm-grid adm-grid--2-1">
+          <Skeleton height={380} />
+          <Skeleton height={300} />
+        </div>
+      </div>
+    );
   }
 
   if (error || !evaluation) {
     return (
-      <div className="!p-6">
-        <div className="!bg-red-50 dark:!bg-red-900/30 !text-red-700 dark:!text-red-300 !p-4 !rounded-lg !mb-4">{error || 'Evaluación no encontrada'}</div>
-        <Link to="/admin/partners/evaluations" className="!text-indigo-600 dark:!text-indigo-400 hover:!underline">← Volver a la lista</Link>
+      <div className="adm-page">
+        {back}
+        <section className="adm-panel">
+          <EmptyState icon={FileQuestion} title="No se pudo abrir la solicitud" text={error || 'La evaluación no existe o fue eliminada.'} />
+        </section>
       </div>
     );
   }
 
   const isDecided = evaluation.admin_decision !== null;
+  const approved = evaluation.admin_decision === 'approved';
+  const scores = evaluation.scores;
+  const insights = evaluation.ai_insights;
+  const pst = partnerStatus(context?.status ?? evaluation.partner?.status);
 
   return (
-    <div className="!space-y-6 !pb-24 !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
-      {/* Header */}
-      <div className="!flex !items-center !justify-between">
-        <div className="!flex !items-center !gap-4">
-          <Link
-            to="/admin/partners/evaluations"
-            className="!p-2 !text-slate-400 dark:!text-slate-500 hover:!text-slate-600 dark:hover:!text-slate-300 hover:!bg-slate-100 dark:hover:!bg-slate-700 !rounded-lg !transition-colors"
-          >
-            <ArrowLeft className="!w-5 !h-5" />
-          </Link>
-          <div>
-            <div className="!flex !items-center !gap-3 !mb-1">
-              <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100">Verificación KYB</h1>
-              <AdminPendingBadge aiStatus={evaluation.ai_status} adminDecision={evaluation.admin_decision} />
-            </div>
-            <p className="!text-slate-500 dark:!text-slate-400">{evaluation.organization_name}</p>
-          </div>
-        </div>
+    <div className="adm-page">
+      {back}
 
-        {!isDecided && (
-          <div className="!flex !items-center !gap-3">
-            <button
-              onClick={() => setShowRejectModal(true)}
-              disabled={actionLoading}
-              className="!px-4 !py-2 !bg-red-50 dark:!bg-red-900/30 !text-red-600 dark:!text-red-400 hover:!bg-red-100 dark:hover:!bg-red-900/50 !rounded-lg !font-medium !transition-colors disabled:!opacity-50"
-            >
-              Rechazar
-            </button>
-            <button
-              onClick={() => setShowApproveModal(true)}
-              disabled={actionLoading}
-              className="!px-4 !py-2 !bg-green-600 !text-white hover:!bg-green-700 !rounded-lg !font-medium !transition-colors !flex !items-center !gap-2 disabled:!opacity-50"
-            >
-              <CheckCircle className="!w-4 !h-4" />
-              Aprobar Verificación
-            </button>
-          </div>
-        )}
+      <PageHeader
+        title={evaluation.organization_name}
+        description={`Verificación KYB · recibida el ${fmtDate(evaluation.created_at)}`}
+        actions={
+          !isDecided ? (
+            <>
+              <button type="button" className="adm-btn" onClick={() => setShowRejectModal(true)} disabled={actionLoading}>
+                Rechazar
+              </button>
+              <button type="button" className="adm-btn adm-btn--primary" onClick={handleApprove} disabled={actionLoading}>
+                <Check aria-hidden="true" /> Aprobar verificación
+              </button>
+            </>
+          ) : undefined
+        }
+      />
+
+      <div className="adm-chips">
+        <AdminPendingBadge aiStatus={evaluation.ai_status} adminDecision={evaluation.admin_decision} />
+        {evaluation.partner_tier && <StatusBadge tone="info">Nivel {KYB_TIER_LABELS[evaluation.partner_tier]}</StatusBadge>}
       </div>
 
       {actionError && (
-        <div className="!flex !items-start !gap-3 !p-4 !rounded-xl !border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
-          <XCircle className="!w-5 !h-5 text-red-600 dark:text-red-400 !mt-0.5 !flex-shrink-0" />
-          <div className="!flex-1">
-            <p className="!text-sm !font-medium text-red-800 dark:text-red-300">{actionError}</p>
-          </div>
-          <button
-            onClick={() => setActionError(null)}
-            className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 !transition-colors"
-          >
-            <svg className="!w-4 !h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <XCircle aria-hidden="true" />
+          <div>{actionError}</div>
         </div>
       )}
 
       {isDecided && (
-        <div className={`!p-4 !rounded-xl !border ${evaluation.admin_decision === 'approved' ? '!bg-green-50 dark:!bg-green-900/20 !border-green-200 dark:!border-green-800' : '!bg-red-50 dark:!bg-red-900/20 !border-red-200 dark:!border-red-800'}`}>
-          <div className="!flex !items-start !gap-3">
-            {evaluation.admin_decision === 'approved' ? (
-              <CheckCircle className="!w-6 !h-6 !text-green-600 dark:!text-green-400 !mt-0.5" />
-            ) : (
-              <XCircle className="!w-6 !h-6 !text-red-600 dark:!text-red-400 !mt-0.5" />
-            )}
-            <div>
-              <h3 className={`!font-semibold ${evaluation.admin_decision === 'approved' ? '!text-green-800 dark:!text-green-300' : '!text-red-800 dark:!text-red-300'}`}>
-                Decisión Final: {evaluation.admin_decision === 'approved' ? 'Aprobado' : 'Rechazado'}
-              </h3>
-              <p className={`!text-sm !mt-1 ${evaluation.admin_decision === 'approved' ? '!text-green-700 dark:!text-green-400' : '!text-red-700 dark:!text-red-400'}`}>
-                Por: {evaluation.admin_user?.name || 'Admin'} el {new Date(evaluation.admin_decided_at || '').toLocaleDateString('es-CL')}
-              </p>
-              {evaluation.admin_reason && (
-                <div className="!mt-3 !p-3 !bg-white/60 dark:!bg-slate-800/60 !rounded-lg !text-sm !text-slate-700 dark:!text-slate-300">
-                  <strong>Motivo:</strong> {evaluation.admin_reason}
-                </div>
-              )}
+        <div role="status" className={`adm-alert ${approved ? 'adm-alert--success' : 'adm-alert--danger'}`}>
+          {approved ? <CheckCircle2 aria-hidden="true" /> : <XCircle aria-hidden="true" />}
+          <div>
+            <b>{approved ? 'Verificación aprobada' : 'Verificación rechazada'}</b>
+            <div className="adm-alert__detail">
+              Por {evaluation.admin_user?.name || 'un administrador'} el {fmtDate(evaluation.admin_decided_at)}
             </div>
+            {evaluation.admin_reason && (
+              <div className="adm-alert__detail"><b>Motivo:</b> {evaluation.admin_reason}</div>
+            )}
           </div>
         </div>
       )}
 
-      <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-6">
-        
-        {/* Left Column - Partner Context */}
-        <div className="!space-y-6">
-          <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !border-slate-200 dark:!border-slate-700 !shadow-sm !p-6">
-            <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-4 !flex !items-center !gap-2">
-              <Building2 className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
-              Datos de la Empresa
-            </h3>
-            
-            <dl className="!space-y-4">
-              <div>
-                <dt className="!text-sm !text-slate-500 dark:!text-slate-400">Razón Social</dt>
-                <dd className="!font-medium !text-slate-900 dark:!text-slate-100">{evaluation.organization_name}</dd>
+      <div className="adm-grid adm-grid--2-1" style={{ alignItems: 'start' }}>
+        {/* Análisis de la IA */}
+        <div className="adm-stack-v">
+          <Panel
+            title="Análisis de la IA"
+            description="Puntaje de 0 a 100 por dimensión. Es una recomendación: la decisión es tuya."
+            aside={scores ? <StatusBadge tone={scoreTone(scores.overall)}>General {formatInt(scores.overall)} de 100</StatusBadge> : undefined}
+          >
+            {scores ? (
+              <ul className="adm-funnel">
+                {DIMENSIONS.filter((d) => typeof scores[d.key] === 'number').map((d) => (
+                  <ScoreRow key={d.key} label={d.label} value={scores[d.key]} />
+                ))}
+              </ul>
+            ) : (
+              <p className="adm-cell-mute">
+                {evaluation.ai_status === 'pending' ? 'La IA todavía está evaluando el documento.' : 'La IA no entregó puntajes.'}
+              </p>
+            )}
+          </Panel>
+
+          {insights && (
+            <Panel title="Observaciones de la IA">
+              <div className="adm-stack-v">
+                {NOTES.filter((n) => insights[n.key]).map((n) => (
+                  <div key={n.key}>
+                    <h3 className="adm-subhead">{n.label}</h3>
+                    <p className="adm-prewrap">{insights[n.key]}</p>
+                  </div>
+                ))}
               </div>
-              <div>
-                <dt className="!text-sm !text-slate-500 dark:!text-slate-400">RUT / Tax ID</dt>
-                <dd className="!font-medium !text-slate-900 dark:!text-slate-100">{evaluation.rut_tax_id || 'No proporcionado'}</dd>
-              </div>
+            </Panel>
+          )}
+        </div>
+
+        {/* Lo que envió el partner */}
+        <div className="adm-stack-v">
+          <Panel title="Documento enviado">
+            <div className="adm-stack-v">
+              <span className="adm-inline-icon">
+                <FileText aria-hidden="true" />
+                <span style={{ wordBreak: 'break-all' }}>{evaluation.document_name || 'Sin nombre'}</span>
+              </span>
+              {evaluation.document_url ? (
+                <a href={evaluation.document_url} target="_blank" rel="noopener noreferrer" className="adm-btn adm-btn--sm" style={{ width: 'fit-content' }}>
+                  <ExternalLink aria-hidden="true" /> Abrir documento
+                </a>
+              ) : (
+                <span className="adm-cell-mute">El documento no tiene un enlace disponible.</span>
+              )}
+            </div>
+          </Panel>
+
+          <Panel title="Organización">
+            <dl className="adm-dl">
+              <dt>Razón social</dt>
+              <dd>{evaluation.organization_name}</dd>
+              <dt>RUT</dt>
+              <dd>{evaluation.rut_tax_id || <span className="adm-cell-mute">No informado</span>}</dd>
+              <dt>Estado de la cuenta</dt>
+              <dd><StatusBadge tone={pst.tone}>{pst.label}</StatusBadge></dd>
               {context && (
                 <>
-                  <div>
-                    <dt className="!text-sm !text-slate-500 dark:!text-slate-400">Email Contacto</dt>
-                    <dd className="!text-slate-900 dark:!text-slate-100">{context.contact_email}</dd>
-                  </div>
-                  <div>
-                    <dt className="!text-sm !text-slate-500 dark:!text-slate-400">Estado Actual Cuenta</dt>
-                    <dd>
-                      <span className="!inline-flex !px-2 !py-0.5 !rounded !text-xs !font-medium !bg-slate-100 dark:!bg-slate-700 !text-slate-800 dark:!text-slate-200">
-                        {context.status}
-                      </span>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="!text-sm !text-slate-500 dark:!text-slate-400">Proyectos Creados</dt>
-                    <dd className="!text-slate-900 dark:!text-slate-100">{context.total_projects} proyectos</dd>
-                  </div>
+                  <dt>Correo de contacto</dt>
+                  <dd style={{ wordBreak: 'break-all' }}>{context.contact_email}</dd>
+                  <dt>Proyectos creados</dt>
+                  <dd>{context.total_projects != null ? formatInt(context.total_projects) : '—'}</dd>
+                  <dt>En la plataforma desde</dt>
+                  <dd>{fmtDate(context.created_at)}</dd>
                 </>
               )}
             </dl>
-          </div>
-        </div>
-
-        {/* Right Column - IA Analysis */}
-        <div className="lg:!col-span-2 !space-y-6">
-          <div className="!bg-white dark:!bg-slate-800 !rounded-xl !border !border-slate-200 dark:!border-slate-700 !shadow-sm !p-6">
-            <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-slate-100 !mb-4 !flex !items-center !gap-2">
-              <FileText className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
-              Análisis IA
-            </h3>
-            
-            {evaluation.scores && (
-              <div className="!mb-6">
-                <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-2">Score General</p>
-                <div className="!flex !items-center !gap-4">
-                  <div className="!flex-1 !h-4 !bg-slate-100 dark:!bg-slate-700 !rounded-full !overflow-hidden">
-                    <div 
-                      className={`!h-full ${evaluation.scores.overall >= 80 ? '!bg-green-500' : evaluation.scores.overall >= 60 ? '!bg-yellow-500' : '!bg-red-500'}`}
-                      style={{ width: `${evaluation.scores.overall}%` }}
-                    />
-                  </div>
-                  <span className="!font-bold !text-slate-900 dark:!text-slate-100">{evaluation.scores.overall}%</span>
-                </div>
-              </div>
+            {evaluation.partner?.id && (
+              <p style={{ marginTop: 12 }}>
+                <Link to={`/admin/partners/${evaluation.partner.id}`} className="adm-link">Ver ficha del partner</Link>
+              </p>
             )}
-
-            {evaluation.ai_insights && (
-              <div className="!prose !max-w-none dark:!prose-invert">
-                <h4 className="!text-md !font-medium !text-slate-900 dark:!text-slate-100 !mb-2">Insights Legales</h4>
-                <p className="!text-slate-700 dark:!text-slate-300 !whitespace-pre-line">{evaluation.ai_insights.legal_notes}</p>
-                
-                <h4 className="!text-md !font-medium !text-slate-900 dark:!text-slate-100 !mt-4 !mb-2">Insights Financieros</h4>
-                <p className="!text-slate-700 dark:!text-slate-300 !whitespace-pre-line">{evaluation.ai_insights.financial_notes}</p>
-                
-                <h4 className="!text-md !font-medium !text-slate-900 dark:!text-slate-100 !mt-4 !mb-2">Insights Técnicos</h4>
-                <p className="!text-slate-700 dark:!text-slate-300 !whitespace-pre-line">{evaluation.ai_insights.technical_notes}</p>
-              </div>
-            )}
-          </div>
+          </Panel>
         </div>
       </div>
 
@@ -261,23 +293,11 @@ const AIKybDetailPage: React.FC = () => {
         isOpen={showRejectModal}
         onClose={() => setShowRejectModal(false)}
         onConfirm={handleReject}
-        title="Rechazar Verificación KYB"
+        title="Rechazar verificación KYB"
         itemName={evaluation.organization_name}
         loading={actionLoading}
       />
-
-      <RejectModal
-        isOpen={showApproveModal}
-        onClose={() => setShowApproveModal(false)}
-        onConfirm={handleApprove}
-        title="Aprobar Verificación KYB"
-        itemName={evaluation.organization_name}
-        loading={actionLoading}
-        requireReason={false}
-        confirmMessage="¿Estás seguro de aprobar la verificación KYB de"
-        confirmLabel="Aprobar Verificación"
-        variant="primary"
-      />
+      {dialog}
     </div>
   );
 };

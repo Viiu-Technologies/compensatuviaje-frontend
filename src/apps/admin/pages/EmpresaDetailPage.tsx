@@ -1,54 +1,24 @@
 /**
- * EmpresaDetailPage
- * Vista detallada de una empresa B2B para SuperAdmin
+ * Detalle de una empresa B2B para el SuperAdmin: datos, métricas, usuarios,
+ * documentos e historial de estados, con el cambio de estado.
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Building2,
-  Mail,
-  Phone,
-  Globe,
-  MapPin,
-  Calendar,
-  Shield,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Pause,
-  FileText,
-  Users,
-  BarChart3,
-  Plane,
-  Leaf,
-  DollarSign,
-  RefreshCw,
-  AlertTriangle,
-  ChevronRight,
-  Hash,
-  Briefcase,
-  TrendingUp,
-  Download
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Download, FileText, Users, Clock, AlertTriangle, CheckCircle2, Building2, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
+import api from '../../../shared/services/api';
 import {
   getCompanyDetail,
   updateCompanyStatus,
   getCompanyTimeline,
 } from '../services/adminApi';
-import { toast } from 'sonner';
+import {
+  COMPANY_STATUS, EmptyState, KpiCard, Modal, PageHeader, Panel, Segmented, Skeleton, StatusBadge,
+  formatCLP, formatInt, formatPercent, industryLabel,
+} from '../ui';
 
-// ─── Status config ───
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType; borderColor: string }> = {
-  registered:        { label: 'Registrada',        color: 'text-slate-700 dark:text-slate-200',   bgColor: 'bg-slate-100 dark:bg-slate-700',   icon: Clock,       borderColor: 'border-slate-300 dark:border-slate-600' },
-  pending_contract:  { label: 'Pendiente Contrato', color: 'text-amber-700 dark:text-amber-300',  bgColor: 'bg-amber-100 dark:bg-amber-500/10',   icon: FileText,    borderColor: 'border-amber-300 dark:border-amber-700' },
-  signed:            { label: 'Contrato Firmado',   color: 'text-blue-700 dark:text-blue-300',   bgColor: 'bg-blue-100 dark:bg-blue-500/10',    icon: CheckCircle, borderColor: 'border-blue-300 dark:border-blue-700' },
-  active:            { label: 'Activa',             color: 'text-emerald-700 dark:text-emerald-300', bgColor: 'bg-emerald-100 dark:bg-emerald-500/10', icon: CheckCircle, borderColor: 'border-emerald-300 dark:border-emerald-700' },
-  suspended:         { label: 'Suspendida',         color: 'text-rose-700 dark:text-rose-300',   bgColor: 'bg-rose-100 dark:bg-rose-500/10',    icon: Pause,       borderColor: 'border-rose-300 dark:border-rose-700' },
-};
-
-// Valid status transitions (must match backend)
+// Transiciones válidas (deben coincidir con el backend)
 const VALID_TRANSITIONS: Record<string, string[]> = {
   registered:       ['pending_contract', 'suspended'],
   pending_contract: ['signed', 'registered', 'suspended'],
@@ -56,6 +26,32 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   active:           ['suspended'],
   suspended:        ['active'],
 };
+
+const DOC_TYPE_LABELS: Record<string, string> = {
+  rut_empresa: 'RUT de la empresa',
+  escritura_constitucion: 'Escritura de constitución',
+  representante_legal: 'Cédula del representante legal',
+  poder_notarial: 'Poder notarial',
+  otro: 'Otro documento',
+};
+
+const DOC_STATUS = {
+  approved: { label: 'Aprobado', tone: 'success' },
+  rejected: { label: 'Rechazado', tone: 'danger' },
+  pending: { label: 'Pendiente', tone: 'warning' },
+} as const;
+
+const docStatus = (s: string) => (s === 'approved' || s === 'rejected' ? DOC_STATUS[s] : DOC_STATUS.pending);
+
+const statusOf = (s: string) => COMPANY_STATUS[s] ?? { label: s, tone: 'neutral' as const };
+
+const fmtDate = (d?: string | null) =>
+  d ? new Date(d).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+
+const fmtDateTime = (d: string) =>
+  new Date(d).toLocaleString('es-CL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
+const tons = (n: number) => `${(n || 0).toLocaleString('es-CL', { maximumFractionDigits: 1 })} t`;
 
 interface CompanyDetail {
   id: string;
@@ -108,37 +104,18 @@ interface TimelineEvent {
   changedBy?: { email: string; name?: string };
 }
 
+type Tab = 'overview' | 'users' | 'documents' | 'timeline';
+
 export default function EmpresaDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-
-  const industryLabels: Record<string, string> = {
-    aerolineas: 'Aerolíneas y Aviación',
-    maritimo: 'Transporte Marítimo',
-    terrestre: 'Transporte Terrestre y Logística',
-    mineria_energia: 'Minería y Energía',
-    tecnologia: 'Tecnología y SaaS',
-    retail: 'Retail y E-commerce',
-    manufactura: 'Manufactura e Industria',
-    construccion: 'Construcción e Inmobiliaria',
-    hoteleria_turismo: 'Hotelería y Turismo',
-    servicios_financieros: 'Servicios Financieros',
-    salud: 'Salud y Farmacéutica',
-    educacion: 'Educación',
-    alimentacion: 'Alimentación y Agricultura',
-    telecomunicaciones: 'Telecomunicaciones',
-    gobierno: 'Gobierno y Sector Público',
-    consultoria: 'Consultoría y Servicios Profesionales',
-    otra: 'Otra',
-  };
 
   const [company, setCompany] = useState<CompanyDetail | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'documents' | 'timeline'>('overview');
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [downloading, setDownloading] = useState<string | null>(null);
 
-  // Status change modal
-  const [showStatusModal, setShowStatusModal] = useState(false);
+  // Cambio de estado
   const [newStatus, setNewStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
   const [changingStatus, setChangingStatus] = useState(false);
@@ -169,517 +146,402 @@ export default function EmpresaDetailPage() {
     }
   };
 
+  const closeStatusModal = () => { setNewStatus(''); setStatusNote(''); };
+
   const handleStatusChange = async () => {
     if (!newStatus || !id) return;
     setChangingStatus(true);
     try {
       await updateCompanyStatus(id, newStatus, statusNote || undefined);
-      setShowStatusModal(false);
-      setNewStatus('');
-      setStatusNote('');
+      toast.success(`Estado cambiado a «${statusOf(newStatus).label}»`);
+      closeStatusModal();
       await loadData();
     } catch (err: any) {
-      console.error('Error updating status:', err);
-      const msg = err?.response?.data?.message || err?.message || 'Error al cambiar el estado. Verifica la transición sea válida.';
-      toast.success(msg);
+      // Antes este error se mostraba con toast.success (en verde).
+      const msg = err?.response?.data?.message || err?.message || 'No se pudo cambiar el estado. Revisa que la transición sea válida.';
+      toast.error(msg);
     } finally {
       setChangingStatus(false);
     }
   };
 
-  // ─── Loading skeleton ───
-  if (loading) {
+  // Va por el cliente del API (y no por fetch con una URL armada a mano) para
+  // usar la misma base, el token vigente y la renovación de sesión.
+  const downloadDoc = async (docId: string, fileName: string) => {
+    if (!company) return;
+    try {
+      setDownloading(docId);
+      const res: any = await api.get(`/admin/companies/${company.id}/documents/${docId}/download`, { responseType: 'blob' });
+      const blob: Blob = res instanceof Blob ? res : res?.data;
+      if (!(blob instanceof Blob)) throw new Error('Respuesta inválida');
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      toast.error('No se pudo descargar el documento. Vuelve a intentarlo.');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const back = (
+    <Link to="/admin/empresas" className="adm-back">
+      <ArrowLeft aria-hidden="true" /> Volver a Empresas
+    </Link>
+  );
+
+  if (loading && !company) {
     return (
-      <div className="!space-y-6">
-        <div className="!flex !items-center !gap-4">
-          <div className="!w-10 !h-10 !rounded-xl bg-slate-200 dark:bg-slate-700 !animate-pulse" />
-          <div className="!h-8 !w-64 bg-slate-200 dark:bg-slate-700 !rounded-xl !animate-pulse" />
-        </div>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white dark:!bg-slate-900 !rounded-3xl !p-8 !border border-slate-100 dark:border-slate-700">
-            <div className="!h-6 !w-48 bg-slate-200 dark:bg-slate-700 !rounded-lg !animate-pulse !mb-4" />
-            <div className="!space-y-3">
-              <div className="!h-4 !w-full bg-slate-100 dark:bg-slate-800 !rounded !animate-pulse" />
-              <div className="!h-4 !w-3/4 bg-slate-100 dark:bg-slate-800 !rounded !animate-pulse" />
-            </div>
-          </div>
-        ))}
+      <div className="adm-page" aria-busy="true">
+        {back}
+        <Skeleton height={64} />
+        <div className="adm-kpis">{[0, 1, 2, 3].map((i) => <Skeleton key={i} height={104} />)}</div>
+        <Skeleton height={320} />
       </div>
     );
   }
 
   if (!company) {
     return (
-      <div className="!flex !flex-col !items-center !justify-center !py-20 !gap-4">
-        <Building2 className="!w-16 !h-16 text-slate-300 dark:text-slate-600" />
-        <h3 className="!text-xl !font-bold text-slate-600 dark:text-slate-300">Empresa no encontrada</h3>
-        <button onClick={() => navigate('/admin/empresas')} className="bg-indigo-600 dark:bg-indigo-500 text-white !px-6 !py-2.5 !rounded-xl !font-bold !text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 !transition-all">
-          Volver a Empresas
-        </button>
+      <div className="adm-page">
+        {back}
+        <section className="adm-panel">
+          <EmptyState icon={Building2} title="Empresa no encontrada" text="Puede que se haya eliminado o que el enlace esté incompleto." />
+        </section>
       </div>
     );
   }
 
-  const sc = statusConfig[company.status] || statusConfig.registered;
-  const StatusIcon = sc.icon;
+  const st = statusOf(company.status);
   const allowedTransitions = VALID_TRANSITIONS[company.status] || [];
   const metrics = company.metrics || { totalEmissionsTons: 0, totalCertificates: 0, totalCompensatedTons: 0, totalPaymentsCLP: 0, totalFlights: 0, totalPassengers: 0 };
+  const compensationRate = metrics.totalEmissionsTons > 0 ? (metrics.totalCompensatedTons / metrics.totalEmissionsTons) * 100 : null;
+  const users = company.companyUsers ?? [];
+  const documents = company.documents ?? [];
+  const target = newStatus ? statusOf(newStatus) : null;
 
-  const tabs = [
-    { key: 'overview' as const, label: 'General', icon: Building2 },
-    { key: 'users' as const, label: `Usuarios (${company.companyUsers?.length || 0})`, icon: Users },
-    { key: 'documents' as const, label: `Documentos (${company.documents?.length || 0})`, icon: FileText },
-    { key: 'timeline' as const, label: 'Historial', icon: Clock },
-  ];
+  const docName = (doc: NonNullable<CompanyDetail['documents']>[number]) =>
+    doc.file?.fileName && !doc.file.fileName.includes(company.id)
+      ? doc.file.fileName
+      : DOC_TYPE_LABELS[doc.docType] || doc.docType;
 
   return (
-    <div className="!space-y-6 !animate-in !fade-in !slide-in-from-bottom-4 !duration-500">
-      {/* Back + Header */}
-      <div className="!flex !items-center !gap-4">
-        <button
-          onClick={() => navigate('/admin/empresas')}
-          className="!p-2.5 !rounded-xl bg-white dark:!bg-slate-800 !border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 !transition-all !shadow-sm"
-        >
-          <ArrowLeft className="!w-5 !h-5" />
-        </button>
-        <div className="!flex-1">
-          <h2 className="!text-2xl !font-black text-slate-900 dark:text-slate-100 !tracking-tight">
-            {company.nombreComercial || company.razonSocial}
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 !text-sm">{company.razonSocial}</p>
-        </div>
-        <div className={`!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-full !text-sm !font-bold !border ${sc.bgColor} ${sc.color} ${sc.borderColor}`}>
-          <StatusIcon className="!w-4 !h-4" />
-          {sc.label}
-        </div>
+    <div className="adm-page">
+      {back}
+
+      <PageHeader
+        title={company.nombreComercial || company.razonSocial}
+        description={`${company.razonSocial}${company.rut ? ` · RUT ${company.rut}` : ''}`}
+        actions={<StatusBadge tone={st.tone}>{st.label}</StatusBadge>}
+      />
+
+      <div className="adm-kpis">
+        <KpiCard
+          label="Emisiones calculadas"
+          value={tons(metrics.totalEmissionsTons)}
+          context={`${formatInt(metrics.totalFlights)} vuelos · ${formatInt(metrics.totalPassengers)} pasajeros`}
+        />
+        <KpiCard
+          label="Emisiones compensadas"
+          value={tons(metrics.totalCompensatedTons)}
+          context={compensationRate !== null ? `${formatPercent(compensationRate)} de lo calculado` : 'Sin emisiones calculadas'}
+        />
+        <KpiCard label="Pagos" value={formatCLP(metrics.totalPaymentsCLP)} context="Total pagado por compensaciones" />
+        <KpiCard label="Certificados" value={formatInt(metrics.totalCertificates)} context="Emitidos a la empresa" />
       </div>
 
-      {/* Stats Cards */}
-      <div className="!grid !grid-cols-2 md:!grid-cols-3 lg:!grid-cols-6 !gap-4">
-        {[
-          { label: 'Emisiones (ton)', value: metrics.totalEmissionsTons.toFixed(1), icon: BarChart3, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-500/10' },
-          { label: 'Compensadas (ton)', value: metrics.totalCompensatedTons.toFixed(1), icon: Leaf, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-          { label: 'Certificados', value: metrics.totalCertificates, icon: Shield, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
-          { label: 'Vuelos', value: metrics.totalFlights, icon: Plane, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-500/10' },
-          { label: 'Pasajeros', value: metrics.totalPassengers, icon: Users, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/10' },
-          { label: 'Pagos (CLP)', value: `$${(metrics.totalPaymentsCLP || 0).toLocaleString()}`, icon: DollarSign, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-500/10' },
-        ].map((stat, idx) => (
-          <div key={idx} className="bg-white dark:!bg-slate-900 !rounded-2xl !p-4 !border border-slate-100 dark:border-slate-700 !shadow-sm">
-            <div className={`!w-10 !h-10 !rounded-xl ${stat.bg} !flex !items-center !justify-center !mb-3`}>
-              <stat.icon className={`!w-5 !h-5 ${stat.color}`} />
-            </div>
-            <p className="!text-xl !font-black text-slate-900 dark:text-slate-100">{stat.value}</p>
-            <p className="!text-xs text-slate-500 dark:text-slate-400 !font-medium">{stat.label}</p>
-          </div>
-        ))}
-      </div>
+      <Segmented
+        label="Sección"
+        options={[
+          { value: 'overview', label: 'General' },
+          { value: 'users', label: `Usuarios · ${formatInt(users.length)}` },
+          { value: 'documents', label: `Documentos · ${formatInt(documents.length)}` },
+          { value: 'timeline', label: 'Historial' },
+        ]}
+        value={activeTab}
+        onChange={(v) => setActiveTab(v as Tab)}
+      />
 
-      {/* Tabs */}
-      <div className="bg-white dark:!bg-slate-900 !rounded-3xl !border border-slate-100 dark:border-slate-700 !shadow-sm !overflow-hidden">
-        <div className="!flex !border-b border-slate-100 dark:border-slate-700 !overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`!flex !items-center !gap-2 !px-6 !py-4 !text-sm !font-bold !whitespace-nowrap !transition-all !border-b-2 ${
-                activeTab === tab.key
-                  ? 'border-indigo-600 dark:border-indigo-400 text-indigo-700 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-500/10'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
-              }`}
-            >
-              <tab.icon className="!w-4 !h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {activeTab === 'overview' && (
+        <div className="adm-grid adm-grid--2-1" style={{ alignItems: 'start' }}>
+          <Panel title="Datos de la empresa">
+            <dl className="adm-dl">
+              <dt>Razón social</dt>
+              <dd>{company.razonSocial}</dd>
+              <dt>RUT</dt>
+              <dd>{company.rut || <span className="adm-cell-mute">No registrado</span>}</dd>
+              <dt>Nombre comercial</dt>
+              <dd>{company.nombreComercial || '—'}</dd>
+              <dt>Industria</dt>
+              <dd>{company.industry ? industryLabel(company.industry) : '—'}</dd>
+              <dt>Giro SII</dt>
+              <dd>{company.giroSii || '—'}</dd>
+              <dt>Tamaño</dt>
+              <dd>{company.tamanoEmpresa || '—'}</dd>
+              <dt>Dirección</dt>
+              <dd>{company.direccion || '—'}</dd>
+              <dt>Teléfono</dt>
+              <dd>{company.phone || '—'}</dd>
+              <dt>Perfil público</dt>
+              <dd>{company.publicProfileOptIn ? 'Visible' : 'Oculto'}</dd>
+              <dt>Identificador público</dt>
+              <dd>{company.slugPublico ? <span className="adm-mono">{company.slugPublico}</span> : '—'}</dd>
+              {company.settings && (
+                <>
+                  <dt>Método de cálculo</dt>
+                  <dd>{company.preferredCalculationMethod || 'Predeterminado'}</dd>
+                </>
+              )}
+              <dt>Registrada</dt>
+              <dd>{fmtDate(company.createdAt)}</dd>
+              <dt>Última actualización</dt>
+              <dd>{fmtDate(company.updatedAt)}</dd>
+            </dl>
+          </Panel>
 
-        <div className="!p-6">
-          {/* ═══ OVERVIEW TAB ═══ */}
-          {activeTab === 'overview' && (
-            <div className="!grid md:!grid-cols-2 !gap-6">
-              {/* Company Info */}
-              <div className="!space-y-5">
-                <h3 className="!text-lg !font-black text-slate-900 dark:text-slate-100">Información de Empresa</h3>
-                <div className="!space-y-4">
-                  {[
-                    { icon: Building2, label: 'Razón Social', value: company.razonSocial },
-                    { icon: Hash, label: 'RUT', value: company.rut || 'No registrado' },
-                    { icon: Briefcase, label: 'Nombre Comercial', value: company.nombreComercial || '—' },
-                    { icon: Globe, label: 'Industria', value: company.industry ? (industryLabels[company.industry] || company.industry) : '—' },
-                    { icon: TrendingUp, label: 'Giro SII', value: company.giroSii || '—' },
-                    { icon: Users, label: 'Tamaño', value: company.tamanoEmpresa || '—' },
-                    { icon: MapPin, label: 'Dirección', value: company.direccion || '—' },
-                    { icon: Phone, label: 'Teléfono', value: company.phone || '—' },
-                    { icon: Globe, label: 'Slug Público', value: company.slugPublico || '—' },
-                    { icon: Calendar, label: 'Registrada', value: new Date(company.createdAt).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }) },
-                    { icon: RefreshCw, label: 'Última actualización', value: new Date(company.updatedAt).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }) },
-                  ].map((item, idx) => (
-                    <div key={idx} className="!flex !items-start !gap-3">
-                      <item.icon className="!w-4 !h-4 text-slate-400 dark:text-slate-500 !mt-0.5 !flex-shrink-0" />
-                      <div>
-                        <p className="!text-xs text-slate-400 dark:text-slate-500 !font-bold !uppercase">{item.label}</p>
-                        <p className="!text-sm text-slate-800 dark:text-slate-200 !font-medium">{item.value}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions + Status Change */}
-              <div className="!space-y-5">
-                <h3 className="!text-lg !font-black text-slate-900 dark:text-slate-100">Acciones</h3>
-
-                {/* Documentation Status Banner */}
-                <div className={`!p-4 !rounded-2xl !border ${
-                  (company.documents && company.documents.length > 0)
-                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-800'
-                }`}>
-                  <div className="!flex !items-center !gap-3 !mb-1">
-                    <FileText className={`!w-5 !h-5 ${(company.documents && company.documents.length > 0) ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`} />
-                    <p className={`!font-bold !text-sm ${(company.documents && company.documents.length > 0) ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
-                      Documentación: {company.documents?.length || 0} documento{(company.documents?.length || 0) !== 1 ? 's' : ''}
-                    </p>
+          <div className="adm-stack-v">
+            <Panel title="Estado" aside={<StatusBadge tone={st.tone}>{st.label}</StatusBadge>}>
+              {allowedTransitions.length > 0 ? (
+                <div className="adm-stack-v">
+                  <p className="adm-field__hint">Cambiar a:</p>
+                  <div className="adm-actions-row">
+                    {allowedTransitions.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        className={`adm-btn adm-btn--sm${s === 'active' || s === 'signed' ? ' adm-btn--primary' : ''}`}
+                        onClick={() => setNewStatus(s)}
+                      >
+                        {statusOf(s).label}
+                      </button>
+                    ))}
                   </div>
-                  {(!company.documents || company.documents.length === 0) && (
-                    <p className="!text-xs text-amber-600 dark:text-amber-400 !ml-8">
-                      ⚠️ Sin documentos subidos. Se requiere documentación para avanzar a "Contrato Firmado" o "Activa".
-                    </p>
-                  )}
-                  {company.documents && company.documents.length > 0 && (
-                    <div className="!ml-8 !flex !flex-wrap !gap-2 !mt-1">
-                      {company.documents.map((doc) => (
-                        <span key={doc.id} className={`!text-xs !font-medium !px-2 !py-0.5 !rounded-full ${
-                          doc.status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' :
-                          doc.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300' :
-                          'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                        }`}>
-                          {doc.docType} ({doc.status === 'approved' ? '✓' : doc.status === 'rejected' ? '✗' : '⏳'})
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Status */}
-                <div className={`!p-4 !rounded-2xl !border ${sc.borderColor} ${sc.bgColor}`}>
-                  <div className="!flex !items-center !gap-3 !mb-2">
-                    <StatusIcon className={`!w-5 !h-5 ${sc.color}`} />
-                    <p className={`!font-bold ${sc.color}`}>Estado: {sc.label}</p>
-                  </div>
-                  <p className="!text-xs text-slate-500 dark:text-slate-400">Transiciones permitidas: {allowedTransitions.map(s => statusConfig[s]?.label || s).join(', ') || 'Ninguna'}</p>
-                </div>
-
-                {/* Transition Buttons */}
-                {allowedTransitions.length > 0 && (
-                  <div className="!space-y-2">
-                    <p className="!text-sm !font-bold text-slate-700 dark:text-slate-200">Cambiar estado:</p>
-                    <div className="!flex !flex-wrap !gap-2">
-                      {allowedTransitions.map((status) => {
-                        const tsc = statusConfig[status] || statusConfig.registered;
-                        const TIcon = tsc.icon;
-                        return (
-                          <button
-                            key={status}
-                            onClick={() => { setNewStatus(status); setShowStatusModal(true); }}
-                            className={`!flex !items-center !gap-2 !px-4 !py-2.5 !rounded-xl !text-sm !font-bold !border !transition-all hover:!shadow-md ${tsc.bgColor} ${tsc.color} ${tsc.borderColor}`}
-                          >
-                            <TIcon className="!w-4 !h-4" />
-                            {tsc.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Settings */}
-                {company.settings && (
-                  <div className="!space-y-3">
-                    <h4 className="!text-sm !font-bold text-slate-700 dark:text-slate-200">Configuración</h4>
-                    <div className="bg-slate-50 dark:bg-slate-800 !rounded-xl !p-4 !space-y-2">
-                      <div className="!flex !justify-between !text-sm"><span className="text-slate-500 dark:text-slate-400">Perfil público</span><span className="!font-bold text-slate-800 dark:text-slate-200">{company.publicProfileOptIn ? 'Sí' : 'No'}</span></div>
-                      <div className="!flex !justify-between !text-sm"><span className="text-slate-500 dark:text-slate-400">Método de cálculo</span><span className="!font-bold text-slate-800 dark:text-slate-200">{company.preferredCalculationMethod || 'Default'}</span></div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Domains */}
-                {company.domains && company.domains.length > 0 && (
-                  <div className="!space-y-3">
-                    <h4 className="!text-sm !font-bold text-slate-700 dark:text-slate-200">Dominios</h4>
-                    <div className="!space-y-2">
-                      {company.domains.map((d: any) => (
-                        <div key={d.id} className="!flex !items-center !justify-between bg-slate-50 dark:bg-slate-800 !rounded-xl !px-4 !py-3">
-                          <div className="!flex !items-center !gap-2">
-                            <Globe className="!w-4 !h-4 text-slate-400 dark:text-slate-500" />
-                            <span className="!text-sm !font-medium text-slate-800 dark:text-slate-200">{d.domain}</span>
-                          </div>
-                          <span className={`!text-xs !font-bold !px-2 !py-1 !rounded-full ${d.verified ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'}`}>
-                            {d.verified ? 'Verificado' : 'Pendiente'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ═══ USERS TAB ═══ */}
-          {activeTab === 'users' && (
-            <div className="!space-y-4">
-              <h3 className="!text-lg !font-black text-slate-900 dark:text-slate-100">Usuarios de la Empresa</h3>
-              {company.companyUsers && company.companyUsers.length > 0 ? (
-                <div className="!overflow-x-auto">
-                  <table className="!w-full !text-left">
-                    <thead>
-                      <tr className="!border-b border-slate-100 dark:border-slate-700">
-                        <th className="!px-4 !py-3 !text-xs !font-black text-slate-400 dark:text-slate-500 !uppercase">Usuario</th>
-                        <th className="!px-4 !py-3 !text-xs !font-black text-slate-400 dark:text-slate-500 !uppercase">Email</th>
-                        <th className="!px-4 !py-3 !text-xs !font-black text-slate-400 dark:text-slate-500 !uppercase">Roles</th>
-                        <th className="!px-4 !py-3 !text-xs !font-black text-slate-400 dark:text-slate-500 !uppercase">Admin</th>
-                        <th className="!px-4 !py-3 !text-xs !font-black text-slate-400 dark:text-slate-500 !uppercase">Estado</th>
-                        <th className="!px-4 !py-3 !text-xs !font-black text-slate-400 dark:text-slate-500 !uppercase">Último Login</th>
-                      </tr>
-                    </thead>
-                    <tbody className="!divide-y divide-slate-50 dark:divide-slate-800">
-                      {company.companyUsers.map((cu) => (
-                        <tr key={cu.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 !transition-colors">
-                          <td className="!px-4 !py-4">
-                            <div className="!flex !items-center !gap-3">
-                              <div className="!w-9 !h-9 !rounded-full bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 !flex !items-center !justify-center !font-bold !text-sm">
-                                {(cu.user.name || cu.user.email).charAt(0).toUpperCase()}
-                              </div>
-                              <span className="!font-bold text-slate-800 dark:text-slate-200 !text-sm">{cu.user.name || '—'}</span>
-                            </div>
-                          </td>
-                          <td className="!px-4 !py-4 !text-sm text-slate-600 dark:text-slate-300">{cu.user.email}</td>
-                          <td className="!px-4 !py-4">
-                            <div className="!flex !flex-wrap !gap-1">
-                              {cu.roles.map((r, i) => (
-                                <span key={i} className="!text-xs bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 !px-2 !py-0.5 !rounded-full !font-bold">{r.name}</span>
-                              ))}
-                            </div>
-                          </td>
-                          <td className="!px-4 !py-4">
-                            {cu.isAdmin ? (
-                              <span className="!text-xs bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 !px-2.5 !py-1 !rounded-full !font-bold">Admin</span>
-                            ) : (
-                              <span className="!text-xs text-slate-400 dark:text-slate-500">—</span>
-                            )}
-                          </td>
-                          <td className="!px-4 !py-4">
-                            <span className={`!text-xs !font-bold !px-2.5 !py-1 !rounded-full ${cu.user.isActive ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300'}`}>
-                              {cu.user.isActive ? 'Activo' : 'Inactivo'}
-                            </span>
-                          </td>
-                          <td className="!px-4 !py-4 !text-sm text-slate-500 dark:text-slate-400">
-                            {cu.user.lastLoginAt ? new Date(cu.user.lastLoginAt).toLocaleDateString('es-CL') : 'Nunca'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               ) : (
-                <div className="!flex !flex-col !items-center !py-12 !gap-3">
-                  <Users className="!w-12 !h-12 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-slate-400 !font-medium">No hay usuarios registrados</p>
-                </div>
+                <p className="adm-cell-mute">No hay transiciones disponibles desde este estado.</p>
               )}
-            </div>
-          )}
+            </Panel>
 
-          {/* ═══ DOCUMENTS TAB ═══ */}
-          {activeTab === 'documents' && (
-            <div className="!space-y-4">
-              <h3 className="!text-lg !font-black text-slate-900 dark:text-slate-100">Documentos</h3>
-              {company.documents && company.documents.length > 0 ? (
-                <div className="!grid md:!grid-cols-2 !gap-4">
-                  {company.documents.map((doc) => {
-                    const docTypeNames: Record<string, string> = {
-                      rut_empresa: 'RUT Empresa',
-                      escritura_constitucion: 'Escritura de Constitución',
-                      representante_legal: 'Cédula Representante Legal',
-                      poder_notarial: 'Poder Notarial',
-                      otro: 'Otro Documento',
-                    };
-                    const displayName = doc.file?.fileName && !doc.file.fileName.includes(company.id)
-                      ? doc.file.fileName
-                      : docTypeNames[doc.docType] || doc.docType;
-                    const isPdf = doc.file?.mimeType === 'application/pdf';
-
+            <Panel title="Documentación">
+              {documents.length > 0 ? (
+                <div className="adm-chips">
+                  {documents.map((doc) => {
+                    const ds = docStatus(doc.status);
                     return (
-                      <div key={doc.id} className="bg-slate-50 dark:bg-slate-800 !rounded-2xl !p-4 !border border-slate-100 dark:border-slate-700 !flex !items-start !gap-4">
-                        <div className={`!w-11 !h-11 !rounded-xl !flex !items-center !justify-center !flex-shrink-0 ${
-                          isPdf ? 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-                        }`}>
-                          <FileText className="!w-5 !h-5" />
-                        </div>
-                        <div className="!flex-1 !min-w-0">
-                          <p className="!font-bold text-slate-800 dark:text-slate-200 !text-sm !truncate" title={doc.file?.fileName}>{displayName}</p>
-                          <p className="!text-xs text-slate-500 dark:text-slate-400">{docTypeNames[doc.docType] || doc.docType} — {new Date(doc.uploadedAt).toLocaleDateString('es-CL')}</p>
-                          <div className="!flex !items-center !gap-2 !mt-1">
-                            <span className={`!inline-block !text-xs !font-bold !px-2 !py-0.5 !rounded-full ${
-                              doc.status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' :
-                              doc.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300' :
-                              'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                            }`}>
-                              {doc.status === 'approved' ? 'Aprobado' : doc.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
-                            </span>
-                            {doc.file?.sizeBytes && (
-                              <span className="!text-xs text-slate-400 dark:text-slate-500">{(doc.file.sizeBytes / 1024).toFixed(0)} KB</span>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          onClick={async () => {
-                            try {
-                              const token = localStorage.getItem('access_token');
-                              const baseURL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
-                              const resp = await fetch(`${baseURL}/admin/companies/${company.id}/documents/${doc.id}/download`, {
-                                headers: { Authorization: `Bearer ${token}` }
-                              });
-                              if (!resp.ok) throw new Error('Error al descargar');
-                              const blob = await resp.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = displayName;
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                              window.URL.revokeObjectURL(url);
-                            } catch {
-                              toast.error('No pudimos descargar el documento. Vuelve a intentarlo.');
-                            }
-                          }}
-                          className="!p-2.5 !rounded-xl bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-white !transition-all !flex-shrink-0"
-                          title="Descargar documento"
-                        >
-                          <Download className="!w-4 !h-4" />
-                        </button>
-                      </div>
+                      <StatusBadge key={doc.id} tone={ds.tone}>
+                        {DOC_TYPE_LABELS[doc.docType] || doc.docType} · {ds.label.toLowerCase()}
+                      </StatusBadge>
                     );
                   })}
                 </div>
               ) : (
-                <div className="!flex !flex-col !items-center !py-12 !gap-3">
-                  <FileText className="!w-12 !h-12 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-slate-400 !font-medium">No hay documentos cargados</p>
+                <div className="adm-alert adm-alert--warning">
+                  <AlertTriangle aria-hidden="true" />
+                  <div>Sin documentos. Se requieren para pasar a «Contrato firmado» o «Activa».</div>
                 </div>
               )}
-            </div>
-          )}
+            </Panel>
 
-          {/* ═══ TIMELINE TAB ═══ */}
-          {activeTab === 'timeline' && (
-            <div className="!space-y-4">
-              <h3 className="!text-lg !font-black text-slate-900 dark:text-slate-100">Historial de Cambios</h3>
-              {timeline.length > 0 ? (
-                <div className="!relative !pl-6">
-                  {/* Vertical line */}
-                  <div className="!absolute !left-[11px] !top-2 !bottom-2 !w-0.5 bg-slate-200 dark:bg-slate-700" />
-                  <div className="!space-y-6">
-                    {timeline.map((evt) => {
-                      const toSc = statusConfig[evt.toStatus] || statusConfig.registered;
-                      return (
-                        <div key={evt.id} className="!relative !flex !gap-4">
-                          <div className={`!absolute !-left-6 !top-1 !w-5 !h-5 !rounded-full !border-2 border-white dark:!border-slate-900 !shadow-sm ${toSc.bgColor} !flex !items-center !justify-center`}>
-                            <div className={`!w-2 !h-2 !rounded-full ${statusConfig[evt.toStatus]?.color?.replace('text-', 'bg-').replace(/\s*dark:text-\S+/, '') || 'bg-slate-400'}`} />
-                          </div>
-                          <div className="bg-slate-50 dark:bg-slate-800 !rounded-2xl !p-4 !border border-slate-100 dark:border-slate-700 !flex-1">
-                            <div className="!flex !items-center !gap-2 !mb-1">
-                              <span className={`!text-xs !font-bold !px-2 !py-0.5 !rounded-full ${statusConfig[evt.fromStatus]?.bgColor || 'bg-slate-100 dark:bg-slate-700'} ${statusConfig[evt.fromStatus]?.color || 'text-slate-600 dark:text-slate-300'}`}>
-                                {statusConfig[evt.fromStatus]?.label || evt.fromStatus}
-                              </span>
-                              <ChevronRight className="!w-3 !h-3 text-slate-400 dark:text-slate-500" />
-                              <span className={`!text-xs !font-bold !px-2 !py-0.5 !rounded-full ${toSc.bgColor} ${toSc.color}`}>
-                                {toSc.label}
-                              </span>
-                            </div>
-                            {evt.note && <p className="!text-sm text-slate-600 dark:text-slate-300 !mt-1">{evt.note}</p>}
-                            <div className="!flex !items-center !gap-4 !mt-2 !text-xs text-slate-400 dark:text-slate-500">
-                              <span>{new Date(evt.createdAt).toLocaleString('es-CL')}</span>
-                              {evt.changedBy && <span>por {evt.changedBy.name || evt.changedBy.email}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <div className="!flex !flex-col !items-center !py-12 !gap-3">
-                  <Clock className="!w-12 !h-12 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-slate-400 !font-medium">Sin historial de cambios</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ═══ Status Change Modal ═══ */}
-      {showStatusModal && (
-        <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !bg-black/40 !backdrop-blur-sm" onClick={() => setShowStatusModal(false)}>
-          <div className="bg-white dark:!bg-slate-900 !rounded-3xl !shadow-2xl !p-8 !w-full !max-w-md !mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="!text-xl !font-black text-slate-900 dark:text-slate-100 !mb-2">Cambiar Estado</h3>
-            <p className="!text-sm text-slate-500 dark:text-slate-400 !mb-6">
-              ¿Cambiar <strong>{company.nombreComercial || company.razonSocial}</strong> de{' '}
-              <span className={`!font-bold ${sc.color}`}>{sc.label}</span> a{' '}
-              <span className={`!font-bold ${(statusConfig[newStatus] || statusConfig.registered).color}`}>{(statusConfig[newStatus] || statusConfig.registered).label}</span>?
-            </p>
-
-            <div className="!space-y-4">
-              <div>
-                <label className="!text-sm !font-bold text-slate-700 dark:text-slate-200 !block !mb-1">Nota (opcional)</label>
-                <textarea
-                  value={statusNote}
-                  onChange={(e) => setStatusNote(e.target.value)}
-                  placeholder="Motivo del cambio de estado..."
-                  rows={3}
-                  className="!w-full bg-slate-50 dark:bg-slate-800 !border border-slate-200 dark:border-slate-700 !rounded-xl !px-4 !py-3 !text-sm text-slate-900 dark:text-slate-100 !outline-none focus:!ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 !resize-none"
-                />
-              </div>
-
-              {newStatus === 'suspended' && (
-                <div className="bg-rose-50 dark:bg-rose-500/10 !border border-rose-200 dark:border-rose-800 !rounded-xl !p-3 !flex !items-start !gap-2">
-                  <AlertTriangle className="!w-4 !h-4 text-rose-500 dark:text-rose-400 !mt-0.5 !flex-shrink-0" />
-                  <p className="!text-xs text-rose-700 dark:text-rose-300">Suspender la empresa deshabilitará el acceso de todos sus usuarios y desactivará la compensación automática.</p>
-                </div>
-              )}
-
-              {['signed', 'active'].includes(newStatus) && (!company.documents || company.documents.length === 0) && (
-                <div className="bg-amber-50 dark:bg-amber-500/10 !border border-amber-200 dark:border-amber-800 !rounded-xl !p-3 !flex !items-start !gap-2">
-                  <AlertTriangle className="!w-4 !h-4 text-amber-500 dark:text-amber-400 !mt-0.5 !flex-shrink-0" />
-                  <p className="!text-xs text-amber-700 dark:text-amber-300">
-                    <strong>Atención:</strong> Esta empresa no tiene documentos subidos. El backend rechazará esta transición hasta que la documentación requerida esté completa.
-                  </p>
-                </div>
-              )}
-
-              <div className="!flex !gap-3 !pt-2">
-                <button
-                  onClick={() => { setShowStatusModal(false); setNewStatus(''); setStatusNote(''); }}
-                  className="!flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 !px-4 !py-3 !rounded-xl !font-bold !text-sm hover:bg-slate-200 dark:hover:bg-slate-700 !transition-all"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleStatusChange}
-                  disabled={changingStatus}
-                  className="!flex-1 bg-indigo-600 dark:bg-indigo-500 text-white !px-4 !py-3 !rounded-xl !font-bold !text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 !transition-all disabled:!opacity-50 !shadow-lg !shadow-indigo-200 dark:!shadow-indigo-900/40"
-                >
-                  {changingStatus ? 'Cambiando...' : 'Confirmar'}
-                </button>
-              </div>
-            </div>
+            {company.domains && company.domains.length > 0 && (
+              <Panel title="Dominios">
+                <dl className="adm-dl">
+                  {company.domains.map((d) => (
+                    <div key={d.id} style={{ display: 'contents' }}>
+                      <dt className="adm-mono">{d.domain}</dt>
+                      <dd><StatusBadge tone={d.verified ? 'success' : 'warning'}>{d.verified ? 'Verificado' : 'Pendiente'}</StatusBadge></dd>
+                    </div>
+                  ))}
+                </dl>
+              </Panel>
+            )}
           </div>
         </div>
       )}
+
+      {activeTab === 'users' && (
+        <section className="adm-table-card">
+          <div className="adm-table-scroll">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th scope="col">Usuario</th>
+                  <th scope="col">Roles</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Último ingreso</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>
+                      <EmptyState icon={Users} title="Sin usuarios" text="Esta empresa no tiene usuarios registrados." />
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((cu) => (
+                    <tr key={cu.id}>
+                      <td>
+                        <span className="adm-cell-title">{cu.user.name || cu.user.email}</span>
+                        {cu.user.name && <span className="adm-cell-sub">{cu.user.email}</span>}
+                      </td>
+                      <td>
+                        <div className="adm-chips">
+                          {cu.isAdmin && <StatusBadge tone="info">Administrador</StatusBadge>}
+                          {cu.roles.map((r) => <span key={r.code} className="adm-tag">{r.name}</span>)}
+                          {!cu.isAdmin && cu.roles.length === 0 && <span className="adm-cell-mute">—</span>}
+                        </div>
+                      </td>
+                      <td>
+                        <StatusBadge tone={cu.user.isActive ? 'success' : 'neutral'}>{cu.user.isActive ? 'Activo' : 'Inactivo'}</StatusBadge>
+                      </td>
+                      <td>{cu.user.lastLoginAt ? new Date(cu.user.lastLoginAt).toLocaleDateString('es-CL') : <span className="adm-cell-mute">Nunca</span>}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'documents' && (
+        <section className="adm-table-card">
+          <div className="adm-table-scroll">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th scope="col">Documento</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Subido</th>
+                  <th scope="col" className="adm-col-num">Tamaño</th>
+                  <th scope="col" className="adm-col-actions"><span className="sr-only">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {documents.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>
+                      <EmptyState icon={FileText} title="Sin documentos" text="La empresa aún no sube documentación." />
+                    </td>
+                  </tr>
+                ) : (
+                  documents.map((doc) => {
+                    const name = docName(doc);
+                    const ds = docStatus(doc.status);
+                    return (
+                      <tr key={doc.id}>
+                        <td>
+                          <span className="adm-cell-title" title={doc.file?.fileName}>{name}</span>
+                          <span className="adm-cell-sub">{DOC_TYPE_LABELS[doc.docType] || doc.docType}</span>
+                        </td>
+                        <td><StatusBadge tone={ds.tone}>{ds.label}</StatusBadge></td>
+                        <td>{new Date(doc.uploadedAt).toLocaleDateString('es-CL')}</td>
+                        <td className="adm-col-num">{doc.file?.sizeBytes ? `${formatInt(doc.file.sizeBytes / 1024)} KB` : '—'}</td>
+                        <td className="adm-col-actions">
+                          <button
+                            type="button"
+                            className="adm-icon-btn"
+                            onClick={() => downloadDoc(doc.id, name)}
+                            disabled={downloading === doc.id}
+                            title="Descargar"
+                            aria-label={`Descargar ${name}`}
+                          >
+                            <Download aria-hidden="true" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'timeline' && (
+        <Panel title="Historial de estados">
+          {timeline.length === 0 ? (
+            <EmptyState icon={Clock} title="Sin cambios de estado" />
+          ) : (
+            <ol className="adm-timeline">
+              {timeline.map((evt) => {
+                const from = statusOf(evt.fromStatus);
+                const to = statusOf(evt.toStatus);
+                return (
+                  <li key={evt.id} className="adm-timeline__item">
+                    <div className="adm-chips">
+                      <StatusBadge tone="neutral">{from.label}</StatusBadge>
+                      <ChevronRight aria-label="a" className="adm-timeline__arrow" />
+                      <StatusBadge tone={to.tone}>{to.label}</StatusBadge>
+                    </div>
+                    {evt.note && <p className="adm-timeline__note">{evt.note}</p>}
+                    <p className="adm-timeline__meta">
+                      {fmtDateTime(evt.createdAt)}
+                      {evt.changedBy && ` · ${evt.changedBy.name || evt.changedBy.email}`}
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </Panel>
+      )}
+
+      <Modal
+        open={!!newStatus}
+        title="Cambiar estado"
+        onClose={closeStatusModal}
+        busy={changingStatus}
+        footer={
+          <>
+            <button type="button" className="adm-btn" onClick={closeStatusModal} disabled={changingStatus}>Cancelar</button>
+            <button
+              type="button"
+              className={`adm-btn ${newStatus === 'suspended' ? 'adm-btn--danger' : 'adm-btn--primary'}`}
+              onClick={handleStatusChange}
+              disabled={changingStatus}
+            >
+              {changingStatus ? 'Cambiando…' : `Cambiar a «${target?.label ?? ''}»`}
+            </button>
+          </>
+        }
+      >
+        <p>
+          {company.nombreComercial || company.razonSocial} pasará de <b>{st.label}</b> a <b>{target?.label}</b>.
+        </p>
+
+        {newStatus === 'suspended' && (
+          <div className="adm-alert adm-alert--danger">
+            <AlertTriangle aria-hidden="true" />
+            <div>Suspender la empresa deshabilitará el acceso de todos sus usuarios y desactivará la compensación automática.</div>
+          </div>
+        )}
+
+        {['signed', 'active'].includes(newStatus) && documents.length === 0 && (
+          <div className="adm-alert adm-alert--warning">
+            <AlertTriangle aria-hidden="true" />
+            <div>La empresa no tiene documentos: el servidor rechazará este cambio hasta que la documentación esté completa.</div>
+          </div>
+        )}
+
+        {newStatus === 'active' && documents.length > 0 && (
+          <div className="adm-alert adm-alert--success">
+            <CheckCircle2 aria-hidden="true" />
+            <div>{formatInt(documents.length)} {documents.length === 1 ? 'documento cargado' : 'documentos cargados'}.</div>
+          </div>
+        )}
+
+        <div className="adm-field">
+          <label className="adm-field__label" htmlFor="ed-note">Nota <span className="adm-cell-mute">(opcional)</span></label>
+          <textarea id="ed-note" className="adm-textarea" rows={3} value={statusNote} onChange={(e) => setStatusNote(e.target.value)} placeholder="Motivo del cambio" />
+        </div>
+      </Modal>
     </div>
   );
 }
