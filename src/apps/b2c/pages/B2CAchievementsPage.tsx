@@ -167,8 +167,8 @@ const B2CAchievementsPage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await b2cApi.getDashboardStats();
-        setTotalKg(data.stats.totalCompensatedKg ?? 0);
+        const data = await b2cApi.getDashboardStats('all');
+        setTotalKg(data.stats.lifetimeCompensatedKg);
       } catch {
         // silently degrade — badges still render with kg=0
       } finally {

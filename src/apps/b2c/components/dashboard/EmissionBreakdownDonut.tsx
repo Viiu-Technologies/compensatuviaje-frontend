@@ -24,7 +24,13 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
         </h3>
       </div>
 
-      {/* Content: Donut + Legend */}
+      {categories.length === 0 ? (
+        <div className="h-48 flex items-center justify-center text-center px-6">
+          <p className="text-xs text-gray-500 dark:text-slate-400 m-0">
+            Sin viajes en este período. Aquí verás cuánto vienen de vuelos nacionales e internacionales.
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-12 items-center gap-6">
         {/* Left: Donut Chart with Center Text */}
         <div className="sm:col-span-5 relative flex items-center justify-center h-48">
@@ -86,6 +92,7 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 };

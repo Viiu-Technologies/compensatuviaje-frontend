@@ -25,10 +25,13 @@ interface CustomTooltipProps {
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, activeMetric }) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
+    const year = payload[0].payload?.year;
     const isEmissions = activeMetric === 'emissions';
     return (
       <div className="bg-white dark:bg-slate-800 px-3.5 py-2.5 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 text-xs">
-        <p className="font-semibold text-gray-500 dark:text-slate-400 mb-0.5">{label} 2026</p>
+        <p className="font-semibold text-gray-500 dark:text-slate-400 mb-0.5">
+          {label} {year ?? ''}
+        </p>
         <p className={`text-sm font-bold ${isEmissions ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'} m-0`}>
           {value} tCO₂e
         </p>
@@ -43,6 +46,7 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
 
   const strokeColor = activeTab === 'emissions' ? '#10b981' : '#3b82f6';
   const gradientId = activeTab === 'emissions' ? 'colorEmissions' : 'colorCompensated';
+  const isEmpty = data.every((m) => !m.emissions && !m.compensated);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between h-full">
@@ -84,7 +88,13 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
         </div>
       </div>
 
-      {/* Recharts Area Chart */}
+      {isEmpty ? (
+        <div className="w-full h-56 flex items-center justify-center text-center px-6">
+          <p className="text-xs text-gray-500 dark:text-slate-400 m-0">
+            Aún no hay viajes en los últimos 6 meses. Cuando registres uno, verás aquí su evolución.
+          </p>
+        </div>
+      ) : (
       <div className="w-full h-56 -ml-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 12, left: -20, bottom: 0 }}>
@@ -110,8 +120,8 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#9ca3af', fontSize: 11 }}
-              domain={[0, 12]}
-              ticks={[0, 2, 4, 6, 8, 10, 12]}
+              domain={[0, 'auto']}
+              allowDecimals
             />
             <Tooltip content={<CustomTooltip activeMetric={activeTab} />} />
             <Area
@@ -127,6 +137,7 @@ export const EmissionEvolutionChart: React.FC<EmissionEvolutionChartProps> = ({ 
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      )}
     </div>
   );
 };

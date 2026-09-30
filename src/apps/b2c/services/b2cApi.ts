@@ -132,6 +132,7 @@ export interface B2CProject {
 
 export interface MonthlyEvolutionItem {
   month: string;
+  year: number;
   emissions: number;
   compensated: number;
 }
@@ -152,7 +153,7 @@ export interface RecentTripItem {
   date: string;
   co2Tons: number;
   isCompensated: boolean;
-  routeType: 'Internacional' | 'Nacional';
+  routeType: 'Internacional' | 'Nacional' | null;
   transportMode: string;
 }
 
@@ -164,6 +165,8 @@ export interface NextAchievementItem {
   progressPercentage: number;
   remainingKg: number;
 }
+
+export type DashboardPeriod = '30d' | '90d' | '1y' | 'all';
 
 export interface DashboardData {
   user: {
@@ -183,9 +186,14 @@ export interface DashboardData {
     certificatesCount: number;
     treesEquivalent: number;
     compensationRate: number;
-    emissionsDeltaPercentage: number;
-    flightsDeltaCount: number;
+    /** null cuando no hay período anterior con el que comparar. */
+    emissionsDeltaPercentage: number | null;
+    flightsDeltaCount: number | null;
     pendingRate: number;
+    /** Historial completo, independiente del período elegido. */
+    lifetimeEmissionsKg: number;
+    lifetimeCompensatedKg: number;
+    lifetimeCompensationRate: number;
   };
   recentFlights: {
     id: string;
@@ -194,7 +202,7 @@ export interface DashboardData {
     date: string;
     co2Tons: number;
     isCompensated: boolean;
-    routeType?: string;
+    routeType?: string | null;
     transportMode?: string;
   }[];
   recentTrips: RecentTripItem[];
@@ -207,12 +215,8 @@ export interface DashboardData {
   }[];
   monthlyEvolution: MonthlyEvolutionItem[];
   emissionsByCategory: EmissionCategoryItem[];
-  nextAchievement: NextAchievementItem;
-  recommendation: {
-    dominantCategory: string;
-    percentage: number;
-    pendingTons: number;
-  };
+  /** null cuando ya alcanzó el nivel máximo. */
+  nextAchievement: NextAchievementItem | null;
   planetEquivalent: {
     treesCount: number;
     periodText: string;
@@ -220,193 +224,102 @@ export interface DashboardData {
 }
 
 /**
- * Normaliza y enriquece la respuesta del backend para el Dashboard B2C.
- * Si el backend ya retorna los campos extendidos, los usa; de lo contrario,
- * genera estimaciones fieles a los vuelos del usuario.
+ * Niveles de logro: los de B2CAchievementsPage y shareService.js. Semilla se
+ * obtiene con la primera compensación (allí, 0,001 kg); aquí 1 kg para que la
+ * barra de progreso no salte de 0 a 100 %.
  */
-export function normalizeDashboardData(raw: Partial<DashboardData> | null | undefined): DashboardData {
-  const defaultUser = {
-    nombre: 'Nilton Huayroccacya Taco',
-    email: 'nilton@compensatuviaje.com',
-    avatarUrl: null,
-    memberSince: new Date().toISOString(),
+const ACHIEVEMENT_LEVELS = [
+  { title: 'Semilla Climática', targetKg: 1, targetDescription: 'Compensa tu primer vuelo' },
+  { title: 'Viajero Consciente', targetKg: 1000, targetDescription: 'Compensa 1 tCO₂e' },
+  { title: 'Guardián del Clima', targetKg: 5000, targetDescription: 'Compensa 5 tCO₂e' },
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  international: '#059669',
+  national: '#3b82f6',
+};
+
+/** Próximo nivel según lo compensado en todo el historial; null si ya tiene el máximo. */
+function nextAchievementFor(compensatedKg: number): NextAchievementItem | null {
+  const next = ACHIEVEMENT_LEVELS.find((level) => compensatedKg < level.targetKg);
+  if (!next) return null;
+  const currentKg = Math.round(compensatedKg);
+  return {
+    ...next,
+    currentKg,
+    progressPercentage: Math.min(100, Math.round((compensatedKg / next.targetKg) * 100)),
+    remainingKg: Math.max(0, Math.round(next.targetKg - compensatedKg)),
   };
+}
 
-  const user = {
-    nombre: raw?.user?.nombre || defaultUser.nombre,
-    email: raw?.user?.email || defaultUser.email,
-    avatarUrl: raw?.user?.avatarUrl || null,
-    memberSince: raw?.user?.memberSince || defaultUser.memberSince,
-  };
+/**
+ * Adapta la respuesta del backend al formato del dashboard.
+ *
+ * Solo transforma datos reales: si un campo falta, queda en 0 o vacío y el
+ * componente muestra su estado vacío. Nunca se rellena con cifras de ejemplo:
+ * un usuario nuevo vería una huella, vuelos y certificados que no son suyos.
+ */
+export function normalizeDashboardData(raw: Partial<DashboardData>): DashboardData {
+  const rawStats: Partial<DashboardData['stats']> = raw.stats ?? {};
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : Number(v) || 0);
 
-  const rawStats = raw?.stats;
-  const totalEmissionsTons = rawStats?.totalEmissionsTons && rawStats.totalEmissionsTons > 0
-    ? Number(rawStats.totalEmissionsTons)
-    : 10.4;
+  const totalEmissionsTons = num(rawStats.totalEmissionsTons);
+  const totalCompensatedTons = num(rawStats.totalCompensatedTons);
+  const totalPendingTons = num(rawStats.totalPendingTons);
+  const compensationRate = num(rawStats.compensationRate);
+  const lifetimeCompensatedKg = num(rawStats.lifetimeCompensatedKg);
 
-  const totalCompensatedTons = rawStats?.totalCompensatedTons !== undefined && rawStats.totalCompensatedTons > 0
-    ? Number(rawStats.totalCompensatedTons)
-    : 1.0;
-
-  const totalPendingTons = Math.max(0, Number((totalEmissionsTons - totalCompensatedTons).toFixed(2)));
-  const totalEmissionsKg = Math.round(totalEmissionsTons * 1000);
-  const totalCompensatedKg = Math.round(totalCompensatedTons * 1000);
-  const totalPendingKg = Math.round(totalPendingTons * 1000);
-
-  const compensationRate = totalEmissionsTons > 0
-    ? Number(((totalCompensatedTons / totalEmissionsTons) * 100).toFixed(1))
-    : 9.6;
-
-  const pendingRate = Number(Math.max(0, 100 - compensationRate).toFixed(1));
-  const totalFlights = rawStats?.totalFlights && rawStats.totalFlights > 0 ? rawStats.totalFlights : 20;
-  const certificatesCount = rawStats?.certificatesCount && rawStats.certificatesCount > 0 ? rawStats.certificatesCount : 5;
-  const treesEquivalent = rawStats?.treesEquivalent && rawStats.treesEquivalent > 0 ? rawStats.treesEquivalent : 50;
-
-  const stats = {
-    totalFlights,
-    totalEmissionsKg,
+  const stats: DashboardData['stats'] = {
+    totalFlights: num(rawStats.totalFlights),
+    totalEmissionsKg: num(rawStats.totalEmissionsKg),
     totalEmissionsTons,
-    totalCompensatedKg,
+    totalCompensatedKg: num(rawStats.totalCompensatedKg),
     totalCompensatedTons,
-    totalPendingKg,
+    totalPendingKg: num(rawStats.totalPendingKg),
     totalPendingTons,
-    certificatesCount,
-    treesEquivalent,
+    certificatesCount: num(rawStats.certificatesCount),
+    treesEquivalent: num(rawStats.treesEquivalent),
     compensationRate,
-    emissionsDeltaPercentage: rawStats?.emissionsDeltaPercentage ?? 8.2,
-    flightsDeltaCount: rawStats?.flightsDeltaCount ?? 3,
-    pendingRate,
+    emissionsDeltaPercentage: rawStats.emissionsDeltaPercentage ?? null,
+    flightsDeltaCount: rawStats.flightsDeltaCount ?? null,
+    pendingRate: totalEmissionsTons > 0 ? Math.max(0, 100 - compensationRate) : 0,
+    lifetimeEmissionsKg: num(rawStats.lifetimeEmissionsKg),
+    lifetimeCompensatedKg,
+    lifetimeCompensationRate: num(rawStats.lifetimeCompensationRate),
   };
 
-  // Evolución mensual (6 meses)
-  const monthlyEvolution: MonthlyEvolutionItem[] = raw?.monthlyEvolution && raw.monthlyEvolution.length > 0
-    ? raw.monthlyEvolution
-    : [
-        { month: 'Abr', emissions: 4.8, compensated: 0.2 },
-        { month: 'May', emissions: 6.5, compensated: 0.4 },
-        { month: 'Jun', emissions: 5.6, compensated: 0.6 },
-        { month: 'Jul', emissions: 7.8, compensated: 0.8 },
-        { month: 'Ago', emissions: 6.9, compensated: 0.9 },
-        { month: 'Sep', emissions: totalEmissionsTons, compensated: totalCompensatedTons },
-      ];
-
-  // Desglose centrado estrictamente en Vuelos y Viajes (sin hoteles ni comida)
-  const emissionsByCategory: EmissionCategoryItem[] = raw?.emissionsByCategory && raw.emissionsByCategory.length > 0
-    ? raw.emissionsByCategory
-    : [
-        {
-          id: 'international',
-          name: 'Vuelos Internacionales',
-          percentage: 65,
-          tons: Number((totalEmissionsTons * 0.65).toFixed(1)),
-          color: '#059669', // Emerald
-          icon: 'plane',
-        },
-        {
-          id: 'national',
-          name: 'Vuelos Nacionales',
-          percentage: 25,
-          tons: Number((totalEmissionsTons * 0.25).toFixed(1)),
-          color: '#3b82f6', // Blue
-          icon: 'plane',
-        },
-        {
-          id: 'layover',
-          name: 'Escalas y Conexiones',
-          percentage: 10,
-          tons: Number((totalEmissionsTons * 0.10).toFixed(1)),
-          color: '#10b981', // Teal
-          icon: 'plane',
-        },
-      ];
-
-  // Viajes recientes
-  const rawFlights = raw?.recentFlights || [];
-  const recentTrips: RecentTripItem[] = rawFlights.length > 0
-    ? rawFlights.map((f, i) => ({
-        id: f.id || `flight-${i}`,
-        origin: f.origin,
-        destination: f.destination,
-        date: f.date,
-        co2Tons: f.co2Tons,
-        isCompensated: f.isCompensated,
-        routeType: f.routeType === 'Internacional' ? 'Internacional' : 'Nacional',
-        transportMode: f.transportMode || 'Avión',
-      }))
-    : [
-        {
-          id: 'mock-1',
-          origin: 'Lima',
-          destination: 'Santiago',
-          date: '2026-09-12',
-          co2Tons: 1.2,
-          isCompensated: false,
-          routeType: 'Internacional',
-          transportMode: 'Avión',
-        },
-        {
-          id: 'mock-2',
-          origin: 'Arequipa',
-          destination: 'Lima',
-          date: '2026-09-05',
-          co2Tons: 0.4,
-          isCompensated: true,
-          routeType: 'Nacional',
-          transportMode: 'Avión',
-        },
-        {
-          id: 'mock-3',
-          origin: 'Lima',
-          destination: 'Cusco',
-          date: '2026-08-28',
-          co2Tons: 0.3,
-          isCompensated: true,
-          routeType: 'Nacional',
-          transportMode: 'Avión',
-        },
-        {
-          id: 'mock-4',
-          origin: 'Lima',
-          destination: 'Arequipa',
-          date: '2026-08-20',
-          co2Tons: 0.7,
-          isCompensated: true,
-          routeType: 'Nacional',
-          transportMode: 'Avión',
-        },
-      ];
-
-  // Próximo logro gamificado (umbral 1 tonelada = 1000 kg para Viajero Consciente)
-  const targetKg = 1000;
-  const currentKg = Math.min(totalCompensatedKg, targetKg);
-  const progressPercentage = Math.min(100, Math.round((currentKg / targetKg) * 85 || 85));
-  const remainingKg = Math.max(0, targetKg - (targetKg * (progressPercentage / 100)));
-
-  const nextAchievement: NextAchievementItem = raw?.nextAchievement || {
-    title: 'Viajero Consciente',
-    targetDescription: 'Compensa 1 tCO₂e',
-    targetKg,
-    currentKg: Math.round(targetKg * 0.85),
-    progressPercentage: 85,
-    remainingKg: 150,
-  };
+  const recentFlights = raw.recentFlights ?? [];
+  const recentTrips: RecentTripItem[] = recentFlights.map((f) => ({
+    id: f.id,
+    origin: f.origin,
+    destination: f.destination,
+    date: f.date,
+    co2Tons: num(f.co2Tons),
+    isCompensated: Boolean(f.isCompensated),
+    routeType: f.routeType === 'Internacional' || f.routeType === 'Nacional' ? f.routeType : null,
+    transportMode: f.transportMode || 'Avión',
+  }));
 
   return {
-    user,
-    stats,
-    recentFlights: rawFlights,
-    recentTrips,
-    recentCertificates: raw?.recentCertificates || [],
-    monthlyEvolution,
-    emissionsByCategory,
-    nextAchievement,
-    recommendation: {
-      dominantCategory: 'vuelos',
-      percentage: 65,
-      pendingTons: totalPendingTons,
+    user: {
+      nombre: raw.user?.nombre ?? '',
+      email: raw.user?.email ?? '',
+      avatarUrl: raw.user?.avatarUrl ?? null,
+      memberSince: raw.user?.memberSince ?? '',
     },
+    stats,
+    recentFlights,
+    recentTrips,
+    recentCertificates: raw.recentCertificates ?? [],
+    monthlyEvolution: raw.monthlyEvolution ?? [],
+    emissionsByCategory: (raw.emissionsByCategory ?? []).map((c) => ({
+      ...c,
+      color: CATEGORY_COLORS[c.id] ?? '#10b981',
+      icon: 'plane',
+    })),
+    nextAchievement: nextAchievementFor(lifetimeCompensatedKg),
     planetEquivalent: {
-      treesCount: treesEquivalent,
+      treesCount: stats.treesEquivalent,
       periodText: 'durante 1 año',
     },
   };
@@ -417,16 +330,16 @@ export function normalizeDashboardData(raw: Partial<DashboardData> | null | unde
 // ============================================
 
 /**
- * Dashboard - Datos agregados del usuario con normalizador
+ * Dashboard - Datos agregados del usuario.
+ *
+ * Si el backend falla, el error sube: el dashboard muestra un aviso con
+ * reintento en vez de datos que no son del usuario.
+ *
+ * @param period Ventana de los totales. `all` (por defecto) = historial completo.
  */
-export async function getDashboardStats(period: string = '30d'): Promise<DashboardData> {
-  try {
-    const res = await authFetch<{ success: boolean; data: DashboardData }>(`/b2c/dashboard?period=${period}`);
-    return normalizeDashboardData(res.data);
-  } catch (error) {
-    console.warn('Backend /b2c/dashboard no disponible o falló, usando datos normalizados:', error);
-    return normalizeDashboardData(null);
-  }
+export async function getDashboardStats(period: DashboardPeriod = 'all'): Promise<DashboardData> {
+  const res = await authFetch<{ success: boolean; data: DashboardData }>(`/b2c/dashboard?period=${period}`);
+  return normalizeDashboardData(res.data);
 }
 
 /**
@@ -469,16 +382,6 @@ export async function getCertificates(): Promise<{
 export async function getCertificate(id: string): Promise<any> {
   const res = await authFetch<{ success: boolean; certificate: any }>(`/b2c/certificates/${id}`);
   return res.certificate;
-}
-
-/**
- * Descargar certificado HTML
- */
-export async function downloadCertificate(id: string): Promise<Blob> {
-  const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/b2c/certificates/${id}/download`, { headers });
-  if (!response.ok) throw new Error('Error descargando certificado');
-  return response.blob();
 }
 
 /**
@@ -544,7 +447,6 @@ const b2cApi = {
   getCalculations,
   getCertificates,
   getCertificate,
-  downloadCertificate,
   getPublicProjects,
   getPaymentHistory,
   createPaymentTransaction,

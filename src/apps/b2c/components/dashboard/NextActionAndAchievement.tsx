@@ -5,7 +5,8 @@ import { NextAchievementItem } from '../../services/b2cApi';
 
 interface NextActionAndAchievementProps {
   pendingTons: number;
-  nextAchievement: NextAchievementItem;
+  /** null cuando ya alcanzó el nivel máximo. */
+  nextAchievement: NextAchievementItem | null;
 }
 
 export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> = ({
@@ -38,7 +39,9 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
           </div>
 
           <h3 className="text-lg font-extrabold text-gray-900 dark:text-white m-0 mb-1.5 leading-snug">
-            Compensa {pendingTons.toFixed(1)} tCO₂e restantes
+            {pendingTons > 0
+              ? `Compensa ${pendingTons.toFixed(1)} tCO₂e restantes`
+              : 'No tienes emisiones pendientes'}
           </h3>
 
           <p className="text-xs text-gray-600 dark:text-slate-300 m-0 mb-4 max-w-[280px] leading-relaxed">
@@ -66,6 +69,7 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
       </div>
 
       {/* 2. Próximo logro Card */}
+      {nextAchievement && (
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between gap-4">
         {/* Left info */}
         <div className="flex-1">
@@ -90,7 +94,11 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
               />
             </div>
             <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-slate-500 mt-1">
-              <span>Te faltan {nextAchievement.remainingKg} kg CO₂e</span>
+              <span>
+                {nextAchievement.currentKg > 0
+                  ? `Te faltan ${nextAchievement.remainingKg} kg CO₂e`
+                  : 'Aún no has compensado ningún viaje'}
+              </span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
                 {nextAchievement.progressPercentage}%
               </span>
@@ -115,6 +123,7 @@ export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> =
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };

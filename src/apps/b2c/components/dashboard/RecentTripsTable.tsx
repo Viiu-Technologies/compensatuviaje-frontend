@@ -48,7 +48,14 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
           </div>
         </div>
 
-        {/* Table */}
+        {trips.length === 0 ? (
+          <p className="text-xs text-gray-500 dark:text-slate-400 m-0 py-6 text-center">
+            Todavía no registras viajes.{' '}
+            <Link to="/b2c/calculator" className="font-bold text-emerald-600 dark:text-emerald-400 no-underline">
+              Calcula tu primera huella
+            </Link>
+          </p>
+        ) : (
         <div className="overflow-x-auto -mx-2">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -75,15 +82,17 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
                   <td className="py-3 px-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <span>{trip.origin} → {trip.destination}</span>
-                      <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                          trip.routeType === 'Internacional'
-                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
-                            : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
-                        }`}
-                      >
-                        {trip.routeType}
-                      </span>
+                      {trip.routeType && (
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            trip.routeType === 'Internacional'
+                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                              : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          {trip.routeType}
+                        </span>
+                      )}
                     </div>
                   </td>
 
@@ -109,6 +118,7 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Footer Link */}
         <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 text-right">
@@ -121,7 +131,8 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
         </div>
       </div>
 
-      {/* Tu huella vs el planeta Banner */}
+      {/* Tu huella vs el planeta Banner: solo si ya compensó algo */}
+      {compensatedTons > 0 && (
       <div className="bg-[#f0f9f4] dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0 text-sm">
@@ -146,6 +157,7 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
           <FaChevronRight className="text-[10px]" />
         </Link>
       </div>
+      )}
     </div>
   );
 };

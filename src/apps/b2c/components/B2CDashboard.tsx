@@ -9,43 +9,73 @@ import {
   FaCalendarAlt,
   FaChevronDown,
   FaArrowUp,
+  FaArrowDown,
 } from 'react-icons/fa';
 import B2CLayout from './B2CLayout';
-import b2cApi, { type DashboardData } from '../services/b2cApi';
+import b2cApi, { type DashboardData, type DashboardPeriod } from '../services/b2cApi';
 import EmissionEvolutionChart from './dashboard/EmissionEvolutionChart';
 import EmissionBreakdownDonut from './dashboard/EmissionBreakdownDonut';
 import RecentTripsTable from './dashboard/RecentTripsTable';
 import NextActionAndAchievement from './dashboard/NextActionAndAchievement';
 import { useAuth } from '../context/AuthContext';
 
-const PERIOD_OPTIONS = [
+const PERIOD_OPTIONS: { id: DashboardPeriod; label: string }[] = [
   { id: '30d', label: 'Últimos 30 días' },
   { id: '90d', label: 'Últimos 3 meses' },
-  { id: '1y', label: 'Este año' },
+  { id: '1y', label: 'Últimos 12 meses' },
   { id: 'all', label: 'Histórico total' },
 ];
+
+/** Variación contra el periodo anterior. No se muestra si no hay con qué comparar. */
+const Delta: React.FC<{ value: number | null; suffix?: string; lowerIsBetter?: boolean }> = ({
+  value,
+  suffix = '',
+  lowerIsBetter = false,
+}) => {
+  if (value === null || value === 0) return null;
+  const up = value > 0;
+  const good = lowerIsBetter ? !up : up;
+  return (
+    <div
+      className={`inline-flex items-center gap-1 text-[11px] font-bold ${
+        good ? 'text-brand-700 dark:text-brand-400' : 'text-rose-600 dark:text-rose-400'
+      }`}
+    >
+      {up ? <FaArrowUp className="text-[9px]" /> : <FaArrowDown className="text-[9px]" />}
+      <span>
+        {Math.abs(value)}
+        {suffix}
+      </span>
+      <span className="text-gray-500 dark:text-slate-400 font-normal">vs. periodo anterior</span>
+    </div>
+  );
+};
 
 export const B2CDashboard: React.FC = () => {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [error, setError] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('30d');
   const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(false);
         const dashData = await b2cApi.getDashboardStats(selectedPeriod);
         setData(dashData);
       } catch (err) {
         console.error('Error cargando dashboard:', err);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [selectedPeriod]);
+  }, [selectedPeriod, reloadKey]);
 
   // Loading skeleton
   if (loading && !data) {
@@ -62,6 +92,28 @@ export const B2CDashboard: React.FC = () => {
     );
   }
 
+  if (error && !data) {
+    return (
+      <B2CLayout>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200/80 dark:border-slate-800 p-8 text-center">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white m-0 mb-2">
+            No pudimos cargar tu resumen
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 m-0 mb-5">
+            Revisa tu conexión y vuelve a intentarlo.
+          </p>
+          <button
+            type="button"
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="inline-flex items-center gap-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold px-5 py-2.5 rounded-full border-0 cursor-pointer"
+          >
+            Reintentar
+          </button>
+        </div>
+      </B2CLayout>
+    );
+  }
+
   if (!data) return null;
 
   const {
@@ -71,15 +123,13 @@ export const B2CDashboard: React.FC = () => {
     recentTrips,
     nextAchievement,
     planetEquivalent,
-    recommendation,
   } = data;
 
   // Selected period label
   const activePeriodLabel =
     PERIOD_OPTIONS.find((p) => p.id === selectedPeriod)?.label || 'Últimos 30 días';
 
-  // Format user display name in uppercase like mockup
-  const displayName = (user?.nombre || data.user.nombre || 'NILTON HUAYROCCACYA TACO').toUpperCase();
+  const displayName = (user?.nombre || data.user.nombre || '').toUpperCase();
 
   // Header Right Period Filter Dropdown
   const headerFilterElement = (
@@ -126,7 +176,7 @@ export const B2CDashboard: React.FC = () => {
 
   return (
     <B2CLayout
-      title={`Hola, ${displayName}`}
+      title={displayName ? `Hola, ${displayName}` : 'Hola'}
       subtitle="Aquí tienes un resumen de tu huella de carbono y el progreso de tus compensaciones."
       headerRightExtra={headerFilterElement}
     >
@@ -169,13 +219,7 @@ export const B2CDashboard: React.FC = () => {
                   {stats.totalEmissionsTons.toFixed(1)}{' '}
                   <span className="text-xs font-semibold text-gray-400">tCO₂e</span>
                 </div>
-                <div className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400">
-                  <FaArrowUp className="text-[9px]" />
-                  <span>{stats.emissionsDeltaPercentage}%</span>
-                  <span className="text-gray-500 dark:text-slate-400 font-normal">
-                    vs. periodo anterior
-                  </span>
-                </div>
+                <Delta value={stats.emissionsDeltaPercentage} suffix="%" lowerIsBetter />
               </div>
 
               {/* Metric 2: Compensadas */}
@@ -223,13 +267,7 @@ export const B2CDashboard: React.FC = () => {
                 <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-none">
                   {stats.totalFlights}
                 </div>
-                <div className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-700 dark:text-brand-400">
-                  <FaArrowUp className="text-[9px]" />
-                  <span>{stats.flightsDeltaCount}</span>
-                  <span className="text-gray-500 dark:text-slate-400 font-normal">
-                    vs. periodo anterior
-                  </span>
-                </div>
+                <Delta value={stats.flightsDeltaCount} />
               </div>
             </div>
 
@@ -245,8 +283,17 @@ export const B2CDashboard: React.FC = () => {
                   </h4>
                 </div>
                 <p className="text-xs text-gray-600 dark:text-slate-300 m-0 mb-3 leading-relaxed">
-                  Tus vuelos representan el {recommendation.percentage}% de tus emisiones. Considera
-                  compensar las <span className="font-bold">{recommendation.pendingTons.toFixed(1)} tCO₂e</span> restantes.
+                  {stats.totalPendingTons > 0 ? (
+                    <>
+                      Te quedan{' '}
+                      <span className="font-bold">{stats.totalPendingTons.toFixed(1)} tCO₂e</span> por
+                      compensar en este período.
+                    </>
+                  ) : stats.totalFlights > 0 ? (
+                    'Tienes compensados todos tus viajes de este período.'
+                  ) : (
+                    'Calcula la huella de tu próximo viaje y compénsala con un proyecto verificado.'
+                  )}
                 </p>
               </div>
 

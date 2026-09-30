@@ -82,28 +82,24 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Real sidebar stats
+  // Resumen del menú lateral: historial completo del usuario, empieza en cero.
   const [sidebarStats, setSidebarStats] = useState({
-    totalCompensatedTons: 1.0,
-    totalEmissionsTons: 10.4,
-    compensationRate: 9.6,
-    certificatesCount: 5,
+    totalCompensatedTons: 0,
+    compensationRate: 0,
+    certificatesCount: 0,
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await b2cApi.getDashboardStats();
-        if (data?.stats) {
-          setSidebarStats({
-            totalCompensatedTons: data.stats.totalCompensatedTons || 1.0,
-            totalEmissionsTons: data.stats.totalEmissionsTons || 10.4,
-            compensationRate: data.stats.compensationRate || 9.6,
-            certificatesCount: data.stats.certificatesCount || 5,
-          });
-        }
+        const { stats } = await b2cApi.getDashboardStats('all');
+        setSidebarStats({
+          totalCompensatedTons: stats.lifetimeCompensatedKg / 1000,
+          compensationRate: stats.lifetimeCompensationRate,
+          certificatesCount: stats.certificatesCount,
+        });
       } catch {
-        // Fallback gracefully
+        // Sin datos se queda en cero: nunca mostrar cifras que no son del usuario.
       }
     };
     fetchStats();
