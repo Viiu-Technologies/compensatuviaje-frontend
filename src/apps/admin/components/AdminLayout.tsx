@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
+import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import {
   LayoutDashboard,
   Building2,
@@ -84,6 +85,9 @@ const navSections: NavSection[] = [
 ];
 
 export default function AdminLayout() {
+  // El admin no tiene un modo oscuro completo: con el SO en oscuro, el texto
+  // pasaba a claro sobre tarjetas que siguen blancas y los KPI no se veían.
+  useForceLightTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -114,7 +118,7 @@ export default function AdminLayout() {
             className={`!h-10 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
           />
           {sidebarCollapsed && (
-            <img src="/images/brand/favicon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !drop-shadow-lg" />
+            <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !object-contain !drop-shadow-lg" />
           )}
         </div>
 

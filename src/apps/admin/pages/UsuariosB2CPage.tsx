@@ -44,11 +44,14 @@ interface B2CStatsData {
   };
 }
 
+const fmt = (n: number | undefined) => (n ?? 0).toLocaleString('es-CL');
+
 export default function UsuariosB2CPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<B2CUser[]>([]);
   const [stats, setStats] = useState<B2CStatsData | null>(null);
+  const [statsError, setStatsError] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -94,15 +97,13 @@ export default function UsuariosB2CPage() {
     try {
       const statsData = await getB2CStats(period);
       setStats(statsData);
+      setStatsError(false);
     } catch (error) {
       console.error('Error loading stats:', error);
-      // Fallback data
-      setStats({
-        overview: { totalUsers: 8432, newUsers: 450, activeUsers: 1250, retentionRate: 68 },
-        byAuthProvider: { email: 5000, google: 2432, supabase: 1000 },
-        byCountry: [{ country: 'Chile', count: 6000 }, { country: 'Argentina', count: 1200 }, { country: 'Otros', count: 1232 }],
-        compensations: { totalCalculations: 15400, totalCompensations: 3200, conversionRate: '20.7%', totalEmissionsKg: 450000, compensatedEmissionsKg: 380000, totalRevenueCLP: 45200000 }
-      });
+      // Antes se mostraban cifras inventadas (8.432 usuarios, 68 % de
+      // retención...) como si fueran reales. Ahora se avisa del error.
+      setStats(null);
+      setStatsError(true);
     }
   };
 
@@ -139,6 +140,12 @@ export default function UsuariosB2CPage() {
         </div>
       </div>
 
+      {statsError && (
+        <div role="alert" className="!p-4 !rounded-xl !border border-red-200 bg-red-50 text-red-800 !text-sm">
+          No se pudieron cargar las estadísticas de usuarios. Vuelve a intentarlo en unos minutos.
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6">
         <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
@@ -146,40 +153,36 @@ export default function UsuariosB2CPage() {
             <div className="!p-3 !rounded-2xl !bg-indigo-50 !text-indigo-600">
               <Users className="!w-6 !h-6" />
             </div>
-            <span className="!text-xs !font-bold !text-emerald-500 !bg-emerald-50 !px-2 !py-1 !rounded-lg">+12%</span>
           </div>
           <p className="!text-slate-500 !text-sm !font-medium">Total Usuarios</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats?.overview.totalUsers.toLocaleString()}</h3>
+          <h3 className="!text-2xl !font-black !text-slate-900">{stats ? fmt(stats.overview?.totalUsers) : '—'}</h3>
         </div>
         <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
           <div className="!flex !items-center !justify-between !mb-4">
             <div className="!p-3 !rounded-2xl !bg-emerald-50 !text-emerald-600">
               <Zap className="!w-6 !h-6" />
             </div>
-            <span className="!text-xs !font-bold !text-emerald-500 !bg-emerald-50 !px-2 !py-1 !rounded-lg">+5%</span>
           </div>
           <p className="!text-slate-500 !text-sm !font-medium">Usuarios Activos</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats?.overview.activeUsers.toLocaleString()}</h3>
+          <h3 className="!text-2xl !font-black !text-slate-900">{stats ? fmt(stats.overview?.activeUsers) : '—'}</h3>
         </div>
         <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
           <div className="!flex !items-center !justify-between !mb-4">
             <div className="!p-3 !rounded-2xl !bg-amber-50 !text-amber-600">
               <Activity className="!w-6 !h-6" />
             </div>
-            <span className="!text-xs !font-bold !text-slate-400 !bg-slate-50 !px-2 !py-1 !rounded-lg">Estable</span>
           </div>
           <p className="!text-slate-500 !text-sm !font-medium">Tasa de Conversión</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats?.compensations.conversionRate}</h3>
+          <h3 className="!text-2xl !font-black !text-slate-900">{stats?.compensations?.conversionRate ?? '—'}</h3>
         </div>
         <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
           <div className="!flex !items-center !justify-between !mb-4">
             <div className="!p-3 !rounded-2xl !bg-rose-50 !text-rose-600">
               <TrendingUp className="!w-6 !h-6" />
             </div>
-            <span className="!text-xs !font-bold !text-emerald-500 !bg-emerald-50 !px-2 !py-1 !rounded-lg">+22%</span>
           </div>
           <p className="!text-slate-500 !text-sm !font-medium">CO2 Compensado</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{((stats?.compensations.compensatedEmissionsKg || 0) / 1000).toFixed(1)}t</h3>
+          <h3 className="!text-2xl !font-black !text-slate-900">{stats ? `${((stats.compensations?.compensatedEmissionsKg ?? 0) / 1000).toLocaleString('es-CL', { maximumFractionDigits: 1 })} t` : '—'}</h3>
         </div>
       </div>
 

@@ -38,6 +38,13 @@ export default function SettingsPage() {
     loadData();
   }, []);
 
+  // Si la API omite un campo, antes quedaba undefined y los cálculos
+  // mostraban "$NaN CLP/ton".
+  const toNumber = (value: unknown) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -45,9 +52,9 @@ export default function SettingsPage() {
       const settingsData = await getSettings();
       setSettings(settingsData);
       setFormData({
-        default_margin_percent: settingsData.default_margin_percent,
-        min_price_clp_per_ton: settingsData.min_price_clp_per_ton,
-        max_price_clp_per_ton: settingsData.max_price_clp_per_ton
+        default_margin_percent: toNumber(settingsData?.default_margin_percent),
+        min_price_clp_per_ton: toNumber(settingsData?.min_price_clp_per_ton),
+        max_price_clp_per_ton: toNumber(settingsData?.max_price_clp_per_ton)
       });
     } catch (err: any) {
       setError(getErrorMessage(err, 'No pudimos cargar la configuración.'));
@@ -94,7 +101,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="!text-3xl !font-bold text-slate-900 dark:text-slate-100 !flex !items-center !gap-3">
             <Settings className="!w-8 !h-8 text-indigo-600 dark:text-indigo-400" />
-            Platform Settings
+            Configuración de la plataforma
           </h1>
           <p className="text-slate-600 dark:text-slate-300 !mt-1">
             Configure márgenes y parámetros de precios en CLP
@@ -254,7 +261,7 @@ export default function SettingsPage() {
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Por kg CO2:</span>
                 <p className="!font-mono !font-semibold text-slate-900 dark:text-slate-100">
-                  ${(calculateExamplePrice() / 1000).toFixed(0)} CLP
+                  ${Math.round(calculateExamplePrice() / 1000).toLocaleString('es-CL')} CLP
                 </p>
               </div>
               <div>
@@ -269,7 +276,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Last Updated Info */}
-      {settings && (
+      {settings?.updated_at && !Number.isNaN(new Date(settings.updated_at).getTime()) && (
         <div className="!text-center !text-sm text-slate-500 dark:text-slate-400">
           Última actualización: {new Date(settings.updated_at).toLocaleString('es-CL')}
           {settings.updated_by && ` por ${settings.updated_by}`}

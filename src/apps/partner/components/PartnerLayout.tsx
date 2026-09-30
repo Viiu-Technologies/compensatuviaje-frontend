@@ -125,7 +125,7 @@ const PartnerLayout: React.FC = () => {
             className={`!h-10 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
           />
           {sidebarCollapsed && (
-            <img src="/images/brand/favicon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !drop-shadow-lg" />
+            <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !object-contain !drop-shadow-lg" />
           )}
         </div>
 

@@ -1,8 +1,8 @@
-import React, { lazy, Suspense, useLayoutEffect } from 'react';
+import React, { lazy, Suspense } from 'react';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import StandardsRibbon from '../components/StandardsRibbon';
-import { useTheme } from '../../../shared/context/ThemeContext';
+import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useSeo } from '../../../shared/utils/useSeo';
 
 // Below-fold sections: lazy loaded for optimal Core Web Vitals (FCP / LCP)
@@ -20,35 +20,8 @@ const LandingPage: React.FC = () => {
     path: '/',
   });
 
-  const { resolvedTheme } = useTheme();
-
-  useLayoutEffect(() => {
-    const root = window.document.documentElement;
-    const originalTheme = resolvedTheme;
-
-    // Force light theme for brand consistency on public landing
-    root.classList.remove('dark');
-    root.classList.add('light');
-    root.setAttribute('data-theme', 'light');
-
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#ffffff');
-    }
-
-    return () => {
-      // Restore original theme when navigating away
-      root.classList.remove('light', 'dark');
-      root.classList.add(originalTheme);
-      root.setAttribute('data-theme', originalTheme);
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute(
-          'content',
-          originalTheme === 'dark' ? '#1a1a2e' : '#ffffff'
-        );
-      }
-    };
-  }, [resolvedTheme]);
+  // Force light theme for brand consistency on public landing
+  useForceLightTheme();
 
   return (
     <>

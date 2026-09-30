@@ -95,7 +95,7 @@ const AdminNFTDashboard: React.FC = () => {
       valueColor: 'text-green-700 dark:text-green-300',
     },
     {
-      label: 'Holders Únicos',
+      label: 'Titulares únicos',
       value: stats?.uniqueHolders ?? 0,
       icon: FaUsers,
       bg: 'bg-blue-50 dark:bg-blue-500/10',
@@ -239,7 +239,7 @@ const AdminNFTDashboard: React.FC = () => {
             <div className="!px-6 !py-4 !border-b border-gray-100 dark:border-slate-700 !flex !items-center !justify-between">
               <h3 className="!text-lg !font-bold text-gray-900 dark:text-slate-100 !flex !items-center !gap-2">
                 <FaClock className="!text-purple-600" />
-                Últimos NFTs Minteados
+                Últimos NFT emitidos
               </h3>
               <span className="!text-xs text-gray-400 dark:text-slate-500">{stats.recentMints?.length || 0} registros</span>
             </div>
@@ -247,7 +247,7 @@ const AdminNFTDashboard: React.FC = () => {
             {(!stats.recentMints || stats.recentMints.length === 0) ? (
               <div className="!p-8 !text-center">
                 <FaCertificate className="!text-4xl text-gray-300 dark:text-slate-600 !mx-auto !mb-3" />
-                <p className="text-gray-500 dark:text-slate-400 !text-sm">Aún no hay certificados NFT minteados</p>
+                <p className="text-gray-500 dark:text-slate-400 !text-sm">Aún no se han emitido certificados NFT</p>
               </div>
             ) : (
               <div className="!overflow-x-auto">

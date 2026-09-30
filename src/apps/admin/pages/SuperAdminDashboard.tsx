@@ -17,7 +17,8 @@ import {
   DollarSign,
   Inbox,
   UserPlus,
-  FileText
+  FileText,
+  RefreshCw
 } from 'lucide-react';
 import {
   BarChart,
@@ -81,6 +82,22 @@ function timeAgo(dateStr: string): string {
   return `Hace ${diffD}d`;
 }
 
+/** Nombre visible del tipo de entidad (el backend envía la clave interna en inglés). */
+const ENTITY_LABELS: Record<string, string> = {
+  company: 'Empresa',
+  user: 'Usuario',
+  b2c_user: 'Usuario B2C',
+  document: 'Documento',
+  payment: 'Pago',
+  compensation: 'Compensación',
+  project: 'Proyecto',
+  partner: 'Partner',
+  certificate: 'Certificado',
+  order: 'Orden',
+};
+
+const entityLabel = (type: string) => ENTITY_LABELS[type] ?? type;
+
 /** Icon & color for activity types */
 function activityMeta(type: string) {
   switch (type) {
@@ -100,6 +117,10 @@ export default function SuperAdminDashboard() {
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('30d');
+  // Estado real de la carga (reemplaza el badge fijo "SISTEMA ONLINE", que
+  // se mostraba igual aunque el backend estuviera caído).
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -114,7 +135,10 @@ export default function SuperAdminDashboard() {
       ]);
       if (dashboardData.status === 'fulfilled') {
         setDashboard(dashboardData.value);
+        setLoadError(false);
+        setUpdatedAt(new Date());
       } else {
+        setLoadError(true);
         console.error('Error loading dashboard:', dashboardData.reason);
         // Fallback con zeros
         setDashboard({
@@ -222,7 +246,7 @@ export default function SuperAdminDashboard() {
       <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
         <div>
           <h2 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !tracking-tight">Vista General</h2>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">Monitoreo en tiempo real de la plataforma global.</p>
+          <p className="text-slate-500 dark:text-slate-400 !mt-1">Resumen de la plataforma en el período seleccionado.</p>
         </div>
         <div className="!flex !items-center !gap-3">
           <select
@@ -235,12 +259,29 @@ export default function SuperAdminDashboard() {
             <option value="90d">Últimos 90 días</option>
             <option value="365d">Último año</option>
           </select>
-          <div className="!flex !items-center !gap-2 bg-emerald-50 dark:bg-emerald-500/10 !px-3 !py-2 !rounded-xl !border border-emerald-100 dark:border-emerald-500/20">
-            <div className="!w-2 !h-2 bg-emerald-500 !rounded-full !animate-pulse"></div>
-            <span className="!text-xs !font-bold text-emerald-700 dark:text-emerald-300">SISTEMA ONLINE</span>
-          </div>
+          <button
+            type="button"
+            onClick={loadData}
+            className="!flex !items-center !gap-2 bg-white !px-3 !py-2 !rounded-xl !border border-slate-200 !text-xs !font-medium text-slate-600 hover:bg-slate-50 !shadow-sm"
+            title="Volver a cargar los datos"
+          >
+            <RefreshCw className="!w-3.5 !h-3.5" />
+            {updatedAt
+              ? `Actualizado ${updatedAt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}`
+              : 'Actualizar'}
+          </button>
         </div>
       </div>
+
+      {loadError && (
+        <div role="alert" className="!flex !items-start !gap-3 !p-4 !rounded-xl !border border-red-200 bg-red-50 text-red-800">
+          <AlertTriangle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
+          <div className="!text-sm">
+            <p className="!font-semibold">No se pudieron cargar los datos del panel.</p>
+            <p>Las cifras en 0 no son reales. Revisa la conexión con el servidor y vuelve a intentar.</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid - Real data from dashboard API */}
       <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6">
@@ -452,7 +493,7 @@ export default function SuperAdminDashboard() {
                     </div>
                     <div className="!flex-1">
                       <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{item.description}</p>
-                      <p className="!text-xs text-slate-500 dark:text-slate-400">{item.entityType}</p>
+                      <p className="!text-xs text-slate-500 dark:text-slate-400">{entityLabel(item.entityType)}</p>
                     </div>
                     <span className="!text-xs text-slate-400 dark:text-slate-500">{timeAgo(item.timestamp)}</span>
                   </div>

@@ -65,6 +65,10 @@ const FunnelBar: React.FC<{ label: string; value: number; max: number; hint?: st
   );
 };
 
+// Montos en dólares con formato chileno (coma decimal): "US$ 0,0012".
+const usd = (n: number | null | undefined, maxDecimals = 4) =>
+  `US$ ${(n ?? 0).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: maxDecimals })}`;
+
 const NewsHealthPage: React.FC = () => {
   const [health, setHealth] = useState<NewsHealth | null>(null);
   const [stats, setStats] = useState<NewsStats | null>(null);
@@ -123,9 +127,9 @@ const NewsHealthPage: React.FC = () => {
       </div>
 
       {/* Alertas */}
-      {health && health.alertas.length > 0 && (
+      {(health?.alertas?.length ?? 0) > 0 && (
         <div className="!space-y-2">
-          {health.alertas.map((a, i) => (
+          {health!.alertas.map((a, i) => (
             <div
               key={i}
               className={`!flex !items-start !gap-3 !p-4 !rounded-xl !border ${
@@ -149,7 +153,7 @@ const NewsHealthPage: React.FC = () => {
         </div>
       )}
 
-      {health && health.alertas.length === 0 && (
+      {health && (health.alertas?.length ?? 0) === 0 && (
         <div className="!flex !items-center !gap-3 !p-4 !rounded-xl bg-emerald-50 dark:bg-emerald-950/40 !border border-emerald-200 dark:border-emerald-900">
           <CheckCircle2 className="!w-5 !h-5 text-emerald-600" />
           <p className="!text-sm text-slate-700 dark:text-slate-200">Todo en orden. Sin alertas activas.</p>
@@ -161,9 +165,9 @@ const NewsHealthPage: React.FC = () => {
         <Stat
           icon={Rss}
           label="Fuentes activas"
-          value={`${health?.fuentes.activas ?? 0}/${health?.fuentes.totales ?? 0}`}
-          hint={health?.fuentes.sinResultados ? `${health.fuentes.sinResultados} sin resultados` : 'todas trayendo'}
-          tone={health?.fuentes.sinResultados ? 'warn' : 'ok'}
+          value={`${health?.fuentes?.activas ?? 0}/${health?.fuentes?.totales ?? 0}`}
+          hint={health?.fuentes?.sinResultados ? `${health.fuentes.sinResultados} sin resultados` : 'todas trayendo'}
+          tone={health?.fuentes?.sinResultados ? 'warn' : 'ok'}
         />
         <Stat
           icon={Inbox}
@@ -175,8 +179,8 @@ const NewsHealthPage: React.FC = () => {
         <Stat
           icon={DollarSign}
           label="Gasto LLM 24 h"
-          value={`$${(health?.gasto24hUsd ?? 0).toFixed(4)}`}
-          hint={`de $${(health?.presupuestoDiarioUsd ?? 0).toFixed(2)}`}
+          value={usd(health?.gasto24hUsd)}
+          hint={`de ${usd(health?.presupuestoDiarioUsd, 2)}`}
           tone={
             (health?.gasto24hUsd ?? 0) >= (health?.presupuestoDiarioUsd ?? 1) ? 'bad' : 'ok'
           }
@@ -215,13 +219,13 @@ const NewsHealthPage: React.FC = () => {
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Costo LLM 30 d</span>
                 <p className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">
-                  ${stats.costoLlm.totalUsd.toFixed(4)}
+                  {usd(stats.costoLlm?.totalUsd)}
                 </p>
               </div>
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Éxito de llamadas</span>
                 <p className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">
-                  {stats.costoLlm.tasaExito != null ? `${stats.costoLlm.tasaExito}%` : '—'}
+                  {stats.costoLlm?.tasaExito != null ? `${stats.costoLlm.tasaExito}%` : '—'}
                 </p>
               </div>
               <div>
@@ -236,7 +240,7 @@ const NewsHealthPage: React.FC = () => {
       )}
 
       {/* Costo por paso */}
-      {stats && stats.costoLlm.porPaso.length > 0 && (
+      {(stats?.costoLlm?.porPaso?.length ?? 0) > 0 && (
         <div className="bg-white dark:bg-slate-800 !rounded-xl !p-5 !border border-slate-200 dark:border-slate-700 !overflow-x-auto">
           <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">Costo por paso</h2>
           <table className="!w-full !text-sm">
@@ -249,11 +253,11 @@ const NewsHealthPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {stats.costoLlm.porPaso.map((p) => (
+              {stats!.costoLlm.porPaso.map((p) => (
                 <tr key={p.paso} className="!border-t border-slate-100 dark:border-slate-700">
                   <td className="!py-2 text-slate-700 dark:text-slate-200">{p.paso}</td>
                   <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">{p.llamadas}</td>
-                  <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">${p.costoUsd.toFixed(5)}</td>
+                  <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">{usd(p.costoUsd, 5)}</td>
                   <td className="!py-2 !text-right text-slate-600 dark:text-slate-300">{p.latenciaMediaMs} ms</td>
                 </tr>
               ))}
