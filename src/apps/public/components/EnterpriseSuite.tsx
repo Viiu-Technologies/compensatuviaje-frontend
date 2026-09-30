@@ -6,7 +6,7 @@ import './EnterpriseSuite.css';
 
 const B2B_BENEFITS = [
   'Reportes con desglose Scope 3 (Categoría 6: viajes de negocio), útiles para informar bajo la NCG 461 de la CMF y la CSRD',
-  'Certificados corporativos consolidados con trazabilidad en blockchain',
+  'Certificados corporativos consolidados con el detalle de cada compensación',
   'Beneficios de posicionamiento reputacional y sustentabilidad corporativa',
 ];
 
@@ -88,7 +88,7 @@ export const EnterpriseSuite: React.FC = () => {
                   <div className="es-m-card">
                     <span className="es-m-label">Emisiones</span>
                     <span className="es-m-val">412,8 t</span>
-                    <span className="es-m-sub">Scope 3 · DEFRA 2024</span>
+                    <span className="es-m-sub">Scope 3 · DEFRA 2025</span>
                   </div>
                   <div className="es-m-card es-m-card--accent">
                     <span className="es-m-label">Neutralizado</span>
@@ -114,8 +114,8 @@ export const EnterpriseSuite: React.FC = () => {
                       <HiOutlineDocumentReport aria-hidden="true" />
                     </div>
                     <div className="es-f-text">
-                      <h4>Dossier ESG para tus reportes CMF y CSRD</h4>
-                      <p>Descarga informes en PDF y Excel con la metodología y los factores documentados para tu auditoría.</p>
+                      <h4>Resumen mensual para tus reportes CMF y CSRD</h4>
+                      <p>Consulta en tu panel las emisiones de cada mes, calculadas con factores DEFRA documentados.</p>
                     </div>
                   </div>
 
@@ -124,8 +124,8 @@ export const EnterpriseSuite: React.FC = () => {
                       <HiOutlineCode aria-hidden="true" />
                     </div>
                     <div className="es-f-text">
-                      <h4>API REST para agencias y booking engines</h4>
-                      <p>Integra la compensación automática en tu software de reservas corporativas.</p>
+                      <h4>Integraciones a medida</h4>
+                      <p>¿Necesitas conectar tu sistema de reservas? Conversemos y evaluamos la integración contigo.</p>
                     </div>
                   </div>
                 </div>
@@ -133,7 +133,7 @@ export const EnterpriseSuite: React.FC = () => {
                 {/* Footer del Mockup */}
                 <div className="es-mockup-footer">
                   <FaShieldAlt className="es-footer-shield" aria-hidden="true" />
-                  <span>Emisión de certificados corporativos registrados en blockchain</span>
+                  <span>Emisión de certificados corporativos por cada compensación</span>
                 </div>
               </div>
             </div>

@@ -366,7 +366,7 @@ const PartnersGuidePage = () => {
                 Proyectos de aliados que ya reciben compensaciones
               </h2>
               <p className="pg-showcase__lead">
-                Iniciativas verificadas con factores DEFRA 2024, GHG Protocol y registro inmutable en blockchain.
+                Iniciativas verificadas, con cálculo según DEFRA 2025 y el GHG Protocol.
               </p>
             </header>
 

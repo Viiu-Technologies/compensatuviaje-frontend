@@ -11,22 +11,16 @@ interface StandardItem {
 
 const STANDARDS: StandardItem[] = [
   {
-    name: 'DEFRA 2024',
+    name: 'DEFRA 2025',
     category: 'Factores de Emisión',
     scope: 'UK Gov Greenhouse Gas Reporting',
-    code: 'DEFRA-24',
+    code: 'DEFRA-25',
   },
   {
     name: 'GHG Protocol',
     category: 'Estándar Global',
     scope: 'Corporate Scope 3 (Cat. 6)',
     code: 'GHG-SCOPE3',
-  },
-  {
-    name: 'ICAO Carbon',
-    category: 'Aviación Civil',
-    scope: 'United Nations Standard Methodology',
-    code: 'ICAO-UN',
   },
   {
     name: 'Veritas AI',

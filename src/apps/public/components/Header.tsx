@@ -87,7 +87,7 @@ const NAV_GROUPS: NavGroup[] = [
       {
         label: 'Metodología & Estándares',
         href: '/calculadora#metodologia',
-        description: 'Factores oficiales ICAO, DEFRA y GHG.',
+        description: 'Factores oficiales DEFRA y GHG Protocol.',
         icon: FaShieldAlt,
         iconTheme: 'teal',
         prefetchKey: 'calculator',

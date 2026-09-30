@@ -10,7 +10,7 @@ import {
   HiOutlineGlobe,
   HiOutlineShieldCheck
 } from 'react-icons/hi';
-import { FaPlane, FaUsers, FaLeaf, FaTree, FaCarAlt, FaMobileAlt } from 'react-icons/fa';
+import { FaPlane, FaUsers, FaLeaf, FaTree } from 'react-icons/fa';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { 
@@ -22,10 +22,10 @@ import './CalculatorPage.css';
 import { useSeo } from '../../../shared/utils/useSeo';
 
 const CABIN_OPTIONS = [
-  { value: 'economy', label: 'Económica', factor: '1.0x' },
-  { value: 'premium_economy', label: 'Premium Economy', factor: '1.6x' },
-  { value: 'business', label: 'Business / Ejecutiva', factor: '2.9x' },
-  { value: 'first', label: 'Primera Clase', factor: '4.0x' },
+  { value: 'economy', label: 'Económica' },
+  { value: 'premium_economy', label: 'Premium Economy' },
+  { value: 'business', label: 'Business / Ejecutiva' },
+  { value: 'first', label: 'Primera Clase' },
 ];
 
 const QUICK_ROUTES = [
@@ -37,14 +37,8 @@ const QUICK_ROUTES = [
   { origin: 'SCL', destination: 'GRU', label: 'Santiago ⇄ São Paulo' },
 ];
 
-interface CalculationResult {
-  co2eKg: number;
-  co2eTons: number;
-  distanceKm: number;
-  suggestedCompensationUSD: number;
-  suggestedCompensationCLP: number;
-  treeEquivalents: number;
-}
+const fmtCLP = (n: number) =>
+  new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
 const CalculatorPage: React.FC = () => {
   const [origin, setOrigin] = useState('SCL');
@@ -52,10 +46,9 @@ const CalculatorPage: React.FC = () => {
   const [cabinCode, setCabinCode] = useState<'economy' | 'premium_economy' | 'business' | 'first'>('economy');
   const [passengers, setPassengers] = useState(1);
   const [roundTrip, setRoundTrip] = useState(true);
-  const [includeRadiativeForcing, setIncludeRadiativeForcing] = useState(true);
 
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<CalculationResult | null>(null);
+  const [result, setResult] = useState<EstimateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,60 +89,18 @@ const CalculatorPage: React.FC = () => {
         roundTrip,
       });
 
+      // Solo el resultado del backend. Antes había dos cálculos de respaldo
+      // (distancias fijas y factores 0,25/0,15/0,145) que mostraban cifras
+      // inventadas como si fueran el cálculo oficial.
       if (res.status === 'success' && res.emissions && res.meta) {
-        const kg = res.emissions.kgCO2e;
-        const tons = res.emissions.tonCO2e;
-        const usd = tons * 25;
-        setResult({
-          co2eKg: kg,
-          co2eTons: tons,
-          distanceKm: res.meta.distanceKmTotal,
-          suggestedCompensationUSD: usd,
-          suggestedCompensationCLP: usd * 970,
-          treeEquivalents: res.equivalencies?.treesPerYear ?? Math.round(tons * 45),
-        });
+        setResult(res);
       } else {
-        // Fallback robusto con cálculo directo DEFRA
-        const distanceMap: Record<string, number> = {
-          'SCL-LIM': 2460,
-          'SCL-BUE': 1140,
-          'SCL-MIA': 6650,
-          'SCL-MAD': 10700,
-          'SCL-BOG': 4250,
-          'SCL-GRU': 2600,
-        };
-        const key = `${origin}-${destination}`;
-        const revKey = `${destination}-${origin}`;
-        const baseDist = distanceMap[key] || distanceMap[revKey] || 2500;
-        const totalDist = baseDist * (roundTrip ? 2 : 1);
-        const cabinMult = cabinCode === 'economy' ? 1.0 : cabinCode === 'premium_economy' ? 1.6 : cabinCode === 'business' ? 2.9 : 4.0;
-        const baseFactor = totalDist < 1000 ? 0.25 : totalDist < 3700 ? 0.15 : 0.145;
-        const kg = totalDist * baseFactor * passengers * cabinMult;
-        const tons = kg / 1000;
-        const usd = tons * 25;
-
-        setResult({
-          co2eKg: kg,
-          co2eTons: tons,
-          distanceKm: totalDist,
-          suggestedCompensationUSD: usd,
-          suggestedCompensationCLP: usd * 970,
-          treeEquivalents: Math.max(1, Math.round(tons * 45)),
-        });
+        setResult(null);
+        setError(res.message || 'No pudimos calcular las emisiones de este vuelo.');
       }
-    } catch {
-      const baseDist = 2500 * (roundTrip ? 2 : 1);
-      const kg = baseDist * 0.15 * passengers;
-      const tons = kg / 1000;
-      const usd = tons * 25;
-      setResult({
-        co2eKg: kg,
-        co2eTons: tons,
-        distanceKm: baseDist,
-        suggestedCompensationUSD: usd,
-        suggestedCompensationCLP: usd * 970,
-        treeEquivalents: Math.max(1, Math.round(tons * 45)),
-      });
+    } catch (err: any) {
+      setResult(null);
+      setError(err?.message || 'No pudimos conectar con la calculadora. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -164,13 +115,11 @@ const CalculatorPage: React.FC = () => {
     setDestination(origin);
   };
 
-  const currentTons = result?.co2eTons ?? 0;
-  const currentKg = result?.co2eKg ?? 0;
-  const effectiveTons = includeRadiativeForcing ? currentTons : currentTons * 0.55;
-  const effectiveKg = includeRadiativeForcing ? currentKg : currentKg * 0.55;
-  const treesEquiv = Math.max(1, Math.round(effectiveTons * 45));
-  const carKmEquiv = Math.round(effectiveKg * 4.8);
-  const phonesEquiv = Math.round(effectiveKg * 122);
+  // Todo sale del backend de la calculadora (emisiones, equivalencia y precio).
+  const emissions = result?.emissions;
+  const trees = result?.equivalencies?.trees;
+  const pricing = result?.pricing ?? null;
+  const methodology = emissions?.methodology ?? 'DEFRA';
 
   return (
     <div className="calcp-page">
@@ -193,7 +142,7 @@ const CalculatorPage: React.FC = () => {
             </h1>
 
             <p className="calcp-lead">
-              Utilizamos los factores de emisión oficiales de DEFRA 2024/2025, el Protocolo de Gases de Efecto Invernadero (GHG Protocol) y la metodología de la OACI para ofrecerte un cálculo transparente y 100% auditable.
+              Utilizamos los factores de emisión oficiales de {methodology} para vuelos, aplicados según el GHG Protocol, para ofrecerte un cálculo transparente y auditable.
             </p>
 
             {/* Quick Route Pills */}
@@ -317,29 +266,11 @@ const CalculatorPage: React.FC = () => {
                     >
                       {CABIN_OPTIONS.map((c) => (
                         <option key={c.value} value={c.value}>
-                          {c.label} ({c.factor})
+                          {c.label}
                         </option>
                       ))}
                     </select>
                   </div>
-                </div>
-
-                {/* Forzamiento Radiativo Toggle */}
-                <div className="calcp-rf-toggle">
-                  <label className="calcp-checkbox-wrap">
-                    <input
-                      type="checkbox"
-                      checked={includeRadiativeForcing}
-                      onChange={(e) => setIncludeRadiativeForcing(e.target.checked)}
-                    />
-                    <span className="calcp-checkbox-custom" />
-                    <span className="calcp-checkbox-label">
-                      Incluir factor de forzamiento radiativo a gran altitud (Recomendado DEFRA)
-                    </span>
-                  </label>
-                  <p className="calcp-rf-note">
-                    Contempla el impacto adicional del vapor de agua y estelas de condensación (contrails) en la estratósfera.
-                  </p>
                 </div>
 
                 {error && <div className="calcp-error">{error}</div>}
@@ -353,62 +284,54 @@ const CalculatorPage: React.FC = () => {
 
                 <div className="calcp-emissions-highlight">
                   <span className="calcp-emissions-number">
-                    {effectiveTons.toFixed(2)}
+                    {emissions ? emissions.tonCO2e.toLocaleString('es-CL', { maximumFractionDigits: 2 }) : '—'}
                   </span>
                   <span className="calcp-emissions-unit">
                     toneladas de CO₂e
                   </span>
-                  <p className="calcp-emissions-sub">
-                    ({Math.round(effectiveKg).toLocaleString('es-CL')} kg de CO₂ equivalente total)
-                  </p>
+                  {emissions && (
+                    <p className="calcp-emissions-sub">
+                      ({Math.round(emissions.kgCO2e).toLocaleString('es-CL')} kg de CO₂ equivalente total)
+                    </p>
+                  )}
                 </div>
 
                 {/* Detalle de ruta */}
                 <div className="calcp-route-summary">
                   <div className="calcp-route-item">
                     <span>Distancia total estimada</span>
-                    <strong>{result?.distanceKm ? Math.round(result.distanceKm).toLocaleString('es-CL') : '—'} km</strong>
+                    <strong>{result?.meta?.distanceKmTotal ? `${Math.round(result.meta.distanceKmTotal).toLocaleString('es-CL')} km` : '—'}</strong>
                   </div>
                   <div className="calcp-route-item">
                     <span>Trayecto</span>
                     <strong>{origin} ⇄ {destination} ({roundTrip ? 'Ida y vuelta' : 'Solo ida'})</strong>
                   </div>
-                  <div className="calcp-route-item">
-                    <span>Inversión sugerida en bonos</span>
-                    <strong className="calcp-price-tag">
-                      ${result?.suggestedCompensationCLP ? Math.round(result.suggestedCompensationCLP).toLocaleString('es-CL') : '—'} CLP
-                      <small> (USD ${(effectiveTons * 25).toFixed(1)})</small>
-                    </strong>
-                  </div>
+                  {pricing && (
+                    <div className="calcp-route-item">
+                      <span>Compensación desde</span>
+                      <strong className="calcp-price-tag">
+                        {fmtCLP(pricing.fromTotalCLP)} CLP
+                        <small> ({fmtCLP(pricing.fromPricePerTonCLP)}/t en el proyecto más accesible)</small>
+                      </strong>
+                    </div>
+                  )}
                 </div>
 
-                {/* Equivalencias Ecológicas */}
-                <div className="calcp-equiv-section">
-                  <h4>Equivalencias ambientales:</h4>
-                  <div className="calcp-equiv-grid">
-                    <div className="calcp-equiv-item">
-                      <FaTree className="calcp-equiv-icon calcp-equiv-icon--tree" />
-                      <div>
-                        <strong>{treesEquiv} árboles</strong>
-                        <span>absorbiendo CO₂ por 1 año</span>
-                      </div>
-                    </div>
-                    <div className="calcp-equiv-item">
-                      <FaCarAlt className="calcp-equiv-icon calcp-equiv-icon--car" />
-                      <div>
-                        <strong>{carKmEquiv.toLocaleString('es-CL')} km</strong>
-                        <span>en auto a gasolina evitado</span>
-                      </div>
-                    </div>
-                    <div className="calcp-equiv-item">
-                      <FaMobileAlt className="calcp-equiv-icon calcp-equiv-icon--phone" />
-                      <div>
-                        <strong>{phonesEquiv.toLocaleString('es-CL')}</strong>
-                        <span>cargas de smartphones</span>
+                {/* Equivalencia (la que calcula el backend: 1 t = 1 árbol) */}
+                {trees !== undefined && (
+                  <div className="calcp-equiv-section">
+                    <h4>Equivalencia ambiental:</h4>
+                    <div className="calcp-equiv-grid">
+                      <div className="calcp-equiv-item">
+                        <FaTree className="calcp-equiv-icon calcp-equiv-icon--tree" />
+                        <div>
+                          <strong>~{trees.toLocaleString('es-CL')} {trees === 1 ? 'árbol' : 'árboles'}</strong>
+                          <span>equivalentes</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* CTA Compensar */}
                 <div className="calcp-cta-box">
@@ -443,7 +366,7 @@ const CalculatorPage: React.FC = () => {
                   rel="noopener noreferrer"
                   className="calcp-source-card"
                 >
-                  <span className="calcp-source-badge">DEFRA 2024 / 2025</span>
+                  <span className="calcp-source-badge">{methodology}</span>
                   <h4>Factores de Conversión Gubernamentales</h4>
                   <p>Tablas oficiales para vuelos de corto, medio y largo alcance según cabina.</p>
                   <span className="calcp-source-link">Ver fuente oficial en gov.uk →</span>
@@ -459,18 +382,6 @@ const CalculatorPage: React.FC = () => {
                   <h4>Estándar Corporativo de Alcance 3</h4>
                   <p>Directrices globales para contabilidad de emisiones en viajes de negocios.</p>
                   <span className="calcp-source-link">Ver marco metodológico →</span>
-                </a>
-
-                <a
-                  href="https://www.icao.int/environmental-protection/CarbonOffset/Pages/default.aspx"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="calcp-source-card"
-                >
-                  <span className="calcp-source-badge">OACI / ICAO</span>
-                  <h4>Metodología de la Aviación Civil</h4>
-                  <p>Factores de ocupación y consumo de queroseno por tipo de aeronave.</p>
-                  <span className="calcp-source-link">Ver calculadora OACI →</span>
                 </a>
               </div>
             </div>

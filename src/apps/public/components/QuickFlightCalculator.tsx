@@ -136,13 +136,15 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
     calculate(origin, destination, cabinCode, passengers, val);
   };
 
-  const estimatedCostUsd = estimate?.emissions?.kgCO2e
-    ? Math.max(1, Math.round(estimate.emissions.kgCO2e * 0.025 * 100) / 100)
-    : 7.71;
-
-  const treesEquivalent = estimate?.equivalencies?.treesPerYear
-    ? estimate.equivalencies.treesPerYear
-    : Math.max(1, Math.round((estimate?.emissions?.kgCO2e || 308) / 22));
+  // Todo lo que muestra el panel sale del backend de la calculadora. Antes el
+  // precio era US$25/t fijo (el cobro real es en CLP y depende del proyecto),
+  // los árboles usaban otra fórmula (kg ÷ 22) y, mientras cargaba, se veía un
+  // resultado inventado (308,5 kg, 2.453 km).
+  const emissions = estimate?.emissions;
+  const pricing = estimate?.pricing ?? null;
+  const trees = estimate?.equivalencies?.trees;
+  const fmtCLP = (n: number) =>
+    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
   /**
    * Lleva el vuelo recien calculado a la calculadora B2C, que ya sabe leer
@@ -189,7 +191,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           <span className="qfc-indicator-dot" aria-hidden="true" />
           <span className="qfc-header-title">Calculadora de huella aérea</span>
           <span className="qfc-header-sep">·</span>
-          <span className="qfc-header-meta">DEFRA 2024 & GHG Protocol</span>
+          <span className="qfc-header-meta">{emissions?.methodology ?? 'DEFRA'} & GHG Protocol</span>
         </div>
 
         <div className="qfc-trip-toggle" role="radiogroup" aria-label="Tipo de trayecto">
@@ -388,19 +390,23 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           <span className="qfc-metric-caption">Huella de carbono calculada</span>
           <div className="qfc-metric-value-row">
             <span className="qfc-metric-number">
-              {estimate?.emissions?.kgCO2e?.toLocaleString('es-CL') ?? '308,5'}
+              {emissions ? emissions.kgCO2e.toLocaleString('es-CL') : '—'}
             </span>
             <div className="qfc-metric-unit-group">
               <span className="qfc-metric-unit">kg CO₂e</span>
-              <span className="qfc-metric-ton">
-                ({estimate?.emissions?.tonCO2e?.toFixed(3) ?? '0,309'} t)
-              </span>
+              {emissions && (
+                <span className="qfc-metric-ton">
+                  ({emissions.tonCO2e.toLocaleString('es-CL', { maximumFractionDigits: 3 })} t)
+                </span>
+              )}
             </div>
           </div>
           <p className="qfc-metric-sub">
-            {estimate?.meta?.distanceKmTotal ? Math.round(estimate.meta.distanceKmTotal).toLocaleString('es-CL') : '2.453'} km de vuelo
-            {' · '}
+            {estimate?.meta?.distanceKmTotal
+              ? `${Math.round(estimate.meta.distanceKmTotal).toLocaleString('es-CL')} km de vuelo · `
+              : ''}
             {roundTrip ? 'Ida y vuelta' : 'Trayecto de ida'}
+            {emissions?.methodology ? ` · ${emissions.methodology}` : ''}
           </p>
         </div>
 
@@ -413,7 +419,13 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
             <div className="qfc-eco-info">
               <span className="qfc-eco-title">Impacto equivalente</span>
               <span className="qfc-eco-detail">
-                Equivale a la absorción anual de <strong>~{treesEquivalent} árboles</strong>
+                {trees !== undefined ? (
+                  <>
+                    Equivale a <strong>~{trees.toLocaleString('es-CL')} {trees === 1 ? 'árbol' : 'árboles'}</strong>
+                  </>
+                ) : (
+                  'Calcula tu vuelo para ver su equivalencia'
+                )}
               </span>
             </div>
           </div>
@@ -425,13 +437,15 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
 
         {/* Columna 3: Aporte & Llamado a la Acción */}
         <div className="qfc-impact-action">
-          <div className="qfc-action-price">
-            <span className="qfc-price-caption">Aporte para neutralizar</span>
-            <div className="qfc-price-row">
-              <span className="qfc-price-amount">${estimatedCostUsd}</span>
-              <span className="qfc-price-currency">USD</span>
+          {pricing && (
+            <div className="qfc-action-price">
+              <span className="qfc-price-caption">Aporte para neutralizar, desde</span>
+              <div className="qfc-price-row">
+                <span className="qfc-price-amount">{fmtCLP(pricing.fromTotalCLP)}</span>
+                <span className="qfc-price-currency">CLP</span>
+              </div>
             </div>
-          </div>
+          )}
 
           <button
             type="button"

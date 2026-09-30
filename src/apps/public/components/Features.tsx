@@ -13,13 +13,13 @@ const STEPS = [
   {
     num: '02',
     title: 'Calcula con datos oficiales',
-    body: 'Aplicamos factores oficiales del DEFRA 2024, GHG Protocol e ICAO. Cálculo transparente y trazable.',
+    body: 'Aplicamos los factores oficiales de DEFRA 2025 según el GHG Protocol. Cálculo transparente y trazable.',
     Illustration: StepCalculationSVG,
   },
   {
     num: '03',
     title: 'Compensa con proyectos verificados',
-    body: 'Elige un proyecto evaluado por Veritas AI y recibe un certificado digital verificable en blockchain.',
+    body: 'Elige un proyecto evaluado por Veritas AI y recibe un certificado digital, que puedes registrar en blockchain.',
     Illustration: StepCompensationSVG,
   },
 ];

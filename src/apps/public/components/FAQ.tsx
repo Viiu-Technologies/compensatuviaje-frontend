@@ -9,7 +9,7 @@ const FAQS_B2C = [
   {
     id: 1,
     q: '¿Cómo calculo mi huella de carbono?',
-    a: 'Ingresa tu vuelo: origen, destino, clase de cabina y número de pasajeros. Obtienes el resultado al instante en kg de CO₂e, calculado con los factores oficiales DEFRA 2024.',
+    a: 'Ingresa tu vuelo: origen, destino, clase de cabina y número de pasajeros. Obtienes el resultado al instante en kg de CO₂e, calculado con los factores oficiales DEFRA 2025.',
   },
   {
     id: 2,
@@ -39,7 +39,7 @@ const FAQS_B2C = [
   {
     id: 7,
     q: '¿Recibo un certificado?',
-    a: 'Sí, un certificado digital verificado con QR único y registro NFT en blockchain pública. Las empresas reciben certificados corporativos con detalle del impacto.',
+    a: 'Sí, un certificado digital con número único. Desde tu panel puedes registrarlo como NFT en blockchain pública (Polygon), y así cualquiera puede verificarlo. Las empresas reciben certificados corporativos con el detalle del impacto.',
   },
 ];
 
@@ -52,12 +52,12 @@ const FAQS_B2B = [
   {
     id: 102,
     q: '¿Qué tipo de certificados entregan a empresas?',
-    a: 'Entregamos certificados corporativos emitidos por CompensaTuViaje y registrados en blockchain, que respaldan tus aportes en reportes ESG y memorias de sostenibilidad. No corresponden a créditos de carbono de registros internacionales.',
+    a: 'Entregamos certificados corporativos emitidos por CompensaTuViaje, que respaldan tus aportes en reportes ESG y memorias de sostenibilidad. No corresponden a créditos de carbono de registros internacionales.',
   },
   {
     id: 103,
     q: '¿Podemos integrar la API a nuestro sistema de reservas?',
-    a: 'Sí, ofrecemos una API RESTful para que las agencias de viaje y corporaciones integren la calculadora y la compra de bonos directamente en su flujo.',
+    a: 'Hoy la carga de viajes se hace subiendo los archivos de tu agencia (Excel o CSV). Si necesitas una integración directa con tu sistema de reservas, escríbenos y la evaluamos contigo.',
   },
   {
     id: 104,
@@ -80,7 +80,7 @@ const FAQS_PARTNER = [
   {
     id: 203,
     q: '¿Cómo reciben aportes los proyectos?',
-    a: 'Tu proyecto se publica en nuestra plataforma para personas y empresas. Cada compensación queda registrada en blockchain y te liquidamos lo recaudado según el acuerdo firmado. No emitimos ni vendemos créditos de carbono de registros internacionales.',
+    a: 'Tu proyecto se publica en nuestra plataforma para personas y empresas. Cada compensación queda registrada con su certificado y te liquidamos lo recaudado según el acuerdo firmado. No emitimos ni vendemos créditos de carbono de registros internacionales.',
   },
   {
     id: 204,

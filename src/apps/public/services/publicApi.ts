@@ -28,12 +28,22 @@ export interface EstimateResponse {
     kgCO2e: number;
     tonCO2e: number;
     factorUsed: number;
+    /** Origen de los factores, p. ej. "DEFRA 2025". */
+    methodology?: string;
     passengers: number;
   };
+  /** Equivalencias del backend (1 t = 1 árbol, ver calculatorConstants.js). */
   equivalencies?: {
-    treesPerYear?: number;
-    carKmEquivalent?: number;
+    trees: number;
+    waterLiters: number;
+    housingM2: number;
+    textileKg: number;
   };
+  /** Precio del proyecto disponible más barato; null si no hay proyectos con stock. */
+  pricing?: {
+    fromPricePerTonCLP: number;
+    fromTotalCLP: number;
+  } | null;
   calculationId?: string | null;
   message?: string;
   errors?: string[];
@@ -79,78 +89,6 @@ export const POPULAR_AIRPORTS: AirportOption[] = [
 ];
 
 /**
- * Calculates Great-Circle distance using the Haversine formula
- */
-function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c * 100) / 100;
-}
-
-/**
- * Fallback estimation if the backend server is unreachable
- * Based on official DEFRA 2024 emission factors
- */
-function generateFallbackEstimate(req: EstimateRequest): EstimateResponse {
-  const o = POPULAR_AIRPORTS.find((a) => a.code.toUpperCase() === req.origin.toUpperCase()) || POPULAR_AIRPORTS[0];
-  const d = POPULAR_AIRPORTS.find((a) => a.code.toUpperCase() === req.destination.toUpperCase()) || POPULAR_AIRPORTS[1];
-
-  const oneWayDistance = calculateDistanceKm(o.lat, o.lon, d.lat, d.lon);
-  const totalDistance = req.roundTrip ? oneWayDistance * 2 : oneWayDistance;
-
-  // Haul type classification (DEFRA standard)
-  const haulType = totalDistance < 3700 ? 'Short-haul' : 'Long-haul';
-
-  // Base DEFRA 2024 emission factor (kg CO2e per passenger-km)
-  let factor = totalDistance < 3700 ? 0.12576 : 0.10245;
-
-  // Cabin multiplier
-  const cabinMultipliers: Record<string, number> = {
-    economy: 1.0,
-    premium_economy: 1.6,
-    business: 2.9,
-    first: 4.0,
-  };
-  factor = factor * (cabinMultipliers[req.cabinCode] || 1.0);
-
-  const kgCO2e = Math.round(totalDistance * factor * req.passengers * 100) / 100;
-  const tonCO2e = Math.round((kgCO2e / 1000) * 10000) / 10000;
-
-  return {
-    status: 'success',
-    meta: {
-      tripType: req.roundTrip ? 'round_trip' : 'one_way',
-      distanceKmOneWay: oneWayDistance,
-      distanceKmTotal: totalDistance,
-      haulType,
-      route: {
-        origin: { code: o.code, city: o.city, country: o.country },
-        destination: { code: d.code, city: d.city, country: d.country },
-      },
-    },
-    emissions: {
-      kgCO2e,
-      tonCO2e,
-      factorUsed: factor,
-      passengers: req.passengers,
-    },
-    equivalencies: {
-      treesPerYear: Math.max(1, Math.round(kgCO2e / 22)),
-      carKmEquivalent: Math.round(kgCO2e * 5.8),
-    },
-    calculationId: null,
-  };
-}
-
-/**
  * Public endpoint: POST /api/public/calculator/estimate
  */
 export async function estimateEmissions(payload: EstimateRequest): Promise<EstimateResponse> {
@@ -160,7 +98,7 @@ export async function estimateEmissions(payload: EstimateRequest): Promise<Estim
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -180,18 +118,18 @@ export async function estimateEmissions(payload: EstimateRequest): Promise<Estim
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
-      if (errorData?.message) {
-        throw new Error(errorData.message);
-      }
-      // If server error, use fallback with notice
-      return generateFallbackEstimate(payload);
+      throw new Error(errorData?.message || 'No pudimos calcular las emisiones de este vuelo.');
     }
 
     const data: EstimateResponse = await res.json();
     return data;
   } catch (err: any) {
-    console.warn('[publicApi] Backend unreachable, using DEFRA 2024 engine fallback:', err.message);
-    return generateFallbackEstimate(payload);
+    // Sin cálculo local de respaldo: usaba otros factores y mostraba cifras
+    // distintas a las oficiales sin avisar. El componente muestra el error.
+    if (err?.name === 'AbortError') {
+      throw new Error('La calculadora tardó demasiado en responder. Inténtalo de nuevo.');
+    }
+    throw err;
   }
 }
 
