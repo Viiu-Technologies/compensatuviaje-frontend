@@ -24,8 +24,6 @@ import {
   PlatformSettings,
 } from '../services/adminApi';
 
-import PhotoCarousel from '../../../shared/components/PhotoCarousel';
-import DocumentViewer from '../../../shared/components/DocumentViewer';
 import { approveCertEvaluation, rejectCertEvaluation } from '../services/adminAIApi';
 import RejectModal from '../components/shared/RejectModal';
 import { toast } from 'sonner';
@@ -42,7 +40,8 @@ import {
   formatCLP,
   formatInt,
   projectTypeLabel,
-  useAdminConfirm,
+  unitLabel,
+  useAdminConfirm, DocumentList, PhotoGallery,
 } from '../ui';
 
 interface PendingProject {
@@ -86,22 +85,6 @@ interface ProjectsResponse {
 }
 
 // Antes se mostraba "1 Árbol" para toda unidad distinta de "other".
-const UNIT_LABELS: Record<string, string> = {
-  tree: 'árbol',
-  trees: 'árbol',
-  arbol: 'árbol',
-  árbol: 'árbol',
-  panel: 'panel',
-  panels: 'panel',
-  m2: 'm²',
-  m3: 'm³',
-  ha: 'hectárea',
-  hectare: 'hectárea',
-  other: 'unidad de impacto',
-};
-
-const unitLabel = (u?: string) => (u ? UNIT_LABELS[u.trim().toLowerCase()] ?? u : 'unidad');
-
 const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateString('es-CL') : '—');
 
 /**
@@ -415,7 +398,7 @@ export default function ProjectsReviewPage() {
 
             <h3 className="adm-subhead">Fotos iniciales</h3>
             {projectPhotos.length > 0 ? (
-              <PhotoCarousel photos={projectPhotos} />
+              <PhotoGallery photos={projectPhotos} />
             ) : (
               <p className="adm-note">El partner no subió fotos.</p>
             )}
@@ -424,7 +407,7 @@ export default function ProjectsReviewPage() {
             {projectDocs.length > 0 ? (
               <div className="adm-stack-v">
                 {projectDocs.map((doc: any, i: number) => (
-                  <DocumentViewer key={`${doc.fileName}-${i}`} documents={[doc]} />
+                  <DocumentList key={`${doc.fileName}-${i}`} documents={[doc]} />
                 ))}
               </div>
             ) : (

@@ -83,3 +83,38 @@ export const PROJECT_STATUS: Record<string, { label: string; tone: StatusTone }>
 
 export const projectStatus = (s?: string | null) =>
   (s && PROJECT_STATUS[s]) || { label: s || 'Sin estado', tone: 'neutral' as StatusTone };
+
+/** Unidad de impacto del proyecto en singular: 'tree' -> 'árbol'. */
+export const UNIT_LABELS: Record<string, string> = {
+  tree: 'árbol',
+  trees: 'árbol',
+  arbol: 'árbol',
+  árbol: 'árbol',
+  panel: 'panel',
+  panels: 'panel',
+  m2: 'm²',
+  m3: 'm³',
+  ha: 'hectárea',
+  hectare: 'hectárea',
+  other: 'unidad de impacto',
+};
+
+export const unitLabel = (u?: string) => (u ? UNIT_LABELS[u.trim().toLowerCase()] ?? u : 'unidad');
+
+/** Plural de la unidad según la cantidad: 1 árbol, 12 árboles, 3 m³. */
+export const unitPlural = (u: string | undefined, n: number | null | undefined) => {
+  const s = unitLabel(u);
+  if (n === 1 || /[²³]$/.test(s)) return s;
+  const last = s.split(' ');
+  const w = last[0];
+  last[0] = /[aeiouáéó]$/i.test(w) ? `${w}s` : `${w}es`;
+  return last.join(' ');
+};
+
+/** "2026-09" -> "septiembre de 2026". Si no calza el formato, se deja igual. */
+export const monthLabel = (ym?: string | null) => {
+  if (!ym) return '—';
+  const m = /^(\d{4})-(\d{2})$/.exec(ym);
+  if (!m) return ym;
+  return new Date(Number(m[1]), Number(m[2]) - 1, 1).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+};

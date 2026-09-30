@@ -95,6 +95,8 @@ const navSections: NavSection[] = [
  * (/admin/noticias/:id) herede la miga de su listado; solo la raíz /admin es exacta.
  */
 function findCurrent(pathname: string) {
+  // Las evaluaciones de certificación se revisan desde Proyectos en revisión.
+  if (pathname.startsWith('/admin/partners/evaluations/')) pathname = '/admin/proyectos-revision';
   let best: { section?: string; label: string; len: number } | null = null;
   for (const section of navSections) {
     for (const item of section.items) {

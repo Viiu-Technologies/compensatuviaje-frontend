@@ -1,23 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  Package,
-  Search,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Building2,
-  TreePine,
-  Loader2,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  DollarSign,
-  Filter,
-  Upload,
-  FileText
-} from 'lucide-react';
+import { Package, RefreshCw, Upload, FileText, Check, X, AlertTriangle } from 'lucide-react';
 import {
   getB2BOrders,
   approveB2BOrder,
@@ -27,444 +10,306 @@ import {
 } from '../services/adminApi';
 import { toast } from 'sonner';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import {
+  EmptyState, Modal, PageHeader, Pagination, Segmented, StatusBadge, TableSkeletonRows, type StatusTone,
+  formatCLP, formatInt, formatTime,
+} from '../ui';
+
+/**
+ * Órdenes B2B pagadas por transferencia: el admin confirma el pago
+ * (aprobar emite el certificado y descuenta stock) y sube la factura.
+ *
+ * Antes mostraba "Pendientes", "Aprobadas" y "Monto total" calculados solo
+ * con las órdenes de la página visible (y el monto sumaba también las
+ * rechazadas). Se quitaron: no eran totales reales.
+ */
+
+const STATUS: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: 'Pendiente', tone: 'warning' },
+  approved: { label: 'Aprobada', tone: 'success' },
+  rejected: { label: 'Rechazada', tone: 'danger' },
+  expired: { label: 'Vencida', tone: 'neutral' },
+};
+
+const STATUS_FILTERS = [
+  { value: '', label: 'Todas' },
+  { value: 'pending', label: 'Pendientes' },
+  { value: 'approved', label: 'Aprobadas' },
+  { value: 'rejected', label: 'Rechazadas' },
+];
+
+const LIMIT = 20;
+
+const tons = (n: number) => Number(n || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 });
 
 export default function OrdenesB2BPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<B2BOrder[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
-  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
-  const limit = 20;
+  const [loadError, setLoadError] = useState(false);
 
-  // Action modal state
-  const [actionModal, setActionModal] = useState<{
-    type: 'approve' | 'reject';
-    order: B2BOrder;
-  } | null>(null);
+  const statusFilter = searchParams.get('status') || '';
+  const page = parseInt(searchParams.get('page') || '1');
+
+  const [actionModal, setActionModal] = useState<{ type: 'approve' | 'reject'; order: B2BOrder } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [actionResult, setActionResult] = useState<{ success: boolean; message: string } | null>(null);
-
-  // Invoice upload state
+  const [actionError, setActionError] = useState<string | null>(null);
   const [uploadingInvoiceId, setUploadingInvoiceId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     setIsLoading(true);
     try {
-      const params: any = { page, limit };
+      const params: any = { page, limit: LIMIT };
       if (statusFilter) params.status = statusFilter;
       const data = await getB2BOrders(params);
       setOrders(data.orders);
       setTotal(data.total);
+      setLoadError(false);
     } catch (err) {
       console.error('Error loading orders:', err);
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadOrders();
-    const params: any = { page: page.toString() };
-    if (statusFilter) params.status = statusFilter;
-    setSearchParams(params, { replace: true });
-  }, [page, statusFilter]);
+  useEffect(() => { loadOrders(); }, [page, statusFilter]);
 
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.ceil(total / LIMIT);
 
-  const handleApprove = async () => {
-    if (!actionModal || actionModal.type !== 'approve') return;
-    setIsSubmitting(true);
-    try {
-      const result = await approveB2BOrder(actionModal.order.id);
-      setActionResult({ success: true, message: `Orden aprobada. Certificado: ${result.certificateNumber}` });
-      loadOrders();
-    } catch (err: any) {
-      setActionResult({ success: false, message: err?.response?.data?.message || 'Error al aprobar' });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const setFilter = (value: string) => {
+    const params: Record<string, string> = { page: '1' };
+    if (value) params.status = value;
+    setSearchParams(params);
   };
 
-  const handleReject = async () => {
-    if (!actionModal || actionModal.type !== 'reject') return;
-    setIsSubmitting(true);
-    try {
-      await rejectB2BOrder(actionModal.order.id, rejectReason || undefined);
-      setActionResult({ success: true, message: 'Orden rechazada' });
-      loadOrders();
-    } catch (err: any) {
-      setActionResult({ success: false, message: err?.response?.data?.message || 'Error al rechazar' });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const goToPage = (p: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(p));
+    setSearchParams(params);
   };
 
   const closeModal = () => {
     setActionModal(null);
     setRejectReason('');
-    setActionResult(null);
+    setActionError(null);
+  };
+
+  const submitAction = async () => {
+    if (!actionModal) return;
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      if (actionModal.type === 'approve') {
+        const result = await approveB2BOrder(actionModal.order.id);
+        toast.success(`Orden aprobada. Certificado ${result.certificateNumber}`);
+      } else {
+        await rejectB2BOrder(actionModal.order.id, rejectReason.trim() || undefined);
+        toast.success('Orden rechazada');
+      }
+      closeModal();
+      loadOrders();
+    } catch (err: any) {
+      setActionError(err?.response?.data?.message || (actionModal.type === 'approve' ? 'No se pudo aprobar la orden' : 'No se pudo rechazar la orden'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInvoiceUpload = async (orderId: string, file: File) => {
     setUploadingInvoiceId(orderId);
     try {
       await uploadB2BInvoice(orderId, file);
+      toast.success('Factura subida');
       loadOrders();
     } catch (err: any) {
-      toast.error(getErrorMessage(err, 'Error al subir la factura'));
+      toast.error(getErrorMessage(err, 'No se pudo subir la factura'));
     } finally {
       setUploadingInvoiceId(null);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 !text-xs !font-semibold">
-            <Clock className="!w-3.5 !h-3.5" /> Pendiente
-          </span>
-        );
-      case 'approved':
-        return (
-          <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-300 !text-xs !font-semibold">
-            <CheckCircle2 className="!w-3.5 !h-3.5" /> Aprobada
-          </span>
-        );
-      case 'rejected':
-        return (
-          <span className="!inline-flex !items-center !gap-1.5 !px-3 !py-1 !rounded-full bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300 !text-xs !font-semibold">
-            <XCircle className="!w-3.5 !h-3.5" /> Rechazada
-          </span>
-        );
-      default:
-        return <span className="!px-3 !py-1 !rounded-full bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 !text-xs !font-semibold">{status}</span>;
-    }
-  };
-
-  // Stats
-  const stats = {
-    total,
-    pending: orders.filter(o => o.status === 'pending').length,
-    approved: orders.filter(o => o.status === 'approved').length,
-    totalCLP: orders.reduce((acc, o) => acc + o.amount, 0)
-  };
+  const approving = actionModal?.type === 'approve';
 
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-900 dark:text-white !flex !items-center !gap-2">
-            <Package className="text-indigo-600" />
-            Órdenes B2B
-          </h1>
-          <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">Gestión de órdenes de compensación por transferencia bancaria</p>
-        </div>
-        <button
-          onClick={loadOrders}
-          className="!flex !items-center !gap-2 !px-4 !py-2.5 !rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 !border border-slate-200 dark:border-slate-700 !font-medium !text-sm hover:bg-slate-50 dark:hover:bg-slate-700 !transition-all"
-        >
-          <RefreshCw className="!w-4 !h-4" /> Actualizar
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="!grid sm:!grid-cols-4 !gap-4">
-        {[
-          { label: 'Total', value: stats.total, icon: Package, color: '!from-blue-500 !to-indigo-600' },
-          { label: 'Pendientes', value: stats.pending, icon: Clock, color: '!from-yellow-500 !to-orange-500' },
-          { label: 'Aprobadas', value: stats.approved, icon: CheckCircle2, color: '!from-green-500 !to-emerald-600' },
-          { label: 'Monto Total', value: `$${stats.totalCLP.toLocaleString('es-CL')}`, icon: DollarSign, color: '!from-purple-500 !to-pink-500' },
-        ].map((stat) => (
-          <div key={stat.label} className="!rounded-2xl !p-4 bg-white dark:bg-slate-800 !border border-slate-200 dark:border-slate-700 !shadow-sm">
-            <div className="!flex !items-center !gap-3">
-              <div className={`!w-10 !h-10 !rounded-xl !bg-gradient-to-br ${stat.color} !flex !items-center !justify-center`}>
-                <stat.icon className="!w-5 !h-5 text-white" />
-              </div>
-              <div>
-                <p className="!text-xl !font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                <p className="!text-xs text-slate-500 dark:text-slate-400">{stat.label}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="!flex !items-center !gap-3 !flex-wrap">
-        <div className="!flex !items-center !gap-1.5 !text-sm text-slate-500 dark:text-slate-400">
-          <Filter className="!w-4 !h-4" /> Estado:
-        </div>
-        {[
-          { value: '', label: 'Todos' },
-          { value: 'pending', label: 'Pendientes' },
-          { value: 'approved', label: 'Aprobadas' },
-          { value: 'rejected', label: 'Rechazadas' },
-        ].map(opt => (
-          <button
-            key={opt.value}
-            onClick={() => { setStatusFilter(opt.value); setPage(1); }}
-            className={`!px-4 !py-2 !rounded-xl !text-sm !font-medium !border-0 !transition-all ${
-              statusFilter === opt.value
-                ? 'bg-indigo-500 text-white !shadow-lg !shadow-indigo-500/30'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 !border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
-          >
-            {opt.label}
+    <div className="adm-page">
+      <PageHeader
+        title="Órdenes B2B"
+        description="Compensaciones de empresas pagadas por transferencia bancaria."
+        actions={
+          <button type="button" className="adm-btn" onClick={loadOrders} disabled={isLoading}>
+            <RefreshCw aria-hidden="true" /> Actualizar
           </button>
-        ))}
-      </div>
+        }
+      />
 
-      {/* Table */}
-      <div className="bg-white dark:bg-slate-800 !rounded-2xl !border border-slate-200 dark:border-slate-700 !shadow-sm !overflow-hidden">
-        {isLoading ? (
-          <div className="!flex !items-center !justify-center !py-20">
-            <Loader2 className="!w-8 !h-8 text-indigo-500 !animate-spin" />
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="!text-center !py-16">
-            <Package className="!w-12 !h-12 text-slate-300 dark:text-slate-600 !mx-auto !mb-3" />
-            <p className="text-slate-500 dark:text-slate-400">No hay órdenes {statusFilter ? `con estado "${statusFilter}"` : ''}</p>
-          </div>
-        ) : (
-          <div className="!overflow-x-auto">
-            <table className="!w-full">
-              <thead>
-                <tr className="!border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
-                  <th className="!text-left !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Empresa</th>
-                  <th className="!text-left !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Proyecto</th>
-                  <th className="!text-right !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Tons CO₂</th>
-                  <th className="!text-right !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Monto CLP</th>
-                  <th className="!text-center !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Estado</th>
-                  <th className="!text-left !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Fecha</th>
-                  <th className="!text-center !px-6 !py-3.5 !text-xs !font-semibold text-slate-500 dark:text-slate-400 !uppercase !tracking-wider">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="!border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-700/30 !transition-colors">
-                    <td className="!px-6 !py-4">
-                      <div className="!flex !items-center !gap-2">
-                        <Building2 className="!w-4 !h-4 text-slate-400 dark:text-slate-500" />
-                        <div>
-                          <p className="!text-sm !font-medium text-slate-900 dark:text-white">{order.company?.name || 'N/A'}</p>
-                          <p className="!text-xs text-slate-400 dark:text-slate-500">{order.company?.rut || ''}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-4">
-                      <div className="!flex !items-center !gap-2">
-                        <TreePine className="!w-4 !h-4 text-green-500" />
-                        <p className="!text-sm text-slate-700 dark:text-slate-200">{order.project?.name || 'N/A'}</p>
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-4 !text-right">
-                      <p className="!text-sm !font-semibold text-slate-900 dark:text-white">{order.tonsTco2}</p>
-                    </td>
-                    <td className="!px-6 !py-4 !text-right">
-                      <p className="!text-sm !font-semibold text-slate-900 dark:text-white">${order.amount.toLocaleString('es-CL')}</p>
-                      <p className="!text-xs text-slate-400 dark:text-slate-500">Fee: ${order.platformFee.toLocaleString('es-CL')}</p>
-                    </td>
-                    <td className="!px-6 !py-4 !text-center">
-                      {getStatusBadge(order.status)}
-                    </td>
-                    <td className="!px-6 !py-4">
-                      <p className="!text-sm text-slate-600 dark:text-slate-300">{new Date(order.createdAt).toLocaleDateString('es-CL')}</p>
-                      <p className="!text-xs text-slate-400 dark:text-slate-500">{new Date(order.createdAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</p>
-                    </td>
-                    <td className="!px-6 !py-4 !text-center">
-                      {order.status === 'pending' ? (
-                        <div className="!flex !items-center !justify-center !gap-2">
-                          <button
-                            onClick={() => setActionModal({ type: 'approve', order })}
-                            className="!px-3 !py-1.5 !rounded-lg bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 !text-xs !font-semibold !border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-500/20 !transition-colors"
-                          >
-                            Aprobar
-                          </button>
-                          <button
-                            onClick={() => setActionModal({ type: 'reject', order })}
-                            className="!px-3 !py-1.5 !rounded-lg bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 !text-xs !font-semibold !border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-500/20 !transition-colors"
-                          >
-                            Rechazar
-                          </button>
-                        </div>
-                      ) : order.status === 'approved' ? (
-                        <div className="!flex !flex-col !items-center !gap-1.5">
-                          {order.invoicePdfUrl ? (
-                            <a
-                              href={order.invoicePdfUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="!inline-flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 !text-xs !font-semibold !border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 !transition-colors !no-underline"
-                            >
-                              <FileText className="!w-3.5 !h-3.5" /> Ver Factura
-                            </a>
-                          ) : null}
-                          <label className="!inline-flex !items-center !gap-1.5 !px-3 !py-1.5 !rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 !text-xs !font-semibold !border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-500/20 !transition-colors !cursor-pointer">
-                            {uploadingInvoiceId === order.id ? (
-                              <Loader2 className="!w-3.5 !h-3.5 !animate-spin" />
-                            ) : (
-                              <Upload className="!w-3.5 !h-3.5" />
-                            )}
-                            {order.invoicePdfUrl ? 'Reemplazar' : 'Subir Factura'}
-                            <input
-                              type="file"
-                              accept="application/pdf,.pdf"
-                              className="!hidden"
-                              disabled={uploadingInvoiceId === order.id}
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleInvoiceUpload(order.id, file);
-                                e.target.value = '';
-                              }}
-                            />
-                          </label>
-                        </div>
-                      ) : (
-                        <span className="!text-xs text-slate-400 dark:text-slate-500">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="!flex !items-center !justify-between !px-6 !py-4 !border-t border-slate-200 dark:border-slate-700">
-            <p className="!text-sm text-slate-500 dark:text-slate-400">
-              Mostrando {(page - 1) * limit + 1} a {Math.min(page * limit, total)} de {total}
-            </p>
-            <div className="!flex !items-center !gap-2">
-              <button
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page <= 1}
-                className="!p-2 !rounded-lg !border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
-              >
-                <ChevronLeft className="!w-4 !h-4" />
-              </button>
-              <span className="!text-sm text-slate-700 dark:text-slate-200 !font-medium">
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                disabled={page >= totalPages}
-                className="!p-2 !rounded-lg !border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
-              >
-                <ChevronRight className="!w-4 !h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Action Modal */}
-      {actionModal && (
-        <div className="!fixed !inset-0 !z-[100] !flex !items-center !justify-center !p-4">
-          <div className="!absolute !inset-0 !bg-black/50 !backdrop-blur-sm" onClick={closeModal} />
-          <div className="!relative bg-white dark:bg-slate-800 !rounded-2xl !shadow-2xl !w-full !max-w-md !p-6 !space-y-5">
-            {actionResult ? (
-              <>
-                <div className="!text-center">
-                  {actionResult.success ? (
-                    <CheckCircle2 className="!w-12 !h-12 text-green-500 !mx-auto !mb-3" />
-                  ) : (
-                    <AlertTriangle className="!w-12 !h-12 text-red-500 !mx-auto !mb-3" />
-                  )}
-                  <p className={`!text-lg !font-semibold ${actionResult.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                    {actionResult.message}
-                  </p>
-                </div>
-                <button
-                  onClick={closeModal}
-                  className="!w-full !py-3 !rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 !font-medium !border-0 hover:bg-slate-200 dark:hover:bg-slate-600 !transition-all"
-                >
-                  Cerrar
-                </button>
-              </>
-            ) : (
-              <>
-                <div>
-                  <h3 className="!text-lg !font-bold text-slate-900 dark:text-white">
-                    {actionModal.type === 'approve' ? 'Aprobar Orden' : 'Rechazar Orden'}
-                  </h3>
-                  <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">
-                    {actionModal.type === 'approve'
-                      ? 'Se deducirá stock y se emitirá un certificado automáticamente.'
-                      : 'La orden será marcada como rechazada.'}
-                  </p>
-                </div>
-
-                {/* Order summary */}
-                <div className="bg-slate-50 dark:bg-slate-900 !rounded-xl !p-4 !space-y-2 !text-sm">
-                  <div className="!flex !justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Empresa</span>
-                    <span className="!font-medium text-slate-700 dark:text-slate-200">{actionModal.order.company?.name}</span>
-                  </div>
-                  <div className="!flex !justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Proyecto</span>
-                    <span className="!font-medium text-slate-700 dark:text-slate-200">{actionModal.order.project?.name}</span>
-                  </div>
-                  <div className="!flex !justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Toneladas</span>
-                    <span className="!font-medium text-slate-700 dark:text-slate-200">{actionModal.order.tonsTco2} tCO₂</span>
-                  </div>
-                  <div className="!flex !justify-between !border-t border-slate-200 dark:border-slate-700 !pt-2">
-                    <span className="text-slate-500 dark:text-slate-400 !font-semibold">Monto</span>
-                    <span className="!font-bold text-slate-900 dark:text-white">${actionModal.order.amount.toLocaleString('es-CL')} CLP</span>
-                  </div>
-                </div>
-
-                {actionModal.type === 'reject' && (
-                  <div>
-                    <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                      Motivo de rechazo (opcional)
-                    </label>
-                    <textarea
-                      value={rejectReason}
-                      onChange={(e) => setRejectReason(e.target.value)}
-                      placeholder="Transferencia no verificada, monto incorrecto, etc."
-                      rows={3}
-                      className="!w-full !px-4 !py-3 !rounded-xl !border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white !text-sm !outline-none focus:!ring-2 focus:ring-indigo-500 !resize-none"
-                    />
-                  </div>
-                )}
-
-                <div className="!flex !gap-3">
-                  <button
-                    onClick={closeModal}
-                    className="!flex-1 !py-3 !rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 !font-medium !border-0 hover:bg-slate-200 dark:hover:bg-slate-600 !transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={actionModal.type === 'approve' ? handleApprove : handleReject}
-                    disabled={isSubmitting}
-                    className={`!flex-1 !py-3 !rounded-xl text-white !font-medium !border-0 !transition-all !flex !items-center !justify-center !gap-2 ${
-                      actionModal.type === 'approve'
-                        ? 'bg-green-600 hover:bg-green-700'
-                        : 'bg-red-600 hover:bg-red-700'
-                    } disabled:!opacity-50`}
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="!w-4 !h-4 !animate-spin" />
-                    ) : actionModal.type === 'approve' ? (
-                      <><CheckCircle2 className="!w-4 !h-4" /> Aprobar</>
-                    ) : (
-                      <><XCircle className="!w-4 !h-4" /> Rechazar</>
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+      {loadError && (
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <AlertTriangle aria-hidden="true" />
+          <div><b>No se pudo cargar la lista de órdenes.</b> Revisa la conexión y vuelve a intentar.</div>
         </div>
       )}
+
+      <section className="adm-table-card">
+        <div className="adm-toolbar">
+          <Segmented label="Filtrar por estado" options={STATUS_FILTERS} value={statusFilter} onChange={setFilter} />
+        </div>
+
+        <div className="adm-table-scroll">
+          <table className="adm-table">
+            <thead>
+              <tr>
+                <th scope="col">Empresa</th>
+                <th scope="col">Proyecto</th>
+                <th scope="col" className="adm-col-num">Toneladas</th>
+                <th scope="col" className="adm-col-num">Monto</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Fecha</th>
+                <th scope="col" className="adm-col-actions"><span className="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <TableSkeletonRows columns={7} />
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={7}>
+                    <EmptyState
+                      icon={Package}
+                      title={statusFilter ? `No hay órdenes ${STATUS_FILTERS.find((o) => o.value === statusFilter)?.label.toLowerCase()}` : 'Aún no hay órdenes'}
+                    />
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order) => {
+                  const st = STATUS[order.status] ?? { label: order.status, tone: 'neutral' as StatusTone };
+                  const created = new Date(order.createdAt);
+                  return (
+                    <tr key={order.id}>
+                      <td>
+                        <span className="adm-cell-title">{order.company?.name || '—'}</span>
+                        {order.company?.rut && <span className="adm-cell-sub">{order.company.rut}</span>}
+                      </td>
+                      <td>{order.project?.name || <span className="adm-cell-mute">—</span>}</td>
+                      <td className="adm-col-num">{tons(order.tonsTco2)} t</td>
+                      <td className="adm-col-num">
+                        <span className="adm-cell-title">{formatCLP(order.amount)}</span>
+                        <span className="adm-cell-sub">Comisión {formatCLP(order.platformFee)}</span>
+                      </td>
+                      <td><StatusBadge tone={st.tone}>{st.label}</StatusBadge></td>
+                      <td>
+                        {created.toLocaleDateString('es-CL')}
+                        <span className="adm-cell-sub">{formatTime(created)}</span>
+                      </td>
+                      <td className="adm-col-actions">
+                        {order.status === 'pending' && (
+                          <div className="adm-actions-row" style={{ justifyContent: 'flex-end', flexWrap: 'nowrap' }}>
+                            <button type="button" className="adm-btn adm-btn--sm" onClick={() => setActionModal({ type: 'reject', order })}>
+                              <X aria-hidden="true" /> Rechazar
+                            </button>
+                            <button type="button" className="adm-btn adm-btn--sm adm-btn--primary" onClick={() => setActionModal({ type: 'approve', order })}>
+                              <Check aria-hidden="true" /> Aprobar
+                            </button>
+                          </div>
+                        )}
+                        {order.status === 'approved' && (
+                          <div className="adm-actions-row" style={{ justifyContent: 'flex-end', flexWrap: 'nowrap' }}>
+                            {order.invoicePdfUrl && (
+                              <a href={order.invoicePdfUrl} target="_blank" rel="noopener noreferrer" className="adm-btn adm-btn--sm">
+                                <FileText aria-hidden="true" /> Factura
+                              </a>
+                            )}
+                            <label className={`adm-btn adm-btn--sm${uploadingInvoiceId === order.id ? ' is-busy' : ''}`}>
+                              <Upload aria-hidden="true" />
+                              {uploadingInvoiceId === order.id ? 'Subiendo…' : order.invoicePdfUrl ? 'Reemplazar' : 'Subir factura'}
+                              <input
+                                type="file"
+                                accept="application/pdf,.pdf"
+                                className="sr-only"
+                                disabled={uploadingInvoiceId === order.id}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleInvoiceUpload(order.id, file);
+                                  e.target.value = '';
+                                }}
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {!isLoading && total > 0 && (
+          <Pagination page={page} totalPages={totalPages} total={total} shown={orders.length} noun="órdenes" onPage={goToPage} />
+        )}
+      </section>
+
+      <Modal
+        open={!!actionModal}
+        title={approving ? 'Aprobar orden' : 'Rechazar orden'}
+        onClose={closeModal}
+        busy={isSubmitting}
+        footer={
+          <>
+            <button type="button" className="adm-btn" onClick={closeModal} disabled={isSubmitting}>Cancelar</button>
+            <button
+              type="button"
+              className={`adm-btn ${approving ? 'adm-btn--primary' : 'adm-btn--danger'}`}
+              onClick={submitAction}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Procesando…' : approving ? 'Aprobar y emitir certificado' : 'Rechazar orden'}
+            </button>
+          </>
+        }
+      >
+        {actionModal && (
+          <>
+            <p>
+              {approving
+                ? 'Confirma que la transferencia llegó. Se descontará el stock del proyecto y se emitirá el certificado.'
+                : 'La orden quedará rechazada y no se emitirá certificado.'}
+            </p>
+            <dl className="adm-dl">
+              <dt>Empresa</dt>
+              <dd>{actionModal.order.company?.name || '—'}</dd>
+              <dt>Proyecto</dt>
+              <dd>{actionModal.order.project?.name || '—'}</dd>
+              <dt>Toneladas</dt>
+              <dd>{tons(actionModal.order.tonsTco2)} t CO₂e</dd>
+              <dt>Monto</dt>
+              <dd>{formatCLP(actionModal.order.amount)}</dd>
+            </dl>
+            {!approving && (
+              <div className="adm-field">
+                <label className="adm-field__label" htmlFor="ob-reason">Motivo <span className="adm-cell-mute">(opcional)</span></label>
+                <textarea
+                  id="ob-reason"
+                  className="adm-textarea"
+                  rows={3}
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Transferencia no recibida, monto incorrecto…"
+                />
+              </div>
+            )}
+            {actionError && (
+              <div role="alert" className="adm-alert adm-alert--danger">
+                <AlertTriangle aria-hidden="true" />
+                <div>{actionError}</div>
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

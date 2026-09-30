@@ -1,29 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Eye, Users, AlertTriangle } from 'lucide-react';
+import { getB2CUsers, getB2CStats, B2CUser } from '../services/adminApi';
 import {
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  Eye,
-  Mail,
-  MapPin,
-  Calendar,
-  ArrowUpDown,
-  Activity,
-  TrendingUp,
-  Globe,
-  Shield,
-  Zap
-} from 'lucide-react';
-import { getB2CUsers, getB2CStats, B2CUser, B2CUsersListResponse } from '../services/adminApi';
-
-const authProviderConfig: Record<string, { label: string; color: string; icon: any }> = {
-  email: { label: 'Email', color: 'bg-slate-100 text-slate-700', icon: Mail },
-  google: { label: 'Google', color: 'bg-rose-100 text-rose-700', icon: Globe },
-  supabase: { label: 'Supabase', color: 'bg-emerald-100 text-emerald-700', icon: Shield },
-};
+  EmptyState, KpiCard, PageHeader, Pagination, SearchField, TableSkeletonRows,
+  authProviderLabel, formatInt, kgToTonnes,
+} from '../ui';
 
 interface B2CStatsData {
   overview: {
@@ -44,50 +26,49 @@ interface B2CStatsData {
   };
 }
 
-const fmt = (n: number | undefined) => (n ?? 0).toLocaleString('es-CL');
+const PERIODS = [
+  { value: '7d', label: 'Últimos 7 días' },
+  { value: '30d', label: 'Últimos 30 días' },
+  { value: '90d', label: 'Últimos 90 días' },
+];
+
+/** El backend puede mandar "12.5" o "12.5%"; se muestra siempre como "12,5 %". */
+const pctText = (v?: string | number | null) => {
+  if (v == null || v === '') return '—';
+  const n = parseFloat(String(v).replace('%', '').replace(',', '.'));
+  return Number.isFinite(n) ? `${n.toLocaleString('es-CL', { maximumFractionDigits: 1 })} %` : String(v);
+};
 
 export default function UsuariosB2CPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<B2CUser[]>([]);
   const [stats, setStats] = useState<B2CStatsData | null>(null);
   const [statsError, setStatsError] = useState(false);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 0
-  });
+  const [loadError, setLoadError] = useState(false);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [period, setPeriod] = useState('30d');
 
-  useEffect(() => {
-    loadData();
-  }, [searchParams, sortBy, sortOrder]);
-
-  useEffect(() => {
-    loadStats();
-  }, [period]);
+  useEffect(() => { loadData(); }, [searchParams]);
+  useEffect(() => { loadStats(); }, [period]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const params = {
+      const data = await getB2CUsers({
         page: parseInt(searchParams.get('page') || '1'),
         limit: 20,
         search: searchParams.get('search') || undefined,
-        sortBy,
-        sortOrder
-      };
-
-      const data = await getB2CUsers(params);
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
       setUsers(data.users);
       setPagination(data.pagination);
+      setLoadError(false);
     } catch (error) {
       console.error('Error loading users:', error);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -95,13 +76,11 @@ export default function UsuariosB2CPage() {
 
   const loadStats = async () => {
     try {
-      const statsData = await getB2CStats(period);
-      setStats(statsData);
+      setStats(await getB2CStats(period));
       setStatsError(false);
     } catch (error) {
       console.error('Error loading stats:', error);
-      // Antes se mostraban cifras inventadas (8.432 usuarios, 68 % de
-      // retención...) como si fueran reales. Ahora se avisa del error.
+      // Antes se mostraban cifras inventadas como si fueran reales.
       setStats(null);
       setStatsError(true);
     }
@@ -110,168 +89,131 @@ export default function UsuariosB2CPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
-    if (search) {
-      params.set('search', search);
-    } else {
-      params.delete('search');
-    }
+    if (search.trim()) params.set('search', search.trim()); else params.delete('search');
     params.set('page', '1');
     setSearchParams(params);
   };
 
+  // Antes los botones de página hacían setSearchParams({ page }) y se perdía la búsqueda.
+  const goToPage = (p: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(p));
+    setSearchParams(params);
+  };
+
+  const periodLabel = PERIODS.find((p) => p.value === period)?.label.toLowerCase();
+  const c = stats?.compensations;
+
   return (
-    <div className="!space-y-8 !animate-in !fade-in !slide-in-from-bottom-4 !duration-700">
-      {/* Header Section */}
-      <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
-        <div>
-          <h2 className="!text-3xl !font-black !text-slate-900 !tracking-tight">Usuarios B2C</h2>
-          <p className="!text-slate-500 !mt-1">Monitorea el crecimiento y actividad de los usuarios individuales.</p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="!bg-white !border !border-slate-200 !rounded-xl !px-4 !py-2.5 !text-sm !font-bold !text-slate-600 !outline-none focus:!ring-2 focus:!ring-indigo-500 !shadow-sm"
-          >
-            <option value="7d">Últimos 7 días</option>
-            <option value="30d">Últimos 30 días</option>
-            <option value="90d">Últimos 90 días</option>
-          </select>
-        </div>
-      </div>
+    <div className="adm-page">
+      <PageHeader
+        title="Usuarios B2C"
+        description="Personas que calculan y compensan sus viajes."
+        actions={
+          <>
+            <label className="sr-only" htmlFor="ub-period">Periodo de las métricas</label>
+            <select id="ub-period" className="adm-select" value={period} onChange={(e) => setPeriod(e.target.value)}>
+              {PERIODS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+            </select>
+          </>
+        }
+      />
 
       {statsError && (
-        <div role="alert" className="!p-4 !rounded-xl !border border-red-200 bg-red-50 text-red-800 !text-sm">
-          No se pudieron cargar las estadísticas de usuarios. Vuelve a intentarlo en unos minutos.
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <AlertTriangle aria-hidden="true" />
+          <div>No se pudieron cargar las estadísticas de usuarios. Vuelve a intentarlo en unos minutos.</div>
         </div>
       )}
 
-      {/* Stats Grid */}
-      <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6">
-        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
-          <div className="!flex !items-center !justify-between !mb-4">
-            <div className="!p-3 !rounded-2xl !bg-indigo-50 !text-indigo-600">
-              <Users className="!w-6 !h-6" />
-            </div>
-          </div>
-          <p className="!text-slate-500 !text-sm !font-medium">Total Usuarios</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats ? fmt(stats.overview?.totalUsers) : '—'}</h3>
-        </div>
-        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
-          <div className="!flex !items-center !justify-between !mb-4">
-            <div className="!p-3 !rounded-2xl !bg-emerald-50 !text-emerald-600">
-              <Zap className="!w-6 !h-6" />
-            </div>
-          </div>
-          <p className="!text-slate-500 !text-sm !font-medium">Usuarios Activos</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats ? fmt(stats.overview?.activeUsers) : '—'}</h3>
-        </div>
-        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
-          <div className="!flex !items-center !justify-between !mb-4">
-            <div className="!p-3 !rounded-2xl !bg-amber-50 !text-amber-600">
-              <Activity className="!w-6 !h-6" />
-            </div>
-          </div>
-          <p className="!text-slate-500 !text-sm !font-medium">Tasa de Conversión</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats?.compensations?.conversionRate ?? '—'}</h3>
-        </div>
-        <div className="!bg-white !p-6 !rounded-3xl !shadow-sm !border !border-slate-100">
-          <div className="!flex !items-center !justify-between !mb-4">
-            <div className="!p-3 !rounded-2xl !bg-rose-50 !text-rose-600">
-              <TrendingUp className="!w-6 !h-6" />
-            </div>
-          </div>
-          <p className="!text-slate-500 !text-sm !font-medium">CO2 Compensado</p>
-          <h3 className="!text-2xl !font-black !text-slate-900">{stats ? `${((stats.compensations?.compensatedEmissionsKg ?? 0) / 1000).toLocaleString('es-CL', { maximumFractionDigits: 1 })} t` : '—'}</h3>
-        </div>
+      <div className="adm-kpis">
+        <KpiCard
+          label="Usuarios registrados"
+          value={stats ? formatInt(stats.overview?.totalUsers) : '—'}
+          context={stats ? `${formatInt(stats.overview?.newUsers)} nuevos en ${periodLabel}` : undefined}
+        />
+        <KpiCard
+          label="Usuarios activos"
+          value={stats ? formatInt(stats.overview?.activeUsers) : '—'}
+          context={stats ? `Con actividad en ${periodLabel}` : undefined}
+        />
+        <KpiCard
+          label="Conversión"
+          value={pctText(c?.conversionRate)}
+          context={c ? `${formatInt(c.totalCompensations)} compensaciones de ${formatInt(c.totalCalculations)} cálculos` : undefined}
+        />
+        <KpiCard
+          label="CO₂e compensado"
+          value={c ? kgToTonnes(c.compensatedEmissionsKg) : '—'}
+          unit={c ? 't' : undefined}
+          context={c ? `De ${kgToTonnes(c.totalEmissionsKg)} t calculadas` : undefined}
+        />
       </div>
 
-      {/* Search & Table */}
-      <div className="!bg-white !rounded-3xl !shadow-sm !border !border-slate-100 !overflow-hidden">
-        <div className="!p-6 !border-b !border-slate-100">
-          <form onSubmit={handleSearch} className="!relative">
-            <Search className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-slate-400 !w-5 !h-5" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre o email..."
+      {loadError && (
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <AlertTriangle aria-hidden="true" />
+          <div><b>No se pudo cargar la lista de usuarios.</b> Revisa la conexión y vuelve a intentar.</div>
+        </div>
+      )}
+
+      <section className="adm-table-card">
+        <div className="adm-toolbar">
+          <form onSubmit={handleSearch} role="search">
+            <SearchField
+              label="Buscar usuarios"
+              placeholder="Buscar por nombre o correo"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="!w-full !pl-12 !pr-4 !py-3 !bg-slate-50 !border-0 !rounded-2xl !text-slate-900 !placeholder-slate-400 focus:!ring-2 focus:!ring-indigo-500 !outline-none !transition-all"
             />
+            <button type="submit" className="adm-btn">Buscar</button>
           </form>
         </div>
 
-        <div className="!overflow-x-auto">
-          <table className="!w-full !text-left !border-collapse">
+        <div className="adm-table-scroll">
+          <table className="adm-table">
             <thead>
-              <tr className="!bg-slate-50/50">
-                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Usuario</th>
-                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Origen</th>
-                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">País</th>
-                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest">Registro</th>
-                <th className="!px-6 !py-5 !text-xs !font-black !text-slate-400 !uppercase !tracking-widest !text-right">Acciones</th>
+              <tr>
+                <th scope="col">Usuario</th>
+                <th scope="col">Acceso</th>
+                <th scope="col">País</th>
+                <th scope="col">Registro</th>
+                <th scope="col" className="adm-col-actions"><span className="sr-only">Acciones</span></th>
               </tr>
             </thead>
-            <tbody className="!divide-y !divide-slate-50">
+            <tbody>
               {loading ? (
-                [...Array(5)].map((_, i) => (
-                  <tr key={i} className="!animate-pulse">
-                    <td colSpan={5} className="!px-6 !py-8">
-                      <div className="!h-4 !bg-slate-100 !rounded-full !w-full"></div>
-                    </td>
-                  </tr>
-                ))
+                <TableSkeletonRows columns={5} />
               ) : users.length > 0 ? (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:!bg-slate-50/50 !transition-colors !group">
-                    <td className="!px-6 !py-5">
-                      <div className="!flex !items-center !gap-4">
-                        <div className="!w-10 !h-10 !rounded-full !bg-slate-100 !text-slate-600 !flex !items-center !justify-center !font-bold">
-                          {user.nombre?.charAt(0) || user.email.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="!font-bold !text-slate-900">{user.nombre || 'Usuario'}</p>
-                          <p className="!text-xs !text-slate-500">{user.email}</p>
-                        </div>
-                      </div>
+                  <tr key={user.id}>
+                    <td>
+                      <Link to={`/admin/usuarios-b2c/${user.id}`} className="adm-cell-main">
+                        <span className="adm-cell-initial" aria-hidden="true">{(user.nombre || user.email).charAt(0).toUpperCase()}</span>
+                        <span>
+                          <span className="adm-cell-title">{user.nombre || user.email}</span>
+                          {user.nombre && <span className="adm-cell-sub">{user.email}</span>}
+                        </span>
+                      </Link>
                     </td>
-                    <td className="!px-6 !py-5">
-                      <div className={`!inline-flex !items-center !gap-2 !px-3 !py-1 !rounded-full !text-xs !font-bold ${authProviderConfig[user.authProvider]?.color || 'bg-slate-100 text-slate-600'}`}>
-                        {user.authProvider}
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-5">
-                      <div className="!flex !items-center !gap-2 !text-sm !text-slate-600">
-                        <MapPin className="!w-3.5 !h-3.5 !text-slate-400" />
-                        {user.pais || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-5">
-                      <div className="!flex !items-center !gap-2 !text-sm !text-slate-600">
-                        <Calendar className="!w-3.5 !h-3.5 !text-slate-400" />
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="!px-6 !py-5 !text-right">
-                      <button
-                        onClick={() => navigate(`/admin/usuarios-b2c/${user.id}`)}
-                        className="!p-2 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-indigo-600 hover:!text-white !transition-all"
-                        title="Ver detalle"
-                      >
-                        <Eye className="!w-4 !h-4" />
-                      </button>
+                    <td>{authProviderLabel(user.authProvider)}</td>
+                    <td>{user.pais || <span className="adm-cell-mute">—</span>}</td>
+                    <td>{new Date(user.createdAt).toLocaleDateString('es-CL')}</td>
+                    <td className="adm-col-actions">
+                      <Link to={`/admin/usuarios-b2c/${user.id}`} className="adm-icon-btn" title="Ver detalle" aria-label={`Ver detalle de ${user.nombre || user.email}`}>
+                        <Eye aria-hidden="true" />
+                      </Link>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="!px-6 !py-20 !text-center">
-                    <div className="!flex !flex-col !items-center !gap-4">
-                      <div className="!w-20 !h-20 !bg-slate-50 !rounded-full !flex !items-center !justify-center">
-                        <Users className="!w-10 !h-10 !text-slate-300" />
-                      </div>
-                      <p className="!text-slate-500 !font-medium">No se encontraron usuarios</p>
-                    </div>
+                  <td colSpan={5}>
+                    <EmptyState
+                      icon={Users}
+                      title="No se encontraron usuarios"
+                      text={searchParams.get('search') ? 'Prueba con otra búsqueda.' : undefined}
+                    />
                   </td>
                 </tr>
               )}
@@ -279,32 +221,17 @@ export default function UsuariosB2CPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {!loading && pagination.totalPages > 1 && (
-          <div className="!px-6 !py-6 !bg-slate-50/50 !border-t !border-slate-100 !flex !items-center !justify-between">
-            <p className="!text-sm !text-slate-500">
-              Página <span className="!font-bold !text-slate-900">{pagination.page}</span> de <span className="!font-bold !text-slate-900">{pagination.totalPages}</span>
-            </p>
-            <div className="!flex !items-center !gap-2">
-              <button
-                onClick={() => pagination.page > 1 && setSearchParams({ page: (pagination.page - 1).toString() })}
-                disabled={pagination.page === 1}
-                className="!p-2 !rounded-xl !bg-white !border !border-slate-200 !text-slate-600 disabled:!opacity-50 hover:!bg-slate-50 !transition-all"
-              >
-                <ChevronLeft className="!w-5 !h-5" />
-              </button>
-              <button
-                onClick={() => pagination.page < pagination.totalPages && setSearchParams({ page: (pagination.page + 1).toString() })}
-                disabled={pagination.page === pagination.totalPages}
-                className="!p-2 !rounded-xl !bg-white !border !border-slate-200 !text-slate-600 disabled:!opacity-50 hover:!bg-slate-50 !transition-all"
-              >
-                <ChevronRight className="!w-5 !h-5" />
-              </button>
-            </div>
-          </div>
+        {!loading && pagination.total > 0 && (
+          <Pagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            total={pagination.total}
+            shown={users.length}
+            noun="usuarios"
+            onPage={goToPage}
+          />
         )}
-      </div>
+      </section>
     </div>
   );
 }
-// End of component
