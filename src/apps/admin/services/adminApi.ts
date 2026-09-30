@@ -541,11 +541,6 @@ export const addProjectPricing = async (projectId: string, data: {
   return response.data || response;
 };
 
-export const getProjectPricingHistory = async (projectId: string) => {
-  const response = await api.get(`/admin/projects/${projectId}/pricing-history`) as any;
-  return response.data || response;
-};
-
 // ============================================
 // REPORTES
 // ============================================
@@ -722,15 +717,6 @@ export const verifyPartner = async (id: string) => {
   return response;
 };
 
-// Partner Projects (Admin view)
-export const getPartnerProjects = async (partnerId: string, params?: {
-  page?: number;
-  limit?: number;
-  status?: string;
-}) => {
-  const response = await api.get(`/admin/partners/${partnerId}/projects`, { params });
-  return response.data;
-};
 
 export const approvePartnerProject = async (_partnerId: string, projectId: string) => {
   const response = await api.post(`/admin/partners/projects/${projectId}/approve`) as any;

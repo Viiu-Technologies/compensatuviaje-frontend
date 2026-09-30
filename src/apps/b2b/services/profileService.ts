@@ -160,32 +160,3 @@ export const logout = async (): Promise<void> => {
   }
 };
 
-// ============ MOCK DATA (para demo) ============
-
-/**
- * Datos de perfil simulados para demo
- */
-export const getMockUserProfile = (email?: string): UserProfile => {
-  return {
-    id: 'usr_demo_001',
-    name: 'Usuario Empresarial',
-    email: email || 'admin@empresa.com',
-    phone: '+56 9 1234 5678',
-    preferences: {
-      notifications: true,
-      newsletter: true,
-      language: 'es',
-      theme: 'light'
-    },
-    company: {
-      id: 'comp_demo_001',
-      razonSocial: 'Empresa Demo S.A.',
-      rut: '76.123.456-7',
-      status: 'active'
-    },
-    role: 'company_admin',
-    permissions: ['companies.read', 'companies.update', 'compensations.create'],
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-12-01T14:45:00Z'
-  };
-};

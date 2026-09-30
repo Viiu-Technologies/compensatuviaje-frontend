@@ -16,9 +16,8 @@ import { ThemeProvider } from './shared/context/ThemeContext';
 // Auth Components (needed for route guards - keep eager)
 import ProtectedRoute, { 
   SuperAdminRoute, 
-  B2BRoute, 
-  CompanyAdminRoute,
-  PartnerRoute 
+  B2BRoute,
+  PartnerRoute
 } from './apps/auth/components/ProtectedRoute';
 import PublicRoute from './apps/auth/components/PublicRoute';
 import B2CProtectedRoute from './apps/auth/components/B2CProtectedRoute';
@@ -35,9 +34,6 @@ const ResetPasswordPage = lazy(() => import('./apps/auth/pages/ResetPasswordPage
 const DashboardPage = lazy(() => import('./apps/auth/pages/DashboardPage'));
 const AuthCallbackPage = lazy(() => import('./apps/b2c/pages/AuthCallback'));
 
-const OnboardingWizardPage = lazy(() => import('./apps/b2b/pages/OnboardingWizardPage'));
-const OnboardingStatusPage = lazy(() => import('./apps/b2b/pages/OnboardingStatusPage'));
-const OnboardingEditPage = lazy(() => import('./apps/b2b/pages/OnboardingEditPage'));
 const B2BDashboardPage = lazy(() => import('./apps/b2b/pages/DashboardPage'));
 
 const B2CDashboardPage = lazy(() => import('./apps/b2c/pages/B2CDashboardPage'));
@@ -261,42 +257,11 @@ function App() {
                 </B2BRoute>
               } 
             />
-            <Route 
-              path="/onboarding/wizard" 
-              element={
-                <B2BRoute>
-                  <OnboardingWizardPage />
-                </B2BRoute>
-              } 
-            />
-            <Route 
-              path="/onboarding/status" 
-              element={
-                <B2BRoute>
-                  <OnboardingStatusPage />
-                </B2BRoute>
-              } 
-            />
-            <Route 
-              path="/onboarding/edit" 
-              element={
-                <B2BRoute>
-                  <OnboardingEditPage />
-                </B2BRoute>
-              } 
-            />
-            
-            {/* Rutas B2B - Solo admin de empresa */}
-            <Route 
-              path="/company/users" 
-              element={
-                <CompanyAdminRoute>
-                  {/* UsersListPage - TODO */}
-                  <div>Gesti├│n de usuarios</div>
-                </CompanyAdminRoute>
-              } 
-            />
-            
+            {/* Onboarding antiguo y gestión de usuarios: simulaban datos o no tenían
+                backend. Se redirigen para no romper enlaces guardados. */}
+            <Route path="/onboarding/*" element={<Navigate to="/b2b/dashboard" replace />} />
+            <Route path="/company/users" element={<Navigate to="/b2b/dashboard" replace />} />
+
             {/* ===================== */}
             {/* Rutas Admin - Solo SuperAdmin */}
             {/* ===================== */}
