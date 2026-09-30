@@ -1,0 +1,1001 @@
+/* ==========================================================================
+   admin-ui.css — sistema de diseño del panel de administración
+   --------------------------------------------------------------------------
+   Neutros tranquilos, el petróleo de la marca como único acento y color solo
+   para estados (éxito, atención, error, info). Un radio, bordes en vez de
+   sombras, Outfit solo en el título de página e Inter en todo lo demás.
+
+   Clases con prefijo .adm- y sin !important: index.css tiene un reset global
+   `* { margin: 0; padding: 0 }` fuera de las capas de Tailwind que anula sus
+   utilidades de espaciado; una clase propia (especificidad 0,1,0) le gana.
+   ========================================================================== */
+
+.adm {
+  /* Superficies y texto */
+  --adm-bg: #f6f8f7;
+  --adm-surface: #ffffff;
+  --adm-surface-2: #f0f4f2;
+  --adm-border: #dbe4e1;
+  --adm-border-strong: #c3d0cc;
+  --adm-ink: #0f2626;
+  --adm-ink-soft: #4a5f5d;
+  --adm-ink-mute: #6f807e;
+
+  /* Acento de marca (petróleo) */
+  --adm-accent: #073d3d;
+  --adm-accent-hover: #0b5250;
+  --adm-accent-soft: #e3efec;
+  --adm-focus: #3ed32b;
+
+  /* Estados */
+  --adm-success: #046302;
+  --adm-success-bg: #e7f5e5;
+  --adm-warning: #9a5a06;
+  --adm-warning-bg: #fdf1e1;
+  --adm-danger: #b42318;
+  --adm-danger-bg: #fdecea;
+  --adm-info: #1d5fa8;
+  --adm-info-bg: #e8f0fb;
+
+  /* Series de gráficos: mismas en todo el panel */
+  --adm-series-1: #0b5d57;
+  --adm-series-2: #a9bcb8;
+  --adm-series-3: #c58b2b;
+
+  /* Barra lateral */
+  --adm-side-bg: #0b2a2a;
+  --adm-side-ink: #c9d6d4;
+  --adm-side-mute: #7f9996;
+  --adm-side-hover: rgba(255, 255, 255, 0.06);
+  --adm-side-active: rgba(255, 255, 255, 0.1);
+
+  --adm-radius: 8px;
+  --adm-font: 'Inter', system-ui, sans-serif;
+  --adm-font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+
+  font-family: var(--adm-font);
+  color: var(--adm-ink);
+  background: var(--adm-bg);
+}
+
+/* Tamaño base solo en lo construido con este sistema: las páginas aún no
+   migradas heredan el suyo y no cambian. */
+.adm-page,
+.adm-side,
+.adm-topbar {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.adm .num,
+.adm-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Estructura: layout
+   -------------------------------------------------------------------------- */
+.adm-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.adm-side {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  width: 256px;
+  background: var(--adm-side-bg);
+  color: var(--adm-side-ink);
+  transition: width 0.2s ease;
+}
+
+.adm-side--collapsed {
+  width: 72px;
+}
+
+@media (min-width: 1024px) {
+  .adm-side {
+    display: flex;
+  }
+}
+
+.adm-side__brand {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.adm-side--collapsed .adm-side__brand {
+  justify-content: center;
+  padding: 0;
+}
+
+.adm-side__brand img {
+  display: block;
+  height: 30px;
+  width: auto;
+}
+
+.adm-side__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.adm-side__section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-side__section-title {
+  padding: 0 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adm-side-mute);
+}
+
+.adm-side__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--adm-side-ink);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.adm-side__link svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.adm-side__link:hover {
+  background: var(--adm-side-hover);
+  color: #ffffff;
+}
+
+.adm-side__link--active {
+  background: var(--adm-side-active);
+  color: #ffffff;
+}
+
+/* Indicador del ítem activo: el único uso del verde brillante de la marca */
+.adm-side__link--active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--adm-focus);
+}
+
+.adm-side--collapsed .adm-side__link {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.adm-side__foot {
+  flex-shrink: 0;
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-side__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 12px;
+  min-width: 0;
+}
+
+.adm-side--collapsed .adm-side__user {
+  justify-content: center;
+  padding: 8px 0 12px;
+}
+
+.adm-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--adm-accent-soft);
+  color: var(--adm-accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.adm-side__user-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-side__user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.adm-side__user-mail {
+  font-size: 12px;
+  color: var(--adm-side-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-side__action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--adm-side-ink);
+  font: 500 14px/1.4 var(--adm-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.adm-side__action svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.adm-side__action:hover {
+  background: var(--adm-side-hover);
+  color: #ffffff;
+}
+
+.adm-side--collapsed .adm-side__action {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.adm-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  transition: margin-left 0.2s ease;
+}
+
+@media (min-width: 1024px) {
+  .adm-main {
+    margin-left: 256px;
+  }
+  .adm-main--collapsed {
+    margin-left: 72px;
+  }
+}
+
+.adm-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 24px;
+  background: var(--adm-surface);
+  border-bottom: 1px solid var(--adm-border);
+}
+
+.adm-topbar__menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--adm-border);
+  border-radius: 6px;
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .adm-topbar__menu {
+    display: none;
+  }
+}
+
+.adm-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--adm-ink-mute);
+}
+
+.adm-crumbs b {
+  font-weight: 600;
+  color: var(--adm-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+}
+
+@media (max-width: 640px) {
+  .adm-topbar {
+    padding: 0 16px;
+  }
+  .adm-content {
+    padding: 20px 16px 40px;
+  }
+}
+
+/* Menú móvil */
+.adm-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(8, 26, 26, 0.55);
+}
+
+.adm-drawer .adm-side {
+  display: flex;
+  width: 280px;
+}
+
+.adm-drawer__close {
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--adm-side-ink);
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Encabezado de página
+   -------------------------------------------------------------------------- */
+.adm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.adm-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.adm-page-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.adm-page-header__title {
+  font-family: var(--adm-font-display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--adm-ink);
+  text-wrap: balance;
+}
+
+.adm-page-header__desc {
+  font-size: 14px;
+  color: var(--adm-ink-soft);
+  max-width: 68ch;
+}
+
+.adm-page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Controles
+   -------------------------------------------------------------------------- */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--adm-border-strong);
+  border-radius: var(--adm-radius);
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  font: 500 13px/1 var(--adm-font);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.adm-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.adm-btn:hover {
+  background: var(--adm-surface-2);
+}
+
+.adm-btn--primary {
+  background: var(--adm-accent);
+  border-color: var(--adm-accent);
+  color: #ffffff;
+}
+
+.adm-btn--primary:hover {
+  background: var(--adm-accent-hover);
+  border-color: var(--adm-accent-hover);
+}
+
+.adm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.adm-select {
+  height: 36px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--adm-border-strong);
+  border-radius: var(--adm-radius);
+  background: var(--adm-surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5f5d' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 10px center;
+  color: var(--adm-ink);
+  font: 500 13px/1 var(--adm-font);
+  appearance: none;
+  cursor: pointer;
+}
+
+.adm :focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 2px;
+}
+
+.adm-side :focus-visible {
+  outline-color: var(--adm-focus);
+}
+
+/* --------------------------------------------------------------------------
+   Aviso
+   -------------------------------------------------------------------------- */
+.adm-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: var(--adm-radius);
+  font-size: 13px;
+}
+
+.adm-alert svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.adm-alert b {
+  font-weight: 600;
+}
+
+.adm-alert--danger {
+  background: var(--adm-danger-bg);
+  border-color: #f5c2bc;
+  color: var(--adm-danger);
+}
+
+.adm-alert--warning {
+  background: var(--adm-warning-bg);
+  border-color: #f2d3a6;
+  color: var(--adm-warning);
+}
+
+/* --------------------------------------------------------------------------
+   Panel (tarjeta de sección)
+   -------------------------------------------------------------------------- */
+.adm-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+}
+
+.adm-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 0;
+}
+
+.adm-panel__title {
+  font-family: var(--adm-font);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--adm-ink);
+}
+
+.adm-panel__desc {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--adm-ink-mute);
+}
+
+.adm-panel__aside {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--adm-ink-soft);
+}
+
+.adm-panel__body {
+  padding: 16px 20px 20px;
+  flex: 1;
+}
+
+.adm-panel__body--flush {
+  padding: 8px 0 4px;
+}
+
+/* --------------------------------------------------------------------------
+   KPI
+   -------------------------------------------------------------------------- */
+.adm-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .adm-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .adm-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.adm-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+  min-width: 0;
+}
+
+.adm-kpi__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--adm-ink-soft);
+}
+
+.adm-kpi__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adm-kpi__value {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--adm-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.adm-kpi__unit {
+  margin-left: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--adm-ink-soft);
+  letter-spacing: 0;
+}
+
+.adm-kpi__context {
+  font-size: 13px;
+  color: var(--adm-ink-mute);
+}
+
+.adm-kpi__foot {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--adm-border);
+  font-size: 12px;
+  color: var(--adm-ink-soft);
+}
+
+.adm-kpi__foot b {
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-sparkline {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* En la tarjeta KPI el mini gráfico cede espacio al número: con montos
+   largos ("$18.450.000") se achica en vez de desbordar la tarjeta. */
+.adm-kpi__row {
+  min-width: 0;
+}
+
+.adm-kpi__trend {
+  flex: 0 1 96px;
+  min-width: 40px;
+}
+
+.adm-kpi__trend .adm-sparkline {
+  width: 100%;
+  height: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Badge de estado
+   -------------------------------------------------------------------------- */
+.adm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.adm-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.adm-badge--success { background: var(--adm-success-bg); color: var(--adm-success); }
+.adm-badge--warning { background: var(--adm-warning-bg); color: var(--adm-warning); }
+.adm-badge--danger { background: var(--adm-danger-bg); color: var(--adm-danger); }
+.adm-badge--info { background: var(--adm-info-bg); color: var(--adm-info); }
+.adm-badge--neutral { background: var(--adm-surface-2); color: var(--adm-ink-soft); }
+
+/* --------------------------------------------------------------------------
+   Listas (atención, actividad)
+   -------------------------------------------------------------------------- */
+.adm-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-list__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--adm-border);
+  min-width: 0;
+}
+
+.adm-list__item:first-child {
+  border-top: 0;
+}
+
+a.adm-list__item {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.adm-list__item:hover {
+  background: var(--adm-surface-2);
+}
+
+.adm-list__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: var(--adm-surface-2);
+  color: var(--adm-ink-soft);
+}
+
+.adm-list__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.adm-list__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-list__title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--adm-ink);
+}
+
+.adm-list__meta {
+  font-size: 12px;
+  color: var(--adm-ink-mute);
+}
+
+.adm-list__end {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--adm-ink-mute);
+  white-space: nowrap;
+}
+
+.adm-list__count {
+  flex-shrink: 0;
+  min-width: 28px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--adm-warning-bg);
+  color: var(--adm-warning);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Estado vacío
+   -------------------------------------------------------------------------- */
+.adm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--adm-ink-mute);
+}
+
+.adm-empty svg {
+  width: 22px;
+  height: 22px;
+  color: var(--adm-border-strong);
+}
+
+.adm-empty__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--adm-ink-soft);
+}
+
+.adm-empty__text {
+  font-size: 13px;
+  max-width: 40ch;
+}
+
+/* --------------------------------------------------------------------------
+   Gráficos
+   -------------------------------------------------------------------------- */
+.adm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  color: var(--adm-ink-soft);
+}
+
+.adm-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adm-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.adm-chart-tooltip {
+  padding: 8px 10px;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--adm-ink);
+  box-shadow: 0 4px 12px rgba(15, 38, 38, 0.08);
+}
+
+.adm-chart-tooltip__date {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.adm-chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barra apilada de estados */
+.adm-stack {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--adm-surface-2);
+}
+
+.adm-stack > span {
+  display: block;
+  height: 100%;
+}
+
+.adm-stack > span + span {
+  border-left: 2px solid var(--adm-surface);
+}
+
+.adm-breakdown {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin-top: 16px;
+}
+
+.adm-breakdown li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--adm-ink-soft);
+}
+
+.adm-breakdown li b {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--adm-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Filas con mini gráfico (registros) */
+.adm-trend-rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-trend-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 120px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--adm-border);
+}
+
+.adm-trend-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.adm-trend-row__label {
+  font-size: 13px;
+  color: var(--adm-ink-soft);
+}
+
+.adm-trend-row__value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--adm-ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Grillas de la página */
+.adm-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.adm-grid--2-1 {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.adm-grid--1-1 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .adm-grid--2-1,
+  .adm-grid--1-1 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Carga */
+.adm-skeleton {
+  border-radius: var(--adm-radius);
+  background: linear-gradient(90deg, var(--adm-surface-2) 25%, #e6ecea 50%, var(--adm-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: admShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes admShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-skeleton { animation: none; }
+  .adm-side,
+  .adm-main { transition: none; }
+}

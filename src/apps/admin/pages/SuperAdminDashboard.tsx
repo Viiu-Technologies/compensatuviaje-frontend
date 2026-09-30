@@ -1,26 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Building2,
-  Users,
-  TreePine,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-  Activity,
-  Globe,
-  ShieldCheck,
-  Zap,
   AlertTriangle,
-  Clock,
   CheckCircle2,
-  XCircle,
-  DollarSign,
-  Inbox,
-  UserPlus,
   FileText,
-  RefreshCw
+  UserPlus,
+  Activity,
+  RefreshCw,
+  ShieldAlert,
 } from 'lucide-react';
 import {
+  AreaChart,
+  Area,
   BarChart,
   Bar,
   XAxis,
@@ -28,59 +20,43 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
-  Cell,
-  PieChart,
-  Pie
 } from 'recharts';
 import { getDashboard, getMetrics, DashboardData, MetricsData } from '../services/adminApi';
+import {
+  ADMIN_COLORS,
+  EmptyState,
+  KpiCard,
+  Legend,
+  PageHeader,
+  Panel,
+  Skeleton,
+  Sparkline,
+  cumulative,
+  formatCLP,
+  formatCLPCompact,
+  formatDayLong,
+  formatDayShort,
+  formatInt,
+  formatPercent,
+  formatTime,
+  kgToTonnes,
+  timeAgo,
+} from '../ui';
 
-const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
+/*
+ * Vista general del admin.
+ *
+ * Rehecha en la fase 1 de la auditoría: antes mezclaba empresas, usuarios y
+ * "pendientes" en una dona, ponía 1.284 usuarios y 24 empresas en el mismo
+ * eje y no graficaba emisiones ni ingresos, que la API ya entregaba.
+ */
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ElementType;
-  color: string;
-}
-
-function StatCard({ title, value, subtitle, icon: Icon, color }: StatCardProps) {
-  return (
-    <div className="bg-white dark:bg-slate-800 !rounded-3xl !p-6 !shadow-sm !border border-slate-100 dark:border-slate-700 !relative !overflow-hidden !group hover:!shadow-xl hover:!shadow-indigo-500/10 !transition-all !duration-500">
-      <div className={`!absolute !top-0 !right-0 !w-32 !h-32 !bg-gradient-to-br ${color} !opacity-[0.03] !rounded-bl-full !transition-transform group-hover:!scale-110`}></div>
-
-      <div className="!flex !items-start !justify-between !mb-4">
-        <div className={`!p-3 !rounded-2xl !bg-gradient-to-br ${color} text-white !shadow-lg !shadow-indigo-500/20`}>
-          <Icon className="!w-6 !h-6" />
-        </div>
-        {subtitle && (
-          <span className="!text-xs !font-semibold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-700 !px-2 !py-1 !rounded-lg">{subtitle}</span>
-        )}
-      </div>
-
-      <div>
-        <p className="text-slate-500 dark:text-slate-400 !text-sm !font-medium !mb-1">{title}</p>
-        <h3 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !tracking-tight">{value}</h3>
-      </div>
-    </div>
-  );
-}
-
-/** Helper: format relative time in Spanish */
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return 'Ahora';
-  if (diffMin < 60) return `Hace ${diffMin} min`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `Hace ${diffH}h`;
-  const diffD = Math.floor(diffH / 24);
-  return `Hace ${diffD}d`;
-}
+const PERIOD_LABELS: Record<string, string> = {
+  '7d': 'últimos 7 días',
+  '30d': 'últimos 30 días',
+  '90d': 'últimos 90 días',
+  '365d': 'último año',
+};
 
 /** Nombre visible del tipo de entidad (el backend envía la clave interna en inglés). */
 const ENTITY_LABELS: Record<string, string> = {
@@ -98,19 +74,56 @@ const ENTITY_LABELS: Record<string, string> = {
 
 const entityLabel = (type: string) => ENTITY_LABELS[type] ?? type;
 
-/** Icon & color for activity types */
-function activityMeta(type: string) {
+function activityIcon(type: string) {
   switch (type) {
     case 'company_registered':
-      return { icon: Building2, color: 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300' };
+      return Building2;
     case 'b2c_user_registered':
-      return { icon: UserPlus, color: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' };
+      return UserPlus;
     case 'document_uploaded':
-      return { icon: FileText, color: 'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300' };
+      return FileText;
     default:
-      return { icon: Zap, color: 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300' };
+      return Activity;
   }
 }
+
+const EMPTY_DASHBOARD: DashboardData = {
+  overview: { totalCompanies: 0, activeCompanies: 0, pendingVerification: 0, totalB2CUsers: 0, activeB2CUsers30d: 0, totalEmissionsKg: 0, totalCompensatedKg: 0, compensationRate: 0, totalRevenueCLP: 0 },
+  companies: { total: 0, active: 0, pending: 0, registered: 0, suspended: 0, byStatus: {} },
+  b2c: { total: 0, active30d: 0, newThisMonth: 0, withCompensations: 0, totalCalculations: 0 },
+  emissions: { totalCalculated: 0, totalCompensated: 0, compensationRate: 0, totalRevenue: 0 },
+  verification: { companies: 0, documents: 0, total: 0 },
+  recentActivity: [],
+  alerts: [],
+  workQueue: { pendingCompanies: 0, pendingDocuments: 0, total: 0 },
+};
+
+/** Tooltip común de los gráficos: fecha larga y valores formateados. */
+function ChartTooltip({ active, payload, label, format }: {
+  active?: boolean;
+  payload?: Array<{ name?: string; value?: number; color?: string; stroke?: string; fill?: string }>;
+  label?: string;
+  format: (n: number) => string;
+}) {
+  if (!active || !payload?.length || !label) return null;
+  return (
+    <div className="adm-chart-tooltip">
+      <div className="adm-chart-tooltip__date">{formatDayLong(label)}</div>
+      {payload.map((p) => (
+        <div key={p.name} className="adm-chart-tooltip__row">
+          <span className="adm-legend__swatch" style={{ background: p.stroke || p.fill || p.color }} aria-hidden="true" />
+          {p.name}: <b>{format(p.value ?? 0)}</b>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const axisProps = {
+  axisLine: false,
+  tickLine: false,
+  tick: { fill: ADMIN_COLORS.axis, fontSize: 12 },
+} as const;
 
 export default function SuperAdminDashboard() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
@@ -129,28 +142,15 @@ export default function SuperAdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [dashboardData, metricsData] = await Promise.allSettled([
-        getDashboard(),
-        getMetrics(period)
-      ]);
+      const [dashboardData, metricsData] = await Promise.allSettled([getDashboard(), getMetrics(period)]);
       if (dashboardData.status === 'fulfilled') {
         setDashboard(dashboardData.value);
         setLoadError(false);
         setUpdatedAt(new Date());
       } else {
-        setLoadError(true);
         console.error('Error loading dashboard:', dashboardData.reason);
-        // Fallback con zeros
-        setDashboard({
-          overview: { totalCompanies: 0, activeCompanies: 0, pendingVerification: 0, totalB2CUsers: 0, activeB2CUsers30d: 0, totalEmissionsKg: 0, totalCompensatedKg: 0, compensationRate: 0, totalRevenueCLP: 0 },
-          companies: { total: 0, active: 0, pending: 0, registered: 0, suspended: 0, byStatus: {} },
-          b2c: { total: 0, active30d: 0, newThisMonth: 0, withCompensations: 0, totalCalculations: 0 },
-          emissions: { totalCalculated: 0, totalCompensated: 0, compensationRate: 0, totalRevenue: 0 },
-          verification: { companies: 0, documents: 0, total: 0 },
-          recentActivity: [],
-          alerts: [],
-          workQueue: { pendingCompanies: 0, pendingDocuments: 0, total: 0 }
-        });
+        setLoadError(true);
+        setDashboard(EMPTY_DASHBOARD);
       }
       if (metricsData.status === 'fulfilled') {
         setMetrics(metricsData.value);
@@ -163,429 +163,294 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  // Build chart data from metrics API (newCompanies + newB2CUsers + newPartners series)
-  const chartData = useMemo(() => {
-    if (!metrics?.newCompanies?.series?.length && !metrics?.newB2CUsers?.series?.length && !metrics?.newPartners?.series?.length) return [];
+  const d = dashboard ?? EMPTY_DASHBOARD;
+  const periodLabel = PERIOD_LABELS[period] ?? period;
 
-    const companiesSeries = metrics?.newCompanies?.series || [];
-    const b2cSeries = metrics?.newB2CUsers?.series || [];
-    const partnersSeries = metrics?.newPartners?.series || [];
+  // Emisiones del período, en t CO₂e para el gráfico
+  const emissionsSeries = useMemo(
+    () => (metrics?.emissions?.series ?? []).map((p) => ({ date: p.date, calculated: p.calculated ?? 0, compensated: p.compensated ?? 0 })),
+    [metrics]
+  );
+  const periodCalculated = emissionsSeries.reduce((a, p) => a + p.calculated, 0);
+  const periodCompensated = emissionsSeries.reduce((a, p) => a + p.compensated, 0);
 
-    // Aggregate daily series into monthly buckets
-    const monthlyMap = new Map<string, { b2b: number; b2c: number; partners: number }>();
-    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const revenueSeries = useMemo(
+    () => (metrics?.revenue?.series ?? []).map((p) => ({ date: p.date, value: p.valueCLP ?? 0 })),
+    [metrics]
+  );
 
-    companiesSeries.forEach((item) => {
-      const d = new Date(item.date);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0, partners: 0 };
-      existing.b2b += item.count || 0;
-      monthlyMap.set(key, existing);
-    });
+  const registrations = [
+    { label: 'Empresas B2B', data: metrics?.newCompanies },
+    { label: 'Usuarios B2C', data: metrics?.newB2CUsers },
+    { label: 'Impact Partners', data: metrics?.newPartners },
+  ];
 
-    b2cSeries.forEach((item) => {
-      const d = new Date(item.date);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0, partners: 0 };
-      existing.b2c += item.count || 0;
-      monthlyMap.set(key, existing);
-    });
-
-    partnersSeries.forEach((item) => {
-      const d = new Date(item.date);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      const existing = monthlyMap.get(key) || { b2b: 0, b2c: 0, partners: 0 };
-      existing.partners += item.count || 0;
-      monthlyMap.set(key, existing);
-    });
-
-    // Sort by date and build output
-    const sortedKeys = Array.from(monthlyMap.keys()).sort();
-    return sortedKeys.map(key => {
-      const [, monthIdx] = key.split('-');
-      const vals = monthlyMap.get(key)!;
-      return { name: monthNames[parseInt(monthIdx)], b2b: vals.b2b, b2c: vals.b2c, partners: vals.partners };
-    });
-  }, [metrics]);
-
-  // Build pie data from real dashboard numbers
-  const pieData = useMemo(() => {
-    if (!dashboard) return [];
-    const items = [
-      { name: 'Empresas B2B', value: dashboard.companies?.total || 0 },
-      { name: 'Usuarios B2C', value: dashboard.b2c?.total || 0 },
-      { name: 'Pendientes', value: dashboard.workQueue?.total || 0 },
+  // Estado de empresas: "otras" cubre estados sin categoría propia (p. ej. contrato firmado)
+  const companyStates = useMemo(() => {
+    const c = d.companies;
+    const known = [
+      { label: 'Activas', value: c?.active ?? 0, color: ADMIN_COLORS.success },
+      { label: 'Pendientes', value: c?.pending ?? 0, color: ADMIN_COLORS.warning },
+      { label: 'Registradas', value: c?.registered ?? 0, color: ADMIN_COLORS.info },
+      { label: 'Suspendidas', value: c?.suspended ?? 0, color: ADMIN_COLORS.danger },
     ];
-    // Only return items that have some value
-    return items.filter(i => i.value > 0).length > 0 ? items : [];
-  }, [dashboard]);
+    const other = Math.max(0, (c?.total ?? 0) - known.reduce((a, k) => a + k.value, 0));
+    return other > 0 ? [...known, { label: 'Otros estados', value: other, color: ADMIN_COLORS.neutral }] : known;
+  }, [d]);
+  const companiesTotal = d.companies?.total ?? 0;
 
-  const pieTotal = useMemo(() => pieData.reduce((acc, i) => acc + i.value, 0), [pieData]);
+  // Cola de trabajo: lo que requiere una acción del administrador
+  const attention = [
+    { key: 'companies', count: d.workQueue?.pendingCompanies ?? 0, title: 'Empresas por verificar', meta: 'Documentación de registro', to: '/admin/verificacion', icon: Building2 },
+    { key: 'documents', count: d.workQueue?.pendingDocuments ?? 0, title: 'Documentos por revisar', meta: 'Cargados por empresas', to: '/admin/verificacion', icon: FileText },
+  ].filter((a) => a.count > 0);
+  const alerts = d.alerts ?? [];
 
-  // Format big numbers
-  const formatNumber = (n: number): string => {
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-    return n.toString();
-  };
+  const header = (
+    <PageHeader
+      title="Vista general"
+      description={`Resumen de la plataforma. Los gráficos muestran los ${periodLabel}.`}
+      actions={
+        <>
+          <label className="sr-only" htmlFor="adm-period">Período</label>
+          <select id="adm-period" className="adm-select" value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <option value="7d">Últimos 7 días</option>
+            <option value="30d">Últimos 30 días</option>
+            <option value="90d">Últimos 90 días</option>
+            <option value="365d">Último año</option>
+          </select>
+          <button type="button" className="adm-btn" onClick={loadData} disabled={loading} title="Volver a cargar los datos">
+            <RefreshCw aria-hidden="true" />
+            {updatedAt ? `Actualizado ${formatTime(updatedAt)}` : 'Actualizar'}
+          </button>
+        </>
+      }
+    />
+  );
 
-  if (loading) {
+  if (loading && !dashboard) {
     return (
-      <div className="!flex !items-center !justify-center !h-[60vh]">
-        <div className="!relative !w-20 !h-20">
-          <div className="!absolute !inset-0 !border-4 border-indigo-100 dark:border-indigo-500/20 !rounded-full"></div>
-          <div className="!absolute !inset-0 !border-4 border-indigo-600 dark:border-indigo-400 !border-t-transparent !rounded-full !animate-spin"></div>
+      <div className="adm-page" aria-busy="true">
+        {header}
+        <div className="adm-kpis">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={132} />)}
+        </div>
+        <div className="adm-grid adm-grid--2-1">
+          <Skeleton height={340} />
+          <Skeleton height={340} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="!space-y-8 !animate-in !fade-in !slide-in-from-bottom-4 !duration-700">
-      {/* Welcome Section */}
-      <div className="!flex !flex-col md:!flex-row md:!items-center !justify-between !gap-4">
-        <div>
-          <h2 className="!text-3xl !font-black text-slate-900 dark:text-slate-100 !tracking-tight">Vista General</h2>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">Resumen de la plataforma en el período seleccionado.</p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="bg-white dark:bg-slate-800 !border border-slate-200 dark:border-slate-700 !rounded-xl !px-4 !py-2 !text-sm !font-bold text-slate-600 dark:text-slate-300 !outline-none focus:!ring-2 focus:!ring-indigo-500 !shadow-sm"
-          >
-            <option value="7d">Últimos 7 días</option>
-            <option value="30d">Últimos 30 días</option>
-            <option value="90d">Últimos 90 días</option>
-            <option value="365d">Último año</option>
-          </select>
-          <button
-            type="button"
-            onClick={loadData}
-            className="!flex !items-center !gap-2 bg-white !px-3 !py-2 !rounded-xl !border border-slate-200 !text-xs !font-medium text-slate-600 hover:bg-slate-50 !shadow-sm"
-            title="Volver a cargar los datos"
-          >
-            <RefreshCw className="!w-3.5 !h-3.5" />
-            {updatedAt
-              ? `Actualizado ${updatedAt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}`
-              : 'Actualizar'}
-          </button>
-        </div>
-      </div>
+    <div className="adm-page">
+      {header}
 
       {loadError && (
-        <div role="alert" className="!flex !items-start !gap-3 !p-4 !rounded-xl !border border-red-200 bg-red-50 text-red-800">
-          <AlertTriangle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
-          <div className="!text-sm">
-            <p className="!font-semibold">No se pudieron cargar los datos del panel.</p>
-            <p>Las cifras en 0 no son reales. Revisa la conexión con el servidor y vuelve a intentar.</p>
+        <div role="alert" className="adm-alert adm-alert--danger">
+          <AlertTriangle aria-hidden="true" />
+          <div>
+            <b>No se pudieron cargar los datos del panel.</b> Las cifras en 0 no son reales. Revisa la conexión con el
+            servidor y vuelve a intentar.
           </div>
         </div>
       )}
 
-      {/* Stats Grid - Real data from dashboard API */}
-      <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6">
-        <StatCard
-          title="Empresas B2B"
-          value={dashboard?.overview?.totalCompanies ?? 0}
-          subtitle={`${dashboard?.overview?.activeCompanies ?? 0} activas`}
-          icon={Building2}
-          color="!from-indigo-500 !to-blue-600"
+      {/* KPI: el número grande es el total histórico; el pie, lo del período */}
+      <div className="adm-kpis">
+        <KpiCard
+          label="Empresas activas"
+          value={formatInt(d.overview?.activeCompanies)}
+          context={`de ${formatInt(d.overview?.totalCompanies)} registradas`}
+          trend={metrics?.newCompanies?.series ? cumulative(metrics.newCompanies.series.map((p) => p.count)) : undefined}
+          foot={metrics?.newCompanies ? <><b>+{formatInt(metrics.newCompanies.total)}</b> nuevas en los {periodLabel}</> : undefined}
         />
-        <StatCard
-          title="Usuarios B2C"
-          value={formatNumber(dashboard?.overview?.totalB2CUsers ?? 0)}
-          subtitle={`${dashboard?.b2c?.newThisMonth ?? 0} nuevos este mes`}
-          icon={Users}
-          color="!from-purple-500 !to-pink-600"
+        <KpiCard
+          label="Usuarios B2C"
+          value={formatInt(d.overview?.totalB2CUsers)}
+          context={`${formatInt(d.overview?.activeB2CUsers30d)} activos en los últimos 30 días`}
+          trend={metrics?.newB2CUsers?.series ? cumulative(metrics.newB2CUsers.series.map((p) => p.count)) : undefined}
+          foot={metrics?.newB2CUsers ? <><b>+{formatInt(metrics.newB2CUsers.total)}</b> nuevos en los {periodLabel}</> : undefined}
         />
-        <StatCard
-          title="CO2 Compensado"
-          value={dashboard?.overview?.totalCompensatedKg ? `${((dashboard.overview.totalCompensatedKg) / 1000).toFixed(1)}t` : '0t'}
-          subtitle={`Tasa: ${dashboard?.overview?.compensationRate ?? 0}%`}
-          icon={TreePine}
-          color="!from-emerald-500 !to-teal-600"
+        <KpiCard
+          label="CO₂e compensado"
+          value={kgToTonnes(d.overview?.totalCompensatedKg)}
+          unit="t"
+          context={`${formatPercent(d.overview?.compensationRate)} de lo calculado`}
+          trend={emissionsSeries.map((p) => p.compensated)}
+          foot={emissionsSeries.length ? <><b>{kgToTonnes(periodCompensated)} t</b> en los {periodLabel}</> : undefined}
         />
-        <StatCard
-          title="Ingresos Totales"
-          value={dashboard?.overview?.totalRevenueCLP ? `$${formatNumber(dashboard.overview.totalRevenueCLP)}` : '$0'}
-          subtitle="CLP"
-          icon={TrendingUp}
-          color="!from-amber-500 !to-orange-600"
+        <KpiCard
+          label="Ingresos"
+          value={formatCLP(d.overview?.totalRevenueCLP)}
+          context="Total histórico, CLP"
+          trend={revenueSeries.map((p) => p.value)}
+          foot={metrics?.revenue ? <><b>{formatCLP(metrics.revenue.totalCLP)}</b> en los {periodLabel}</> : undefined}
         />
       </div>
 
-      {/* Charts Section */}
-      <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-8">
-        {/* Main Growth Chart */}
-        <div className="lg:!col-span-2 bg-white dark:bg-slate-800 !p-8 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700">
-          <div className="!flex !items-center !justify-between !mb-8">
-            <div>
-              <h3 className="!text-xl !font-bold text-slate-900 dark:text-slate-100">Crecimiento de Registros</h3>
-              <p className="!text-sm text-slate-500 dark:text-slate-400">Empresas B2B, usuarios B2C y partners por período</p>
-            </div>
-          </div>
-          {chartData.length > 0 ? (
-            <div className="!h-[350px] !w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorB2B" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorB2C" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ec4899" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorPartners" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{fill: '#94a3b8', fontSize: 12}}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{fill: '#94a3b8', fontSize: 12}}
-                  />
-                  <Tooltip
-                    contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}}
-                    formatter={(value: number, name: string) => [
-                      value,
-                      name === 'b2b' ? 'Empresas B2B' : name === 'b2c' ? 'Usuarios B2C' : 'Partners'
-                    ]}
-                  />
-                  <Area type="monotone" dataKey="b2b" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorB2B)" name="b2b" />
-                  <Area type="monotone" dataKey="b2c" stroke="#ec4899" strokeWidth={3} fillOpacity={1} fill="url(#colorB2C)" name="b2c" />
-                  <Area type="monotone" dataKey="partners" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorPartners)" name="partners" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="!h-[350px] !w-full !flex !items-center !justify-center !flex-col !gap-3">
-              <Inbox className="!w-16 !h-16 text-slate-200 dark:text-slate-700" />
-              <p className="text-slate-400 dark:text-slate-500 !font-medium">Sin datos de crecimiento para este período</p>
-            </div>
-          )}
-        </div>
-
-        {/* Distribution Chart */}
-        <div className="bg-white dark:bg-slate-800 !p-8 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700">
-          <h3 className="!text-xl !font-bold text-slate-900 dark:text-slate-100 !mb-2">Distribución</h3>
-          <p className="!text-sm text-slate-500 dark:text-slate-400 !mb-8">Usuarios por tipo</p>
-          {pieData.length > 0 && pieTotal > 0 ? (
+      <div className="adm-grid adm-grid--2-1">
+        <Panel
+          title="Emisiones calculadas y compensadas"
+          description="Toneladas de CO₂e por día"
+          aside={periodCalculated > 0 ? `${formatPercent((periodCompensated / periodCalculated) * 100)} compensado` : undefined}
+        >
+          {emissionsSeries.length ? (
             <>
-              <div className="!h-[250px] !w-full !relative">
+              <Legend items={[
+                { label: 'Calculadas', color: ADMIN_COLORS.series2 },
+                { label: 'Compensadas', color: ADMIN_COLORS.series1 },
+              ]} />
+              <div style={{ height: 260, marginTop: 12 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={8}
-                      dataKey="value"
-                    >
-                      {pieData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                  <AreaChart data={emissionsSeries} margin={{ top: 4, right: 8, bottom: 0, left: -8 }}>
+                    <CartesianGrid vertical={false} stroke={ADMIN_COLORS.grid} />
+                    <XAxis dataKey="date" {...axisProps} tickFormatter={formatDayShort} minTickGap={32} dy={6} />
+                    <YAxis {...axisProps} width={48} tickFormatter={(v: number) => kgToTonnes(v, 0)} />
+                    <Tooltip content={<ChartTooltip format={(v) => `${kgToTonnes(v)} t`} />} />
+                    <Area type="monotone" dataKey="calculated" name="Calculadas" stroke={ADMIN_COLORS.series2} fill={ADMIN_COLORS.series2} fillOpacity={0.25} strokeWidth={1.5} />
+                    <Area type="monotone" dataKey="compensated" name="Compensadas" stroke={ADMIN_COLORS.series1} fill={ADMIN_COLORS.series1} fillOpacity={0.12} strokeWidth={2} />
+                  </AreaChart>
                 </ResponsiveContainer>
-                <div className="!absolute !inset-0 !flex !items-center !justify-center !flex-col !pointer-events-none">
-                  <span className="!text-2xl !font-black text-slate-900 dark:text-slate-100">{formatNumber(pieTotal)}</span>
-                  <span className="!text-[10px] !uppercase !tracking-widest text-slate-400 dark:text-slate-500 !font-bold">Total</span>
-                </div>
-              </div>
-              <div className="!mt-8 !space-y-3">
-                {pieData.map((item, idx) => (
-                  <div key={item.name} className="!flex !items-center !justify-between">
-                    <div className="!flex !items-center !gap-2">
-                      <div className="!w-3 !h-3 !rounded-full" style={{backgroundColor: COLORS[idx]}}></div>
-                      <span className="!text-sm text-slate-600 dark:text-slate-300">{item.name}</span>
-                    </div>
-                    <span className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{formatNumber(item.value)}</span>
-                  </div>
-                ))}
               </div>
             </>
           ) : (
-            <div className="!h-[250px] !w-full !flex !items-center !justify-center !flex-col !gap-3">
-              <Inbox className="!w-12 !h-12 text-slate-200 dark:text-slate-700" />
-              <p className="text-slate-400 dark:text-slate-500 !font-medium !text-sm">Sin datos</p>
-            </div>
+            <EmptyState title="Sin emisiones en el período" text="Aparecerán cuando se registren cálculos." />
           )}
-        </div>
+        </Panel>
+
+        <Panel title="Requiere atención" description="Tareas pendientes del equipo" flush>
+          {attention.length === 0 && alerts.length === 0 ? (
+            <EmptyState icon={CheckCircle2} title="Nada pendiente" text="No hay verificaciones ni alertas abiertas." />
+          ) : (
+            <ul className="adm-list">
+              {attention.map((a) => (
+                <li key={a.key}>
+                  <Link to={a.to} className="adm-list__item">
+                    <span className="adm-list__icon"><a.icon aria-hidden="true" /></span>
+                    <span className="adm-list__text">
+                      <span className="adm-list__title">{a.title}</span>
+                      <span className="adm-list__meta">{a.meta}</span>
+                    </span>
+                    <span className="adm-list__count">{formatInt(a.count)}</span>
+                  </Link>
+                </li>
+              ))}
+              {alerts.map((alert, i) => {
+                const content = (
+                  <>
+                    <span className="adm-list__icon"><ShieldAlert aria-hidden="true" /></span>
+                    <span className="adm-list__text">
+                      <span className="adm-list__title">{alert.message}</span>
+                      <span className="adm-list__meta">{alert.type === 'error' ? 'Error' : alert.type === 'warning' ? 'Advertencia' : 'Aviso'}</span>
+                    </span>
+                  </>
+                );
+                return (
+                  <li key={`alert-${i}`}>
+                    {alert.actionUrl?.startsWith('/') ? (
+                      <Link to={alert.actionUrl} className="adm-list__item">{content}</Link>
+                    ) : (
+                      <div className="adm-list__item">{content}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
       </div>
 
-      {/* Recent Activity & System Status */}
-      <div className="!grid !grid-cols-1 lg:!grid-cols-2 !gap-8">
-        {/* Recent Activity - Real data */}
-        <div className="bg-white dark:bg-slate-800 !p-8 !rounded-3xl !shadow-sm !border border-slate-100 dark:border-slate-700">
-          <div className="!flex !items-center !justify-between !mb-6">
-            <h3 className="!text-xl !font-bold text-slate-900 dark:text-slate-100">Alertas y Actividad Reciente</h3>
-          </div>
-          <div className="!space-y-4">
-            {/* Pending work queue alerts */}
-            {(dashboard?.workQueue?.pendingCompanies ?? 0) > 0 && (
-              <div className="!flex !items-center !gap-4 !p-4 bg-amber-50 dark:bg-amber-500/10 !rounded-2xl !border border-amber-100 dark:border-amber-500/20">
-                <div className="!p-3 !rounded-2xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-300">
-                  <AlertTriangle className="!w-5 !h-5" />
-                </div>
-                <div className="!flex-1">
-                  <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{dashboard!.workQueue.pendingCompanies} Empresas pendientes</p>
-                  <p className="!text-xs text-slate-500 dark:text-slate-400">Requieren verificación de documentos</p>
-                </div>
-              </div>
-            )}
+      <div className="adm-grid adm-grid--1-1">
+        <Panel
+          title="Ingresos por día"
+          description="Pesos chilenos"
+          aside={metrics?.revenue ? formatCLP(metrics.revenue.totalCLP) : undefined}
+        >
+          {revenueSeries.length ? (
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueSeries} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke={ADMIN_COLORS.grid} />
+                  <XAxis dataKey="date" {...axisProps} tickFormatter={formatDayShort} minTickGap={32} dy={6} />
+                  <YAxis {...axisProps} width={64} tickFormatter={formatCLPCompact} />
+                  <Tooltip cursor={{ fill: ADMIN_COLORS.grid }} content={<ChartTooltip format={formatCLP} />} />
+                  <Bar dataKey="value" name="Ingresos" fill={ADMIN_COLORS.series1} radius={[2, 2, 0, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState title="Sin ingresos en el período" />
+          )}
+        </Panel>
 
-            {(dashboard?.workQueue?.pendingDocuments ?? 0) > 0 && (
-              <div className="!flex !items-center !gap-4 !p-4 bg-blue-50 dark:bg-blue-500/10 !rounded-2xl !border border-blue-100 dark:border-blue-500/20">
-                <div className="!p-3 !rounded-2xl bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300">
-                  <FileText className="!w-5 !h-5" />
-                </div>
-                <div className="!flex-1">
-                  <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{dashboard!.workQueue.pendingDocuments} Documentos pendientes</p>
-                  <p className="!text-xs text-slate-500 dark:text-slate-400">Documentos por revisar</p>
-                </div>
-              </div>
-            )}
+        <Panel title="Registros nuevos" description={`Acumulado de los ${periodLabel}; cada fila con su propia escala`}>
+          {registrations.some((r) => r.data) ? (
+            <ul className="adm-trend-rows">
+              {registrations.map((r) => (
+                <li key={r.label} className="adm-trend-row">
+                  <span className="adm-trend-row__label">{r.label}</span>
+                  <span className="adm-trend-row__value">{formatInt(r.data?.total)}</span>
+                  {(r.data?.series?.length ?? 0) > 1 ? (
+                    <Sparkline values={cumulative(r.data!.series.map((p) => p.count))} width={120} height={28} label={`Registros acumulados de ${r.label}`} />
+                  ) : (
+                    <span />
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState title="Sin datos de registros" />
+          )}
+        </Panel>
+      </div>
 
-            {/* API alerts */}
-            {dashboard?.alerts?.map((alert, i) => (
-              <div key={`alert-${i}`} className={`!flex !items-center !gap-4 !p-4 !rounded-2xl !border ${
-                alert.type === 'error' ? 'bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20' :
-                alert.type === 'warning' ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20' :
-                'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20'
-              }`}>
-                <div className={`!p-3 !rounded-2xl ${
-                  alert.type === 'error' ? 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-300' :
-                  alert.type === 'warning' ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-300' :
-                  'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300'
-                }`}>
-                  <AlertTriangle className="!w-5 !h-5" />
-                </div>
-                <div className="!flex-1">
-                  <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{alert.message}</p>
-                </div>
+      <div className="adm-grid adm-grid--1-1">
+        <Panel title="Estado de las empresas" description="Total histórico" aside={`${formatInt(companiesTotal)} empresas`}>
+          {companiesTotal > 0 ? (
+            <>
+              <div className="adm-stack" role="img" aria-label={companyStates.map((s) => `${s.label}: ${s.value}`).join(', ')}>
+                {companyStates.filter((s) => s.value > 0).map((s) => (
+                  <span key={s.label} style={{ width: `${(s.value / companiesTotal) * 100}%`, background: s.color }} />
+                ))}
               </div>
-            ))}
+              <ul className="adm-breakdown">
+                {companyStates.map((s) => (
+                  <li key={s.label}>
+                    <span className="adm-legend__swatch" style={{ background: s.color }} aria-hidden="true" />
+                    {s.label}
+                    <b>{formatInt(s.value)}</b>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <EmptyState title="Aún no hay empresas registradas" />
+          )}
+        </Panel>
 
-            {/* Recent activity from API */}
-            {(dashboard?.recentActivity?.length ?? 0) > 0 ? (
-              dashboard!.recentActivity.slice(0, 5).map((item, i) => {
-                const meta = activityMeta(item.type);
-                const IconComp = meta.icon;
+        <Panel title="Actividad reciente" flush>
+          {(d.recentActivity?.length ?? 0) > 0 ? (
+            <ul className="adm-list">
+              {d.recentActivity.slice(0, 6).map((item, i) => {
+                const Icon = activityIcon(item.type);
                 return (
-                  <div key={`activity-${i}`} className="!flex !items-center !gap-4 !group">
-                    <div className={`!p-3 !rounded-2xl ${meta.color} !transition-transform group-hover:!scale-110`}>
-                      <IconComp className="!w-5 !h-5" />
-                    </div>
-                    <div className="!flex-1">
-                      <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{item.description}</p>
-                      <p className="!text-xs text-slate-500 dark:text-slate-400">{entityLabel(item.entityType)}</p>
-                    </div>
-                    <span className="!text-xs text-slate-400 dark:text-slate-500">{timeAgo(item.timestamp)}</span>
-                  </div>
+                  <li key={`activity-${i}`} className="adm-list__item">
+                    <span className="adm-list__icon"><Icon aria-hidden="true" /></span>
+                    <span className="adm-list__text">
+                      <span className="adm-list__title">{item.description}</span>
+                      <span className="adm-list__meta">{entityLabel(item.entityType)}</span>
+                    </span>
+                    <span className="adm-list__end">{timeAgo(item.timestamp)}</span>
+                  </li>
                 );
-              })
-            ) : (
-              (dashboard?.workQueue?.total ?? 0) === 0 && (dashboard?.alerts?.length ?? 0) === 0 && (
-                <div className="!flex !items-center !justify-center !py-8 !flex-col !gap-2">
-                  <CheckCircle2 className="!w-10 !h-10 text-emerald-300 dark:text-emerald-500/40" />
-                  <p className="text-slate-400 dark:text-slate-500 !font-medium !text-sm">Sin actividad reciente ni alertas pendientes</p>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-
-        {/* Platform Summary */}
-        <div className="!bg-gradient-to-br from-slate-900 to-slate-800 !p-8 !rounded-3xl !shadow-xl text-white">
-          <h3 className="!text-xl !font-bold !mb-6 !flex !items-center !gap-2">
-            <Activity className="text-indigo-400" />
-            Resumen de Plataforma
-          </h3>
-          <div className="!space-y-5">
-            {/* Companies breakdown */}
-            <div>
-              <div className="!flex !justify-between !mb-2">
-                <span className="!text-sm !font-medium text-slate-300">Empresas Activas</span>
-                <span className="!text-xs !font-bold text-emerald-400">{dashboard?.companies?.active ?? 0} / {dashboard?.companies?.total ?? 0}</span>
-              </div>
-              <div className="!h-2 bg-white/10 !rounded-full !overflow-hidden">
-                <div
-                  className="!h-full bg-emerald-500 !transition-all !duration-1000 !rounded-full"
-                  style={{ width: `${dashboard?.companies?.total ? ((dashboard.companies.active / dashboard.companies.total) * 100) : 0}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* B2C active users */}
-            <div>
-              <div className="!flex !justify-between !mb-2">
-                <span className="!text-sm !font-medium text-slate-300">Usuarios B2C Activos (30d)</span>
-                <span className="!text-xs !font-bold text-purple-400">{dashboard?.b2c?.active30d ?? 0} / {dashboard?.b2c?.total ?? 0}</span>
-              </div>
-              <div className="!h-2 bg-white/10 !rounded-full !overflow-hidden">
-                <div
-                  className="!h-full bg-purple-500 !transition-all !duration-1000 !rounded-full"
-                  style={{ width: `${dashboard?.b2c?.total ? ((dashboard.b2c.active30d / dashboard.b2c.total) * 100) : 0}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Compensation rate */}
-            <div>
-              <div className="!flex !justify-between !mb-2">
-                <span className="!text-sm !font-medium text-slate-300">Tasa de Compensación</span>
-                <span className="!text-xs !font-bold text-amber-400">{dashboard?.emissions?.compensationRate ?? 0}%</span>
-              </div>
-              <div className="!h-2 bg-white/10 !rounded-full !overflow-hidden">
-                <div
-                  className="!h-full bg-amber-500 !transition-all !duration-1000 !rounded-full"
-                  style={{ width: `${dashboard?.emissions?.compensationRate ?? 0}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Pending verifications */}
-            <div>
-              <div className="!flex !justify-between !mb-2">
-                <span className="!text-sm !font-medium text-slate-300">Verificaciones Pendientes</span>
-                <span className="!text-xs !font-bold text-rose-400">{dashboard?.verification?.total ?? 0}</span>
-              </div>
-              <div className="!h-2 bg-white/10 !rounded-full !overflow-hidden">
-                <div
-                  className="!h-full bg-rose-500 !transition-all !duration-1000 !rounded-full"
-                  style={{ width: `${Math.min((dashboard?.verification?.total ?? 0) * 5, 100)}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick stats */}
-          <div className="!mt-6 !grid !grid-cols-2 !gap-3">
-            <div className="!p-4 bg-white/5 !rounded-2xl !border border-white/10 !text-center">
-              <p className="!text-2xl !font-black text-white">{dashboard?.b2c?.withCompensations ?? 0}</p>
-              <p className="!text-[10px] !uppercase !tracking-widest text-slate-400 !font-bold !mt-1">Con Compensaciones</p>
-            </div>
-            <div className="!p-4 bg-white/5 !rounded-2xl !border border-white/10 !text-center">
-              <p className="!text-2xl !font-black text-white">{formatNumber(dashboard?.b2c?.totalCalculations ?? 0)}</p>
-              <p className="!text-[10px] !uppercase !tracking-widest text-slate-400 !font-bold !mt-1">Cálculos Totales</p>
-            </div>
-          </div>
-        </div>
+              })}
+            </ul>
+          ) : (
+            <EmptyState title="Sin actividad reciente" />
+          )}
+        </Panel>
       </div>
     </div>
   );

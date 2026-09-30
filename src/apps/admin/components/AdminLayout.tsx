@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import {
@@ -13,21 +13,19 @@ import {
   LogOut,
   Menu,
   X,
-  Shield,
-  CheckSquare,
   Handshake,
   ClipboardCheck,
   Blocks,
-  Inbox,
   Settings,
   FileCheck,
   Package,
-  RefreshCw,
   Newspaper,
   Activity,
   Mail,
   Rss,
+  type LucideIcon,
 } from 'lucide-react';
+import '../ui/admin-ui.css';
 
 // ============================================
 // NUEVA ESTRUCTURA DE NAVEGACIÓN - MODELO INBOX
@@ -36,16 +34,22 @@ import {
 
 interface NavItem {
   path: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   badge?: number;
   end?: boolean;
 }
 
 interface NavSection {
-  title: string;
+  title?: string;
   items: NavItem[];
 }
+
+// Antes el menú no tenía enlace a la vista general (y el logo no era un
+// enlace): al salir del dashboard solo se volvía escribiendo la URL.
+const overviewItems: NavItem[] = [
+  { path: '/admin', icon: LayoutDashboard, label: 'Vista general', end: true },
+];
 
 // A. Centro de Auditoría (Inbox de Decisiones con IA)
 const auditCenterItems: NavItem[] = [
@@ -78,20 +82,115 @@ const traceabilityItems: NavItem[] = [
 ];
 
 const navSections: NavSection[] = [
+  { items: overviewItems },
   { title: 'Centro de Auditoría', items: auditCenterItems },
   { title: 'Ecosistema de Oferta', items: supplyEcosystemItems },
   { title: 'Ecosistema de Demanda', items: demandEcosystemItems },
   { title: 'Trazabilidad', items: traceabilityItems },
 ];
 
+/** Sección e ítem del menú que corresponden a la ruta (el prefijo más largo). */
+function findCurrent(pathname: string) {
+  let best: { section?: string; label: string; len: number } | null = null;
+  for (const section of navSections) {
+    for (const item of section.items) {
+      const matches = item.end ? pathname === item.path || pathname === `${item.path}/` : pathname.startsWith(item.path);
+      if (matches && (!best || item.path.length > best.len)) {
+        best = { section: section.title, label: item.label, len: item.path.length };
+      }
+    }
+  }
+  return best;
+}
+
+const COLLAPSE_KEY = 'adminSidebarCollapsed';
+
+const readCollapsed = () => {
+  try {
+    return localStorage.getItem(COLLAPSE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+interface SidebarProps {
+  collapsed: boolean;
+  email?: string;
+  name?: string;
+  onNavigate?: () => void;
+  onToggle?: () => void;
+  onLogout: () => void;
+}
+
+function Sidebar({ collapsed, email, name, onNavigate, onToggle, onLogout }: SidebarProps) {
+  const initial = (name || email || 'A').charAt(0);
+  return (
+    <>
+      <Link to="/admin" className="adm-side__brand" onClick={onNavigate} aria-label="Vista general">
+        {collapsed ? (
+          <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" style={{ height: 28 }} />
+        ) : (
+          <img src="/images/brand/logo-horizontal-white.svg" alt="CompensaTuViaje" />
+        )}
+      </Link>
+
+      <nav className="adm-side__nav" aria-label="Administración">
+        {navSections.map((section, i) => (
+          <div key={section.title ?? `s${i}`} className="adm-side__section">
+            {section.title && !collapsed && <h3 className="adm-side__section-title">{section.title}</h3>}
+            {section.items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                onClick={onNavigate}
+                title={collapsed ? item.label : undefined}
+                className={({ isActive }) => `adm-side__link${isActive ? ' adm-side__link--active' : ''}`}
+              >
+                <item.icon aria-hidden="true" />
+                {!collapsed && <span>{item.label}</span>}
+              </NavLink>
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      <div className="adm-side__foot">
+        <div className="adm-side__user" title={collapsed ? email : undefined}>
+          <span className="adm-avatar" aria-hidden="true">{initial}</span>
+          {!collapsed && (
+            <span className="adm-side__user-text">
+              <span className="adm-side__user-name">Superadministrador</span>
+              <span className="adm-side__user-mail">{email}</span>
+            </span>
+          )}
+        </div>
+        {onToggle && (
+          <button type="button" className="adm-side__action" onClick={onToggle} aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}>
+            {collapsed ? <ChevronRight aria-hidden="true" /> : <ChevronLeft aria-hidden="true" />}
+            {!collapsed && <span>Colapsar menú</span>}
+          </button>
+        )}
+        <button type="button" className="adm-side__action" onClick={onLogout} title={collapsed ? 'Cerrar sesión' : undefined}>
+          <LogOut aria-hidden="true" />
+          {!collapsed && <span>Cerrar sesión</span>}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export default function AdminLayout() {
   // El admin no tiene un modo oscuro completo: con el SO en oscuro, el texto
   // pasaba a claro sobre tarjetas que siguen blancas y los KPI no se veían.
   useForceLightTheme();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Se recuerda entre sesiones (antes volvía a abrirse al recargar).
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readCollapsed);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const current = findCurrent(location.pathname);
 
   const handleLogout = () => {
     logout();
@@ -99,198 +198,71 @@ export default function AdminLayout() {
   };
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
+      } catch {
+        /* sin almacenamiento: solo dura la sesión */
+      }
+      return next;
+    });
   };
 
   return (
-    <div className="!min-h-screen !bg-gradient-to-br from-slate-50 dark:from-slate-950 via-blue-50/30 dark:via-slate-900/30 to-indigo-50/20 dark:to-indigo-950/20 !flex !font-sans !w-full">
-      {/* Sidebar Desktop */}
-      <aside
-        className={`!hidden lg:!flex !flex-col !h-screen !bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 !shadow-2xl !fixed !left-0 !top-0 !z-50 !overflow-y-auto !transition-all !duration-300 ${
-          sidebarCollapsed ? '!w-20' : '!w-72'
-        }`}
-      >
-        {/* Logo Area */}
-        <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b border-white/10 !flex-shrink-0">
-          <img
-            src="/images/brand/logo-horizontal-white.svg"
-            alt="CompensaTuViaje"
-            className={`!h-10 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
-          />
-          {sidebarCollapsed && (
-            <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !object-contain !drop-shadow-lg" />
-          )}
-        </div>
-
-        {/* Admin Info */}
-        <div className="!px-4 !py-4 !border-b border-white/10">
-          <div className={`!flex !items-center !gap-3 !p-4 !rounded-xl !bg-gradient-to-r from-indigo-500/20 to-purple-500/20 !border border-indigo-400/30 !backdrop-blur-sm ${sidebarCollapsed ? '!justify-center' : ''}`}>
-            <div className="!w-10 !h-10 !rounded-full !bg-gradient-to-br from-amber-400 to-orange-500 !flex !items-center !justify-center text-white !font-bold !flex-shrink-0 !shadow-lg !shadow-amber-500/50">
-              <Shield className="!w-5 !h-5" />
-            </div>
-            {!sidebarCollapsed && (
-              <div className="!flex-1 !min-w-0">
-                <p className="!text-sm !font-bold text-white !truncate">SuperAdmin</p>
-                <p className="!text-xs text-indigo-300 !truncate">{user?.email}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation - Organized by Sections */}
-        <nav className="!flex-1 !px-4 !py-6 !space-y-6 !overflow-y-auto">
-          {navSections.map((section) => (
-            <div key={section.title}>
-              {!sidebarCollapsed && (
-                <h3 className="!px-4 !mb-2 !text-xs !font-semibold text-slate-400 !uppercase !tracking-wider">
-                  {section.title}
-                </h3>
-              )}
-              <div className="!space-y-1">
-                {section.items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none ${
-                        isActive
-                          ? '!bg-gradient-to-r from-indigo-500 to-purple-600 text-white !shadow-lg !shadow-indigo-500/50'
-                          : '!bg-transparent text-slate-300 hover:bg-white/10 hover:text-white'
-                      } ${sidebarCollapsed ? '!justify-center' : ''}`
-                    }
-                    title={sidebarCollapsed ? item.label : undefined}
-                  >
-                    <item.icon className="!w-5 !h-5 !flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="!truncate">{item.label}</span>
-                    )}
-                    {!sidebarCollapsed && item.badge && (
-                      <span className="!ml-auto bg-red-500 text-white !text-xs !rounded-full !px-2 !py-0.5">
-                        {item.badge}
-                      </span>
-                    )}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        {/* Footer Sidebar */}
-        <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0 !border-t border-white/10 !pt-4">
-          <button
-            onClick={toggleSidebar}
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl text-slate-300 hover:bg-white/10 hover:text-white !bg-transparent !border-0 !transition-all"
-          >
-            {sidebarCollapsed ? <ChevronRight className="!text-lg" /> : <ChevronLeft className="!text-lg" />}
-            {!sidebarCollapsed && <span>Colapsar</span>}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl text-red-400 hover:bg-red-500/20 hover:text-red-300 !bg-transparent !border-0 !transition-all"
-          >
-            <LogOut className="!text-lg" /> {!sidebarCollapsed && 'Cerrar Sesión'}
-          </button>
-        </div>
+    <div className="adm adm-shell">
+      <aside className={`adm-side${sidebarCollapsed ? ' adm-side--collapsed' : ''}`}>
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          email={user?.email}
+          name={user?.name}
+          onToggle={toggleSidebar}
+          onLogout={handleLogout}
+        />
       </aside>
 
-      {/* Sidebar Mobile */}
       {mobileMenuOpen && (
-        <div className="!fixed !inset-0 !z-[60] bg-black/60 !backdrop-blur-sm lg:!hidden" onClick={() => setMobileMenuOpen(false)}>
-          <aside className="!fixed !left-0 !top-0 !h-full !w-72 !bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 !shadow-2xl !flex !flex-col">
-            <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b border-white/10">
-              <img src="/images/brand/logo-horizontal-white.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
-            </div>
-
-            <div className="!px-4 !py-4 !border-b border-white/10">
-              <div className="!flex !items-center !gap-3 !p-4 !rounded-xl !bg-gradient-to-r from-indigo-500/20 to-purple-500/20 !border border-indigo-400/30">
-                <div className="!w-12 !h-12 !rounded-full !bg-gradient-to-br from-amber-400 to-orange-500 !flex !items-center !justify-center text-white !font-bold !shadow-lg">
-                  <Shield className="!w-6 !h-6" />
-                </div>
-                <div className="!flex-1 !min-w-0">
-                  <p className="!text-sm !font-bold text-white">SuperAdmin</p>
-                  <p className="!text-xs text-indigo-300 !truncate">{user?.email}</p>
-                </div>
-              </div>
-            </div>
-
-            <nav className="!flex-1 !px-4 !py-6 !space-y-6 !overflow-y-auto">
-              {navSections.map((section) => (
-                <div key={section.title}>
-                  <h3 className="!px-4 !mb-2 !text-xs !font-semibold text-slate-400 !uppercase !tracking-wider">
-                    {section.title}
-                  </h3>
-                  <div className="!space-y-1">
-                    {section.items.map((item) => (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        end={item.end}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={({ isActive }) =>
-                          `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 ${
-                            isActive ? '!bg-gradient-to-r from-indigo-500 to-purple-600 text-white !shadow-lg' : 'text-slate-300 hover:bg-white/10'
-                          }`
-                        }
-                      >
-                        <item.icon className="!w-5 !h-5" />
-                        {item.label}
-                        {item.badge && (
-                          <span className="!ml-auto bg-red-500 text-white !text-xs !rounded-full !px-2 !py-0.5">
-                            {item.badge}
-                          </span>
-                        )}
-                      </NavLink>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </nav>
-            <button className="!absolute !top-4 !right-4 text-white/60 !text-2xl !border-0 !bg-transparent" onClick={() => setMobileMenuOpen(false)}>×</button>
+        <div className="adm-drawer" onClick={() => setMobileMenuOpen(false)}>
+          <aside className="adm-side" onClick={(e) => e.stopPropagation()} aria-label="Menú">
+            <button type="button" className="adm-drawer__close" onClick={() => setMobileMenuOpen(false)} aria-label="Cerrar menú">
+              <X aria-hidden="true" />
+            </button>
+            <Sidebar
+              collapsed={false}
+              email={user?.email}
+              name={user?.name}
+              onNavigate={() => setMobileMenuOpen(false)}
+              onLogout={handleLogout}
+            />
           </aside>
         </div>
       )}
 
-      {/* Main Content */}
-      <main className={`!flex-1 !min-h-screen !transition-all !duration-300 !w-full ${sidebarCollapsed ? 'lg:!ml-20' : 'lg:!ml-72'}`}>
-        {/* Header */}
-        <header className="bg-white/90 dark:bg-slate-900/90 !backdrop-blur-md !border-b border-slate-200 dark:border-slate-700 !sticky !top-0 !z-40">
-          <div className="!max-w-7xl !mx-auto !px-6 !py-4">
-            <div className="!flex !items-center !justify-between">
-              <div className="!flex !items-center !gap-4">
-                <button
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="lg:!hidden !p-2 !rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 !border-0"
-                >
-                  <Menu className="!w-6 !h-6" />
-                </button>
-                <div>
-                  <h1 className="!text-2xl !font-bold text-slate-900 dark:text-slate-100 !flex !items-center !gap-2">
-                    <Shield className="text-indigo-600 dark:text-indigo-400" />
-                    Panel de Administración
-                  </h1>
-                  <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">Gestión completa de la plataforma</p>
-                </div>
-              </div>
-
-              <div className="!flex !items-center !gap-3">
-                <div className="!hidden sm:!flex !items-center !gap-3 !pl-3 !border-l border-slate-200 dark:border-slate-700">
-                  <div className="!text-right">
-                    <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Admin'}</p>
-                    <p className="!text-xs text-slate-500 dark:text-slate-400">SuperAdmin</p>
-                  </div>
-                  <div className="!w-10 !h-10 !rounded-full bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 !flex !items-center !justify-center !font-bold">
-                    {user?.name?.charAt(0) || 'A'}
-                  </div>
-                </div>
-              </div>
-            </div>
+      <main className={`adm-main${sidebarCollapsed ? ' adm-main--collapsed' : ''}`}>
+        {/* Antes repetía "Panel de Administración" en todas las páginas;
+            ahora dice dónde estás. */}
+        <header className="adm-topbar">
+          <button type="button" className="adm-topbar__menu" onClick={() => setMobileMenuOpen(true)} aria-label="Abrir menú">
+            <Menu size={18} aria-hidden="true" />
+          </button>
+          <div className="adm-crumbs">
+            <span>Administración</span>
+            {current?.section && (
+              <>
+                <span aria-hidden="true">/</span>
+                <span>{current.section}</span>
+              </>
+            )}
+            {current && (
+              <>
+                <span aria-hidden="true">/</span>
+                <b>{current.label}</b>
+              </>
+            )}
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="!max-w-7xl !mx-auto !px-6 !py-8">
+        <div className="adm-content">
           <Outlet />
         </div>
       </main>
