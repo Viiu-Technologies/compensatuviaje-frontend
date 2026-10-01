@@ -157,7 +157,7 @@ const B2BRegisterPage: React.FC = () => {
     }),
   };
 
-  const inputCls = '!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none hover:!bg-emerald-800/70';
+  const inputCls = '!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none hover:!bg-emerald-800/70';
   const labelCls = '!text-sm !font-medium !text-emerald-100 !ml-1 !block !mb-1';
   const selectCls = '!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none hover:!bg-emerald-800/70 appearance-none';
 
@@ -167,8 +167,8 @@ const B2BRegisterPage: React.FC = () => {
     const typeLabel = COMPANY_TYPES.find((t) => t.id === formData.companyType)?.label || '';
     return (
       <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
-        <motion.div className="!hidden lg:!flex !w-[45%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden" initial="hidden" animate="visible" variants={containerVariants}>
-          <motion.div className="!absolute !top-20 !right-20 !w-40 !h-40 !rounded-full !bg-yellow-100/50 !blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 8, repeat: Infinity }} />
+        <motion.div className="!hidden lg:!flex !w-[45%] !relative !bg-brand-100 !flex-col !justify-center !items-center !p-12 !overflow-hidden" initial="hidden" animate="visible" variants={containerVariants}>
+        <Link to="/" className="!absolute !top-8 !left-10 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" /></Link>
           <div className="!relative !z-10 !max-w-lg !w-full !text-center">
             <motion.h2 className="!text-5xl !font-extrabold !text-emerald-900 !mb-6 !tracking-tight" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>¡Bienvenido!</motion.h2>
             <motion.p className="!text-xl !text-emerald-800/80 !mb-8" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>Tu empresa ya forma parte de la red de compensación carbono.</motion.p>
@@ -182,7 +182,7 @@ const B2BRegisterPage: React.FC = () => {
         <div className="!w-full lg:!w-[55%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-4 lg:!p-12">
           <div className="!hidden lg:!block !absolute !top-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden !z-20"><svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b"><path d="M100 0 C 20 20 20 80 100 100 V 0 Z" /></svg></div>
           <motion.div className="!w-full !max-w-lg !relative !z-30 !text-center" initial="hidden" animate="visible" variants={formVariants}>
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 300 }} className="!w-24 !h-24 !bg-gradient-to-br !from-emerald-400 !to-emerald-600 !rounded-full !flex !items-center !justify-center !mx-auto !mb-6 !shadow-lg">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 300 }} className="!w-24 !h-24 !bg-brand-300 !rounded-full !flex !items-center !justify-center !mx-auto !mb-6 !shadow-lg">
               <CheckCircle className="!w-12 !h-12 !text-white" />
             </motion.div>
             <h2 className="!text-3xl !font-bold !text-white !mb-3">¡Cuenta creada con éxito!</h2>
@@ -200,7 +200,7 @@ const B2BRegisterPage: React.FC = () => {
                 </div>
               ))}
             </div>
-            <button onClick={() => navigate('/auth/login')} className="!w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
+            <button onClick={() => navigate('/auth/login')} className="!w-full !flex !items-center !justify-center !gap-2 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
               Ir al inicio de sesión <ArrowRight className="!w-5 !h-5" />
             </button>
           </motion.div>
@@ -213,8 +213,8 @@ const B2BRegisterPage: React.FC = () => {
     <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
 
       {/* LEFT PANEL */}
-      <motion.div className="!hidden lg:!flex !w-[45%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden" initial="hidden" animate="visible" variants={containerVariants}>
-        <motion.div className="!absolute !top-20 !right-20 !w-40 !h-40 !rounded-full !bg-yellow-100/50 !blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 8, repeat: Infinity }} />
+      <motion.div className="!hidden lg:!flex !w-[45%] !relative !bg-brand-100 !flex-col !justify-center !items-center !p-12 !overflow-hidden" initial="hidden" animate="visible" variants={containerVariants}>
+        <Link to="/" className="!absolute !top-8 !left-10 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" /></Link>
         <div className="!relative !z-10 !max-w-lg !w-full !text-center">
           <motion.h2 className="!text-5xl !font-extrabold !text-emerald-900 !mb-6 !tracking-tight" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>Registro Empresarial</motion.h2>
           <motion.p className="!text-xl !text-emerald-800/80 !mb-8" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>Crea tu cuenta corporativa y comienza a compensar las emisiones de tu empresa.</motion.p>
@@ -303,7 +303,7 @@ const B2BRegisterPage: React.FC = () => {
                     })}
                   </div>
                   <button type="button" disabled={!canProceedStep1} onClick={() => { setError(''); setStep(2); }}
-                    className="!w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer disabled:!opacity-40 disabled:!cursor-not-allowed">
+                    className="!w-full !flex !items-center !justify-center !gap-2 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer disabled:!opacity-40 disabled:!cursor-not-allowed">
                     Continuar <ArrowRight className="!w-4 !h-4" />
                   </button>
                 </div>
@@ -374,7 +374,7 @@ const B2BRegisterPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <button type="button" onClick={handleStep2} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
+                  <button type="button" onClick={handleStep2} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
                     Continuar <ArrowRight className="!w-4 !h-4" />
                   </button>
                 </div>
@@ -405,7 +405,7 @@ const B2BRegisterPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <button type="submit" disabled={isLoading} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-400 !to-emerald-500 !text-emerald-900 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer disabled:!opacity-50 disabled:!cursor-not-allowed">
+                  <button type="submit" disabled={isLoading} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer disabled:!opacity-50 disabled:!cursor-not-allowed">
                     {isLoading ? <><Loader2 className="!w-5 !h-5 !animate-spin" /> Registrando...</> : <>Crear cuenta empresarial <ArrowRight className="!w-4 !h-4" /></>}
                   </button>
                   <p className="!text-center !text-emerald-400/70 !text-sm !mt-4">

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
 import { getRedirectPath } from '../services/authService';
 import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { BsGoogle } from 'react-icons/bs';
 import { toast } from 'sonner';
 
@@ -50,7 +50,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await login(formData.email, formData.password);
+      const response = await login(formData.email, formData.password, formData.rememberMe);
       
       if (response.success && response.user_info) {
         const userType = response.user_info.user_type;
@@ -66,10 +66,14 @@ const Login: React.FC = () => {
         navigate(redirectPath, { replace: true });
       }
     } catch (err) {
-      console.error('Error en login:', err);
-      toast.error('No se pudo completar el inicio de sesión', {
-        description: 'Revisa tu conexión e inténtalo de nuevo.',
-      });
+      // Los errores del servidor (credenciales, cuenta bloqueada…) ya se
+      // muestran en el formulario. Antes además salía un aviso de "Revisa tu
+      // conexión", que contradecía el mensaje real.
+      if (!(err as { status?: number })?.status) {
+        toast.error('No se pudo completar el inicio de sesión', {
+          description: 'Revisa tu conexión e inténtalo de nuevo.',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +82,7 @@ const Login: React.FC = () => {
   const loading = isLoading || authLoading;
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
@@ -86,7 +90,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const formVariants = {
+  const formVariants: Variants = {
     hidden: { x: 50, opacity: 0 },
     visible: { 
       x: 0, 
@@ -95,7 +99,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const treeVariants = {
+  const treeVariants: Variants = {
     hidden: { y: 100, opacity: 0 },
     visible: (custom: number) => ({
       y: 0,
@@ -109,18 +113,13 @@ const Login: React.FC = () => {
       
       {/* LEFT PANEL - Illustration */}
       <motion.div 
-        className="!hidden lg:!flex !w-[55%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
+        className="!hidden lg:!flex !w-[55%] !relative !bg-brand-100 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        {/* Background Elements (Sun/Clouds) */}
-        <motion.div 
-          className="!absolute !top-20 !left-20 !w-32 !h-32 !rounded-full !bg-yellow-100/50 !blur-2xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        
+        <Link to="/" className="!absolute !top-8 !left-10 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" /></Link>
+                
         {/* Content */}
         <div className="!relative !z-10 !max-w-lg !w-full !text-center">
           <motion.h2 
@@ -129,7 +128,7 @@ const Login: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            BIENVENIDO A COMPENSA TU VIAJE
+            Te damos la bienvenida
           </motion.h2>
           <motion.p 
             className="!text-xl !text-emerald-800/80 !mb-12"
@@ -137,7 +136,7 @@ const Login: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Estamos encantados de verte :)
+            Calcula, compensa y sigue el impacto de tus viajes.
           </motion.p>
 
         </div>
@@ -221,7 +220,7 @@ const Login: React.FC = () => {
                   autoComplete="email"
                   placeholder="tu@email.com"
                   disabled={loading}
-                  className="!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
+                  className="!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
                 />
               </div>
             </div>
@@ -239,12 +238,13 @@ const Login: React.FC = () => {
                   autoComplete="current-password"
                   placeholder="••••••••"
                   disabled={loading}
-                  className="!w-full !px-6 !py-4 !pr-14 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
+                  className="!w-full !px-6 !py-4 !pr-14 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-emerald-400 hover:!text-white !transition-colors !p-2"
                 >
                   {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
@@ -280,7 +280,7 @@ const Login: React.FC = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="!w-full !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !text-lg !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+              className="!w-full !py-4 !px-6 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !text-lg !rounded-full !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
             >
               {loading ? (
                 <>

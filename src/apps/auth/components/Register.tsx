@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { BsGoogle } from 'react-icons/bs';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const Register: React.FC = () => {
@@ -228,17 +228,17 @@ const Register: React.FC = () => {
   };
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
   };
 
-  const formVariants = {
+  const formVariants: Variants = {
     hidden: { x: 50, opacity: 0 },
     visible: { x: 0, opacity: 1, transition: { duration: 0.6, delay: 0.2, ease: "easeOut" } }
   };
 
-  const treeVariants = {
+  const treeVariants: Variants = {
     hidden: { y: 100, opacity: 0 },
     visible: (custom: number) => ({
       y: 0, opacity: 1, transition: { duration: 0.8, delay: custom * 0.2, type: "spring", bounce: 0.4 }
@@ -256,7 +256,7 @@ const Register: React.FC = () => {
           value={(formData as any)[name]}
           onChange={name.includes('rut') || name.includes('Rut') ? handleRUTChange : handleChange}
           placeholder={placeholder}
-          className={`!w-full !px-6 !py-4 ${icon ? '!pl-12' : ''} !rounded-full !bg-emerald-800/50 !border ${validationErrors[name] ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+          className={`!w-full !px-6 !py-4 ${icon ? '!pl-12' : ''} !rounded-full !bg-emerald-800/50 !border ${validationErrors[name] ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
         />
         {icon && <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400">{icon}</div>}
       </div>
@@ -291,16 +291,12 @@ const Register: React.FC = () => {
       
       {/* LEFT PANEL - Illustration */}
       <motion.div 
-        className="!hidden lg:!flex !w-[45%] !relative !bg-gradient-to-b !from-emerald-100 !via-emerald-200 !to-emerald-300 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
+        className="!hidden lg:!flex !w-[45%] !relative !bg-brand-100 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        <motion.div 
-          className="!absolute !top-20 !right-20 !w-40 !h-40 !rounded-full !bg-yellow-100/50 !blur-3xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
+        <Link to="/" className="!absolute !top-8 !left-10 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" /></Link>
         
         <div className="!relative !z-10 !max-w-lg !w-full !text-center">
           <motion.h2 
@@ -350,7 +346,7 @@ const Register: React.FC = () => {
           variants={formVariants}
         >
           <div className="!mb-8">
-            <Link to="/" className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
+            <Link to="/" className="!flex !w-fit !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
               <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
             </Link>
             
@@ -528,7 +524,7 @@ const Register: React.FC = () => {
                           placeholder="••••••••"
                           aria-invalid={!!validationErrors.password}
                           aria-describedby={validationErrors.password ? 'register-password-error' : undefined}
-                          className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+                          className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-emerald-400 hover:!text-white">
@@ -550,7 +546,7 @@ const Register: React.FC = () => {
                           placeholder="••••••••"
                           aria-invalid={!!validationErrors.confirmPassword}
                           aria-describedby={validationErrors.confirmPassword ? 'register-confirm-password-error' : undefined}
-                          className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-500/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+                          className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
                         />
                         <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
                       </div>
@@ -672,7 +668,7 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all !flex !items-center !justify-center !gap-2"
+                    className="!flex-1 !py-4 !px-6 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !rounded-full !transition-all !flex !items-center !justify-center !gap-2"
                   >
                     Siguiente <ArrowRight className="!w-5 !h-5" />
                   </button>
@@ -680,7 +676,7 @@ const Register: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="!flex-1 !py-4 !px-6 !bg-gradient-to-r !from-emerald-400 !to-teal-400 !text-emerald-900 !font-bold !rounded-full !shadow-lg !shadow-emerald-900/50 hover:!shadow-emerald-500/30 !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+                    className="!flex-1 !py-4 !px-6 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !rounded-full !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
                   >
                     {isLoading ? <Loader2 className="!w-5 !h-5 !animate-spin" /> : 'Crear Cuenta'}
                   </button>

@@ -112,12 +112,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<LoginResponse> => {
+  const login = useCallback(async (email: string, password: string, rememberMe = false): Promise<LoginResponse> => {
     try {
       setError(null);
       setIsLoading(true);
       
-      const response = await authService.login(email, password);
+      const response = await authService.login(email, password, rememberMe);
       
       if (response.success && response.user_info) {
         const userData = mapUserInfoToAuthUser(response.user_info);

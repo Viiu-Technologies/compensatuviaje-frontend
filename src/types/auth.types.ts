@@ -137,7 +137,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<LoginResponse>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   register: (companyData: RegisterCompanyRequest, adminUser: AdminUserData) => Promise<RegisterCompanyResponse>;
   refreshToken: () => Promise<void>;
