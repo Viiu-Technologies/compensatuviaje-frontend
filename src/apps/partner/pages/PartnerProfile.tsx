@@ -79,7 +79,7 @@ const TabNavigation: React.FC<TabProps> = ({ active, onChange, onboardingStatus 
           onClick={() => onChange(tab.id)}
           className={`!flex !items-center !gap-2 !px-4 !py-3 !border-b-2 !font-medium !text-sm !transition-colors !relative ${
             active === tab.id
-              ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+              ? 'border-brand-600 text-brand-800 dark:text-brand-700'
               : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
           }`}
         >
@@ -207,7 +207,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
         </div>
       )}
       {success && (
-        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 !px-4 !py-3 !rounded-lg">
+        <div className="bg-brand-50 dark:bg-brand-600/10 border border-brand-200 dark:border-brand-600 text-brand-800 dark:text-brand-300 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
@@ -258,20 +258,20 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                   placeholder="https://ejemplo.com/logo.png"
-                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               ) : (
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/svg+xml"
                   onChange={(e) => { if (e.target.files && e.target.files[0]) setLogoFile(e.target.files[0]); }}
-                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 file:!mr-4 file:!py-2 file:!px-4 file:!rounded-full file:!border-0 file:!text-sm file:!font-semibold file:bg-emerald-50 dark:file:bg-emerald-500/10 file:text-emerald-700 dark:file:text-emerald-300 hover:file:bg-emerald-100 dark:hover:file:bg-emerald-500/20"
+                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 file:!mr-4 file:!py-2 file:!px-4 file:!rounded-full file:!border-0 file:!text-sm file:!font-semibold file:bg-brand-50 dark:file:bg-brand-600/10 file:text-brand-800 dark:file:text-brand-300 hover:file:bg-brand-50 dark:hover:file:bg-brand-600/20"
                 />
               )}
               <button
                 onClick={handleSaveLogo}
                 disabled={saving || (logoUploadType === 'url' ? !logoUrl.trim() : !logoFile)}
-                className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 disabled:!cursor-not-allowed !font-medium"
+                className="!px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 disabled:!cursor-not-allowed !font-medium"
               >
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
@@ -290,7 +290,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="!text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium"
+              className="!text-sm text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 !font-medium"
             >
               Editar
             </button>
@@ -309,7 +309,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={!editing}
                 required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
 
@@ -323,7 +323,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                 disabled={!editing}
                 required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
 
@@ -337,7 +337,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
                 onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                 disabled={!editing}
                 placeholder="https://www.ejemplo.com"
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
           </div>
@@ -363,7 +363,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) =
               <button
                 type="submit"
                 disabled={saving}
-                className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !font-medium"
+                className="!px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 !font-medium"
               >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
@@ -478,22 +478,22 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
         </div>
       )}
       {success && (
-        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 !px-4 !py-3 !rounded-lg">
+        <div className="bg-brand-50 dark:bg-brand-600/10 border border-brand-200 dark:border-brand-600 text-brand-800 dark:text-brand-300 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
 
       {/* Info Banner */}
-      <div className="bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 !rounded-lg !p-4">
+      <div className="bg-slate-50 dark:bg-brand-700/10 border border-slate-200 dark:border-slate-300 !rounded-lg !p-4">
         <div className="!flex !items-start !gap-3">
-          <svg className="!w-5 !h-5 text-sky-500 dark:text-sky-400 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="!w-5 !h-5 text-slate-600 dark:text-slate-600 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <p className="!text-sm text-sky-800 dark:text-sky-200 !font-medium">
+            <p className="!text-sm text-slate-700 dark:text-slate-400 !font-medium">
               Información importante
             </p>
-            <p className="!text-sm text-sky-700 dark:text-sky-300 !mt-1">
+            <p className="!text-sm text-slate-700 dark:text-slate-400 !mt-1">
               Los datos bancarios son necesarios para recibir los pagos por compensaciones realizadas a través de tus proyectos ESG.
             </p>
           </div>
@@ -508,7 +508,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
               <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Datos Bancarios Registrados</h3>
               <button
                 onClick={() => setEditing(true)}
-                className="!text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium"
+                className="!text-sm text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 !font-medium"
               >
                 Modificar
               </button>
@@ -565,7 +565,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     value={formData.bank_name}
                     onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
                     required
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   >
                     <option value="">Seleccionar banco...</option>
                     {banks.map((bank) => (
@@ -582,7 +582,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     value={formData.account_type}
                     onChange={(e) => setFormData({ ...formData, account_type: e.target.value as 'checking' | 'savings' })}
                     required
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   >
                     <option value="checking">Cuenta Corriente</option>
                     <option value="savings">Cuenta de Ahorro</option>
@@ -599,7 +599,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     onChange={(e) => setFormData({ ...formData, account_number: e.target.value.replace(/[^0-9]/g, '') })}
                     required
                     placeholder="Ej: 12345678"
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
@@ -613,7 +613,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
                     required
                     placeholder="Nombre completo"
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
@@ -628,7 +628,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     required
                     placeholder="12.345.678-9"
                     maxLength={12}
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
@@ -640,7 +640,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'CLP' })}
                     required
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                   >
                     <option value="CLP">Peso Chileno (CLP)</option>
                   </select>
@@ -660,7 +660,7 @@ const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="!px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !font-medium"
+                  className="!px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 !font-medium"
                 >
                   {saving ? 'Guardando...' : 'Guardar Datos Bancarios'}
                 </button>
@@ -731,7 +731,7 @@ const SecurityTab: React.FC = () => {
         </div>
       )}
       {success && (
-        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 !px-4 !py-3 !rounded-lg">
+        <div className="bg-brand-50 dark:bg-brand-600/10 border border-brand-200 dark:border-brand-600 text-brand-800 dark:text-brand-300 !px-4 !py-3 !rounded-lg">
           {success}
         </div>
       )}
@@ -751,7 +751,7 @@ const SecurityTab: React.FC = () => {
                 value={formData.current_password}
                 onChange={(e) => setFormData({ ...formData, current_password: e.target.value })}
                 required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
 
@@ -765,7 +765,7 @@ const SecurityTab: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, new_password: e.target.value })}
                 required
                 minLength={8}
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
               <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">Mínimo 8 caracteres</p>
             </div>
@@ -779,7 +779,7 @@ const SecurityTab: React.FC = () => {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
               />
             </div>
           </div>
@@ -787,7 +787,7 @@ const SecurityTab: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="!mt-6 !px-4 !py-2 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-lg hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !font-medium"
+            className="!mt-6 !px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 !font-medium"
           >
             {saving ? 'Guardando...' : 'Cambiar Contraseña'}
           </button>

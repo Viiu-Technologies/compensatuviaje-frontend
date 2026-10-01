@@ -185,7 +185,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
               value={formData.organizationName}
               onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
               placeholder="Ej: EcoForest Chile SpA"
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
+              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-brand-700 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
                 errors.organizationName ? '!border-red-300 dark:!border-red-500/50 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
               }`}
               disabled={isSubmitting}
@@ -205,7 +205,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
               value={formData.rutTaxId}
               onChange={(e) => setFormData(prev => ({ ...prev, rutTaxId: e.target.value }))}
               placeholder="Ej: 76123456-7"
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-emerald-500 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
+              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-brand-700 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
                 errors.rutTaxId ? '!border-red-300 dark:!border-red-500/50 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
               }`}
               disabled={isSubmitting}
@@ -236,7 +236,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initial
         <button
           type="submit"
           disabled={isSubmitting}
-          className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-emerald-600 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-emerald-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
+          className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-brand-700 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-brand-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -358,7 +358,7 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
             <Bot className="!w-4 !h-4" /> Decisión IA
           </p>
           <p className={`!text-lg !font-semibold !flex !items-center !justify-center !gap-1 ${
-            evaluation.ai_status === 'ai_approved' ? '!text-green-600 dark:!text-green-400' : '!text-red-600 dark:!text-red-400'
+            evaluation.ai_status === 'ai_approved' ? '!text-brand-800 dark:!text-brand-700' : '!text-red-600 dark:!text-red-400'
           }`}>
             {evaluation.ai_status === 'ai_approved' ? <><CheckCircle className="!w-5 !h-5" /> Aprobado</>  : <><XCircle className="!w-5 !h-5" /> Rechazado</>}
           </p>
@@ -393,24 +393,24 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
   return (
     <div className="!space-y-6">
       {/* Success Banner */}
-      <div className="!bg-green-50 dark:!bg-green-900/30 !border !border-green-200 dark:!border-green-800/50 !rounded-xl !p-6">
+      <div className="!bg-brand-50 dark:!bg-brand-700/30 !border !border-brand-200 dark:!border-brand-700 !rounded-xl !p-6">
         <div className="!flex !items-start !gap-4">
-          <div className="!w-12 !h-12 !bg-green-100 dark:!bg-green-900 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
-            <CheckCircle className="!w-6 !h-6 !text-green-600 dark:!text-green-400" />
+          <div className="!w-12 !h-12 !bg-brand-50 dark:!bg-brand-700 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
+            <CheckCircle className="!w-6 !h-6 !text-brand-800 dark:!text-brand-700" />
           </div>
           <div className="!flex-grow">
-            <h3 className="!text-green-800 dark:!text-green-300 !font-semibold !text-lg !mb-1">
+            <h3 className="!text-brand-800 dark:!text-brand-300 !font-semibold !text-lg !mb-1">
               Empresa Verificada
             </h3>
             <div className="!flex !flex-wrap !items-center !gap-3 !mb-2">
               {evaluation.partner_tier && (
                 <TierBadge tier={evaluation.partner_tier} size="md" />
               )}
-              <span className="!flex !items-center !gap-1 !text-green-700 dark:!text-green-400">
+              <span className="!flex !items-center !gap-1 !text-brand-800 dark:!text-brand-700">
                 <BarChart className="!w-4 !h-4" /> Score: {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}/100
               </span>
             </div>
-            <p className="!flex !items-center !gap-1 !text-green-700 dark:!text-green-400 !text-sm">
+            <p className="!flex !items-center !gap-1 !text-brand-800 dark:!text-brand-700 !text-sm">
               <Calendar className="!w-4 !h-4" /> Verificada: {evaluation.admin_decided_at 
                 ? new Date(evaluation.admin_decided_at).toLocaleDateString('es-CL', {
                     day: 'numeric',
@@ -420,7 +420,7 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
                 : 'N/A'
               }
             </p>
-            <p className="!text-green-600 dark:!text-green-500 !text-sm !mt-2">
+            <p className="!text-brand-800 dark:!text-brand-700 !text-sm !mt-2">
               Tu empresa ha sido verificada exitosamente. Tu cuenta está activa y puedes operar en la plataforma.
             </p>
           </div>
@@ -433,7 +433,7 @@ const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) =>
       )}
 
       {/* History */}
-      {history && history.evaluations.length > 0 && (
+      {(history?.evaluations?.length ?? 0) > 0 && (
         <EvaluationHistory evaluations={history.evaluations} />
       )}
     </div>
@@ -479,14 +479,14 @@ const RejectedState: React.FC<RejectedStateProps> = ({ evaluation, history, onRe
       {/* Retry Button */}
       <button
         onClick={onRetry}
-        className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-emerald-600 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-emerald-700"
+        className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-brand-700 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-brand-700"
       >
         <RefreshCw className="!w-5 !h-5" />
         Enviar Nueva Documentación
       </button>
 
       {/* History */}
-      {history && history.evaluations.length > 0 && (
+      {(history?.evaluations?.length ?? 0) > 0 && (
         <EvaluationHistory evaluations={history.evaluations} />
       )}
     </div>
@@ -527,8 +527,8 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
             <div key={eval_.id} className="!p-4 !flex !items-center !justify-between">
               <div className="!flex !items-center !gap-3">
                 <span className={`!flex !items-center !justify-center !w-8 !h-8 !rounded-full ${
-                  eval_.admin_decision === 'approved' ? '!bg-green-100 !text-green-600 dark:!bg-green-900/30 dark:!text-green-400' : 
-                  eval_.admin_decision === 'rejected' ? '!bg-red-100 !text-red-600 dark:!bg-red-900/30 dark:!text-red-400' : '!bg-blue-100 !text-blue-600 dark:!bg-blue-900/30 dark:!text-blue-400'
+                  eval_.admin_decision === 'approved' ? '!bg-brand-50 !text-brand-800 dark:!bg-brand-700/30 dark:!text-brand-700' : 
+                  eval_.admin_decision === 'rejected' ? '!bg-red-100 !text-red-600 dark:!bg-red-900/30 dark:!text-red-400' : '!bg-slate-50 !text-slate-700 dark:!bg-brand-800/30 dark:!text-slate-600'
                 }`}>
                   {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5" /> : 
                    eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5" /> : <RefreshCw className="!w-4 !h-4" />}
@@ -690,8 +690,8 @@ const KybVerificationPage: React.FC = () => {
       {/* Header */}
       <div className="!mb-8">
         <div className="!flex !items-center !gap-3 !mb-2">
-          <div className="!w-10 !h-10 !bg-emerald-100 dark:!bg-emerald-900/50 !rounded-xl !flex !items-center !justify-center">
-            <Building2 className="!w-5 !h-5 !text-emerald-600 dark:!text-emerald-400" />
+          <div className="!w-10 !h-10 !bg-brand-50 dark:!bg-brand-700/50 !rounded-xl !flex !items-center !justify-center">
+            <Building2 className="!w-5 !h-5 !text-brand-800 dark:!text-brand-700" />
           </div>
           <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100">
             Verificación Empresarial (KYB)
@@ -727,7 +727,7 @@ const KybVerificationPage: React.FC = () => {
         {/* Loading State */}
         {pageState === 'loading' && (
           <div className="!flex !flex-col !items-center !justify-center !py-12">
-            <div className="!w-12 !h-12 !border-4 !border-emerald-200 dark:!border-emerald-800 !border-t-emerald-600 !rounded-full !animate-spin !mb-4" />
+            <div className="!w-12 !h-12 !border-4 !border-brand-200 dark:!border-brand-700 !border-t-emerald-600 !rounded-full !animate-spin !mb-4" />
             <p className="!text-slate-600 dark:!text-slate-400">Cargando estado de verificación...</p>
           </div>
         )}
@@ -784,7 +784,7 @@ const KybVerificationPage: React.FC = () => {
             </p>
             <button
               onClick={handleRetry}
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-emerald-600 !text-white !rounded-lg hover:!bg-emerald-700 !transition-colors"
+              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-brand-700 !text-white !rounded-lg hover:!bg-brand-700 !transition-colors"
             >
               <RefreshCw className="!w-4 !h-4" />
               Reintentar

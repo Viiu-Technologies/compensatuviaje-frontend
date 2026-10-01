@@ -252,32 +252,32 @@ export const ProcessingState: React.FC<ProcessingStateProps> = ({
   return (
     <div className={`
       !flex !flex-col !items-center !justify-center !p-8 !text-center
-      !bg-blue-50 !border !border-blue-200 !rounded-xl
+      !bg-slate-50 !border !border-slate-200 !rounded-xl
       ${className}
     `}>
       <div className="!relative !mb-4">
-        <div className="!w-16 !h-16 !rounded-full !bg-blue-100 !flex !items-center !justify-center">
-          <Loader2 className="!w-8 !h-8 !text-blue-600 !animate-spin" />
+        <div className="!w-16 !h-16 !rounded-full !bg-slate-50 !flex !items-center !justify-center">
+          <Loader2 className="!w-8 !h-8 !text-slate-700 !animate-spin" />
         </div>
       </div>
       
-      <h3 className="!text-lg !font-semibold !text-blue-900 !mb-2">
+      <h3 className="!text-lg !font-semibold !text-slate-700 !mb-2">
         {title}
       </h3>
       
-      <p className="!text-blue-700 !max-w-md !mb-4">
+      <p className="!text-slate-700 !max-w-md !mb-4">
         {message}
       </p>
       
       {documentName && (
-        <div className="!flex !items-center !gap-2 !text-sm !text-blue-600 bg-white dark:bg-slate-800 !px-4 !py-2 !rounded-lg !border !border-blue-200">
-          <span>📄</span>
+        <div className="!flex !items-center !gap-2 !text-sm !text-slate-700 bg-white dark:bg-slate-800 !px-4 !py-2 !rounded-lg !border !border-slate-200">
+          <span aria-hidden="true">PDF</span>
           <span className="!font-medium">{documentName}</span>
         </div>
       )}
       
       {submittedAt && (
-        <p className="!text-xs !text-blue-500 !mt-3">
+        <p className="!text-xs !text-slate-600 !mt-3">
           Enviado: {new Date(submittedAt).toLocaleString('es-CL')}
         </p>
       )}
@@ -313,14 +313,14 @@ export const EvaluationStatusBadge: React.FC<EvaluationStatusBadgeProps> = ({
     },
     processing: {
       icon: <Loader2 className="!w-4 !h-4 !animate-spin" />,
-      bg: '!bg-blue-100',
-      text: '!text-blue-700',
+      bg: '!bg-slate-50',
+      text: '!text-slate-700',
       defaultLabel: 'Procesando'
     },
     approved: {
       icon: <CheckCircle className="!w-4 !h-4" />,
-      bg: '!bg-green-100',
-      text: '!text-green-700',
+      bg: '!bg-brand-50',
+      text: '!text-brand-800',
       defaultLabel: 'Aprobado'
     },
     rejected: {

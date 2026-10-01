@@ -83,22 +83,22 @@ const EsgScoresGrid: React.FC<EsgScoresGridProps> = ({ scores, finalScore, confi
     <div className="!space-y-6">
       {/* Summary Row */}
       <div className="!grid !grid-cols-2 md:!grid-cols-3 !gap-4">
-        <div className="bg-emerald-50 dark:bg-emerald-900/30 !border border-emerald-200 dark:border-emerald-700 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm text-emerald-600 dark:text-emerald-400 !mb-1 !flex !items-center !justify-center !gap-1">
+        <div className="bg-brand-50 dark:bg-brand-700/30 !border border-brand-200 dark:border-brand-700 !rounded-xl !p-4 !text-center">
+          <p className="!text-sm text-brand-800 dark:text-brand-700 !mb-1 !flex !items-center !justify-center !gap-1">
             <BarChart className="!w-4 !h-4" /> Score Final
           </p>
-          <p className="!text-3xl !font-bold text-emerald-700 dark:text-emerald-300">
+          <p className="!text-3xl !font-bold text-brand-800 dark:text-brand-300">
             {finalScore ?? 0}
-            <span className="!text-lg !font-normal text-emerald-500 dark:text-emerald-400">/100</span>
+            <span className="!text-lg !font-normal text-brand-700 dark:text-brand-700">/100</span>
           </p>
         </div>
-        <div className="bg-blue-50 dark:bg-blue-900/30 !border border-blue-200 dark:border-blue-700 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm text-blue-600 dark:text-blue-400 !mb-1 !flex !items-center !justify-center !gap-1">
+        <div className="bg-slate-50 dark:bg-brand-800/30 !border border-slate-200 dark:border-slate-400 !rounded-xl !p-4 !text-center">
+          <p className="!text-sm text-slate-700 dark:text-slate-600 !mb-1 !flex !items-center !justify-center !gap-1">
             <Search className="!w-4 !h-4" /> Confianza IA
           </p>
-          <p className="!text-3xl !font-bold text-blue-700 dark:text-blue-300">
+          <p className="!text-3xl !font-bold text-slate-700 dark:text-slate-400">
             {confidenceScore ?? 0}
-            <span className="!text-lg !font-normal text-blue-500 dark:text-blue-400">%</span>
+            <span className="!text-lg !font-normal text-slate-600 dark:text-slate-600">%</span>
           </p>
         </div>
       </div>
@@ -200,7 +200,7 @@ const ComplianceBadges: React.FC<ComplianceBadgesProps> = ({ compliance }) => {
         {standards.map(([key]) => (
           <span
             key={key}
-            className="!inline-flex !items-center !gap-1 !px-3 !py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 !text-sm !rounded-full"
+            className="!inline-flex !items-center !gap-1 !px-3 !py-1 bg-brand-50 dark:bg-brand-700/40 text-brand-800 dark:text-brand-300 !text-sm !rounded-full"
           >
             <CheckCircle className="!w-3 !h-3" />
             {standardLabels[key] || key}
@@ -226,7 +226,7 @@ const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
       <AdminPendingBanner />
 
       {evaluation.level && (
-        <div className="!flex !items-center !justify-center !gap-4 !p-6 bg-gradient-to-r !from-amber-50 !to-yellow-50 dark:!from-amber-900/30 dark:!to-yellow-900/30 !rounded-xl !border border-amber-200 dark:border-amber-700">
+        <div className="!flex !items-center !justify-center !gap-4 !p-6 !bg-amber-50 dark:!bg-amber-900/30 !rounded-xl !border border-amber-200 dark:border-amber-700">
           <div className="!text-center">
             <p className="!text-sm text-amber-600 dark:text-amber-400 !mb-2">Nivel Propuesto por IA</p>
             <CertLevelBadge level={evaluation.level} score={evaluation.final_score} size="lg" />
@@ -282,27 +282,27 @@ const CertifiedState: React.FC<CertifiedStateProps> = ({ evaluation, history }) 
 
   return (
     <div className="!space-y-6">
-      <div className="bg-gradient-to-r !from-green-50 !to-emerald-50 dark:!from-green-900/30 dark:!to-emerald-900/30 !border border-green-200 dark:border-green-700 !rounded-xl !p-6">
+      <div className="!bg-brand-50 dark:!bg-brand-700/30 !border border-brand-200 dark:border-brand-700 !rounded-xl !p-6">
         <div className="!flex !items-start !gap-4">
-          <div className="!w-12 !h-12 bg-green-100 dark:bg-green-900/50 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
-            <Award className="!w-6 !h-6 text-green-600 dark:text-green-400" />
+          <div className="!w-12 !h-12 bg-brand-50 dark:bg-brand-700/50 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
+            <Award className="!w-6 !h-6 text-brand-800 dark:text-brand-700" />
           </div>
           <div className="!flex-grow">
-            <h3 className="text-green-800 dark:text-green-200 !font-semibold !text-lg !mb-2">
+            <h3 className="text-brand-800 dark:text-brand-300 !font-semibold !text-lg !mb-2">
               Proyecto Certificado
             </h3>
             <div className="!flex !flex-wrap !items-center !gap-3 !mb-2">
               {evaluation.level && (
                 <CertLevelBadge level={evaluation.level} score={evaluation.final_score} size="md" />
               )}
-              <span className="!flex !items-center !gap-1 text-green-700 dark:text-green-300">
+              <span className="!flex !items-center !gap-1 text-brand-800 dark:text-brand-300">
                 <Search className="!w-4 !h-4" /> Confianza: {evaluation.confidence_score}%
               </span>
             </div>
-            <p className="!flex !items-center !gap-1 text-green-700 dark:text-green-300 !text-sm">
+            <p className="!flex !items-center !gap-1 text-brand-800 dark:text-brand-300 !text-sm">
               <Calendar className="!w-4 !h-4" /> Certificado: {formatCertDate(evaluation.admin_decided_at)}
             </p>
-            <p className="text-green-600 dark:text-green-400 !text-sm !mt-2">
+            <p className="text-brand-800 dark:text-brand-700 !text-sm !mt-2">
               Tu proyecto ha sido certificado exitosamente y está listo para recibir compensaciones.
             </p>
           </div>
@@ -424,9 +424,9 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
             <div key={eval_.id} className="!p-4 !flex !items-center !justify-between bg-white dark:bg-slate-900">
               <div className="!flex !items-center !gap-3">
                 <span className="!flex !items-center !justify-center !w-8 !h-8 !rounded-full bg-slate-100 dark:bg-slate-800">
-                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5 text-green-500" /> :
+                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5 text-brand-700" /> :
                    eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5 text-red-500" /> :
-                   <RefreshCw className="!w-5 !h-5 text-blue-500" />}
+                   <RefreshCw className="!w-5 !h-5 text-slate-600" />}
                 </span>
                 <div>
                   <p className="!text-sm text-slate-600 dark:text-slate-300">
@@ -535,7 +535,7 @@ const ProjectCertificationPage: React.FC = () => {
     return (
       <div className="!text-center !py-12">
         <p className="text-red-600 dark:text-red-400">ID de proyecto no especificado</p>
-        <Link to="/partner/projects" className="text-emerald-600 dark:text-emerald-400 hover:!underline">
+        <Link to="/partner/projects" className="text-brand-800 dark:text-brand-700 hover:!underline">
           Volver a proyectos
         </Link>
       </div>
@@ -561,8 +561,8 @@ const ProjectCertificationPage: React.FC = () => {
         {/* Header */}
         <div className="!mb-8">
           <div className="!flex !items-center !gap-3 !mb-2">
-            <div className="!w-10 !h-10 bg-emerald-100 dark:bg-emerald-900/50 !rounded-xl !flex !items-center !justify-center">
-              <Bot className="!w-5 !h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="!w-10 !h-10 bg-brand-50 dark:bg-brand-700/50 !rounded-xl !flex !items-center !justify-center">
+              <Bot className="!w-5 !h-5 text-brand-800 dark:text-brand-700" />
             </div>
             <div>
               <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100">
@@ -581,9 +581,9 @@ const ProjectCertificationPage: React.FC = () => {
         </div>
 
         {/* Info Banner: auto-evaluation notice */}
-        <div className="!mb-6 bg-indigo-50 dark:bg-indigo-900/20 !border border-indigo-200 dark:border-indigo-700 !rounded-xl !p-4 !flex !items-start !gap-3">
-          <Bot className="!w-5 !h-5 text-indigo-600 dark:text-indigo-400 !flex-shrink-0 !mt-0.5" />
-          <p className="text-indigo-700 dark:text-indigo-300 !text-sm">
+        <div className="!mb-6 bg-slate-50 dark:bg-brand-800/20 !border border-slate-200 dark:border-slate-400 !rounded-xl !p-4 !flex !items-start !gap-3">
+          <Bot className="!w-5 !h-5 text-slate-700 dark:text-slate-600 !flex-shrink-0 !mt-0.5" />
+          <p className="text-slate-700 dark:text-slate-400 !text-sm">
             La evaluación IA se envía automáticamente cuando subes un documento técnico al crear el proyecto. No es necesario subir documentos manualmente.
           </p>
         </div>
@@ -609,9 +609,24 @@ const ProjectCertificationPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-800 !rounded-2xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6 md:!p-8">
 
           {/* Loading State */}
-          {pageState === 'loading' && (
+          {/* Antes, si la consulta fallaba, quedaban el aviso de error y el
+              spinner girando para siempre. */}
+          {pageState === 'loading' && error && (
+            <div className="!text-center !py-12">
+              <p className="text-slate-700 dark:text-slate-200 !mb-4">No pudimos cargar el estado de la evaluación.</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="!px-5 !py-2.5 !rounded-full !bg-brand-700 hover:!bg-brand-800 !text-white !font-semibold !border-0 !cursor-pointer"
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
+
+          {pageState === 'loading' && !error && (
             <div className="!flex !flex-col !items-center !justify-center !py-12">
-              <div className="!w-12 !h-12 !border-4 border-emerald-200 dark:border-emerald-700 border-t-emerald-600 dark:border-t-emerald-400 !rounded-full !animate-spin !mb-4" />
+              <div className="!w-12 !h-12 !border-4 border-brand-200 dark:border-brand-700 border-t-emerald-600 dark:border-t-emerald-400 !rounded-full !animate-spin !mb-4" />
               <p className="text-slate-600 dark:text-slate-300">Cargando estado de evaluación...</p>
             </div>
           )}

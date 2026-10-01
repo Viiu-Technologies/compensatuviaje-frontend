@@ -597,3 +597,15 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #22c55e #f5f5f5;
 }
+
+/* Portal de partners: muchas tarjetas usan "!border" sin color, y en
+   Tailwind v4 el color por defecto es currentColor (bordes negros). Este
+   valor por defecto vive en @layer base, así que cualquier border-* explícito
+   sigue ganando. */
+@layer base {
+  :where(.ptr-root) *,
+  :where(.ptr-root) ::before,
+  :where(.ptr-root) ::after {
+    border-color: var(--color-slate-200);
+  }
+}

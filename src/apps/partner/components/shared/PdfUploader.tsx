@@ -197,12 +197,12 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
   const containerClasses = `
     !relative !border-2 !border-dashed !rounded-xl !p-8 !text-center !transition-all !duration-200 !cursor-pointer
     ${isDragging 
-      ? '!border-emerald-500 !bg-emerald-50' 
+      ? '!border-brand-600 !bg-brand-50' 
       : error 
         ? '!border-red-300 !bg-red-50' 
         : selectedFile || currentFileName
-          ? '!border-emerald-300 !bg-emerald-50'
-          : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:!border-emerald-400 hover:!bg-emerald-50/50 dark:hover:!bg-emerald-500/10'
+          ? '!border-brand-200 !bg-brand-50'
+          : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:!border-brand-600 hover:!bg-brand-50/50 dark:hover:!bg-brand-600/10'
     }
     ${disabled || isUploading ? '!opacity-60 !cursor-not-allowed' : ''}
     ${className}
@@ -230,7 +230,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       {/* Estado: Subiendo */}
       {isUploading && (
         <div className="!flex !flex-col !items-center !gap-3">
-          <div className="!w-12 !h-12 !border-4 !border-emerald-200 !border-t-emerald-600 !rounded-full !animate-spin" />
+          <div className="!w-12 !h-12 !border-4 !border-brand-200 !border-t-emerald-600 !rounded-full !animate-spin" />
           <p className="text-slate-600 dark:text-slate-300 !font-medium">Subiendo archivo...</p>
         </div>
       )}
@@ -249,11 +249,11 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       {/* Estado: Archivo seleccionado */}
       {!isUploading && !error && (selectedFile || currentFileName) && (
         <div className="!flex !flex-col !items-center !gap-3">
-          <div className="!w-14 !h-14 !rounded-full !bg-emerald-100 !flex !items-center !justify-center">
-            <CheckCircle className="!w-7 !h-7 !text-emerald-600" />
+          <div className="!w-14 !h-14 !rounded-full !bg-brand-50 !flex !items-center !justify-center">
+            <CheckCircle className="!w-7 !h-7 !text-brand-800" />
           </div>
           <div className="!flex !items-center !gap-2">
-            <File className="!w-5 !h-5 !text-emerald-600" />
+            <File className="!w-5 !h-5 !text-brand-800" />
             <span className="text-slate-700 dark:text-slate-200 !font-medium !max-w-xs !truncate">
               {selectedFile?.name || currentFileName}
             </span>
@@ -279,9 +279,9 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       {!isUploading && !error && !selectedFile && !currentFileName && (
         <div className="!flex !flex-col !items-center !gap-3">
           <div className={`!w-14 !h-14 !rounded-full !flex !items-center !justify-center !transition-colors ${
-            isDragging ? '!bg-emerald-200 dark:!bg-emerald-500/20' : 'bg-slate-200 dark:bg-slate-700'
+            isDragging ? '!bg-brand-100 dark:!bg-brand-600/20' : 'bg-slate-200 dark:bg-slate-700'
           }`}>
-            <Upload className={`!w-7 !h-7 ${isDragging ? '!text-emerald-600 dark:!text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`} />
+            <Upload className={`!w-7 !h-7 ${isDragging ? '!text-brand-800 dark:!text-brand-700' : 'text-slate-500 dark:text-slate-400'}`} />
           </div>
           <div>
             <p className="text-slate-700 dark:text-slate-200 !font-medium">{instruction}</p>

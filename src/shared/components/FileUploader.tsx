@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useRef } from 'react';
+import { Upload } from 'lucide-react';
 
 interface FileUploaderProps {
   accept?: string;
@@ -140,7 +141,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         />
 
         <div className="space-y-2">
-          <div className="text-3xl">📁</div>
+          <Upload className="mx-auto w-7 h-7 text-slate-400" aria-hidden="true" />
           <p className="text-sm text-gray-600">{description}</p>
           <p className="text-xs text-gray-400">
             Máx. {maxSizeMB}MB por archivo · {maxFiles} archivos

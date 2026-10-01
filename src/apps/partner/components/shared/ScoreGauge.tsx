@@ -54,21 +54,21 @@ const getScoreColor = (
 ): { bg: string; fill: string; text: string } => {
   if (score >= thresholds.green) {
     return {
-      bg: '!bg-green-100',
-      fill: '!bg-gradient-to-r !from-green-400 !to-emerald-500',
-      text: '!text-green-700'
+      bg: '!bg-brand-50',
+      fill: ' !bg-brand-600 ',
+      text: '!text-brand-800'
     };
   }
   if (score >= thresholds.yellow) {
     return {
       bg: '!bg-yellow-100',
-      fill: '!bg-gradient-to-r !from-yellow-400 !to-amber-500',
+      fill: ' !bg-yellow-400 ',
       text: '!text-yellow-700'
     };
   }
   return {
     bg: '!bg-red-100',
-    fill: '!bg-gradient-to-r !from-red-400 !to-rose-500',
+    fill: ' !bg-red-400 ',
     text: '!text-red-700'
   };
 };

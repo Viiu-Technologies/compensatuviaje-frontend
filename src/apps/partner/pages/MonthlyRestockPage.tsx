@@ -37,7 +37,7 @@ const MonthlyRestockPage: React.FC = () => {
         getProjectEvidence(id!)
       ]);
       if (projRes) setProject(projRes);
-      if (evRes?.success) setHistory(evRes.data.evidences);
+      if (evRes?.success) setHistory(evRes.data?.evidences ?? []);
     } catch (err: any) {
       setError('Error al cargar la información del proyecto.');
     } finally {
@@ -135,7 +135,7 @@ const MonthlyRestockPage: React.FC = () => {
                       min="1"
                       value={unitsDelivered}
                       onChange={e => setUnitsDelivered(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-700 focus:border-brand-600"
                     />
                     <p className="text-xs text-gray-500 mt-1">Con esto liberamos el pago retenido.</p>
                   </div>
@@ -149,7 +149,7 @@ const MonthlyRestockPage: React.FC = () => {
                       min="1"
                       value={newStockRequested}
                       onChange={e => setNewStockRequested(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-700 focus:border-brand-600"
                     />
                     <p className="text-xs text-gray-500 mt-1">Lo que podrás vender el próximo mes.</p>
                   </div>
@@ -162,7 +162,7 @@ const MonthlyRestockPage: React.FC = () => {
                     value={note}
                     onChange={e => setNote(e.target.value)}
                     placeholder="Detalles sobre el avance de este mes, problemas, logros..."
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-700 focus:border-brand-600"
                   />
                 </div>
 
@@ -182,7 +182,7 @@ const MonthlyRestockPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 font-medium"
+                    className="px-6 py-2 bg-brand-700 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 font-medium"
                   >
                     {submitting ? 'Enviando...' : 'Enviar Evidencia y Solicitar'}
                   </button>
@@ -194,16 +194,16 @@ const MonthlyRestockPage: React.FC = () => {
 
         {/* RIGHT COLUMN: Summary & History */}
         <div className="space-y-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-            <h3 className="font-semibold text-blue-900 mb-4">Estado Actual</h3>
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+            <h3 className="font-semibold text-slate-700 mb-4">Estado Actual</h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-blue-700">Stock Mensual Restante</span>
-                <span className="font-bold text-blue-900">{project.monthly_stock_remaining || 0} {project.impact_unit_type}</span>
+                <span className="text-sm text-slate-700">Stock Mensual Restante</span>
+                <span className="font-bold text-slate-700">{project.monthly_stock_remaining || 0} {project.impact_unit_type}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-blue-700">Progreso Total</span>
-                <span className="font-bold text-blue-900">{project.capacity_sold || 0} / {project.capacity_total || 0}</span>
+                <span className="text-sm text-slate-700">Progreso Total</span>
+                <span className="font-bold text-slate-700">{project.capacity_sold || 0} / {project.capacity_total || 0}</span>
               </div>
             </div>
           </div>
@@ -224,7 +224,7 @@ const MonthlyRestockPage: React.FC = () => {
                     </div>
                     <div className="text-xs text-gray-500 space-y-1">
                       <p>➤ Solicitado: {ev.newStockRequested} (Verificado: {ev.unitsVerified ?? '-'})</p>
-                      {ev.payoutApproved && <p className="text-emerald-600">💵 Pago liberado: ${ev.payoutAmount?.toLocaleString('es-CL')}</p>}
+                      {ev.payoutApproved && <p className="text-brand-800">💵 Pago liberado: ${ev.payoutAmount?.toLocaleString('es-CL')}</p>}
                       {ev.note && <p className="italic bg-gray-50 p-2 mt-2 rounded">"{ev.note}"</p>}
                       {ev.adminNotes && <p className="text-red-800 bg-red-50 p-2 mt-2 rounded">Resp: "{ev.adminNotes}"</p>}
                     </div>

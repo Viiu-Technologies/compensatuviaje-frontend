@@ -50,9 +50,9 @@ interface StatItemProps {
 
 const StatItem: React.FC<StatItemProps> = ({ label, value, icon, color }) => {
   const colorClasses = {
-    green: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-    blue: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300',
-    purple: 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300',
+    green: 'bg-brand-50 dark:bg-brand-600/10 text-brand-800 dark:text-brand-300',
+    blue: 'bg-slate-50 dark:bg-brand-700/10 text-slate-700 dark:text-slate-400',
+    purple: 'bg-slate-50 dark:bg-brand-700/10 text-slate-700 dark:text-slate-400',
     yellow: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'
   };
 
@@ -233,7 +233,7 @@ const ProjectDetail: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400 !mb-4">El proyecto que buscas no existe o fue eliminado</p>
           <Link
             to="/partner/projects"
-            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 !font-medium !no-underline"
+            className="text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 !font-medium !no-underline"
           >
             ← Volver a mis proyectos
           </Link>
@@ -297,7 +297,7 @@ const ProjectDetail: React.FC = () => {
             <button
               onClick={handleSubmitForReview}
               disabled={submitting}
-              className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white !rounded-xl hover:!from-emerald-600 hover:!to-teal-700 disabled:!opacity-50 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/20"
+              className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-brand-600 !text-white !rounded-xl hover:!bg-brand-700 disabled:!opacity-50 !transition-all !font-semibold !shadow-lg"
             >
               {submitting ? (
                 <>
@@ -321,7 +321,7 @@ const ProjectDetail: React.FC = () => {
           {['active', 'approved', 'pending_review'].includes(project.status) && (
             <Link
               to={`/partner/projects/${project.id}/certification`}
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-xl bg-indigo-50 dark:bg-indigo-900/30 !border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 !text-sm !font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50 !transition-colors !no-underline"
+              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-xl bg-slate-50 dark:bg-brand-800/30 !border border-slate-200 dark:border-slate-400 text-slate-700 dark:text-slate-400 !text-sm !font-medium hover:bg-slate-50 dark:hover:bg-brand-800/50 !transition-colors !no-underline"
             >
               <Bot className="!w-4 !h-4" />
               Ver Evaluación IA
@@ -339,7 +339,7 @@ const ProjectDetail: React.FC = () => {
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="bg-brand-50 border border-brand-200 text-brand-800 px-4 py-3 rounded-lg">
             {success}
           </div>
         )}
@@ -440,7 +440,7 @@ const ProjectDetail: React.FC = () => {
                   <dt className="text-sm text-slate-500 dark:text-slate-400">Co-Beneficios</dt>
                   <dd className="flex flex-wrap gap-1.5 mt-1">
                     {project.co_benefits.map((cb, idx) => (
-                      <span key={idx} className="px-2 py-0.5 text-xs rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span key={idx} className="px-2 py-0.5 text-xs rounded-full bg-brand-50 text-brand-800 border border-brand-200">
                         {cb}
                       </span>
                     ))}
@@ -461,7 +461,7 @@ const ProjectDetail: React.FC = () => {
                       href={project.transparency_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700 font-medium inline-flex items-center gap-1"
+                      className="text-brand-800 hover:text-brand-800 font-medium inline-flex items-center gap-1"
                     >
                       {project.transparency_url}
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,7 +566,7 @@ const ProjectDetail: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatItem
                 label="Aprobado (este ciclo)"
-                value={`${formatNumber(project.monthly_stock_approved || 0)} ${project.impact_unit_type || 'u'}`}
+                value={`${formatNumber(project.monthly_stock_approved || 0)} ${project.impact_unit || project.impact_unit_type || 'unidades'}`}
                 color="blue"
                 icon={
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,7 +576,7 @@ const ProjectDetail: React.FC = () => {
               />
               <StatItem
                 label="Disponible"
-                value={`${formatNumber(project.monthly_stock_remaining || 0)} ${project.impact_unit_type || 'u'}`}
+                value={`${formatNumber(project.monthly_stock_remaining || 0)} ${project.impact_unit || project.impact_unit_type || 'unidades'}`}
                 color="green"
                 icon={
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -610,7 +610,7 @@ const ProjectDetail: React.FC = () => {
               {evidencePhotos.length > 0 && (
                 <div>
                   <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold text-slate-700 dark:text-slate-300 !mb-3">
-                    <Camera className="!w-4 !h-4 text-emerald-600 dark:text-emerald-400" />
+                    <Camera className="!w-4 !h-4 text-brand-800 dark:text-brand-700" />
                     Fotos ({evidencePhotos.length})
                   </h4>
                   <div className="bg-slate-50 dark:bg-slate-900 !rounded-xl !p-2">
@@ -623,7 +623,7 @@ const ProjectDetail: React.FC = () => {
               {evidenceDocs.length > 0 && (
                 <div>
                   <h4 className="!flex !items-center !gap-2 !text-sm !font-semibold text-slate-700 dark:text-slate-300 !mb-3">
-                    <FileText className="!w-4 !h-4 text-blue-600 dark:text-blue-400" />
+                    <FileText className="!w-4 !h-4 text-slate-700 dark:text-slate-600" />
                     Documentos ({evidenceDocs.length})
                   </h4>
                   <DocumentViewer documents={evidenceDocs} />
@@ -644,19 +644,19 @@ const ProjectDetail: React.FC = () => {
 
         {/* Restock Button - only for active projects */}
         {project.status === 'active' && (
-          <div className="!bg-gradient-to-r !from-emerald-50 !to-teal-50 dark:!from-emerald-900/20 dark:!to-teal-900/20 !rounded-xl !border border-emerald-200 dark:border-emerald-800 !p-6">
+          <div className="!bg-brand-50 dark:!bg-brand-700/20 !rounded-xl !border border-brand-200 dark:border-brand-700 !p-6">
             <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-4">
               <div>
-                <h3 className="!text-lg !font-semibold text-emerald-800 dark:text-emerald-200">
+                <h3 className="!text-lg !font-semibold text-brand-800 dark:text-brand-300">
                   Evidencia Mensual
                 </h3>
-                <p className="!text-sm text-emerald-700/70 dark:text-emerald-300/70 !mt-1">
+                <p className="!text-sm text-brand-800 dark:text-brand-300 !mt-1">
                   Sube fotos y documentos de avance para solicitar reposición de stock
                 </p>
               </div>
               <Link
                 to={`/partner/projects/${project.id}/restock`}
-                className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-emerald-600 hover:!bg-emerald-700 !text-white !rounded-xl !font-semibold !transition-colors !shadow-lg !shadow-emerald-500/20 !no-underline"
+                className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-brand-700 hover:!bg-brand-700 !text-white !rounded-xl !font-semibold !transition-colors !shadow-lg !no-underline"
               >
                 <Upload className="!w-4 !h-4" />
                 Subir Evidencia Mensual

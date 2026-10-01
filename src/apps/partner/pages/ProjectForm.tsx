@@ -359,7 +359,7 @@ const ProjectForm: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
                   placeholder="Ej: Reforestación Bosque Nativo Araucanía"
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.name ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 />
@@ -373,7 +373,7 @@ const ProjectForm: React.FC = () => {
                     onChange={(e) => handleChange('code', e.target.value.toUpperCase())}
                     placeholder="REF-ABC123"
                     disabled={isEditing}
-                    className={`!flex-1 !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                    className={`!flex-1 !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 disabled:bg-slate-100 dark:disabled:bg-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                       errors.code ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                     }`}
                   />
@@ -397,7 +397,7 @@ const ProjectForm: React.FC = () => {
                   value={formData.projectType}
                   onChange={(e) => handleChange('projectType', e.target.value as ProjectType)}
                   disabled={isEditing}
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 disabled:bg-slate-100 dark:disabled:bg-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.projectType ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 >
@@ -416,7 +416,7 @@ const ProjectForm: React.FC = () => {
                       handleChange('region', '');
                     }
                   }}
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.country ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 >
@@ -431,7 +431,7 @@ const ProjectForm: React.FC = () => {
                   <select
                     value={formData.region}
                     onChange={(e) => handleChange('region', e.target.value)}
-                    className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                   >
                     <option value="">Seleccionar región...</option>
                     {CHILE_REGIONS.map((region) => (
@@ -448,7 +448,7 @@ const ProjectForm: React.FC = () => {
                     onChange={(e) => handleChange('description', e.target.value)}
                     rows={4}
                     placeholder="Describe el proyecto, sus objetivos y el impacto ambiental esperado..."
-                    className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                   />
                 </FormField>
               </div>
@@ -457,7 +457,7 @@ const ProjectForm: React.FC = () => {
 
           {/* Phase 2: Impact Unit Specification */}
           <div className="bg-white dark:bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
-            <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-2">🌿 Unidad de Impacto</h2>
+            <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-2">Unidad de impacto</h2>
             <p className="!text-sm text-slate-500 dark:text-slate-400 !mb-6">
               Especifica exactamente qué unidad de impacto entregas y de qué especie o tipo.
             </p>
@@ -467,7 +467,7 @@ const ProjectForm: React.FC = () => {
                 <select
                   value={formData.impact_unit_type}
                   onChange={(e) => handleChange('impact_unit_type' as any, e.target.value)}
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.impact_unit_type ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 >
@@ -489,7 +489,7 @@ const ProjectForm: React.FC = () => {
                   value={formData.impact_unit_spec}
                   onChange={(e) => handleChange('impact_unit_spec' as any, e.target.value)}
                   placeholder="Ej: Quillay nativo"
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.impact_unit_spec ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 />
@@ -497,9 +497,9 @@ const ProjectForm: React.FC = () => {
             </div>
 
             {formData.impact_unit_type && formData.impact_unit_spec && (
-              <div className="!mt-4 !p-3 bg-emerald-50 dark:bg-emerald-900/20 !rounded-lg !border border-emerald-200 dark:border-emerald-800">
-                <p className="!text-sm text-emerald-700 dark:text-emerald-300">
-                  ✅ Tu unidad de impacto: <strong>1 {formData.impact_unit_type}</strong> de <strong>{formData.impact_unit_spec}</strong>
+              <div className="!mt-4 !p-3 bg-brand-50 dark:bg-brand-700/20 !rounded-lg !border border-brand-200 dark:border-brand-700">
+                <p className="!text-sm text-brand-800 dark:text-brand-300">
+                  Tu unidad de impacto: <strong>1 {formData.impact_unit_type}</strong> de <strong>{formData.impact_unit_spec}</strong>
                 </p>
               </div>
             )}
@@ -527,14 +527,14 @@ const ProjectForm: React.FC = () => {
                   )}
                   min="0"
                   placeholder="Ej: 432"
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.provider_cost_unit_clp ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 />
               </FormField>
 
               <FormField
-                label="📦 Stock Disponible para este MES (Unidades)"
+                label="Stock disponible este mes (unidades)"
                 help="Cantidad de unidades que puedes entregar en los próximos 30 días"
                 required
               >
@@ -547,7 +547,7 @@ const ProjectForm: React.FC = () => {
                   )}
                   min="0"
                   placeholder="Ej: 5000"
-                  className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 />
               </FormField>
 
@@ -564,7 +564,7 @@ const ProjectForm: React.FC = () => {
                   )}
                   min="0"
                   placeholder="Ej: 50000"
-                  className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  className="!w-full !px-4 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 />
               </FormField>
 
@@ -578,7 +578,7 @@ const ProjectForm: React.FC = () => {
                   value={formData.transparencyUrl}
                   onChange={(e) => handleChange('transparencyUrl', e.target.value)}
                   placeholder="https://ejemplo.com/proyecto-info"
-                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-green-500 focus:!border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
+                  className={`!w-full !px-4 !py-2 !border !rounded-lg focus:!ring-2 focus:!ring-brand-700 focus:!border-brand-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 ${
                     errors.transparencyUrl ? 'border-red-300 dark:border-red-500/50' : 'border-slate-300 dark:border-slate-600'
                   }`}
                 />
@@ -586,14 +586,14 @@ const ProjectForm: React.FC = () => {
             </div>
 
             {/* Info Box about Admin-controlled fields */}
-            <div className="!mt-6 !p-4 bg-blue-50 dark:bg-blue-900/20 !border border-blue-200 dark:border-blue-800 !rounded-lg">
+            <div className="!mt-6 !p-4 bg-slate-50 dark:bg-brand-800/20 !border border-slate-200 dark:border-slate-400 !rounded-lg">
               <div className="!flex !gap-3">
-                <svg className="!w-5 !h-5 text-blue-600 dark:text-blue-400 !flex-shrink-0 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="!w-5 !h-5 text-slate-700 dark:text-slate-600 !flex-shrink-0 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <h4 className="!text-sm !font-medium text-blue-800 dark:text-blue-300">Precio y Captura de CO₂</h4>
-                  <p className="!text-sm text-blue-600 dark:text-blue-400 !mt-1">
+                  <h4 className="!text-sm !font-medium text-slate-700 dark:text-slate-400">Precio y Captura de CO₂</h4>
+                  <p className="!text-sm text-slate-700 dark:text-slate-600 !mt-1">
                     El precio por tonelada (CLP) y la captura de CO₂ por unidad serán definidos por nuestro equipo
                     durante el proceso de revisión, basándose en el dossier técnico y la documentación del proyecto.
                   </p>
@@ -605,7 +605,7 @@ const ProjectForm: React.FC = () => {
           {/* Phase 2: Evidence Upload Section */}
           {!isEditing && (
             <div className="bg-white dark:bg-slate-800 !rounded-xl !border !shadow-sm !p-6 !mb-6">
-              <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-2">📸 Evidencia Inicial</h2>
+              <h2 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-2">Evidencia inicial</h2>
               <p className="!text-sm text-slate-500 dark:text-slate-400 !mb-6">
                 Sube fotos reales de tu operación y documentación técnica para demostrar que tu proyecto existe.
               </p>
@@ -657,7 +657,7 @@ const ProjectForm: React.FC = () => {
             <button
               type="submit"
               disabled={saving}
-              className="!inline-flex !items-center !gap-2 !px-6 !py-2 bg-green-600 text-white !rounded-lg hover:bg-green-700 disabled:!opacity-50 !font-medium !transition-colors"
+              className="!inline-flex !items-center !gap-2 !px-6 !py-2 bg-brand-700 text-white !rounded-lg hover:bg-brand-700 disabled:!opacity-50 !font-medium !transition-colors"
             >
               {saving ? (
                 <>

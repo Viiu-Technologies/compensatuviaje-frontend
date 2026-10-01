@@ -12,7 +12,8 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { usePartnerContext } from '../context/PartnerContext';
-import { useTheme } from '../../../shared/context/ThemeContext';
+import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
+import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -26,8 +27,6 @@ import {
   Shield,
   Lock,
   AlertCircle,
-  Sun,
-  Moon
 } from 'lucide-react';
 
 // ============================================
@@ -41,7 +40,11 @@ const PartnerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, onboarding, kybStatus, isDataLoaded, isProfileComplete, isKybVerified } = usePartnerContext();
-  const { resolvedTheme, toggleTheme } = useTheme();
+  // El modo oscuro del portal dejaba texto blanco sobre tarjetas blancas; se
+  // fuerza el tema claro, como en el admin y el área de usuarios.
+  useForceLightTheme();
+  // Activa las utilidades de espaciado sin "!" (el reset global las anulaba).
+  useTailwindSpacing();
 
   // TRIPLE CANDADO: Control estricto de flujo Onboarding
   useEffect(() => {
@@ -110,10 +113,10 @@ const PartnerLayout: React.FC = () => {
   ];
 
   return (
-    <div className="!min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-950 via-emerald-50/20 dark:via-slate-900 to-teal-50/10 dark:to-slate-950 !flex !font-sans !w-full">
+    <div className="ptr-root !min-h-screen !bg-[#f6f8f7] !flex !font-sans !w-full">
       {/* ====== Sidebar Desktop ====== */}
       <aside
-        className={`!hidden lg:!flex !flex-col !h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 !shadow-2xl !fixed !left-0 !top-0 !z-50 !overflow-y-auto !transition-all !duration-300 ${
+        className={`!hidden lg:!flex !flex-col !h-screen !bg-[#0b2a2a] !fixed !left-0 !top-0 !z-50 !overflow-y-auto !transition-all !duration-300 ${
           sidebarCollapsed ? '!w-20' : '!w-72'
         }`}
       >
@@ -122,16 +125,16 @@ const PartnerLayout: React.FC = () => {
           <img
             src="/images/brand/logo-horizontal-white.svg"
             alt="CompensaTuViaje"
-            className={`!h-10 !w-auto !drop-shadow-lg !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
+            className={`!h-10 !w-auto  !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
           />
           {sidebarCollapsed && (
-            <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !object-contain !drop-shadow-lg" />
+            <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !object-contain " />
           )}
         </div>
 
         {/* Partner Info */}
         <div className="!px-4 !py-4 !border-b border-white/10">
-          <div className={`!flex !items-center !gap-3 !p-4 !rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 !border border-emerald-400/30 !backdrop-blur-sm ${sidebarCollapsed ? '!justify-center' : ''}`}>
+          <div className={`!flex !items-center !gap-3 !p-4 !rounded-xl !bg-white/5 !border !border-white/10 ${sidebarCollapsed ? '!justify-center' : ''}`}>
             {profile?.logo_url ? (
               <img
                 src={profile.logo_url}
@@ -139,14 +142,14 @@ const PartnerLayout: React.FC = () => {
                 className="!w-10 !h-10 !rounded-full !object-cover !flex-shrink-0 !shadow-lg"
               />
             ) : (
-              <div className="!w-10 !h-10 !rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 !flex !items-center !justify-center text-white !font-bold !flex-shrink-0 !shadow-lg !shadow-emerald-500/50">
+              <div className="!w-10 !h-10 !rounded-full !bg-white/10 !flex !items-center !justify-center text-white !font-bold !flex-shrink-0">
                 <Building2 className="!w-5 !h-5" />
               </div>
             )}
             {!sidebarCollapsed && (
               <div className="!flex-1 !min-w-0">
                 <p className="!text-sm !font-bold text-white !truncate">{profile?.name || 'Partner'}</p>
-                <p className="!text-xs text-emerald-300 !truncate">{profile?.contact_email || user?.email}</p>
+                <p className="!text-xs !text-[#9fb6b3] !truncate">{profile?.contact_email || user?.email}</p>
               </div>
             )}
           </div>
@@ -180,10 +183,10 @@ const PartnerLayout: React.FC = () => {
                 to={item.path}
                 end={item.exact}
                 className={({ isActive }) =>
-                  `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !outline-none !relative !no-underline ${
+                  `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-colors !text-left !font-medium !border-0 !outline-none !relative !no-underline ${
                     isActive
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white !shadow-lg !shadow-emerald-500/50'
-                      : 'bg-transparent text-slate-300 hover:bg-white/10 hover:text-white'
+                      ? '!bg-white/10 !text-white !shadow-[inset_3px_0_0_#3ED32B]'
+                      : 'bg-transparent !text-[#c9d6d4] hover:!bg-white/5 hover:!text-white'
                   } ${sidebarCollapsed ? '!justify-center' : ''}`
                 }
                 title={sidebarCollapsed ? item.label : undefined}
@@ -213,7 +216,7 @@ const PartnerLayout: React.FC = () => {
               ) : (
                 <NavLink
                   to="/partner/projects/create"
-                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white !rounded-xl hover:from-emerald-600 hover:to-green-700 !transition-all !font-semibold !shadow-lg !shadow-emerald-500/30 !no-underline"
+                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-[#3ED32B] !text-[#0b2a2a] !rounded-lg hover:!bg-[#93DC88] !transition-colors !font-semibold !no-underline"
                 >
                   <Plus className="!w-5 !h-5" />
                   Nuevo Proyecto
@@ -233,7 +236,7 @@ const PartnerLayout: React.FC = () => {
               ) : (
                 <NavLink
                   to="/partner/projects/create"
-                  className="!p-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white !rounded-xl hover:from-emerald-600 hover:to-green-700 !transition-all !shadow-lg !no-underline"
+                  className="!p-3 !bg-[#3ED32B] !text-[#0b2a2a] !rounded-lg hover:!bg-[#93DC88] !transition-colors !no-underline"
                   title="Nuevo Proyecto"
                 >
                   <Plus className="!w-5 !h-5" />
@@ -247,7 +250,7 @@ const PartnerLayout: React.FC = () => {
         <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0 !border-t border-white/10 !pt-4">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl text-slate-300 hover:bg-white/10 hover:text-white !bg-transparent !border-0 !transition-all !cursor-pointer"
+            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-[#c9d6d4] hover:!bg-white/5 hover:!text-white !bg-transparent !border-0 !transition-all !cursor-pointer"
           >
             {sidebarCollapsed ? <ChevronRight className="!w-5 !h-5" /> : <ChevronLeft className="!w-5 !h-5" />}
             {!sidebarCollapsed && <span>Colapsar</span>}
@@ -269,7 +272,7 @@ const PartnerLayout: React.FC = () => {
           onClick={() => setMobileMenuOpen(false)}
         >
           <aside
-            className="!fixed !left-0 !top-0 !h-full !w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 !shadow-2xl !flex !flex-col"
+            className="!fixed !left-0 !top-0 !h-full !w-72 !bg-[#0b2a2a] !flex !flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b border-white/10">
@@ -277,17 +280,17 @@ const PartnerLayout: React.FC = () => {
             </div>
 
             <div className="!px-4 !py-4 !border-b border-white/10">
-              <div className="!flex !items-center !gap-3 !p-4 !rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 !border border-emerald-400/30">
+              <div className="!flex !items-center !gap-3 !p-4 !rounded-xl !bg-white/5 !border !border-white/10">
                 {profile?.logo_url ? (
                   <img src={profile.logo_url} alt={profile.name} className="!w-12 !h-12 !rounded-full !object-cover !shadow-lg" />
                 ) : (
-                  <div className="!w-12 !h-12 !rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 !flex !items-center !justify-center text-white !font-bold !shadow-lg">
+                  <div className="!w-12 !h-12 !rounded-full !bg-white/10 !flex !items-center !justify-center text-white !font-bold">
                     <Building2 className="!w-6 !h-6" />
                   </div>
                 )}
                 <div className="!flex-1 !min-w-0">
                   <p className="!text-sm !font-bold text-white">{profile?.name || 'Partner'}</p>
-                  <p className="!text-xs text-emerald-300 !truncate">{profile?.contact_email || user?.email}</p>
+                  <p className="!text-xs !text-[#9fb6b3] !truncate">{profile?.contact_email || user?.email}</p>
                 </div>
               </div>
             </div>
@@ -315,9 +318,9 @@ const PartnerLayout: React.FC = () => {
                     end={item.exact}
                     onClick={() => setMobileMenuOpen(false)}
                     className={({ isActive }) =>
-                      `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !transition-all !text-left !font-medium !border-0 !no-underline ${
+                      `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-colors !text-left !font-medium !border-0 !no-underline ${
                         isActive
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white !shadow-lg'
+                          ? '!bg-white/10 !text-white !shadow-[inset_3px_0_0_#3ED32B]'
                           : 'text-slate-300 hover:bg-white/10'
                       }`
                     }
@@ -340,7 +343,7 @@ const PartnerLayout: React.FC = () => {
                   <NavLink
                     to="/partner/projects/create"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white !rounded-xl !font-semibold !shadow-lg !no-underline"
+                    className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-[#3ED32B] !text-[#0b2a2a] !rounded-lg !font-semibold !no-underline"
                   >
                     <Plus className="!w-5 !h-5" />
                     Nuevo Proyecto
@@ -362,6 +365,7 @@ const PartnerLayout: React.FC = () => {
             <button
               className="!absolute !top-4 !right-4 text-white/60 !text-2xl !border-0 !bg-transparent !cursor-pointer"
               onClick={() => setMobileMenuOpen(false)}
+              aria-label="Cerrar menú"
             >
               ×
             </button>
@@ -378,38 +382,28 @@ const PartnerLayout: React.FC = () => {
               <div className="!flex !items-center !gap-4">
                 <button
                   onClick={() => setMobileMenuOpen(true)}
+                  aria-label="Abrir menú"
                   className="lg:!hidden !p-2 !rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 !border-0 !cursor-pointer"
                 >
                   <Menu className="!w-6 !h-6" />
                 </button>
                 <div>
-                  <h1 className="!text-2xl !font-bold text-slate-900 dark:text-slate-100 !flex !items-center !gap-2">
-                    <Building2 className="text-emerald-600 dark:text-emerald-400 !w-6 !h-6" />
-                    Portal Partner
-                  </h1>
-                  <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">Gestión de proyectos ESG</p>
+                  <p className="!text-sm !font-semibold !text-slate-900 !m-0">Portal de Impact Partners</p>
+                  <p className="!text-xs !text-slate-500 !m-0">Gestión de tus proyectos de compensación</p>
                 </div>
               </div>
 
               <div className="!flex !items-center !gap-3">
-                <button
-                  onClick={toggleTheme}
-                  className="!p-2.5 !rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 !border-0 !cursor-pointer !transition-colors"
-                  title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                  aria-label={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                >
-                  {resolvedTheme === 'dark' ? <Sun className="!w-5 !h-5" /> : <Moon className="!w-5 !h-5" />}
-                </button>
                 <NavLink
                   to="/partner/profile"
-                  className="!hidden sm:!flex !items-center !gap-3 !pl-3 border-l border-slate-200 dark:border-slate-700 !no-underline"
+                  className="!hidden sm:!flex !items-center !gap-3 !no-underline"
                 >
                   <div className="!text-right">
                     <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{profile?.name || user?.name || 'Partner'}</p>
                     <p className="!text-xs text-slate-500 dark:text-slate-400">Impact Partner</p>
                   </div>
                   {profile?.logo_url ? (
-                    <img src={profile.logo_url} alt={profile.name} className="!w-10 !h-10 !rounded-full !object-cover" />
+                    <img src={profile.logo_url} alt={profile.name} className="!w-9 !h-9 !rounded-full !object-contain !bg-white !border !border-slate-200" />
                   ) : (
                     <div className="!w-10 !h-10 !rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 !flex !items-center !justify-center !font-bold">
                       {profile?.name?.charAt(0) || 'P'}
@@ -438,7 +432,7 @@ const PartnerLayout: React.FC = () => {
                   </p>
                   <NavLink
                     to="/partner/kyb"
-                    className="!inline-flex !items-center !gap-2 !mt-3 !px-4 !py-2 bg-amber-600 dark:bg-amber-600 text-white !rounded-lg hover:bg-amber-700 dark:hover:bg-amber-700 !transition-colors !text-sm !font-medium !no-underline"
+                    className="!inline-flex !items-center !gap-2 !mt-3 !px-4 !py-2 !bg-[#073D3D] !text-white !rounded-lg hover:!bg-[#0b5250] !transition-colors !text-sm !font-medium !no-underline"
                   >
                     <Shield className="!w-4 !h-4" />
                     Completar Verificación KYB
