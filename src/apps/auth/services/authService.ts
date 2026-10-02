@@ -3,6 +3,7 @@
 // ============================================
 
 import apiClient from '../../../shared/services/apiClient';
+import { decodeJwtPayload } from '../../../shared/utils/jwt';
 import type {
   LoginResponse,
   RegisterCompanyRequest,
@@ -81,23 +82,6 @@ class AuthService {
     );
 
     if (response.success && response.user_info) {
-      console.log('Login successful, user_info:', response.user_info);
-
-      // DEBUG: Decodificar token para verificar el rol que viene DENTRO del token
-      try {
-        const tokenParts = response.access_token.split('.');
-        if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
-          console.log('🎟️ [Auth] CONTENIDO DEL TOKEN (Payload):', payload);
-          console.log('👮 [Auth] Rol en el token:', payload.role);
-          
-          if (payload.role !== 'superadmin' && payload.role === 'SUPERADMIN') {
-            console.warn('⚠️ [Auth] ALERTA: El rol en el token es SUPERADMIN (mayúsculas) pero el backend podría esperar superadmin (minúsculas).');
-          }
-        }
-      } catch (e) {
-        console.error('Error decodificando token para debug:', e);
-      }
 
       // Agregar user_type basado en el rol
       response.user_info.user_type = determineUserType(response.user_info);
@@ -149,7 +133,8 @@ class AuthService {
       try {
         const tokenParts = token.split('.');
         if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
+          const payload = decodeJwtPayload(token);
+          if (!payload) throw new Error('token ilegible');
           const role = payload.role;
           
           // Para SuperAdmin y Partner, usamos la info del token

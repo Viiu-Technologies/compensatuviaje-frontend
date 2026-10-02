@@ -4,6 +4,7 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import authService, { getRedirectPath } from '../services/authService';
+import { decodeJwtPayload } from '../../../shared/utils/jwt';
 import type {
   AuthUser,
   AuthContextType,
@@ -68,7 +69,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             try {
               const tokenParts = token.split('.');
               if (tokenParts.length === 3) {
-                const payload = JSON.parse(atob(tokenParts[1]));
+                const payload = decodeJwtPayload(token);
+                if (!payload) throw new Error('token ilegible');
                 // Verificar que el token no haya expirado
                 if (payload.exp && payload.exp * 1000 > Date.now()) {
                   console.log('[AuthContext] Usando info del token JWT directamente');
