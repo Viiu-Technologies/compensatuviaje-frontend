@@ -25,7 +25,7 @@ export interface AirportByCodeResponse {
 }
 
 /**
- * Servicio para b├║squeda de aeropuertos
+ * Servicio para búsqueda de aeropuertos
  * Conecta con: GET /api/public/airports/search?q=...
  */
 class AirportService {
@@ -33,7 +33,7 @@ class AirportService {
 
   /**
    * Buscar aeropuertos por query (fuzzy search)
-   * Soporta: c├│digo IATA, ciudad, pa├¡s
+   * Soporta: código IATA, ciudad, país
    */
   async searchAirports(query: string, limit: number = 15): Promise<Airport[]> {
     if (!query || query.trim().length < 2) {
@@ -62,7 +62,7 @@ class AirportService {
   }
 
   /**
-   * Obtener aeropuerto por c├│digo IATA exacto
+   * Obtener aeropuerto por código IATA exacto
    */
   async getAirportByCode(code: string): Promise<Airport | null> {
     if (!code || code.length !== 3) return null;
@@ -77,7 +77,7 @@ class AirportService {
   }
 
   /**
-   * Limpiar cach├® de aeropuertos
+   * Limpiar caché de aeropuertos
    */
   clearCache(): void {
     this.cache.clear();

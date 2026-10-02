@@ -1,22 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  FileText,
-  Upload,
-  Trash2,
-  Download,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  AlertCircle,
-  Loader2,
-  File,
-  RefreshCw,
-  Shield,
-  Info
-} from 'lucide-react';
-import { useTheme } from '../../../../shared/context/ThemeContext';
+import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { AlertCircle, CheckCircle2, Download, FileText, Image as ImageIcon, Info, RefreshCw, Trash2, Upload, XCircle } from 'lucide-react';
 import api from '../../../../shared/services/api';
 import { useConfirm } from '../../../../shared/components/ui';
+import {
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  cx,
+  EmptyState,
+  ErrorState,
+  fmtDate,
+  inputCls,
+  labelCls,
+  PageHeader,
+  Progress,
+  Skeleton,
+  type Tone,
+} from '../../ui';
 
 interface DocumentFile {
   id: string;
@@ -34,13 +36,6 @@ interface CompanyDocument {
   file: DocumentFile;
 }
 
-interface DocumentTypeConfig {
-  name: string;
-  required: boolean;
-  maxFiles: number;
-  allowedTypes: string[];
-}
-
 interface ValidationResult {
   isValid: boolean;
   errors: string[];
@@ -49,478 +44,324 @@ interface ValidationResult {
   documentSummary: Record<string, { required: boolean; uploaded: number; maxFiles: number }>;
 }
 
-const docTypeLabels: Record<string, { label: string; description: string }> = {
-  rut_empresa: { label: 'RUT Empresa', description: 'Documento RUT de la empresa (obligatorio)' },
-  escritura_constitucion: { label: 'Escritura de Constitución', description: 'Escritura pública de la constitución de la sociedad' },
-  representante_legal: { label: 'Cédula Representante Legal', description: 'Cédula de identidad del representante (anverso y reverso)' },
-  poder_notarial: { label: 'Poder Notarial', description: 'Poder notarial que acredite representación' },
-  otro: { label: 'Otro Documento', description: 'Documentación adicional o complementaria' },
+const DOC_TYPES: Record<string, { label: string; description: string }> = {
+  rut_empresa: { label: 'RUT de la empresa', description: 'Obligatorio para validar la cuenta.' },
+  escritura_constitucion: { label: 'Escritura de constitución', description: 'Opcional; agiliza la aprobación.' },
+  representante_legal: { label: 'Cédula del representante legal', description: 'Opcional; anverso y reverso.' },
+  poder_notarial: { label: 'Poder notarial', description: 'Opcional; si quien opera la cuenta no es el representante legal.' },
+  otro: { label: 'Otro documento', description: 'Documentación adicional.' },
 };
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  pending: { label: 'Pendiente', color: 'text-amber-700', bg: 'bg-amber-100', icon: Clock },
-  approved: { label: 'Aprobado', color: 'text-emerald-700', bg: 'bg-emerald-100', icon: CheckCircle2 },
-  rejected: { label: 'Rechazado', color: 'text-rose-700', bg: 'bg-rose-100', icon: XCircle },
+const STATUS: Record<string, { label: string; tone: Tone }> = {
+  pending: { label: 'En revisión', tone: 'warning' },
+  approved: { label: 'Aprobado', tone: 'success' },
+  rejected: { label: 'Rechazado', tone: 'danger' },
 };
+
+const ALLOWED = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+const MAX_MB = 10;
+
+const fileSize = (bytes: number) =>
+  bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toLocaleString('es-CL', { maximumFractionDigits: 1 })} MB`;
 
 const DocumentsView: React.FC = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const { confirm, dialog } = useConfirm();
   const [documents, setDocuments] = useState<CompanyDocument[]>([]);
-  const [documentTypes, setDocumentTypes] = useState<Record<string, DocumentTypeConfig>>({});
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [selectedDocType, setSelectedDocType] = useState('rut_empresa');
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [docType, setDocType] = useState('rut_empresa');
   const [description, setDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (successMsg) {
-      const t = setTimeout(() => setSuccessMsg(null), 4000);
-      return () => clearTimeout(t);
-    }
-  }, [successMsg]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const loadData = async () => {
-    setLoading(true);
-    setError(null);
+    setFailed(false);
     try {
-      const [docsRes, validationRes] = await Promise.all([
-        api.get('/b2b/documents') as any,
-        api.get('/b2b/documents/validation') as any,
-      ]);
-
-      setDocuments(docsRes.data || []);
-      if (docsRes.documentTypes) setDocumentTypes(docsRes.documentTypes);
-
-      setValidation(validationRes.data || validationRes);
-    } catch (err: any) {
-      console.error('Error loading documents:', err);
-      setError('Error al cargar los documentos. Intenta nuevamente.');
+      const [docsRes, validationRes] = await Promise.all([api.get('/b2b/documents') as any, api.get('/b2b/documents/validation') as any]);
+      setDocuments(Array.isArray(docsRes?.data) ? docsRes.data : []);
+      const v = validationRes?.data || validationRes;
+      setValidation(v && typeof v === 'object' ? { ...v, errors: v.errors ?? [], warnings: v.warnings ?? [] } : null);
+    } catch {
+      setFailed(true);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
   const handleUpload = async (file: File) => {
-    if (!file) return;
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('El archivo excede el tamaño máximo de 10MB');
-      return;
-    }
-
-    // Validate mime type
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Tipo de archivo no permitido. Usa PDF, JPG o PNG.');
-      return;
-    }
-
+    setUploadError(null);
+    if (file.size > MAX_MB * 1024 * 1024) return setUploadError(`El archivo pesa más de ${MAX_MB} MB.`);
+    if (!ALLOWED.includes(file.type)) return setUploadError('Formato no permitido. Usa PDF, JPG o PNG.');
     setUploading(true);
-    setError(null);
-
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('docType', selectedDocType);
+      formData.append('docType', docType);
       if (description.trim()) formData.append('description', description.trim());
-
-      await api.post('/b2b/documents', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      setSuccessMsg('Documento subido exitosamente');
+      await api.post('/b2b/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      toast.success('Documento subido');
       setDescription('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
       await loadData();
     } catch (err: any) {
-      console.error('Error uploading:', err);
-      setError(err?.response?.data?.message || err?.message || 'Error al subir el documento');
+      setUploadError(err?.response?.data?.message || 'No pudimos subir el documento. Inténtalo de nuevo.');
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleDelete = async (docId: string) => {
+  const handleDelete = async (doc: CompanyDocument) => {
     const ok = await confirm({
       title: '¿Eliminar este documento?',
-      description: 'El documento se borrará de forma permanente y tendrás que volver a subirlo si lo necesitas.',
+      description: 'Se borrará de forma permanente y tendrás que volver a subirlo si lo necesitas.',
       confirmLabel: 'Eliminar',
       confirmVariant: 'destructive',
     });
     if (!ok) return;
-    setDeleting(docId);
+    setBusyId(doc.id);
     try {
-      await api.delete(`/b2b/documents/${docId}`);
-      setSuccessMsg('Documento eliminado');
+      await api.delete(`/b2b/documents/${doc.id}`);
+      toast.success('Documento eliminado');
       await loadData();
-    } catch (err: any) {
-      setError('Error al eliminar el documento');
+    } catch {
+      toast.error('No pudimos eliminar el documento');
     } finally {
-      setDeleting(null);
+      setBusyId(null);
     }
   };
 
-  const handleDownload = (docId: string) => {
-    const token = localStorage.getItem('access_token');
-    const baseURL = (api.defaults as any).baseURL || '';
-    window.open(`${baseURL}/b2b/documents/${docId}/download?token=${token}`, '_blank');
+  /**
+   * Antes la descarga abría `…/download?token=<sesión>`: la sesión quedaba en
+   * el historial del navegador y en los registros del servidor. Ahora se pide
+   * el archivo con la cabecera de autorización y se abre localmente. Si el
+   * servidor solo acepta el token en la URL, se usa el método anterior.
+   */
+  const handleDownload = async (doc: CompanyDocument) => {
+    setBusyId(doc.id);
+    try {
+      const blob = (await api.get(`/b2b/documents/${doc.id}/download`, { responseType: 'blob' })) as unknown as Blob;
+      if (!(blob instanceof Blob)) throw new Error('respuesta inesperada');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.file.fileName || 'documento';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch {
+      const token = localStorage.getItem('access_token');
+      const baseURL = (api.defaults as any).baseURL || '';
+      window.open(`${baseURL}/b2b/documents/${doc.id}/download?token=${token}`, '_blank', 'noopener');
+    } finally {
+      setBusyId(null);
+    }
   };
 
-  const handleDrag = (e: React.DragEvent) => {
+  const onDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
     if (e.type === 'dragleave') setDragActive(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const onDrop = (e: React.DragEvent) => {
+    onDrag(e);
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleUpload(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleUpload(e.target.files[0]);
-    }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleUpload(file);
   };
 
   if (loading) {
     return (
-      <div className="!flex !items-center !justify-center !py-20">
-        <div className="!text-center">
-          <Loader2 className="!w-12 !h-12 !text-green-500 !animate-spin !mx-auto !mb-4" />
-          <p className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cargando documentos...</p>
-        </div>
+      <div className="space-y-6">
+        <Skeleton className="h-16 w-1/2" />
+        <Skeleton className="h-28" />
+        <Skeleton className="h-64" />
       </div>
     );
   }
 
+  if (failed) return <ErrorState title="No pudimos cargar tus documentos" onRetry={loadData} />;
+
+  const completion = validation?.completionPercentage ?? 0;
+
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Documentación Legal</h1>
-          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-            Sube y gestiona los documentos requeridos para completar tu onboarding
-          </p>
-        </div>
-        <button
-          onClick={loadData}
-          className={`!p-2.5 !rounded-xl !transition-colors !border-0 ${
-            isDark ? '!bg-gray-700/50 hover:!bg-gray-600/50 !text-gray-400' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-600'
-          }`}
-        >
-          <RefreshCw className="!w-5 !h-5" />
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Documentos"
+        subtitle="La documentación legal que necesitamos para validar tu empresa."
+        actions={
+          <button type="button" onClick={() => { setLoading(true); loadData(); }} className={btn.icon} aria-label="Actualizar" title="Actualizar">
+            <RefreshCw className="w-4 h-4" aria-hidden="true" />
+          </button>
+        }
+      />
 
-      {/* Messages */}
-      {error && (
-        <div className="!bg-rose-50 !border !border-rose-200 !rounded-xl !p-4 !flex !items-start !gap-3">
-          <AlertCircle className="!w-5 !h-5 !text-rose-500 !mt-0.5 !flex-shrink-0" />
-          <div className="!flex-1">
-            <p className="!text-sm !text-rose-700 !font-medium">{error}</p>
-          </div>
-          <button onClick={() => setError(null)} className="!text-rose-400 hover:!text-rose-600 !text-lg !font-bold !border-0 !bg-transparent">×</button>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="!bg-emerald-50 !border !border-emerald-200 !rounded-xl !p-4 !flex !items-center !gap-3">
-          <CheckCircle2 className="!w-5 !h-5 !text-emerald-500 !flex-shrink-0" />
-          <p className="!text-sm !text-emerald-700 !font-medium">{successMsg}</p>
-        </div>
-      )}
-
-      {/* Validation Progress */}
       {validation && (
-        <div className={`!rounded-2xl !p-5 !border ${
-          isDark ? '!bg-gray-800/50 !border-gray-700/50' : '!bg-white !border-gray-200'
-        }`}>
-          <div className="!flex !items-center !justify-between !mb-3">
-            <div className="!flex !items-center !gap-3">
-              <Shield className={`!w-5 !h-5 ${validation.isValid ? '!text-emerald-500' : '!text-amber-500'}`} />
-              <h3 className={`!font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
-                Validación de Documentos
-              </h3>
-            </div>
-            <span className={`!text-lg !font-bold ${validation.isValid ? '!text-emerald-600' : '!text-amber-600'}`}>
-              {validation.completionPercentage}%
-            </span>
-          </div>
-          <div className="!h-3 !bg-gray-200 !rounded-full !overflow-hidden !mb-3">
-            <div
-              className={`!h-full !rounded-full !transition-all !duration-500 ${validation.isValid ? '!bg-emerald-500' : '!bg-amber-500'}`}
-              style={{ width: `${validation.completionPercentage}%` }}
-            />
-          </div>
-          {validation.errors.length > 0 && (
-            <div className="!space-y-1">
-              {validation.errors.map((err, i) => (
-                <p key={i} className="!text-xs !text-rose-600 !flex !items-center !gap-1">
-                  <XCircle className="!w-3 !h-3" /> {err}
-                </p>
+        <Card>
+          <CardHeader
+            title={validation.isValid ? 'Documentación completa' : 'Validación de documentos'}
+            subtitle={validation.isValid ? 'Ya tenemos todo lo necesario.' : 'Te falta subir o corregir algunos documentos.'}
+            action={<span className={cx('text-2xl font-bold tabular-nums', validation.isValid ? 'text-brand-700' : 'text-amber-700')}>{completion} %</span>}
+          />
+          <Progress value={completion} label="Documentación completa" />
+          {(validation.errors.length > 0 || validation.warnings.length > 0) && (
+            <ul className="m-0 p-0 list-none mt-4 space-y-1.5">
+              {validation.errors.map((e, i) => (
+                <li key={`e${i}`} className="flex items-center gap-2 text-sm text-rose-700">
+                  <XCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                  {e}
+                </li>
               ))}
-            </div>
-          )}
-          {validation.warnings.length > 0 && (
-            <div className="!space-y-1 !mt-2">
-              {validation.warnings.map((warn, i) => (
-                <p key={i} className="!text-xs !text-amber-600 !flex !items-center !gap-1">
-                  <AlertCircle className="!w-3 !h-3" /> {warn}
-                </p>
+              {validation.warnings.map((w, i) => (
+                <li key={`w${i}`} className="flex items-center gap-2 text-sm text-amber-800">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                  {w}
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </div>
+        </Card>
       )}
 
-      {/* Upload Section */}
-      <div className={`!rounded-2xl !p-6 !border ${
-        isDark ? '!bg-gray-800/50 !border-gray-700/50' : '!bg-white !border-gray-200'
-      }`}>
-        <h3 className={`!text-lg !font-bold !mb-4 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
-          Subir Documento
-        </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <Card className="p-6 lg:col-span-2">
+          <CardHeader title="Subir un documento" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label htmlFor="d-type" className={labelCls}>
+                Tipo de documento
+              </label>
+              <select id="d-type" value={docType} onChange={(e) => setDocType(e.target.value)} className={inputCls}>
+                {Object.entries(DOC_TYPES).map(([key, val]) => (
+                  <option key={key} value={key}>
+                    {val.label}
+                    {key === 'rut_empresa' ? ' (obligatorio)' : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="m-0 mt-1.5 text-xs text-gray-500">{DOC_TYPES[docType]?.description}</p>
+            </div>
+            <div>
+              <label htmlFor="d-desc" className={labelCls}>
+                Descripción (opcional)
+              </label>
+              <input
+                id="d-desc"
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Ej.: RUT actualizado 2026"
+                className={inputCls}
+              />
+            </div>
+          </div>
 
-        <div className="!grid md:!grid-cols-2 !gap-4 !mb-4">
-          {/* Doc Type Select */}
-          <div>
-            <label className={`!block !text-sm !font-medium !mb-1.5 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-              Tipo de documento
-            </label>
-            <select
-              value={selectedDocType}
-              onChange={(e) => setSelectedDocType(e.target.value)}
-              className={`!w-full !px-4 !py-3 !rounded-xl !text-sm !border !outline-none focus:!ring-2 focus:!ring-green-500 ${
-                isDark ? '!bg-gray-700 !border-gray-600 !text-gray-200' : '!bg-gray-50 !border-gray-200 !text-gray-800'
-              }`}
-            >
-              {Object.entries(docTypeLabels).map(([key, val]) => (
-                <option key={key} value={key}>{val.label}{key === 'rut_empresa' ? ' *' : ''}</option>
-              ))}
-            </select>
-            <p className={`!text-xs !mt-1 ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-              {docTypeLabels[selectedDocType]?.description}
+          <div
+            role="button"
+            tabIndex={uploading ? -1 : 0}
+            aria-label="Elegir archivo para subir"
+            aria-disabled={uploading || undefined}
+            onDragEnter={onDrag}
+            onDragLeave={onDrag}
+            onDragOver={onDrag}
+            onDrop={onDrop}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (!uploading && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            className={cx(
+              'rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700',
+              uploading && 'opacity-60 pointer-events-none',
+              dragActive ? 'border-brand-600 bg-brand-50' : 'border-gray-300 hover:border-brand-600 hover:bg-gray-50',
+            )}
+          >
+            <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} className="hidden" />
+            <Upload className={cx('mx-auto w-7 h-7 text-gray-400', uploading && 'animate-pulse')} aria-hidden="true" />
+            <p className="m-0 mt-2 text-sm font-medium text-gray-700">{uploading ? 'Subiendo documento…' : 'Arrastra el archivo aquí o haz clic para elegirlo'}</p>
+            <p className="m-0 mt-1 text-xs text-gray-500">PDF, JPG o PNG · máximo {MAX_MB} MB</p>
+          </div>
+          {uploadError && (
+            <p role="alert" className="m-0 mt-3 text-sm text-rose-700">
+              {uploadError}
             </p>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className={`!block !text-sm !font-medium !mb-1.5 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-              Descripción (opcional)
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ej: RUT actualizado 2025"
-              className={`!w-full !px-4 !py-3 !rounded-xl !text-sm !border !outline-none focus:!ring-2 focus:!ring-green-500 ${
-                isDark ? '!bg-gray-700 !border-gray-600 !text-gray-200 !placeholder-gray-500' : '!bg-gray-50 !border-gray-200 !text-gray-800 !placeholder-gray-400'
-              }`}
-            />
-          </div>
-        </div>
-
-        {/* Drop Zone */}
-        <div
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => !uploading && fileInputRef.current?.click()}
-          className={`!relative !border-2 !border-dashed !rounded-2xl !p-8 !text-center !cursor-pointer !transition-all ${
-            uploading ? '!opacity-60 !pointer-events-none' : ''
-          } ${
-            dragActive
-              ? '!border-green-500 !bg-green-50/50'
-              : isDark
-              ? '!border-gray-600 !bg-gray-700/30 hover:!border-gray-500'
-              : '!border-gray-300 !bg-gray-50 hover:!border-green-400 hover:!bg-green-50/30'
-          }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={handleFileSelect}
-            className="!hidden"
-          />
-          {uploading ? (
-            <div className="!flex !flex-col !items-center !gap-3">
-              <Loader2 className="!w-10 !h-10 !text-green-500 !animate-spin" />
-              <p className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-600'}`}>Subiendo documento...</p>
-            </div>
-          ) : (
-            <div className="!flex !flex-col !items-center !gap-3">
-              <div className={`!w-14 !h-14 !rounded-2xl !flex !items-center !justify-center ${
-                isDark ? '!bg-gray-600' : '!bg-green-100'
-              }`}>
-                <Upload className={`!w-7 !h-7 ${isDark ? '!text-gray-300' : '!text-green-600'}`} />
-              </div>
-              <div>
-                <p className={`!text-sm !font-semibold ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>
-                  Arrastra tu archivo aquí o haz clic para seleccionar
-                </p>
-                <p className={`!text-xs !mt-1 ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-                  PDF, JPG o PNG — Máximo 10MB
-                </p>
-              </div>
-            </div>
           )}
-        </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Qué necesitamos" icon={Info} />
+          <ul className="m-0 p-0 list-none space-y-3 text-sm">
+            {Object.entries(DOC_TYPES)
+              .filter(([k]) => k !== 'otro')
+              .map(([key, val]) => {
+                const uploaded = documents.some((d) => d.docType === key);
+                return (
+                  <li key={key} className="flex items-start gap-2">
+                    {uploaded ? (
+                      <CheckCircle2 className="w-4 h-4 text-brand-700 flex-shrink-0 mt-0.5" aria-label="Subido" />
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0 mt-0.5" aria-label="Pendiente" />
+                    )}
+                    <span>
+                      <span className="font-medium text-gray-900">{val.label}</span>
+                      <span className="block text-xs text-gray-500">{val.description}</span>
+                    </span>
+                  </li>
+                );
+              })}
+          </ul>
+        </Card>
       </div>
 
-      {/* Documents List */}
-      <div className={`!rounded-2xl !p-6 !border ${
-        isDark ? '!bg-gray-800/50 !border-gray-700/50' : '!bg-white !border-gray-200'
-      }`}>
-        <div className="!flex !items-center !justify-between !mb-5">
-          <h3 className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
-            Documentos Subidos ({documents.length})
-          </h3>
+      <Card className="p-0">
+        <div className="px-6 pt-6">
+          <CardHeader title={`Documentos subidos (${documents.length})`} className="mb-2" />
         </div>
-
-        {documents.length > 0 ? (
-          <div className="!space-y-3">
+        {documents.length === 0 ? (
+          <EmptyState icon={FileText} title="Aún no has subido documentos" text="Empieza por el RUT de la empresa." />
+        ) : (
+          <ul className="m-0 p-0 list-none pb-2">
             {documents.map((doc) => {
-              const st = statusConfig[doc.status] || statusConfig.pending;
-              const StIcon = st.icon;
+              const st = STATUS[doc.status] ?? STATUS.pending;
+              const isPdf = doc.file?.mimeType === 'application/pdf';
               return (
-                <div
-                  key={doc.id}
-                  className={`!flex !items-center !gap-4 !p-4 !rounded-xl !border !transition-colors ${
-                    isDark
-                      ? '!bg-gray-700/30 !border-gray-600/50 hover:!bg-gray-700/50'
-                      : '!bg-gray-50 !border-gray-100 hover:!bg-gray-100'
-                  }`}
-                >
-                  {/* Icon */}
-                  <div className={`!w-12 !h-12 !rounded-xl !flex !items-center !justify-center !flex-shrink-0 ${
-                    doc.file.mimeType === 'application/pdf'
-                      ? isDark ? '!bg-red-900/30 !text-red-400' : '!bg-red-100 !text-red-600'
-                      : isDark ? '!bg-blue-900/30 !text-blue-400' : '!bg-blue-100 !text-blue-600'
-                  }`}>
-                    {doc.file.mimeType === 'application/pdf' ? (
-                      <FileText className="!w-6 !h-6" />
-                    ) : (
-                      <File className="!w-6 !h-6" />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="!flex-1 !min-w-0">
-                    <p className={`!text-sm !font-semibold !truncate ${isDark ? '!text-gray-200' : '!text-gray-800'}`}>
-                      {doc.file.fileName}
+                <li key={doc.id} className="flex flex-wrap items-center gap-4 px-6 py-3.5 border-t border-gray-100 first:border-t-0">
+                  <span className="w-10 h-10 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center flex-shrink-0">
+                    {isPdf ? <FileText className="w-5 h-5" aria-hidden="true" /> : <ImageIcon className="w-5 h-5" aria-hidden="true" />}
+                  </span>
+                  <div className="flex-1 min-w-[10rem]">
+                    <p className="m-0 text-sm font-medium text-gray-900 truncate">{doc.file?.fileName}</p>
+                    <p className="m-0 mt-0.5 text-xs text-gray-500">
+                      {DOC_TYPES[doc.docType]?.label || doc.docType} · {fileSize(doc.file?.sizeBytes ?? 0)} · {fmtDate(doc.uploadedAt)}
                     </p>
-                    <div className="!flex !flex-wrap !items-center !gap-2 !mt-1">
-                      <span className={`!text-xs !px-2 !py-0.5 !rounded-full !font-medium ${
-                        isDark ? '!bg-gray-600 !text-gray-300' : '!bg-indigo-50 !text-indigo-700'
-                      }`}>
-                        {docTypeLabels[doc.docType]?.label || doc.docType}
-                      </span>
-                      <span className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-                        {formatFileSize(doc.file.sizeBytes)}
-                      </span>
-                      <span className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-                        {new Date(doc.uploadedAt).toLocaleDateString('es-CL')}
-                      </span>
-                    </div>
                   </div>
-
-                  {/* Status */}
-                  <div className={`!flex !items-center !gap-1.5 !px-2.5 !py-1 !rounded-full !text-xs !font-bold ${st.bg} ${st.color}`}>
-                    <StIcon className="!w-3.5 !h-3.5" />
-                    {st.label}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="!flex !items-center !gap-1">
-                    <button
-                      onClick={() => handleDownload(doc.id)}
-                      className={`!p-2 !rounded-lg !transition-colors !border-0 ${
-                        isDark ? '!bg-gray-600 hover:!bg-gray-500 !text-gray-300' : '!bg-gray-200 hover:!bg-gray-300 !text-gray-600'
-                      }`}
-                      title="Descargar"
-                    >
-                      <Download className="!w-4 !h-4" />
+                  <Badge tone={st.tone}>{st.label}</Badge>
+                  <div className="flex items-center gap-1.5">
+                    <button type="button" onClick={() => handleDownload(doc)} disabled={busyId === doc.id} className={btn.icon} aria-label={`Descargar ${doc.file?.fileName}`} title="Descargar">
+                      <Download className="w-4 h-4" aria-hidden="true" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(doc.id)}
-                      disabled={deleting === doc.id}
-                      className={`!p-2 !rounded-lg !transition-colors !border-0 ${
-                        isDark ? '!bg-gray-600 hover:!bg-rose-900/50 !text-gray-300 hover:!text-rose-400' : '!bg-gray-200 hover:!bg-rose-100 !text-gray-600 hover:!text-rose-600'
-                      } disabled:!opacity-50`}
-                      title="Eliminar"
-                    >
-                      {deleting === doc.id ? (
-                        <Loader2 className="!w-4 !h-4 !animate-spin" />
-                      ) : (
-                        <Trash2 className="!w-4 !h-4" />
-                      )}
+                    <button type="button" onClick={() => handleDelete(doc)} disabled={busyId === doc.id} className={btn.icon} aria-label={`Eliminar ${doc.file?.fileName}`} title="Eliminar">
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
-        ) : (
-          <div className="!text-center !py-12">
-            <div className={`!w-16 !h-16 !rounded-2xl !mx-auto !mb-4 !flex !items-center !justify-center ${
-              isDark ? '!bg-gray-700' : '!bg-gray-100'
-            }`}>
-              <FileText className={`!w-8 !h-8 ${isDark ? '!text-gray-500' : '!text-gray-300'}`} />
-            </div>
-            <p className={`!font-medium ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>No hay documentos subidos</p>
-            <p className={`!text-xs !mt-1 ${isDark ? '!text-gray-600' : '!text-gray-400'}`}>
-              Sube tu primer documento usando la zona de carga superior
-            </p>
-          </div>
+          </ul>
         )}
-      </div>
-
-      {/* Info Section */}
-      <div className={`!rounded-2xl !p-5 !border ${
-        isDark ? '!bg-blue-900/20 !border-blue-800/30' : '!bg-blue-50 !border-blue-200'
-      }`}>
-        <div className="!flex !items-start !gap-3">
-          <Info className={`!w-5 !h-5 !mt-0.5 !flex-shrink-0 ${isDark ? '!text-blue-400' : '!text-blue-600'}`} />
-          <div>
-            <h4 className={`!text-sm !font-bold !mb-1 ${isDark ? '!text-blue-300' : '!text-blue-800'}`}>Documentos Requeridos</h4>
-            <ul className={`!text-xs !space-y-1 ${isDark ? '!text-blue-400/80' : '!text-blue-700'}`}>
-              <li>• <strong>RUT Empresa</strong> — Obligatorio para completar la validación</li>
-              <li>• <strong>Escritura de Constitución</strong> — Opcional, agiliza la aprobación</li>
-              <li>• <strong>Cédula del Representante Legal</strong> — Opcional (anverso y reverso)</li>
-              <li>• <strong>Poder Notarial</strong> — Opcional, si el contacto no es representante legal</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      </Card>
       {dialog}
     </div>
   );

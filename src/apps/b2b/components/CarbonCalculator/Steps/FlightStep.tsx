@@ -442,16 +442,16 @@ export const FlightStep: React.FC<FlightStepProps> = ({ register, watch, errors,
         type="button"
         onClick={onNext}
         disabled={!selectedOrigin || !selectedDestination}
-        className={`!w-full !py-4 !rounded-xl !font-semibold !text-lg !transition-all !duration-300 !border-0 !flex !items-center !justify-center !gap-2 ${
+        className={`!w-full !py-3.5 !rounded-full !font-semibold !text-base !transition-all !duration-300 !border-0 !flex !items-center !justify-center !gap-2 ${
           selectedOrigin && selectedDestination
-            ? "!bg-gradient-to-r !from-green-500 !to-emerald-600 hover:!from-green-600 hover:!to-emerald-700 !text-white !shadow-lg !shadow-green-500/30"
+            ? "!bg-brand-700 hover:!bg-brand-800 !text-white"
             : "!bg-gray-200 !text-gray-400 !cursor-not-allowed"
         }`}
         whileHover={selectedOrigin && selectedDestination ? { scale: 1.02 } : {}}
         whileTap={selectedOrigin && selectedDestination ? { scale: 0.98 } : {}}
       >
-        Continuar al Proyecto
-        <Plane className="!w-5 !h-5" />
+        Calcular emisiones
+        <Plane className="!w-5 !h-5" aria-hidden="true" />
       </motion.button>
     </motion.div>
   );

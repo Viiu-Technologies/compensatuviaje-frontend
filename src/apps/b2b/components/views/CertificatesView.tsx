@@ -1,255 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import {
-  ShieldCheck,
-  Download,
-  Loader2,
-  RefreshCw,
-  TreePine,
-  Calendar,
-  Award,
-  FileText,
-  AlertCircle
-} from 'lucide-react';
-import { useTheme } from '../../../../shared/context/ThemeContext';
+import React, { useEffect, useState } from 'react';
+import { Download, FileText, RefreshCw, ShieldCheck } from 'lucide-react';
 import { getMyCertificates, type B2BCertificate } from '../../services/certificatesService';
+import {
+  Badge,
+  btn,
+  Card,
+  cx,
+  EmptyState,
+  ErrorState,
+  fmtCLP,
+  fmtDate,
+  fmtInt,
+  fmtNum,
+  fmtTons,
+  PageHeader,
+  projectTypeLabel,
+  Skeleton,
+  StatCard,
+  type Tone,
+} from '../../ui';
 
-const CertificatesView: React.FC = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
+// Antes todas las tarjetas decían "EMITIDO", también los borradores y los revocados.
+const STATUS: Record<B2BCertificate['status'], { label: string; tone: Tone }> = {
+  issued: { label: 'Emitido', tone: 'success' },
+  draft: { label: 'En preparación', tone: 'warning' },
+  revoked: { label: 'Revocado', tone: 'danger' },
+};
+
+const CertificatesView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const [certificates, setCertificates] = useState<B2BCertificate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
-  const loadCertificates = async () => {
-    setIsLoading(true);
-    setError(null);
+  const load = async () => {
+    setLoading(true);
+    setFailed(false);
     try {
       const data = await getMyCertificates();
       setCertificates(data.certificates);
-    } catch (err: any) {
-      setError('Error al cargar los certificados');
-      console.error(err);
+    } catch {
+      setFailed(true);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadCertificates();
+    load();
   }, []);
 
-  const totalTons = certificates.reduce((acc, c) => acc + c.tonsCompensated, 0);
-  const totalCLP = certificates.reduce((acc, c) => acc + c.totalAmountClp, 0);
-
-  if (isLoading) {
-    return (
-      <div className="!flex !items-center !justify-center !py-20">
-        <div className="!text-center">
-          <Loader2 className="!w-12 !h-12 !text-green-500 !animate-spin !mx-auto !mb-4" />
-          <p className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cargando certificados...</p>
-        </div>
-      </div>
-    );
-  }
+  const valid = certificates.filter((c) => c.status !== 'revoked');
+  const tons = valid.reduce((acc, c) => acc + (Number(c.tonsCompensated) || 0), 0);
+  const invested = valid.reduce((acc, c) => acc + (Number(c.totalAmountClp) || 0), 0);
 
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-4">
-        <div>
-          <h2 className={`!text-2xl !font-bold !flex !items-center !gap-2 ${isDark ? '!text-white' : '!text-gray-900'}`}>
-            <ShieldCheck className="!text-green-500 !w-7 !h-7" />
-            Bóveda de Certificados
-          </h2>
-          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-            Certificados de compensación de huella de carbono emitidos a tu empresa
-          </p>
-        </div>
-        <button
-          onClick={loadCertificates}
-          className={`!flex !items-center !gap-2 !px-4 !py-2 !rounded-xl !text-sm !font-medium !border !border-transparent !transition-all ${
-            isDark
-              ? '!bg-gray-700 !text-gray-300 hover:!bg-gray-600 !border-gray-600'
-              : '!bg-white !text-gray-600 !border-gray-200 hover:!bg-gray-50'
-          }`}
-        >
-          <RefreshCw className="!w-4 !h-4" /> Actualizar
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Certificados"
+        subtitle="Certificados de compensación emitidos a tu empresa."
+        actions={
+          <button type="button" onClick={load} disabled={loading} className={btn.secondary}>
+            <RefreshCw className={cx('w-4 h-4', loading && 'animate-spin')} aria-hidden="true" />
+            Actualizar
+          </button>
+        }
+      />
 
-      {/* Stats */}
-      {certificates.length > 0 && (
-        <div className="!grid sm:!grid-cols-3 !gap-4">
-          {[
-            {
-              label: 'Certificados emitidos',
-              value: certificates.length,
-              icon: Award,
-              gradient: 'from-emerald-500 to-green-600'
-            },
-            {
-              label: 'Toneladas compensadas',
-              value: `${totalTons.toFixed(2)} tCO₂`,
-              icon: TreePine,
-              gradient: 'from-green-500 to-teal-600'
-            },
-            {
-              label: 'Inversión total',
-              value: `$${totalCLP.toLocaleString('es-CL')} CLP`,
-              icon: ShieldCheck,
-              gradient: 'from-teal-500 to-cyan-600'
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-72" />
+          ))}
+        </div>
+      ) : failed ? (
+        <ErrorState title="No pudimos cargar tus certificados" onRetry={load} />
+      ) : certificates.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={ShieldCheck}
+            title="Aún no tienes certificados"
+            text="Se emiten automáticamente cuando aprobamos una orden de compensación."
+            action={
+              onNavigate ? (
+                <button type="button" className={btn.primary} onClick={() => onNavigate('proyectos')}>
+                  Compensar ahora
+                </button>
+              ) : undefined
             }
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className={`!rounded-2xl !p-4 !border !shadow-sm ${
-                isDark ? '!bg-gray-800 !border-gray-700' : '!bg-white !border-gray-200'
-              }`}
-            >
-              <div className="!flex !items-center !gap-3">
-                <div className={`!w-10 !h-10 !rounded-xl !bg-gradient-to-br ${stat.gradient} !flex !items-center !justify-center`}>
-                  <stat.icon className="!w-5 !h-5 !text-white" />
-                </div>
-                <div>
-                  <p className={`!text-xl !font-bold ${isDark ? '!text-white' : '!text-gray-900'}`}>{stat.value}</p>
-                  <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{stat.label}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+          />
+        </Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard label="Certificados" icon={ShieldCheck} value={fmtInt(valid.length)} />
+            <StatCard label="Toneladas compensadas" value={fmtTons(tons)} tone="good" />
+            <StatCard label="Inversión" value={fmtCLP(invested)} />
+          </div>
 
-      {/* Error */}
-      {error && (
-        <div className="!flex !items-center !gap-2 !p-4 !rounded-xl !bg-red-50 !border !border-red-200 !text-red-700 !text-sm">
-          <AlertCircle className="!w-4 !h-4 !flex-shrink-0" />
-          {error}
-        </div>
-      )}
+          <ul className="m-0 p-0 list-none grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            {certificates.map((cert) => {
+              const st = STATUS[cert.status] ?? { label: cert.status, tone: 'neutral' as Tone };
+              return (
+                <li key={cert.id}>
+                  <Card className="p-0 h-full flex flex-col" as="article">
+                    <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center">
+                          <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+                        </span>
+                        <Badge tone={st.tone}>{st.label}</Badge>
+                      </div>
+                      <p className="m-0 mt-3 text-base font-semibold text-gray-900 tabular-nums">{cert.number}</p>
+                      <p className="m-0 text-xs text-gray-500">Certificado de compensación</p>
+                    </div>
 
-      {/* Empty state */}
-      {!isLoading && certificates.length === 0 && !error && (
-        <div className={`!text-center !py-20 !rounded-2xl !border ${
-          isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'
-        }`}>
-          <ShieldCheck className={`!w-16 !h-16 !mx-auto !mb-4 ${isDark ? '!text-gray-600' : '!text-gray-300'}`} />
-          <p className={`!text-lg !font-medium !mb-2 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-            Aún no tienes certificados
-          </p>
-          <p className={`!text-sm ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-            Los certificados se emiten automáticamente cuando se aprueba una orden de compensación.
-          </p>
-        </div>
-      )}
-
-      {/* Certificates grid */}
-      {certificates.length > 0 && (
-        <div className="!grid sm:!grid-cols-2 xl:!grid-cols-3 !gap-5">
-          {certificates.map((cert, idx) => (
-            <motion.div
-              key={cert.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.04 }}
-              className={`!rounded-2xl !border !overflow-hidden !shadow-sm !flex !flex-col ${
-                isDark ? '!bg-gray-800 !border-gray-700' : '!bg-white !border-gray-200'
-              }`}
-            >
-              {/* Card header — dark green accent */}
-              <div className="!bg-gradient-to-r !from-emerald-600 !to-green-700 !px-5 !py-4">
-                <div className="!flex !items-center !justify-between !mb-1">
-                  <ShieldCheck className="!w-6 !h-6 !text-white/90" />
-                  <span className="!text-xs !font-semibold !text-white/70 !bg-white/10 !px-2 !py-0.5 !rounded-full">
-                    EMITIDO
-                  </span>
-                </div>
-                <p className="!text-white !font-bold !text-lg !leading-tight !mt-2">
-                  {cert.number}
-                </p>
-                <p className="!text-white/70 !text-xs !mt-0.5">Certificado de Compensación</p>
-              </div>
-
-              {/* Card body */}
-              <div className="!px-5 !py-4 !flex-1 !space-y-3">
-                {/* Tons — hero value */}
-                <div className="!text-center !py-3 !rounded-xl !bg-gradient-to-br !from-green-50 !to-emerald-50 !border !border-green-100">
-                  <p className={`!text-3xl !font-bold !text-green-600`}>
-                    {cert.tonsCompensated.toFixed(2)}
-                  </p>
-                  <p className="!text-xs !text-green-700/70 !font-medium">toneladas CO₂ compensadas</p>
-                </div>
-
-                {/* Project */}
-                <div className="!flex !items-start !gap-2">
-                  <TreePine className="!w-4 !h-4 !text-green-500 !flex-shrink-0 !mt-0.5" />
-                  <div>
-                    <p className={`!text-sm !font-medium !leading-snug ${isDark ? '!text-white' : '!text-gray-800'}`}>
-                      {cert.project?.name || 'Proyecto ESG'}
-                    </p>
-                    {cert.project?.country && (
-                      <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                        {cert.project.type && `${cert.project.type} · `}{cert.project.country}
+                    <div className="px-5 py-4 flex-1 space-y-4">
+                      <p className="m-0">
+                        <span className="text-3xl font-bold text-brand-700 tabular-nums">{fmtNum(cert.tonsCompensated, 2)}</span>
+                        <span className="ml-1.5 text-sm text-gray-500">t de CO₂ compensadas</span>
                       </p>
-                    )}
-                  </div>
-                </div>
+                      <div>
+                        <p className="m-0 text-sm font-medium text-gray-900">{cert.project?.name || 'Proyecto'}</p>
+                        <p className="m-0 text-xs text-gray-500">
+                          {[cert.project?.type && projectTypeLabel(cert.project.type), cert.project?.country].filter(Boolean).join(' · ')}
+                        </p>
+                        {cert.projects?.length > 1 && (
+                          <p className="m-0 mt-1 text-xs text-gray-500">y {cert.projects.length - 1} proyecto(s) más</p>
+                        )}
+                      </div>
+                      <dl className="m-0 space-y-1.5 text-sm">
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-gray-500">Emitido</dt>
+                          <dd className="m-0 text-gray-900">{fmtDate(cert.issuedAt || cert.createdAt)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-gray-500">Inversión</dt>
+                          <dd className="m-0 font-semibold text-gray-900 tabular-nums">{fmtCLP(cert.totalAmountClp)}</dd>
+                        </div>
+                        {cert.scope && (
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-gray-500">Alcance</dt>
+                            <dd className="m-0 text-gray-900 text-right">{cert.scope}</dd>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
 
-                {/* Issue date */}
-                <div className="!flex !items-center !gap-2">
-                  <Calendar className={`!w-4 !h-4 !flex-shrink-0 ${isDark ? '!text-gray-400' : '!text-gray-400'}`} />
-                  <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                    Emitido el{' '}
-                    {cert.issuedAt
-                      ? new Date(cert.issuedAt).toLocaleDateString('es-CL', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })
-                      : new Date(cert.createdAt).toLocaleDateString('es-CL', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                  </p>
-                </div>
-
-                {/* Amount */}
-                <div className={`!flex !items-center !justify-between !pt-1 !border-t ${
-                  isDark ? '!border-gray-700' : '!border-gray-100'
-                }`}>
-                  <span className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Inversión</span>
-                  <span className={`!text-sm !font-semibold ${isDark ? '!text-white' : '!text-gray-800'}`}>
-                    ${cert.totalAmountClp.toLocaleString('es-CL')} CLP
-                  </span>
-                </div>
-              </div>
-
-              {/* Card footer — download button */}
-              <div className="!px-5 !pb-5">
-                {cert.pdfUrl ? (
-                  <a
-                    href={cert.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="!flex !items-center !justify-center !gap-2 !w-full !py-2.5 !rounded-xl !bg-gradient-to-r !from-emerald-600 !to-green-700 !text-white !text-sm !font-semibold !transition-all hover:!opacity-90 !no-underline"
-                  >
-                    <Download className="!w-4 !h-4" />
-                    Descargar Certificado PDF
-                  </a>
-                ) : (
-                  <div className={`!flex !items-center !justify-center !gap-2 !w-full !py-2.5 !rounded-xl !text-sm !font-medium ${
-                    isDark ? '!bg-gray-700 !text-gray-400' : '!bg-gray-100 !text-gray-400'
-                  }`}>
-                    <FileText className="!w-4 !h-4" />
-                    PDF generándose…
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                    <div className="px-5 pb-5">
+                      {cert.pdfUrl ? (
+                        <a href={cert.pdfUrl} target="_blank" rel="noopener noreferrer" className={cx(btn.primary, 'w-full')}>
+                          <Download className="w-4 h-4" aria-hidden="true" />
+                          Descargar PDF
+                        </a>
+                      ) : (
+                        <p className="m-0 flex items-center justify-center gap-2 rounded-full bg-gray-100 py-2.5 text-sm text-gray-500">
+                          <FileText className="w-4 h-4" aria-hidden="true" />
+                          {cert.status === 'revoked' ? 'Sin PDF' : 'Estamos generando el PDF'}
+                        </p>
+                      )}
+                    </div>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );

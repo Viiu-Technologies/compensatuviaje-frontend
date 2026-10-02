@@ -7,6 +7,8 @@ export interface Project {
   location: string;
   country: string;
   type: 'reforestation' | 'conservation' | 'renewable' | 'ocean';
+  /** Tipo tal como viene del backend (clean_water, circular_economy…): el de arriba los agrupa en cuatro. */
+  projectType?: string;
   status: 'active' | 'completed' | 'pending';
   contribution: number;
   co2Offset: number;
@@ -74,6 +76,7 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
     location: p.region || p.country || 'Sin ubicación',
     country: p.country || 'Chile',
     type: mapProjectType(p.projectType),
+    projectType: p.projectType || undefined,
     status: mapProjectStatus(p.status),
     contribution: p.pricePerTonCLP || p.pricePerTon || 0,
     co2Offset: p.capacitySold || 0,
@@ -127,6 +130,8 @@ const getProjectImage = (type: string): string => {
     conservation: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=400',
     renewable_energy: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
     ocean_cleanup: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
+    clean_water: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
+    water_security: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
     blue_carbon: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
     avoided_deforestation: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400'
   };

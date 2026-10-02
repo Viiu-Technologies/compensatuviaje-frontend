@@ -67,7 +67,7 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
 };
 
 /**
- * Obtener informaci├│n b├ísica del usuario (desde /me)
+ * Obtener información básica del usuario (desde /me)
  */
 export const getCurrentUser = async (): Promise<UserProfile | null> => {
   try {
@@ -103,7 +103,7 @@ export const updateUserProfile = async (data: UpdateProfileData): Promise<Profil
 };
 
 /**
- * Cambiar contrase├▒a del usuario
+ * Cambiar contraseña del usuario
  */
 export const changePassword = async (data: ChangePasswordData): Promise<ProfileResponse> => {
   try {
@@ -115,23 +115,23 @@ export const changePassword = async (data: ChangePasswordData): Promise<ProfileR
   } catch (error: any) {
     console.error('Error changing password:', error);
     
-    // Manejar errores espec├¡ficos
+    // Manejar errores específicos
     if (error.response?.status === 401) {
       return {
         success: false,
-        message: 'Contrase├▒a actual incorrecta'
+        message: 'Contraseña actual incorrecta'
       };
     }
     
     return {
       success: false,
-      message: error.response?.data?.message || 'Error cambiando contrase├▒a'
+      message: error.response?.data?.message || 'Error cambiando contraseña'
     };
   }
 };
 
 /**
- * Actualizar email (requiere verificaci├│n)
+ * Actualizar email (requiere verificación)
  */
 export const updateEmail = async (newEmail: string): Promise<ProfileResponse> => {
   try {
@@ -150,7 +150,7 @@ export const updateEmail = async (newEmail: string): Promise<ProfileResponse> =>
 };
 
 /**
- * Cerrar sesi├│n
+ * Cerrar sesión
  */
 export const logout = async (): Promise<void> => {
   try {

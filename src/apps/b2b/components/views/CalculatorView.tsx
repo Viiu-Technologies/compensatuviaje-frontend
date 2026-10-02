@@ -1,250 +1,137 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
-import { ChevronLeft, Leaf, Info, TreePine, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
-import { useTheme } from '../../../../shared/context/ThemeContext';
-
-import { ProgressBar } from '../CarbonCalculator/ProgressBar';
+import { ArrowRight, Leaf, Plane, RotateCcw } from 'lucide-react';
 import { FlightStep } from '../CarbonCalculator/Steps/FlightStep';
-import { ProjectStep } from '../CarbonCalculator/Steps/ProjectStep';
-import { PaymentStep } from '../CarbonCalculator/Steps/PaymentStep';
-import type { FormData, StepId } from '../CarbonCalculator/types';
-import calculatorService, { CalculationResponse, CabinClass } from '../../services/calculatorService';
+import type { FormData } from '../CarbonCalculator/types';
+import calculatorService, { CABIN_LABELS, type CabinClass, type CalculationResponse } from '../../services/calculatorService';
+import { btn, Card, CardHeader, cx, fmtCLP, fmtInt, fmtKgAuto, fmtNum, PageHeader } from '../../ui';
 
-const CalculatorView: React.FC = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-  const [currentStep, setCurrentStep] = useState<StepId>('flight');
-  const [completedSteps, setCompletedSteps] = useState<StepId[]>([]);
-  const [isProcessComplete, setIsProcessComplete] = useState(false);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [calculationResult, setCalculationResult] = useState<CalculationResponse | null>(null);
-  const [calculationError, setCalculationError] = useState<string | null>(null);
+/**
+ * Calculadora de CO₂ de un vuelo.
+ *
+ * Antes tenía tres pasos y el último era un pago simulado: esperaba dos
+ * segundos, mostraba "pagado" y un número de certificado al azar, sin cobrar
+ * ni crear nada (y si no había cálculo, usaba $12.500 y 400 kg inventados).
+ * Ahora calcula con el backend y la compensación se hace con una orden real
+ * desde Proyectos.
+ */
+const CalculatorView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
+  const [calculating, setCalculating] = useState(false);
+  const [result, setResult] = useState<CalculationResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const { register, setValue, watch, trigger, formState: { errors } } = useForm<FormData>({
-    defaultValues: {
-      origin: '',
-      destination: '',
-      aircraftType: 'economy',
-      passengers: 1,
-      roundTrip: false,
-      projectType: '',
-      email: ''
-    }
+  const { register, setValue, watch, reset, formState: { errors } } = useForm<FormData>({
+    defaultValues: { origin: '', destination: '', aircraftType: 'economy', passengers: 1, roundTrip: false, projectType: '', email: '' },
   });
 
-  const formData = watch();
-
-  const steps: StepId[] = ['flight', 'projects', 'payment'];
-
-  const nextStep = async () => {
-    setCalculationError(null);
-
-    if (currentStep === 'flight') {
-      // Validar campos de vuelo
-      if (!formData.origin || !formData.destination) {
-        setCalculationError('Por favor selecciona origen y destino');
-        return;
-      }
-
-      // Calcular emisiones con la API
-      setIsCalculating(true);
-      try {
-        const result = await calculatorService.calculateEmissions({
-          origin: formData.origin,
-          destination: formData.destination,
-          cabinCode: formData.aircraftType as CabinClass,
-          passengers: formData.passengers || 1,
-          roundTrip: formData.roundTrip || false
-        });
-
-        if (result.status === 'success') {
-          setCalculationResult(result);
-          setCompletedSteps(prev => [...prev, currentStep]);
-          setCurrentStep('projects');
-        } else {
-          setCalculationError(result.message || 'Error al calcular emisiones');
-        }
-      } catch (error: any) {
-        setCalculationError(error.message || 'Error de conexión con el servidor');
-      } finally {
-        setIsCalculating(false);
-      }
-      return;
-    }
-
-    if (currentStep === 'projects') {
-      if (!formData.projectType) {
-        setCalculationError('Por favor selecciona un tipo de proyecto');
-        return;
-      }
-      setCompletedSteps(prev => [...prev, currentStep]);
-      setCurrentStep('payment');
-      return;
+  const calculate = async () => {
+    const data = watch();
+    setError(null);
+    if (!data.origin || !data.destination) return setError('Elige el origen y el destino del vuelo.');
+    setCalculating(true);
+    try {
+      const r = await calculatorService.calculateEmissions({
+        origin: data.origin,
+        destination: data.destination,
+        cabinCode: data.aircraftType as CabinClass,
+        passengers: data.passengers || 1,
+        roundTrip: data.roundTrip || false,
+      });
+      if (r.status !== 'success') throw new Error(r.message || 'No pudimos calcular las emisiones.');
+      setResult(r);
+    } catch (err: any) {
+      setError(err?.message || 'No pudimos conectar con el servidor.');
+    } finally {
+      setCalculating(false);
     }
   };
 
-  const prevStep = () => {
-    const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex > 0) {
-      setCurrentStep(steps[currentIndex - 1]);
-    }
-    setCalculationError(null);
+  const startOver = () => {
+    reset();
+    setResult(null);
+    setError(null);
   };
 
-  const handlePaymentComplete = () => {
-    setIsProcessComplete(true);
-    setCompletedSteps(['flight', 'projects', 'payment']);
-  };
-
-  const handleStartOver = () => {
-    setCurrentStep('flight');
-    setCompletedSteps([]);
-    setIsProcessComplete(false);
-    setCalculationResult(null);
-    setCalculationError(null);
-    setValue('origin', '');
-    setValue('destination', '');
-    setValue('aircraftType', 'economy');
-    setValue('passengers', 1);
-    setValue('roundTrip', false);
-    setValue('projectType', '');
-    setValue('email', '');
-  };
+  const route = result?.meta?.route;
+  const from = route?.origin ? `${route.origin.city} (${route.origin.code})` : watch('origin');
+  const to = route?.destination ? `${route.destination.city} (${route.destination.code})` : watch('destination');
 
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !flex-col lg:!flex-row !items-start lg:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className={`!text-2xl !font-bold !flex !items-center !gap-2 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>
-            <Leaf className="!w-7 !h-7 !text-green-500" />
-            Calculadora de Carbono
-          </h1>
-          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>Compensa las emisiones de tu vuelo en 3 simples pasos</p>
-        </div>
-        {currentStep !== 'flight' && !isProcessComplete && (
-          <button
-            onClick={prevStep}
-            className={`!flex !items-center !gap-2 !px-4 !py-2 !transition-colors !border-0 !rounded-xl ${isDark ? '!text-gray-300 hover:!text-white !bg-gray-700 hover:!bg-gray-600' : '!text-gray-600 hover:!text-gray-800 !bg-gray-100 hover:!bg-gray-200'}`}
-          >
-            <ChevronLeft className="!w-4 !h-4" />
-            Paso anterior
-          </button>
-        )}
-      </div>
+    <div className="space-y-6 max-w-4xl">
+      <PageHeader title="Calculadora de CO₂" subtitle="Calcula las emisiones de un vuelo con factores DEFRA / GHG Protocol." />
 
-      {/* Main Calculator Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`!rounded-2xl !border !shadow-xl !overflow-hidden ${isDark ? '!bg-gray-800/50 !border-gray-700' : '!bg-white !border-gray-200'}`}
-      >
-        {/* Background Gradient */}
-        <div className={`!relative ${isDark ? '!bg-gradient-to-br !from-gray-800 !via-gray-800 !to-gray-900' : '!bg-gradient-to-br !from-emerald-50 !via-white !to-sky-50'}`}>
-          <div className="!absolute !inset-0 !opacity-30">
-            <div className="!absolute !top-10 !left-10 !w-64 !h-64 !bg-green-200 !rounded-full !blur-3xl" />
-            <div className="!absolute !bottom-10 !right-10 !w-48 !h-48 !bg-sky-200 !rounded-full !blur-3xl" />
+      {!result ? (
+        <Card className="p-6 sm:p-8">
+          <div aria-busy={calculating}>
+            <FlightStep register={register} setValue={setValue} watch={watch} errors={errors} onNext={calculate} />
           </div>
+          {calculating && <p className="m-0 mt-4 text-center text-sm text-gray-500">Calculando…</p>}
+          {error && (
+            <p role="alert" className="m-0 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              {error}
+            </p>
+          )}
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader
+            title="Emisiones del vuelo"
+            icon={Plane}
+            subtitle={
+              <>
+                {from} → {to} · {CABIN_LABELS[(watch('aircraftType') as CabinClass) || 'economy'] ?? 'Económica'} · {fmtInt(result.emissions.passengers)}{' '}
+                {result.emissions.passengers === 1 ? 'pasajero' : 'pasajeros'}
+                {result.meta?.tripType === 'round_trip' ? ' · ida y vuelta' : ' · solo ida'}
+              </>
+            }
+          />
+          <dl className="m-0 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-gray-200 p-4">
+              <dt className="text-sm text-gray-500">CO₂ emitido</dt>
+              <dd className="m-0 mt-1 text-3xl font-bold text-gray-900 tabular-nums">{fmtKgAuto(result.emissions.kgCO2e)}</dd>
+            </div>
+            <div className="rounded-xl border border-gray-200 p-4">
+              <dt className="text-sm text-gray-500">Distancia</dt>
+              <dd className="m-0 mt-1 text-3xl font-bold text-gray-900 tabular-nums">
+                {fmtInt(result.meta?.distanceKmTotal)} <span className="text-base font-medium text-gray-500">km</span>
+              </dd>
+            </div>
+            <div className="rounded-xl border border-brand-100 bg-brand-50 p-4">
+              <dt className="text-sm text-brand-800">Compensarlo cuesta aprox.</dt>
+              <dd className="m-0 mt-1 text-3xl font-bold text-brand-800 tabular-nums">{fmtCLP(result.pricing?.totalPriceCLP)}</dd>
+              {result.pricing?.pricePerTonCLP > 0 && <p className="m-0 mt-1 text-xs text-brand-800">{fmtCLP(result.pricing.pricePerTonCLP)} por tonelada</p>}
+            </div>
+          </dl>
 
-          <div className="!relative !p-6 sm:!p-8">
-            {/* Progress Bar */}
-            {!isProcessComplete && (
-              <ProgressBar currentStep={currentStep} completedSteps={completedSteps} />
+          {result.equivalencies?.trees > 0 && (
+            <p className="m-0 mt-4 flex items-center gap-2 text-sm text-gray-600">
+              <Leaf className="w-4 h-4 text-brand-700" aria-hidden="true" />
+              Equivale a lo que capturan unos {fmtInt(result.equivalencies.trees)} árboles en un año.
+            </p>
+          )}
+
+          <p className="m-0 mt-5 text-sm text-gray-600">
+            El precio final depende del proyecto que elijas. Para compensar estas {fmtNum(result.emissions.tonCO2e, 2)} t, genera una orden en Proyectos.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {onNavigate && (
+              <button type="button" className={btn.primary} onClick={() => onNavigate('proyectos')}>
+                Elegir proyecto y compensar
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </button>
             )}
-
-            {/* Steps Content */}
-            <AnimatePresence mode="wait">
-              {currentStep === 'flight' && (
-                <motion.div
-                  key="flight"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <FlightStep
-                    register={register}
-                    setValue={setValue}
-                    watch={watch}
-                    errors={errors}
-                    onNext={nextStep}
-                  />
-                </motion.div>
-              )}
-
-              {currentStep === 'projects' && (
-                <motion.div
-                  key="projects"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ProjectStep
-                    formData={formData}
-                    setValue={setValue}
-                    onNext={nextStep}
-                    calculationResult={calculationResult}
-                  />
-                </motion.div>
-              )}
-
-              {currentStep === 'payment' && (
-                <motion.div
-                  key="payment"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <PaymentStep
-                    formData={formData}
-                    onComplete={handlePaymentComplete}
-                    calculationResult={calculationResult}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Start Over Button (when complete) */}
-            {isProcessComplete && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="!mt-8 !text-center"
-              >
-                <button
-                  onClick={handleStartOver}
-                  className={`!px-6 !py-3 !rounded-xl !font-medium !transition-colors !border-0 ${isDark ? '!bg-gray-700 hover:!bg-gray-600 !text-gray-300' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-700'}`}
-                >
-                  Calcular otra compensación
-                </button>
-              </motion.div>
+            <button type="button" className={btn.secondary} onClick={startOver}>
+              <RotateCcw className="w-4 h-4" aria-hidden="true" />
+              Calcular otro vuelo
+            </button>
+            {onNavigate && (
+              <button type="button" className={cx(btn.ghost)} onClick={() => onNavigate('manifiestos')}>
+                ¿Muchos vuelos? Sube un manifiesto
+              </button>
             )}
           </div>
-        </div>
-      </motion.div>
-
-      {/* Info Section */}
-      <div className="!grid sm:!grid-cols-2 lg:!grid-cols-3 !gap-4">
-        <div className={`!rounded-xl !p-4 !border ${isDark ? '!bg-blue-900/20 !border-blue-700/50' : '!bg-blue-50 !border-blue-200'}`}>
-          <Info className="!w-6 !h-6 !text-blue-600 !mb-2" />
-          <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Metodología certificada</h4>
-          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Usamos factores de emisión de DEFRA y GHG Protocol</p>
-        </div>
-        <div className={`!rounded-xl !p-4 !border ${isDark ? '!bg-green-900/20 !border-green-700/50' : '!bg-green-50 !border-green-200'}`}>
-          <TreePine className="!w-6 !h-6 !text-green-600 !mb-2" />
-          <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Proyectos verificados</h4>
-          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Compensaciones en proyectos verificados por IA y revisión humana</p>
-        </div>
-        <div className={`!rounded-xl !p-4 !border sm:!col-span-2 lg:!col-span-1 ${isDark ? '!bg-purple-900/20 !border-purple-700/50' : '!bg-purple-50 !border-purple-200'}`}>
-          <ShieldCheck className="!w-6 !h-6 !text-purple-600 !mb-2" />
-          <h4 className={`!font-semibold !mb-1 ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Pago 100% seguro</h4>
-          <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>Transacciones protegidas con encriptación SSL</p>
-        </div>
-      </div>
+        </Card>
+      )}
     </div>
   );
 };

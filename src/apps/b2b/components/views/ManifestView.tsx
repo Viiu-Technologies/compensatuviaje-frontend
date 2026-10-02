@@ -1,468 +1,353 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { CheckCircle2, Download, FileSpreadsheet, Leaf, RefreshCw, UploadCloud, XCircle } from 'lucide-react';
+import { listBatches, uploadManifest, type BatchStatus, type UploadBatch, type UploadBatchResult } from '../../services/batchService';
 import {
-  UploadCloud,
-  FileSpreadsheet,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  RefreshCw,
-  AlertTriangle,
-  FileText,
-  TrendingUp,
-  Plane,
-  Users,
-  Leaf,
-  ChevronDown,
-  ChevronUp,
-  Download,
-} from 'lucide-react';
-import { useTheme } from '../../../../shared/context/ThemeContext';
-import {
-  uploadManifest,
-  listBatches,
-  getBatchDetail,
-  type UploadBatch,
-  type UploadBatchResult,
-  type BatchStatus,
-} from '../../services/batchService';
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  cx,
+  EmptyState,
+  ErrorState,
+  fmtDate,
+  fmtInt,
+  fmtNum,
+  fmtTons,
+  PageHeader,
+  Skeleton,
+  StatCard,
+  type Tone,
+} from '../../ui';
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<BatchStatus, { label: string; color: string; icon: React.ElementType }> = {
-  uploaded:   { label: 'Subido',      color: 'bg-blue-100 text-blue-700',    icon: UploadCloud },
-  validating: { label: 'Validando',   color: 'bg-amber-100 text-amber-700',  icon: Loader2 },
-  processing: { label: 'Procesando',  color: 'bg-purple-100 text-purple-700',icon: Loader2 },
-  done:       { label: 'Completado',  color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 },
-  failed:     { label: 'Fallido',     color: 'bg-red-100 text-red-700',      icon: XCircle },
+const STATUS: Record<BatchStatus, { label: string; tone: Tone }> = {
+  uploaded: { label: 'Subido', tone: 'info' },
+  validating: { label: 'Validando', tone: 'info' },
+  processing: { label: 'Procesando', tone: 'info' },
+  done: { label: 'Procesado', tone: 'success' },
+  failed: { label: 'Con errores', tone: 'danger' },
 };
 
-function StatusBadge({ status }: { status: BatchStatus }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.failed;
-  const Icon = cfg.icon;
-  return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.color}`}>
-      <Icon className={`w-3 h-3 ${['validating', 'processing'].includes(status) ? 'animate-spin' : ''}`} />
-      {cfg.label}
-    </span>
-  );
-}
+const fileSize = (bytes: number) =>
+  bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${fmtNum(bytes / (1024 * 1024), 1)} MB`;
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-// ─── CSV template download ────────────────────────────────────────────────────
 const CSV_TEMPLATE = `flight_number,flight_date,origin,destination,cabin,passengers,round_trip
-LA500,2025-01-15,SCL,MIA,economy,150,false
-LA501,2025-01-16,SCL,JFK,business,12,true
-LA800,2025-01-20,SCL,LIM,economy,180,false`;
+LA500,2026-01-15,SCL,MIA,economy,150,false
+LA501,2026-01-16,SCL,JFK,business,12,true
+LA800,2026-01-20,SCL,LIM,economy,180,false`;
 
-function downloadTemplate() {
-  const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
+const downloadTemplate = () => {
+  const url = URL.createObjectURL(new Blob([CSV_TEMPLATE], { type: 'text/csv' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = 'manifiesto_ejemplo.csv';
   a.click();
   URL.revokeObjectURL(url);
-}
+};
 
-// ─── Component ────────────────────────────────────────────────────────────────
-const ManifestView: React.FC = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-
+const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const [batches, setBatches] = useState<UploadBatch[]>([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-
-  // Upload state
-  const [isDragging, setIsDragging] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [historyFailed, setHistoryFailed] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadResult, setUploadResult] = useState<UploadBatchResult | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [result, setResult] = useState<UploadBatchResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [showErrors, setShowErrors] = useState(false);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const cardBase = isDark
-    ? 'bg-gray-800 border-gray-700 text-gray-100'
-    : 'bg-white border-gray-200 text-gray-900';
-
-  // Load history
   const loadHistory = useCallback(async () => {
-    setIsLoadingHistory(true);
-    setHistoryError(null);
+    setLoadingHistory(true);
+    setHistoryFailed(false);
     try {
-      const { batches: data } = await listBatches();
-      setBatches(data);
+      const res = await listBatches();
+      setBatches(res?.batches ?? []);
     } catch {
-      setHistoryError('No se pudo cargar el historial');
+      setHistoryFailed(true);
     } finally {
-      setIsLoadingHistory(false);
+      setLoadingHistory(false);
     }
   }, []);
 
-  useEffect(() => { loadHistory(); }, [loadHistory]);
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
-  // Drag & Drop handlers
-  const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
-  const onDragLeave = () => setIsDragging(false);
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileSelect(file);
-  };
-
-  const handleFileSelect = (file: File) => {
+  const selectFile = (file: File) => {
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (!['csv', 'xlsx', 'xls'].includes(ext ?? '')) {
-      setUploadError('Solo se permiten archivos CSV o Excel (.csv, .xlsx, .xls)');
+      setUploadError('Solo se aceptan archivos CSV o Excel (.csv, .xlsx, .xls).');
       return;
     }
     setSelectedFile(file);
-    setUploadResult(null);
+    setResult(null);
     setUploadError(null);
-    setShowErrors(false);
   };
 
-  const handleUpload = async () => {
+  const upload = async () => {
     if (!selectedFile) return;
-    setIsUploading(true);
-    setUploadProgress(0);
+    setUploading(true);
+    setProgress(0);
     setUploadError(null);
-    setUploadResult(null);
-
+    setResult(null);
     try {
-      const result = await uploadManifest(selectedFile, setUploadProgress);
-      setUploadResult(result);
+      const r = await uploadManifest(selectedFile, setProgress);
+      setResult(r);
       setSelectedFile(null);
       await loadHistory();
     } catch (err: any) {
-      setUploadError(err?.message ?? 'Error al procesar el archivo');
+      setUploadError(err?.response?.data?.message || err?.message || 'No pudimos procesar el archivo.');
     } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
   };
 
-  const totalTonsAll = batches
-    .filter(b => b.status === 'done')
-    .reduce((acc, b) => acc + (b.metrics?.totalTonsCO2e ?? 0), 0);
+  const doneBatches = batches.filter((b) => b.status === 'done');
+  const totalTons = doneBatches.reduce((acc, b) => acc + (b.metrics?.totalTonsCO2e ?? 0), 0);
+  const totalRows = doneBatches.reduce((acc, b) => acc + (b.metrics?.rowsSuccess ?? b.rowsCount ?? 0), 0);
 
   return (
-    <div className="!p-6 !max-w-5xl !mx-auto !space-y-8">
+    <div className="space-y-6">
+      <PageHeader
+        title="Manifiestos de vuelos"
+        subtitle="Sube un CSV o Excel con los vuelos de la empresa y calculamos sus emisiones mes a mes."
+        actions={
+          <button type="button" onClick={downloadTemplate} className={btn.secondary}>
+            <Download className="w-4 h-4" aria-hidden="true" />
+            Plantilla CSV
+          </button>
+        }
+      />
 
-      {/* Header */}
-      <div>
-        <h2 className={`!text-2xl !font-bold ${isDark ? '!text-white' : '!text-gray-900'}`}>
-          Subida de Manifiestos
-        </h2>
-        <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-          Sube un archivo CSV o Excel con tus vuelos corporativos para calcular las emisiones y generar un resumen mensual.
-        </p>
-      </div>
-
-      {/* Summary stat */}
       {batches.length > 0 && (
-        <div className={`!rounded-2xl !border !p-4 !flex !items-center !gap-4 ${cardBase}`}>
-          <div className="!p-3 !rounded-xl !bg-emerald-100">
-            <Leaf className="!w-6 !h-6 !text-emerald-600" />
-          </div>
-          <div>
-            <p className={`!text-xs !font-medium !uppercase !tracking-wide ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-              Total CO₂e registrado (todos los manifiestos)
-            </p>
-            <p className={`!text-2xl !font-black ${isDark ? '!text-white' : '!text-gray-900'}`}>
-              {totalTonsAll.toLocaleString('es-CL', { maximumFractionDigits: 2 })}
-              <span className="!text-base !font-normal !ml-1 !text-emerald-600">ton CO₂e</span>
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard label="Emisiones registradas" icon={Leaf} value={fmtTons(totalTons)} hint="En manifiestos procesados" />
+          <StatCard label="Vuelos procesados" value={fmtInt(totalRows)} />
+          <StatCard label="Manifiestos" value={fmtInt(batches.length)} hint={`${fmtInt(doneBatches.length)} procesados`} />
         </div>
       )}
 
-      {/* ─── Dropzone ─── */}
-      <div className={`!rounded-2xl !border-2 !transition-all !duration-200 ${cardBase} ${
-        isDragging
-          ? '!border-emerald-400 !bg-emerald-50 dark:!bg-emerald-900/20'
-          : '!border-dashed !border-gray-300 dark:!border-gray-600'
-      }`}>
+      <Card>
+        <CardHeader title="Subir manifiesto" subtitle="CSV, XLSX o XLS · máximo 10 MB · hasta 5.000 filas." />
         <div
-          className="!p-8 !flex !flex-col !items-center !gap-4 !cursor-pointer"
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          onClick={() => !selectedFile && !isUploading && fileInputRef.current?.click()}
-        >
-          <div className={`!p-5 !rounded-2xl !transition-colors ${
-            isDragging ? '!bg-emerald-100' : isDark ? '!bg-gray-700' : '!bg-gray-100'
-          }`}>
-            <UploadCloud className={`!w-10 !h-10 ${isDragging ? '!text-emerald-500' : isDark ? '!text-gray-300' : '!text-gray-400'}`} />
-          </div>
-
-          {selectedFile ? (
-            <div className="!text-center">
-              <div className="!flex !items-center !gap-2 !justify-center">
-                <FileSpreadsheet className="!w-5 !h-5 !text-emerald-500" />
-                <span className={`!font-semibold ${isDark ? '!text-white' : '!text-gray-900'}`}>{selectedFile.name}</span>
-              </div>
-              <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                {formatBytes(selectedFile.size)}
-              </p>
-            </div>
-          ) : (
-            <div className="!text-center">
-              <p className={`!font-semibold !text-lg ${isDark ? '!text-white' : '!text-gray-900'}`}>
-                Arrastra tu archivo aquí
-              </p>
-              <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                o <span className="!text-emerald-500 !underline !cursor-pointer">selecciona desde tu equipo</span>
-              </p>
-              <p className={`!text-xs !mt-2 ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-                CSV · XLSX · XLS — máximo 10 MB · hasta 5,000 filas
-              </p>
-            </div>
+          role="button"
+          tabIndex={selectedFile || uploading ? -1 : 0}
+          aria-label="Elegir archivo de vuelos"
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            const f = e.dataTransfer.files[0];
+            if (f) selectFile(f);
+          }}
+          onClick={() => !selectedFile && !uploading && fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (!selectedFile && !uploading && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          className={cx(
+            'rounded-xl border-2 border-dashed p-8 text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700',
+            !selectedFile && !uploading && 'cursor-pointer hover:border-brand-600 hover:bg-gray-50',
+            dragging ? 'border-brand-600 bg-brand-50' : 'border-gray-300',
           )}
-
+        >
           <input
             ref={fileInputRef}
             type="file"
             accept=".csv,.xlsx,.xls"
-            className="!hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = ''; }}
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) selectFile(f);
+              e.target.value = '';
+            }}
           />
+          {selectedFile ? (
+            <p className="m-0 inline-flex items-center gap-2 text-sm">
+              <FileSpreadsheet className="w-5 h-5 text-brand-700" aria-hidden="true" />
+              <span className="font-semibold text-gray-900">{selectedFile.name}</span>
+              <span className="text-gray-500">· {fileSize(selectedFile.size)}</span>
+            </p>
+          ) : (
+            <>
+              <UploadCloud className="mx-auto w-8 h-8 text-gray-400" aria-hidden="true" />
+              <p className="m-0 mt-2 text-sm font-medium text-gray-700">Arrastra el archivo aquí o haz clic para elegirlo</p>
+            </>
+          )}
         </div>
 
-        {/* Progress */}
-        {isUploading && (
-          <div className="!px-8 !pb-6">
-            <div className={`!w-full !h-2 !rounded-full ${isDark ? '!bg-gray-700' : '!bg-gray-200'}`}>
-              <div
-                className="!h-2 !rounded-full !bg-gradient-to-r !from-emerald-400 !to-green-500 !transition-all !duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
+        {uploading && (
+          <div className="mt-4">
+            <div className="h-2 rounded-full bg-gray-100 overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Subida del manifiesto">
+              <div className="h-full rounded-full bg-brand-600 transition-[width]" style={{ width: `${progress}%` }} />
             </div>
-            <p className={`!text-xs !mt-1 !text-center ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-              {uploadProgress < 100 ? `Subiendo... ${uploadProgress}%` : 'Procesando filas...'}
-            </p>
+            <p className="m-0 mt-1.5 text-xs text-gray-500 text-center">{progress < 100 ? `Subiendo… ${progress} %` : 'Procesando filas…'}</p>
           </div>
         )}
 
-        {/* Actions */}
-        {selectedFile && !isUploading && (
-          <div className="!px-8 !pb-6 !flex !gap-3">
-            <button
-              onClick={handleUpload}
-              className="!flex-1 !flex !items-center !justify-center !gap-2 !bg-gradient-to-r !from-emerald-500 !to-green-600 !text-white !font-semibold !py-3 !rounded-xl !transition-all hover:!opacity-90"
-            >
-              <UploadCloud className="!w-4 !h-4" />
-              Procesar Manifiesto
-            </button>
-            <button
-              onClick={() => { setSelectedFile(null); setUploadError(null); }}
-              className={`!px-4 !py-3 !rounded-xl !border !font-medium !transition-all ${
-                isDark
-                  ? '!border-gray-600 !text-gray-300 hover:!bg-gray-700'
-                  : '!border-gray-300 !text-gray-600 hover:!bg-gray-50'
-              }`}
-            >
+        {selectedFile && !uploading && (
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <button type="button" className={btn.secondary} onClick={() => setSelectedFile(null)}>
               Cancelar
             </button>
+            <button type="button" className={btn.primary} onClick={upload}>
+              <UploadCloud className="w-4 h-4" aria-hidden="true" />
+              Procesar manifiesto
+            </button>
           </div>
         )}
-      </div>
 
-      {/* Template download */}
-      <button
-        onClick={downloadTemplate}
-        className={`!flex !items-center !gap-2 !text-sm !font-medium !transition-colors ${
-          isDark ? '!text-emerald-400 hover:!text-emerald-300' : '!text-emerald-600 hover:!text-emerald-700'
-        }`}
-      >
-        <Download className="!w-4 !h-4" />
-        Descargar plantilla CSV de ejemplo
-      </button>
+        {uploadError && (
+          <p role="alert" className="m-0 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            {uploadError}
+          </p>
+        )}
+      </Card>
 
-      {/* Error alert */}
-      {uploadError && (
-        <div className="!flex !items-start !gap-3 !p-4 !rounded-xl !bg-red-50 !border !border-red-200 !text-red-700">
-          <AlertTriangle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
-          <p className="!text-sm">{uploadError}</p>
-        </div>
-      )}
-
-      {/* Upload result */}
-      {uploadResult && (
-        <div className={`!rounded-2xl !border !p-6 !space-y-4 ${
-          uploadResult.status === 'done'
-            ? isDark ? '!border-emerald-700 !bg-emerald-900/20' : '!border-emerald-200 !bg-emerald-50'
-            : isDark ? '!border-red-700 !bg-red-900/20' : '!border-red-200 !bg-red-50'
-        }`}>
-          <div className="!flex !items-center !gap-3">
-            {uploadResult.status === 'done' ? (
-              <CheckCircle2 className="!w-6 !h-6 !text-emerald-500" />
-            ) : (
-              <XCircle className="!w-6 !h-6 !text-red-500" />
-            )}
-            <h3 className={`!font-bold !text-lg ${isDark ? '!text-white' : '!text-gray-900'}`}>
-              {uploadResult.status === 'done' ? 'Manifiesto procesado' : 'Procesamiento con errores'}
-            </h3>
-          </div>
-
-          {/* Stats grid */}
-          <div className="!grid !grid-cols-2 sm:!grid-cols-4 !gap-3">
+      {result && (
+        <Card className={result.status === 'done' ? 'p-6 border-brand-100' : 'p-6 border-rose-200'}>
+          <CardHeader
+            title={result.status === 'done' ? 'Manifiesto procesado' : 'El manifiesto tiene errores'}
+            subtitle={result.filename}
+            icon={result.status === 'done' ? CheckCircle2 : XCircle}
+            action={
+              result.status === 'done' && onNavigate ? (
+                <button type="button" className={cx(btn.primary, btn.sm)} onClick={() => onNavigate('proyectos')}>
+                  Compensar estas emisiones
+                </button>
+              ) : undefined
+            }
+          />
+          <dl className="m-0 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { icon: FileText,   label: 'Filas totales',    value: uploadResult.rowsTotal },
-              { icon: CheckCircle2, label: 'Procesadas',     value: uploadResult.rowsProcessed, color: 'text-emerald-600' },
-              { icon: XCircle,    label: 'Fallidas',         value: uploadResult.rowsFailed,     color: 'text-red-500' },
-              { icon: Leaf,       label: 'Total ton CO₂e',  value: uploadResult.totalTonsCO2e.toFixed(2), color: 'text-emerald-600' },
-            ].map((s, i) => (
-              <div key={i} className={`!rounded-xl !p-3 !text-center ${isDark ? '!bg-gray-800' : '!bg-white'} !border ${isDark ? '!border-gray-700' : '!border-gray-200'}`}>
-                <s.icon className={`!w-4 !h-4 !mx-auto !mb-1 ${s.color ?? (isDark ? '!text-gray-300' : '!text-gray-500')}`} />
-                <p className={`!text-lg !font-black ${s.color ?? (isDark ? '!text-white' : '!text-gray-900')}`}>{s.value}</p>
-                <p className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{s.label}</p>
+              ['Filas', fmtInt(result.rowsTotal)],
+              ['Procesadas', fmtInt(result.rowsProcessed)],
+              ['Con error', fmtInt(result.rowsFailed)],
+              ['Emisiones', fmtTons(result.totalTonsCO2e)],
+            ].map(([l, v]) => (
+              <div key={l} className="rounded-xl border border-gray-200 p-3">
+                <dt className="text-xs text-gray-500">{l}</dt>
+                <dd className="m-0 mt-1 text-lg font-semibold text-gray-900 tabular-nums">{v}</dd>
               </div>
             ))}
-          </div>
+          </dl>
 
-          {/* Monthly breakdown */}
-          {uploadResult.monthlySummaries.length > 0 && (
-            <div>
-              <p className={`!text-sm !font-semibold !mb-2 ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>
-                Resumen mensual
-              </p>
-              <div className="!overflow-x-auto">
-                <table className={`!w-full !text-sm !rounded-xl !overflow-hidden ${isDark ? '!bg-gray-800' : '!bg-white'} !border ${isDark ? '!border-gray-700' : '!border-gray-200'}`}>
-                  <thead className={isDark ? '!bg-gray-700' : '!bg-gray-50'}>
-                    <tr>
-                      {['Período', 'Vuelos', 'Pasajeros', 'Km totales', 'ton CO₂e', 'Cobertura'].map(h => (
-                        <th key={h} className={`!px-3 !py-2 !text-left !text-xs !font-semibold !uppercase !tracking-wide ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {uploadResult.monthlySummaries.map((s, i) => (
-                      <tr key={i} className={`!border-t ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
-                        <td className={`!px-3 !py-2 !font-medium ${isDark ? '!text-white' : '!text-gray-900'}`}>
-                          {new Date(s.periodMonth).toLocaleDateString('es-CL', { year: 'numeric', month: 'long' })}
-                        </td>
-                        <td className="!px-3 !py-2">{s.flightsCount.toLocaleString()}</td>
-                        <td className="!px-3 !py-2">{s.passengers.toLocaleString()}</td>
-                        <td className="!px-3 !py-2">{s.distanceKm.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>
-                        <td className="!px-3 !py-2 !font-semibold !text-emerald-600">{s.emissionsTco2.toLocaleString('es-CL', { maximumFractionDigits: 2 })}</td>
-                        <td className="!px-3 !py-2">{s.coveragePct}%</td>
-                      </tr>
+          {result.monthlySummaries?.length > 0 && (
+            <div className="mt-5 overflow-x-auto">
+              <table className="w-full text-sm">
+                <caption className="text-left text-sm font-semibold text-gray-900 pb-2">Resumen mensual</caption>
+                <thead>
+                  <tr className="text-xs text-gray-500">
+                    {['Mes', 'Vuelos', 'Pasajeros', 'Km', 'Emisiones', 'Cobertura'].map((h) => (
+                      <th key={h} scope="col" className="px-3 py-2 text-left font-medium border-b border-gray-200 whitespace-nowrap">
+                        {h}
+                      </th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.monthlySummaries.map((s, i) => (
+                    <tr key={i} className="border-b border-gray-100 last:border-0 tabular-nums">
+                      <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">
+                        {new Date(s.periodMonth).toLocaleDateString('es-CL', { year: 'numeric', month: 'long' })}
+                      </td>
+                      <td className="px-3 py-2">{fmtInt(s.flightsCount)}</td>
+                      <td className="px-3 py-2">{fmtInt(s.passengers)}</td>
+                      <td className="px-3 py-2">{fmtInt(s.distanceKm)}</td>
+                      <td className="px-3 py-2 font-semibold">{fmtTons(s.emissionsTco2)}</td>
+                      <td className="px-3 py-2">{fmtInt(s.coveragePct)} %</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* Errors collapsible */}
-          {uploadResult.errors.length > 0 && (
-            <div>
-              <button
-                onClick={() => setShowErrors(v => !v)}
-                className={`!flex !items-center !gap-2 !text-sm !font-medium !text-red-600 hover:!text-red-700`}
-              >
-                {showErrors ? <ChevronUp className="!w-4 !h-4" /> : <ChevronDown className="!w-4 !h-4" />}
-                {uploadResult.errors.length} error{uploadResult.errors.length !== 1 ? 'es' : ''} de procesamiento
-              </button>
-              {showErrors && (
-                <ul className="!mt-2 !space-y-1 !max-h-40 !overflow-y-auto">
-                  {uploadResult.errors.map((err, i) => (
-                    <li key={i} className="!text-xs !text-red-600 !bg-red-50 !border !border-red-100 !rounded-lg !px-3 !py-1.5">{err}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+          {result.errors?.length > 0 && (
+            <details className="mt-5">
+              <summary className="cursor-pointer text-sm font-medium text-rose-700">
+                {fmtInt(result.errors.length)} {result.errors.length === 1 ? 'fila con error' : 'filas con error'}
+              </summary>
+              <ul className="m-0 mt-2 p-0 list-none space-y-1 max-h-48 overflow-y-auto">
+                {result.errors.map((err, i) => (
+                  <li key={i} className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs text-rose-800">
+                    {err}
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
-        </div>
+        </Card>
       )}
 
-      {/* ─── History ─── */}
-      <div>
-        <div className="!flex !items-center !justify-between !mb-4">
-          <h3 className={`!text-lg !font-bold ${isDark ? '!text-white' : '!text-gray-900'}`}>
-            Historial de manifiestos
-          </h3>
-          <button
-            onClick={loadHistory}
-            disabled={isLoadingHistory}
-            className={`!flex !items-center !gap-1.5 !text-sm !font-medium !transition-colors ${
-              isDark ? '!text-gray-400 hover:!text-white' : '!text-gray-500 hover:!text-gray-800'
-            }`}
-          >
-            <RefreshCw className={`!w-4 !h-4 ${isLoadingHistory ? '!animate-spin' : ''}`} />
-            Actualizar
-          </button>
+      <Card className="p-0">
+        <div className="px-6 pt-6">
+          <CardHeader
+            title="Historial"
+            className="mb-2"
+            action={
+              <button type="button" onClick={loadHistory} disabled={loadingHistory} className={btn.icon} aria-label="Actualizar historial" title="Actualizar">
+                <RefreshCw className={cx('w-4 h-4', loadingHistory && 'animate-spin')} aria-hidden="true" />
+              </button>
+            }
+          />
         </div>
-
-        {historyError && (
-          <div className="!p-4 !rounded-xl !bg-red-50 !border !border-red-200 !text-red-700 !text-sm">
-            {historyError}
+        {loadingHistory ? (
+          <div className="px-6 pb-6">
+            <Skeleton className="h-32" />
           </div>
-        )}
-
-        {!historyError && batches.length === 0 && !isLoadingHistory && (
-          <div className={`!text-center !py-16 !rounded-2xl !border-2 !border-dashed ${isDark ? '!border-gray-700 !text-gray-500' : '!border-gray-200 !text-gray-400'}`}>
-            <FileSpreadsheet className="!w-10 !h-10 !mx-auto !mb-3 !opacity-40" />
-            <p className="!font-medium">Aún no has subido manifiestos</p>
-            <p className="!text-sm !mt-1">Sube tu primer archivo CSV o Excel para comenzar</p>
+        ) : historyFailed ? (
+          <div className="px-6 pb-6">
+            <ErrorState title="No pudimos cargar el historial" onRetry={loadHistory} />
           </div>
-        )}
-
-        {batches.length > 0 && (
-          <div className={`!rounded-2xl !border !overflow-hidden ${isDark ? '!border-gray-700' : '!border-gray-200'}`}>
-            <table className="!w-full !text-sm">
-              <thead className={isDark ? '!bg-gray-800 !text-gray-400' : '!bg-gray-50 !text-gray-500'}>
-                <tr>
-                  {['Archivo', 'Fecha', 'Filas', 'ton CO₂e', 'Estado'].map(h => (
-                    <th key={h} className="!px-4 !py-3 !text-left !text-xs !font-semibold !uppercase !tracking-wide">{h}</th>
+        ) : batches.length === 0 ? (
+          <EmptyState icon={FileSpreadsheet} title="Aún no has subido manifiestos" text="Descarga la plantilla, complétala con tus vuelos y súbela aquí." />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-gray-500">
+                  {['Archivo', 'Fecha', 'Filas', 'Emisiones', 'Estado'].map((h) => (
+                    <th key={h} scope="col" className="px-6 py-2 text-left font-medium border-b border-gray-200 whitespace-nowrap">
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {batches.map((b, i) => (
-                  <tr
-                    key={b.id}
-                    className={`!border-t !transition-colors ${
-                      isDark
-                        ? '!border-gray-700 hover:!bg-gray-750'
-                        : `!border-gray-100 ${i % 2 === 0 ? '' : '!bg-gray-50/50'} hover:!bg-emerald-50/40`
-                    }`}
-                  >
-                    <td className={`!px-4 !py-3 !font-medium !max-w-[200px] !truncate ${isDark ? '!text-white' : '!text-gray-900'}`}>
-                      <div className="!flex !items-center !gap-2">
-                        <FileSpreadsheet className="!w-4 !h-4 !text-emerald-500 !flex-shrink-0" />
-                        <span className="!truncate">{b.filename}</span>
-                      </div>
-                    </td>
-                    <td className={`!px-4 !py-3 !whitespace-nowrap ${isDark ? '!text-gray-300' : '!text-gray-600'}`}>
-                      {new Date(b.createdAt).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className={`!px-4 !py-3 ${isDark ? '!text-gray-300' : '!text-gray-600'}`}>
-                      {b.rowsCount != null ? b.rowsCount.toLocaleString() : '—'}
-                    </td>
-                    <td className={`!px-4 !py-3 !font-semibold ${b.metrics?.totalTonsCO2e ? '!text-emerald-600' : isDark ? '!text-gray-500' : '!text-gray-400'}`}>
-                      {b.metrics?.totalTonsCO2e != null
-                        ? b.metrics.totalTonsCO2e.toLocaleString('es-CL', { maximumFractionDigits: 2 })
-                        : '—'}
-                    </td>
-                    <td className="!px-4 !py-3">
-                      <StatusBadge status={b.status} />
-                    </td>
-                  </tr>
-                ))}
+                {batches.map((b) => {
+                  const st = STATUS[b.status] ?? { label: b.status, tone: 'neutral' as Tone };
+                  return (
+                    <tr key={b.id} className="border-b border-gray-100 last:border-0">
+                      <td className="px-6 py-3 font-medium text-gray-900 max-w-[16rem]">
+                        <span className="flex items-center gap-2">
+                          <FileSpreadsheet className="w-4 h-4 text-gray-400 flex-shrink-0" aria-hidden="true" />
+                          <span className="truncate">{b.filename}</span>
+                        </span>
+                        {b.status === 'failed' && b.errorMessage && <span className="block mt-0.5 text-xs font-normal text-rose-700">{b.errorMessage}</span>}
+                      </td>
+                      <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{fmtDate(b.createdAt)}</td>
+                      <td className="px-6 py-3 text-gray-600 tabular-nums">{b.rowsCount != null ? fmtInt(b.rowsCount) : '—'}</td>
+                      <td className="px-6 py-3 font-semibold text-gray-900 tabular-nums whitespace-nowrap">
+                        {b.metrics?.totalTonsCO2e != null ? fmtTons(b.metrics.totalTonsCO2e) : '—'}
+                      </td>
+                      <td className="px-6 py-3">
+                        <Badge tone={st.tone}>{st.label}</Badge>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

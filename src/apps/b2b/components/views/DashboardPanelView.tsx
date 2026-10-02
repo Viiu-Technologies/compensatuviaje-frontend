@@ -1,500 +1,316 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import {
-  TrendingUp,
-  TrendingDown,
-  Leaf,
-  Cloud,
-  TreePine,
-  Droplets,
-  Calendar,
-  Download,
-  Filter,
-  RefreshCw,
-  ArrowUpRight,
-  ArrowDownRight,
   Activity,
-  Target,
-  Zap,
-  Globe,
-  Loader2,
+  ArrowRight,
   Building2,
-  FileCheck,
-  Users,
   CheckCircle2,
+  Circle,
   Clock,
-  AlertCircle,
-  ChevronRight,
-  Shield,
   FileText,
-  Link2
+  Leaf,
+  RefreshCw,
+  Shield,
+  ShieldCheck,
+  Upload,
 } from 'lucide-react';
-import { useTheme } from '../../../../shared/context/ThemeContext';
-import { 
-  getCompanyDashboard, 
-  getDefaultDashboardStats,
-  formatTimelineAsActivity,
-  type DashboardStats,
-  type DashboardResponse,
-  type RecentActivity 
-} from '../../services/dashboardService';
+import { getCompanyDashboard, type DashboardResponse, type TimelineEvent } from '../../services/dashboardService';
+import { getEmissionDebt, type EmissionDebt } from '../../services/ordersService';
+import { getMyCertificates } from '../../services/certificatesService';
+import {
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  cx,
+  ErrorState,
+  fmtDate,
+  fmtInt,
+  fmtTons,
+  PageHeader,
+  Progress,
+  Skeleton,
+  StatCard,
+  type Tone,
+} from '../../ui';
 
-const DashboardPanelView: React.FC = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+/**
+ * Resumen de la empresa. Antes mostraba solo el onboarding (también con la
+ * empresa ya activa) y nada de emisiones ni compensaciones: ahora parte por
+ * la huella registrada, lo compensado y lo pendiente.
+ */
 
-  // Cargar datos al montar
+const STATUS: Record<string, { label: string; tone: Tone }> = {
+  registered: { label: 'Registrada', tone: 'info' },
+  pending_contract: { label: 'Contrato pendiente', tone: 'warning' },
+  signed: { label: 'Contrato firmado', tone: 'info' },
+  active: { label: 'Activa', tone: 'success' },
+  suspended: { label: 'Suspendida', tone: 'danger' },
+};
+
+const INDUSTRY: Record<string, string> = {
+  aerolineas: 'Aerolíneas y aviación',
+  maritimo: 'Transporte marítimo',
+  terrestre: 'Transporte terrestre y logística',
+  mineria_energia: 'Minería y energía',
+  tecnologia: 'Tecnología',
+  retail: 'Retail y e-commerce',
+  manufactura: 'Manufactura e industria',
+  construccion: 'Construcción e inmobiliaria',
+  hoteleria_turismo: 'Hotelería y turismo',
+  servicios_financieros: 'Servicios financieros',
+  salud: 'Salud',
+  educacion: 'Educación',
+  alimentacion: 'Alimentación y agricultura',
+  telecomunicaciones: 'Telecomunicaciones',
+  gobierno: 'Sector público',
+  consultoria: 'Consultoría',
+  otra: 'Otra',
+  TRAVEL_AGENCY: 'Aerolíneas y agencias',
+  TRANSPORT: 'Transporte',
+  LOGISTICS: 'Logística',
+  CORPORATE: 'Corporativo',
+  EVENTS: 'Eventos',
+  OTHER: 'Otra',
+};
+
+const industryOf = (industry?: string, companyType?: string) =>
+  (industry && INDUSTRY[industry]) || (companyType && INDUSTRY[companyType]) || industry || 'Sin categoría';
+
+/** "Hace 3 días" o la fecha. */
+const relative = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const hours = Math.floor((Date.now() - d.getTime()) / 3_600_000);
+  if (hours < 1) return 'Hace menos de una hora';
+  if (hours < 24) return `Hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `Hace ${days} ${days === 1 ? 'día' : 'días'}`;
+  return fmtDate(iso);
+};
+
+const DashboardPanelView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [debt, setDebt] = useState<EmissionDebt | null>(null);
+  const [certificates, setCertificates] = useState<number | null>(null);
+
+  const load = async () => {
+    const [d, e, c] = await Promise.allSettled([getCompanyDashboard(), getEmissionDebt(), getMyCertificates()]);
+    setData(d.status === 'fulfilled' ? d.value : null);
+    setDebt(e.status === 'fulfilled' ? e.value ?? null : null);
+    setCertificates(c.status === 'fulfilled' ? c.value.total : null);
+  };
+
   useEffect(() => {
-    loadDashboardData();
+    load().finally(() => setLoading(false));
   }, []);
 
-  const loadDashboardData = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getCompanyDashboard();
-      
-      if (data) {
-        setDashboardData(data);
-        // Formatear timeline real como actividad reciente
-        if (data.timeline && data.timeline.length > 0) {
-          setRecentActivity(formatTimelineAsActivity(data.timeline));
-        } else {
-          setRecentActivity([]);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const refresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadDashboardData();
-    setIsRefreshing(false);
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, { text: string; color: string; bg: string }> = {
-      registered: { text: 'Registrada', color: 'text-blue-700', bg: 'bg-blue-100' },
-      pending_contract: { text: 'Pendiente Contrato', color: 'text-yellow-700', bg: 'bg-yellow-100' },
-      signed: { text: 'Contrato Firmado', color: 'text-purple-700', bg: 'bg-purple-100' },
-      active: { text: 'Activa', color: 'text-green-700', bg: 'bg-green-100' },
-      suspended: { text: 'Suspendida', color: 'text-red-700', bg: 'bg-red-100' }
-    };
-    return labels[status] || { text: status, color: 'text-gray-700', bg: 'bg-gray-100' };
-  };
-
-  const getIndustryLabel = (industry?: string, companyType?: string) => {
-    const labels: Record<string, string> = {
-      // industry values
-      aerolineas: 'Aerolíneas y Aviación',
-      maritimo: 'Transporte Marítimo',
-      terrestre: 'Transporte Terrestre y Logística',
-      mineria_energia: 'Minería y Energía',
-      tecnologia: 'Tecnología y SaaS',
-      retail: 'Retail y E-commerce',
-      manufactura: 'Manufactura e Industria',
-      construccion: 'Construcción e Inmobiliaria',
-      hoteleria_turismo: 'Hotelería y Turismo',
-      servicios_financieros: 'Servicios Financieros',
-      salud: 'Salud y Farmacéutica',
-      educacion: 'Educación',
-      alimentacion: 'Alimentación y Agricultura',
-      telecomunicaciones: 'Telecomunicaciones',
-      gobierno: 'Gobierno y Sector Público',
-      consultoria: 'Consultoría y Servicios Profesionales',
-      otra: 'Otra',
-      // companyType values
-      TRAVEL_AGENCY: 'Aerolíneas y Viajes',
-      TRANSPORT: 'Transporte',
-      LOGISTICS: 'Logística',
-      CORPORATE: 'Corporativo',
-      EVENTS: 'Eventos',
-      OTHER: 'Otra'
-    };
-    if (industry && labels[industry]) return labels[industry];
-    if (companyType && labels[companyType]) return labels[companyType];
-    return industry || 'Sin categoría';
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="!flex !items-center !justify-center !py-20">
-        <div className="!text-center">
-          <Loader2 className="!w-12 !h-12 !text-green-500 !animate-spin !mx-auto !mb-4" />
-          <p className={isDark ? '!text-gray-400' : '!text-gray-500'}>Cargando datos del dashboard...</p>
+      <div className="space-y-6">
+        <Skeleton className="h-16 w-1/2" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[118px]" />
+          ))}
         </div>
+        <Skeleton className="h-72" />
       </div>
     );
   }
 
-  if (!dashboardData) {
-    return (
-      <div className="!flex !items-center !justify-center !py-20">
-        <div className="!text-center">
-          <AlertCircle className="!w-12 !h-12 !text-yellow-500 !mx-auto !mb-4" />
-          <p className={`!text-lg !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>No se pudieron cargar los datos</p>
-          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Verifica tu conexión e intenta nuevamente</p>
-          <button
-            onClick={handleRefresh}
-            className="!mt-4 !px-4 !py-2 !bg-green-600 !text-white !rounded-xl !font-medium !text-sm !border-0 hover:!bg-green-700 !transition-colors"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
+  if (!data) {
+    return <ErrorState title="No pudimos cargar el resumen de tu empresa" onRetry={refresh} />;
   }
 
-  const { company, progress, documents, domains, users, nextSteps } = dashboardData;
-  const statusInfo = getStatusLabel(company.status);
-
-  const statsCards = [
-    {
-      title: 'Progreso Onboarding',
-      value: `${progress.overall}%`,
-      subtitle: company.status === 'active' ? 'Completado' : 'En progreso',
-      icon: Target,
-      gradient: 'from-emerald-500 to-green-600',
-      bgGradient: 'from-emerald-50 to-green-50',
-      borderColor: 'border-emerald-200'
-    },
-    {
-      title: 'Documentos',
-      value: `${documents.uploaded}/${documents.required || documents.total}`,
-      subtitle: documents.isValid ? 'Validados' : 'Pendientes',
-      icon: FileCheck,
-      gradient: 'from-blue-500 to-cyan-600',
-      bgGradient: 'from-blue-50 to-cyan-50',
-      borderColor: 'border-blue-200'
-    },
-    {
-      title: 'Dominios',
-      value: `${domains.verified}/${domains.total}`,
-      subtitle: domains.pending > 0 ? `${domains.pending} pendiente${domains.pending > 1 ? 's' : ''}` : 'Verificados',
-      icon: Link2,
-      gradient: 'from-purple-500 to-violet-600',
-      bgGradient: 'from-purple-50 to-violet-50',
-      borderColor: 'border-purple-200'
-    },
-    {
-      title: 'Usuarios',
-      value: users.total.toString(),
-      subtitle: `${users.admins} admin${users.admins !== 1 ? 's' : ''}`,
-      icon: Users,
-      gradient: 'from-orange-500 to-amber-600',
-      bgGradient: 'from-orange-50 to-amber-50',
-      borderColor: 'border-orange-200'
-    }
-  ];
+  const { company, progress, documents, domains, users, nextSteps, timeline } = data;
+  const status = STATUS[company.status] ?? { label: company.status, tone: 'neutral' as Tone };
+  const onboardingDone = (progress?.overall ?? 0) >= 100 || company.status === 'active';
+  const steps = Object.entries(progress?.steps ?? {});
+  const emitted = debt?.totalEmitted ?? 0;
+  const compensated = debt?.totalCompensated ?? 0;
+  const pending = Math.max(0, debt?.tonsPending ?? emitted - compensated);
+  const coverage = emitted > 0 ? Math.min(100, (compensated / emitted) * 100) : 0;
+  const activity: TimelineEvent[] = (timeline ?? []).slice(0, 6);
 
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-4">
-        <div>
-          <h1 className={`!text-2xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Panel Principal</h1>
-          <p className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-            {company.razonSocial} — {getIndustryLabel(company.industry, company.companyType)}
-          </p>
-        </div>
-        <div className="!flex !items-center !gap-3">
-          <span className={`!px-3 !py-1.5 !rounded-full !text-xs !font-semibold ${statusInfo.bg} ${statusInfo.color}`}>
-            {statusInfo.text}
-          </span>
-          <button 
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className={`!p-2.5 !rounded-xl !transition-colors !border-0 disabled:!opacity-60 ${
-              isDark ? '!bg-gray-700/50 hover:!bg-gray-600/50 !text-gray-400' : '!bg-gray-100 hover:!bg-gray-200 !text-gray-600'
-            }`}
-          >
-            <RefreshCw className={`!w-5 !h-5 ${isRefreshing ? '!animate-spin' : ''}`} />
+    <div className="space-y-6">
+      <PageHeader
+        title={company.razonSocial}
+        subtitle={`RUT ${company.rut} · ${industryOf(company.industry, company.companyType)}${company.createdAt ? ` · desde ${fmtDate(company.createdAt)}` : ''}`}
+        meta={<Badge tone={status.tone}>{status.label}</Badge>}
+        actions={
+          <button type="button" onClick={refresh} disabled={refreshing} className={btn.icon} aria-label="Actualizar" title="Actualizar">
+            <RefreshCw className={cx('w-4 h-4', refreshing && 'animate-spin')} aria-hidden="true" />
           </button>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Company Info Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`!rounded-2xl !p-5 !border ${
-          isDark ? '!bg-gradient-to-r !from-green-900/30 !to-emerald-900/20 !border-green-800/30' : '!bg-gradient-to-r !from-green-50 !to-emerald-50 !border-green-200'
-        }`}
-      >
-        <div className="!flex !flex-wrap !items-center !gap-6">
-          <div className="!flex !items-center !gap-3">
-            <div className="!w-12 !h-12 !rounded-xl !bg-gradient-to-br !from-green-500 !to-emerald-600 !flex !items-center !justify-center">
-              <Building2 className="!w-6 !h-6 !text-white" />
-            </div>
-            <div>
-              <h2 className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{company.razonSocial}</h2>
-              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>RUT: {company.rut}</p>
-            </div>
-          </div>
-          <div className={`!h-10 !w-px ${isDark ? '!bg-gray-700' : '!bg-green-200'} !hidden sm:!block`} />
-          <div>
-            <p className={`!text-xs !uppercase !tracking-wider ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Industria</p>
-            <p className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>{getIndustryLabel(company.industry, company.companyType)}</p>
-          </div>
-          {company.tamanoEmpresa && (
-            <>
-              <div className={`!h-10 !w-px ${isDark ? '!bg-gray-700' : '!bg-green-200'} !hidden sm:!block`} />
-              <div>
-                <p className={`!text-xs !uppercase !tracking-wider ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Tamaño</p>
-                <p className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>{company.tamanoEmpresa}</p>
-              </div>
-            </>
-          )}
-          <div className={`!h-10 !w-px ${isDark ? '!bg-gray-700' : '!bg-green-200'} !hidden sm:!block`} />
-          <div>
-            <p className={`!text-xs !uppercase !tracking-wider ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Miembro desde</p>
-            <p className={`!text-sm !font-medium ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-              {new Date(company.createdAt).toLocaleDateString('es-CL', { year: 'numeric', month: 'long' })}
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <div className="!grid sm:!grid-cols-2 lg:!grid-cols-4 !gap-4">
-        {statsCards.map((stat, index) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`!rounded-2xl !p-5 !border !transition-all !group hover:!shadow-lg ${
-              isDark 
-                ? '!bg-gray-800/50 !border-gray-700/50' 
-                : `!bg-gradient-to-br ${stat.bgGradient} ${stat.borderColor}`
-            }`}
-          >
-            <div className="!flex !items-start !justify-between !mb-3">
-              <div className={`!w-12 !h-12 !rounded-xl !bg-gradient-to-br ${stat.gradient} !flex !items-center !justify-center !shadow-lg`}>
-                <stat.icon className="!w-6 !h-6 !text-white" />
-              </div>
-            </div>
-            <div className={`!text-3xl !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{stat.value}</div>
-            <div className={`!text-sm !mt-1 ${isDark ? '!text-gray-400' : '!text-gray-600'}`}>{stat.subtitle}</div>
-            <p className={`!text-xs !mt-2 ${isDark ? '!text-gray-500' : '!text-gray-500'}`}>{stat.title}</p>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="!grid lg:!grid-cols-3 !gap-6">
-        {/* Onboarding Progress Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className={`lg:!col-span-2 !rounded-2xl !p-6 !border !shadow-lg !transition-colors ${
-            isDark 
-              ? '!bg-gray-800/50 !border-gray-700/50' 
-              : '!bg-white !border-gray-200'
-          }`}
-        >
-          <div className="!flex !items-center !justify-between !mb-6">
-            <div>
-              <h3 className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Progreso de Onboarding</h3>
-              <p className={`!text-sm ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                {progress.overall === 100 ? '¡Proceso completado!' : 'Completa todos los pasos para activar tu cuenta'}
-              </p>
-            </div>
-            <div className="!flex !items-center !gap-2">
-              <Target className="!w-5 !h-5 !text-green-600" />
-              <span className="!text-2xl !font-bold !text-green-600">{progress.overall}%</span>
-            </div>
-          </div>
-
-          {/* Overall Progress Bar */}
-          <div className="!relative !h-4 !bg-gray-100 !rounded-full !overflow-hidden !mb-6">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress.overall}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-              className="!absolute !inset-y-0 !left-0 !bg-gradient-to-r !from-green-500 !to-emerald-500 !rounded-full"
-            />
-          </div>
-
-          {/* Steps Detail */}
-          <div className="!space-y-4">
-            {Object.entries(progress.steps).map(([key, step], index) => (
-              <motion.div
+      {!onboardingDone && (
+        <Card>
+          <CardHeader
+            title="Activa tu cuenta"
+            subtitle="Completa estos pasos para empezar a compensar."
+            action={<span className="text-2xl font-bold text-brand-700 tabular-nums">{fmtInt(progress?.overall)} %</span>}
+          />
+          <Progress value={progress?.overall ?? 0} label="Activación de la cuenta" />
+          <ul className="m-0 p-0 list-none mt-5 grid gap-2 sm:grid-cols-2">
+            {steps.map(([key, step]) => (
+              <li
                 key={key}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className={`!flex !items-center !gap-4 !p-3 !rounded-xl ${
-                  isDark ? '!bg-gray-700/30' : '!bg-gray-50'
-                }`}
+                className={cx(
+                  'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm',
+                  step.completed ? 'border-brand-100 bg-brand-50 text-brand-800' : 'border-gray-200 text-gray-700',
+                )}
               >
-                <div className={`!w-10 !h-10 !rounded-full !flex !items-center !justify-center !flex-shrink-0 ${
-                  step.completed 
-                    ? '!bg-green-100 !text-green-600' 
-                    : step.percentage > 0 
-                    ? '!bg-yellow-100 !text-yellow-600' 
-                    : isDark ? '!bg-gray-600 !text-gray-400' : '!bg-gray-200 !text-gray-400'
-                }`}>
-                  {step.completed ? (
-                    <CheckCircle2 className="!w-5 !h-5" />
-                  ) : step.percentage > 0 ? (
-                    <Clock className="!w-5 !h-5" />
-                  ) : (
-                    <span className="!text-sm !font-bold">{index + 1}</span>
-                  )}
-                </div>
-                <div className="!flex-1">
-                  <div className="!flex !items-center !justify-between !mb-1">
-                    <span className={`!text-sm !font-medium ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>
-                      {step.name}
-                    </span>
-                    <span className={`!text-xs !font-semibold ${
-                      step.completed ? '!text-green-600' : '!text-gray-400'
-                    }`}>
-                      {step.percentage}%
-                    </span>
-                  </div>
-                  <div className="!h-2 !bg-gray-200 !rounded-full !overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${step.percentage}%` }}
-                      transition={{ duration: 0.8, delay: 0.5 + index * 0.1 }}
-                      className={`!h-full !rounded-full ${
-                        step.completed ? '!bg-green-500' : '!bg-yellow-500'
-                      }`}
-                    />
-                  </div>
-                </div>
-              </motion.div>
+                {step.completed ? (
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                ) : step.percentage > 0 ? (
+                  <Clock className="w-4 h-4 flex-shrink-0 text-amber-600" aria-hidden="true" />
+                ) : (
+                  <Circle className="w-4 h-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                )}
+                <span className="flex-1">{step.name}</span>
+                {!step.completed && step.percentage > 0 && <span className="text-xs text-gray-500 tabular-nums">{step.percentage} %</span>}
+              </li>
             ))}
-          </div>
-
-          {/* Next Steps */}
-          {nextSteps && nextSteps.length > 0 && (
-            <div className={`!mt-6 !pt-6 !border-t ${isDark ? '!border-gray-700' : '!border-gray-100'}`}>
-              <h4 className={`!text-sm !font-semibold !mb-3 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>
-                Próximos pasos
-              </h4>
-              <div className="!space-y-2">
-                {nextSteps.slice(0, 3).map((step, idx) => (
-                  <div
-                    key={step.id || idx}
-                    className={`!flex !items-start !gap-3 !p-3 !rounded-lg ${
-                      isDark ? '!bg-gray-700/20' : '!bg-blue-50/50'
-                    }`}
-                  >
-                    <ChevronRight className={`!w-4 !h-4 !mt-0.5 !flex-shrink-0 ${
-                      step.priority === 'high' ? '!text-red-500' : step.priority === 'medium' ? '!text-yellow-500' : '!text-blue-500'
-                    }`} />
-                    <div>
-                      <p className={`!text-sm !font-medium ${isDark ? '!text-gray-200' : '!text-gray-700'}`}>{step.title}</p>
-                      <p className={`!text-xs !mt-0.5 ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{step.description}</p>
-                    </div>
-                  </div>
+          </ul>
+          {nextSteps?.length > 0 && (
+            <div className="mt-5 pt-5 border-t border-gray-100">
+              <h3 className="m-0 mb-2 text-sm font-semibold text-gray-900">Lo que falta</h3>
+              <ul className="m-0 p-0 list-none space-y-2">
+                {nextSteps.slice(0, 3).map((s, i) => (
+                  <li key={s.id || i} className="flex items-start gap-2 text-sm">
+                    <ArrowRight className={cx('w-4 h-4 mt-0.5 flex-shrink-0', s.priority === 'high' ? 'text-amber-600' : 'text-gray-400')} aria-hidden="true" />
+                    <span>
+                      <span className="font-medium text-gray-900">{s.title}</span>
+                      {s.description && <span className="text-gray-500"> · {s.description}</span>}
+                    </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
-        </motion.div>
+          {onNavigate && documents && !documents.isValid && (
+            <button type="button" onClick={() => onNavigate('documentos')} className={cx(btn.primary, 'mt-5')}>
+              <Upload className="w-4 h-4" aria-hidden="true" />
+              Subir documentos
+            </button>
+          )}
+        </Card>
+      )}
 
-        {/* Right Column: Activity + Info */}
-        <div className="!space-y-6">
-          {/* Recent Activity */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className={`!rounded-2xl !p-6 !border !shadow-lg !transition-colors ${
-              isDark 
-                ? '!bg-gray-800/50 !border-gray-700/50' 
-                : '!bg-white !border-gray-200'
-            }`}
-          >
-            <div className="!flex !items-center !justify-between !mb-6">
-              <h3 className={`!text-lg !font-bold ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>Actividad Reciente</h3>
-              <Activity className={`!w-5 !h-5 ${isDark ? '!text-gray-500' : '!text-gray-400'}`} />
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard label="Emisiones registradas" icon={Activity} value={debt ? fmtTons(emitted) : '—'} hint="CO₂ de tus vuelos y manifiestos" />
+        <StatCard label="Compensado" icon={Leaf} value={debt ? fmtTons(compensated) : '—'} tone="good" hint={emitted > 0 ? `${fmtInt(coverage)} % de lo emitido` : 'Con órdenes aprobadas'} />
+        <StatCard
+          label="Por compensar"
+          icon={Clock}
+          value={debt ? fmtTons(pending) : '—'}
+          tone={pending > 0 ? 'warning' : 'default'}
+          hint={pending > 0 ? 'Elige un proyecto para cubrirlo' : 'Estás al día'}
+        />
+        <StatCard label="Certificados" icon={ShieldCheck} value={certificates == null ? '—' : fmtInt(certificates)} hint="Emitidos a tu empresa" />
+      </div>
 
-            {recentActivity.length > 0 ? (
-              <div className="!space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <motion.div
-                    key={activity.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                    className={`!flex !gap-3 !p-3 !rounded-xl !transition-colors ${
-                      isDark ? 'hover:!bg-gray-700/50' : 'hover:!bg-gray-50'
-                    }`}
-                  >
-                    <div className={`!w-10 !h-10 !rounded-xl !flex !items-center !justify-center !flex-shrink-0 ${
-                      activity.type === 'status_change' ? isDark ? '!bg-purple-900/30 !text-purple-400' : '!bg-purple-100 !text-purple-600' :
-                      activity.type === 'document_upload' ? isDark ? '!bg-blue-900/30 !text-blue-400' : '!bg-blue-100 !text-blue-600' :
-                      isDark ? '!bg-gray-700 !text-gray-400' : '!bg-gray-100 !text-gray-600'
-                    }`}>
-                      {activity.type === 'status_change' ? <Shield className="!w-5 !h-5" /> :
-                       activity.type === 'document_upload' ? <FileText className="!w-5 !h-5" /> :
-                       <Activity className="!w-5 !h-5" />}
-                    </div>
-                    <div className="!flex-1 !min-w-0">
-                      <p className={`!text-sm !font-medium !truncate ${isDark ? '!text-gray-100' : '!text-gray-900'}`}>{activity.title}</p>
-                      <p className={`!text-xs !truncate ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>{activity.description}</p>
-                      <span className={`!text-xs ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>{activity.date}</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader title="Compensación de tu huella" subtitle="Cuánto de lo que emite tu empresa ya está compensado." icon={Leaf} />
+            {emitted === 0 ? (
+              <p className="m-0 text-sm text-gray-500">
+                Aún no hay emisiones registradas. Sube los vuelos de la empresa o usa la calculadora para empezar.
+              </p>
             ) : (
-              <div className="!text-center !py-8">
-                <Clock className={`!w-10 !h-10 !mx-auto !mb-3 ${isDark ? '!text-gray-600' : '!text-gray-300'}`} />
-                <p className={`!text-sm ${isDark ? '!text-gray-500' : '!text-gray-400'}`}>Aún no hay actividad registrada</p>
+              <>
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="text-gray-500">Cubierto</span>
+                  <span className="font-semibold text-gray-900 tabular-nums">
+                    {fmtTons(compensated)} de {fmtTons(emitted)}
+                  </span>
+                </div>
+                <Progress value={coverage} label="Huella compensada" className="mt-2" />
+              </>
+            )}
+            {onNavigate && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {pending > 0 && (
+                  <button type="button" onClick={() => onNavigate('proyectos')} className={btn.primary}>
+                    Compensar {fmtTons(pending)}
+                  </button>
+                )}
+                <button type="button" onClick={() => onNavigate('calculadora')} className={btn.secondary}>
+                  Calcular un vuelo
+                </button>
               </div>
             )}
-          </motion.div>
+          </Card>
 
-          {/* Documents Summary Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className={`!rounded-2xl !p-5 !border !transition-colors ${
-              isDark 
-                ? '!bg-gray-800/50 !border-gray-700/50' 
-                : '!bg-white !border-gray-200'
-            }`}
-          >
-            <h4 className={`!text-sm !font-semibold !mb-3 ${isDark ? '!text-gray-300' : '!text-gray-700'}`}>Documentación</h4>
-            <div className="!flex !items-center !gap-3 !mb-3">
-              <div className="!flex-1 !h-3 !bg-gray-200 !rounded-full !overflow-hidden">
-                <div 
-                  className={`!h-full !rounded-full ${documents.isValid ? '!bg-green-500' : '!bg-yellow-500'}`}
-                  style={{ width: `${documents.completionPercentage}%` }}
-                />
-              </div>
-              <span className={`!text-sm !font-bold ${documents.isValid ? '!text-green-600' : '!text-yellow-600'}`}>
-                {documents.completionPercentage}%
-              </span>
+          <Card className="p-0">
+            <div className="px-6 pt-6">
+              <CardHeader title="Actividad reciente" icon={Activity} className="mb-2" />
             </div>
-            <div className="!flex !items-center !gap-2">
-              {documents.isValid ? (
-                <CheckCircle2 className="!w-4 !h-4 !text-green-500" />
-              ) : (
-                <AlertCircle className="!w-4 !h-4 !text-yellow-500" />
-              )}
-              <span className={`!text-xs ${isDark ? '!text-gray-400' : '!text-gray-500'}`}>
-                {documents.isValid ? 'Todos los documentos han sido validados' : `${documents.uploaded} de ${documents.required || documents.total} documentos subidos`}
-              </span>
-            </div>
-          </motion.div>
+            {activity.length === 0 ? (
+              <p className="m-0 px-6 pb-6 text-sm text-gray-500">Aún no hay actividad registrada.</p>
+            ) : (
+              <ul className="m-0 p-0 list-none pb-2">
+                {activity.map((ev, i) => {
+                  const Icon = ev.type === 'status_change' ? Shield : ev.type === 'document_upload' ? FileText : Activity;
+                  return (
+                    <li key={`${ev.timestamp}-${i}`} className="flex gap-3 px-6 py-3 border-t border-gray-100 first:border-t-0">
+                      <span className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="m-0 text-sm font-medium text-gray-900">{ev.title}</p>
+                        {ev.description && <p className="m-0 text-xs text-gray-500">{ev.description}</p>}
+                      </div>
+                      <span className="text-xs text-gray-400 whitespace-nowrap">{relative(ev.timestamp)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </Card>
         </div>
+
+        <Card>
+          <CardHeader title="Tu cuenta" icon={Building2} />
+          <dl className="m-0 space-y-4 text-sm">
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-gray-500">Documentos</dt>
+              <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                {fmtInt(documents?.uploaded)} de {fmtInt(documents?.required || documents?.total)}
+              </dd>
+            </div>
+            <Progress value={documents?.completionPercentage ?? 0} label="Documentos" />
+            <div className="flex items-baseline justify-between gap-3 pt-1">
+              <dt className="text-gray-500">Dominios verificados</dt>
+              <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                {fmtInt(domains?.verified)} de {fmtInt(domains?.total)}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-gray-500">Usuarios</dt>
+              <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                {fmtInt(users?.total)}
+                <span className="font-normal text-gray-500"> · {fmtInt(users?.admins)} admin.</span>
+              </dd>
+            </div>
+          </dl>
+          {onNavigate && (
+            <button type="button" onClick={() => onNavigate('documentos')} className={cx(btn.secondary, btn.sm, 'mt-5')}>
+              Ver documentos
+            </button>
+          )}
+        </Card>
       </div>
     </div>
   );

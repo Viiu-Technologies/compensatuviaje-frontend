@@ -63,7 +63,7 @@ export interface CalculationResponse {
   equivalencies: Equivalencies;
 }
 
-// Factores de emisi├│n locales (fallback)
+// Factores de emisión locales (fallback)
 export const EMISSION_FACTORS = {
   'Domestic': {
     'economy': 0.22928,
@@ -86,7 +86,7 @@ export const EMISSION_FACTORS = {
 };
 
 export const CABIN_LABELS: Record<CabinClass, string> = {
-  'economy': 'Econ├│mica',
+  'economy': 'Económica',
   'premium_economy': 'Premium Economy',
   'business': 'Ejecutiva',
   'first': 'Primera Clase'
@@ -135,7 +135,7 @@ class CalculatorService {
   }
 
   /**
-   * Obtener el ├║ltimo c├ílculo realizado
+   * Obtener el último cálculo realizado
    */
   getLastCalculation(): CalculationResponse | null {
     return this.lastCalculation;
