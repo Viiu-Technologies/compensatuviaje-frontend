@@ -1,40 +1,209 @@
 // ============================================
 // PARTNER LAYOUT
-// Layout principal con navegación para el módulo Partner
-// Estilo consistente con AdminLayout
-// 
+// Barra lateral petróleo (como el admin) y cabecera con la sección actual.
+//
 // ARQUITECTURA DOBLE CANDADO:
-// - Partner en estado 'onboarding' solo puede acceder a KYB y perfil
-// - Menú de proyectos bloqueado hasta completar verificación KYB
+// - Sin perfil completo: solo Dashboard y Mi Perfil
+// - Sin KYB aprobado por el admin: Proyectos bloqueados
 // ============================================
 
-import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  FolderKanban,
+  LayoutDashboard,
+  Lock,
+  LogOut,
+  Menu,
+  Plus,
+  Shield,
+  ShieldAlert,
+  UserCircle,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { usePartnerContext } from '../context/PartnerContext';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
-import {
-  LayoutDashboard,
-  FolderKanban,
-  UserCircle,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
-  Menu,
-  Plus,
-  Building2,
-  Shield,
-  Lock,
-  AlertCircle,
-} from 'lucide-react';
+import { btn, cx } from '../ui';
 
-// ============================================
-// MAIN LAYOUT COMPONENT
-// ============================================
+const COLLAPSE_KEY = 'partnerSidebarCollapsed';
+
+const readCollapsed = () => {
+  try {
+    return localStorage.getItem(COLLAPSE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+interface NavItem {
+  path: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  end?: boolean;
+  attention?: boolean;
+  locked?: boolean;
+  lockedMessage?: string;
+}
+
+/** Logo del partner en un cuadro blanco (los logos horizontales no caben en un círculo). */
+const PartnerLogo: React.FC<{ url?: string | null; name?: string; size?: 'sm' | 'md' }> = ({ url, size = 'md' }) => {
+  const box = size === 'sm' ? 'w-8 h-8' : 'w-10 h-10';
+  return url ? (
+    <span className={cx(box, 'rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden p-1')}>
+      <img src={url} alt="" className="max-w-full max-h-full object-contain" />
+    </span>
+  ) : (
+    <span className={cx(box, 'rounded-lg bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0')}>
+      <Building2 className="w-4 h-4" aria-hidden="true" />
+    </span>
+  );
+};
+
+const Sidebar: React.FC<{
+  collapsed: boolean;
+  items: NavItem[];
+  canCreate: boolean;
+  name: string;
+  email?: string;
+  logoUrl?: string | null;
+  onNavigate?: () => void;
+  onToggle?: () => void;
+  onLogout: () => void;
+}> = ({ collapsed, items, canCreate, name, email, logoUrl, onNavigate, onToggle, onLogout }) => {
+  const linkBase = cx(
+    'relative flex items-center gap-3 rounded-lg text-sm font-medium no-underline transition-colors',
+    collapsed ? 'justify-center py-2.5' : 'px-3 py-2',
+  );
+  return (
+    <>
+      <Link
+        to="/partner"
+        onClick={onNavigate}
+        aria-label="Inicio del portal"
+        className={cx('flex items-center h-16 border-b border-white/10 flex-shrink-0', collapsed ? 'justify-center' : 'px-5')}
+      >
+        {collapsed ? (
+          <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="h-7 w-auto" />
+        ) : (
+          <img src="/images/brand/logo-horizontal-white.svg" alt="CompensaTuViaje" className="h-8 w-auto" />
+        )}
+      </Link>
+
+      <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5" aria-label="Portal de partners">
+        {items.map((item) =>
+          item.locked ? (
+            <div
+              key={item.path}
+              className={cx(linkBase, 'text-[#7f9996] cursor-not-allowed')}
+              title={item.lockedMessage}
+              aria-disabled="true"
+            >
+              <item.icon className="w-[18px] h-[18px] flex-shrink-0" aria-hidden="true" />
+              {!collapsed && <span className="truncate">{item.label}</span>}
+              {!collapsed && <Lock className="ml-auto w-3.5 h-3.5" aria-label="Bloqueado" />}
+            </div>
+          ) : (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.end}
+              onClick={onNavigate}
+              title={collapsed ? item.label : undefined}
+              className={({ isActive }) =>
+                cx(
+                  linkBase,
+                  isActive
+                    ? 'bg-white/10 text-white before:absolute before:-left-3 before:top-2 before:bottom-2 before:w-[3px] before:rounded-r before:bg-[#3ED32B]'
+                    : 'text-[#c9d6d4] hover:bg-white/[0.06] hover:text-white',
+                )
+              }
+            >
+              <item.icon className="w-[18px] h-[18px] flex-shrink-0" aria-hidden="true" />
+              {!collapsed && <span className="truncate">{item.label}</span>}
+              {item.attention && (
+                <span
+                  className={cx('w-2 h-2 rounded-full bg-amber-400', collapsed ? 'absolute top-1.5 right-3' : 'ml-auto')}
+                  aria-label="Requiere atención"
+                />
+              )}
+            </NavLink>
+          ),
+        )}
+
+        <div className="mt-4 pt-4 border-t border-white/10">
+          {canCreate ? (
+            <Link
+              to="/partner/projects/create"
+              onClick={onNavigate}
+              title={collapsed ? 'Nuevo proyecto' : undefined}
+              className={cx(
+                'flex items-center justify-center gap-2 rounded-lg border border-white/20 text-sm font-semibold text-white no-underline hover:bg-white/[0.06] transition-colors',
+                collapsed ? 'py-2.5' : 'px-3 py-2',
+              )}
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              {!collapsed && 'Nuevo proyecto'}
+            </Link>
+          ) : (
+            !collapsed && (
+              <p className="m-0 px-3 text-xs text-[#7f9996]">
+                Podrás crear proyectos cuando tu verificación KYB esté aprobada.
+              </p>
+            )
+          )}
+        </div>
+      </nav>
+
+      <div className="flex-shrink-0 p-3 border-t border-white/10 flex flex-col gap-0.5">
+        <div className={cx('flex items-center gap-2.5 pb-3 pt-1 min-w-0', collapsed ? 'justify-center' : 'px-3')} title={collapsed ? name : undefined}>
+          <PartnerLogo url={logoUrl} name={name} size="sm" />
+          {!collapsed && (
+            <span className="min-w-0 flex flex-col">
+              <span className="text-[13px] font-semibold text-white truncate">{name}</span>
+              {email && <span className="text-xs text-[#7f9996] truncate">{email}</span>}
+            </span>
+          )}
+        </div>
+        {onToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+            className={cx(linkBase, 'w-full border-0 bg-transparent cursor-pointer text-[#c9d6d4] hover:bg-white/[0.06] hover:text-white')}
+          >
+            {collapsed ? <ChevronRight className="w-[18px] h-[18px]" aria-hidden="true" /> : <ChevronLeft className="w-[18px] h-[18px]" aria-hidden="true" />}
+            {!collapsed && <span>Colapsar menú</span>}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onLogout}
+          title={collapsed ? 'Cerrar sesión' : undefined}
+          className={cx(linkBase, 'w-full border-0 bg-transparent cursor-pointer text-[#c9d6d4] hover:bg-white/[0.06] hover:text-white')}
+        >
+          <LogOut className="w-[18px] h-[18px]" aria-hidden="true" />
+          {!collapsed && <span>Cerrar sesión</span>}
+        </button>
+      </div>
+    </>
+  );
+};
+
+/** Nombre de la sección para la cabecera. */
+const sectionOf = (path: string) => {
+  if (path.startsWith('/partner/projects')) return 'Mis proyectos';
+  if (path.startsWith('/partner/kyb')) return 'Verificación KYB';
+  if (path.startsWith('/partner/profile')) return 'Mi perfil';
+  return 'Resumen';
+};
 
 const PartnerLayout: React.FC = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readCollapsed);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -46,402 +215,145 @@ const PartnerLayout: React.FC = () => {
   // Activa las utilidades de espaciado sin "!" (el reset global las anulaba).
   useTailwindSpacing();
 
-  // TRIPLE CANDADO: Control estricto de flujo Onboarding
+  // Candados: redirige si se entra por URL a una sección bloqueada.
   useEffect(() => {
-    // Esperar a que los datos carguen antes de redirigir
     if (!isDataLoaded) return;
-
     if (!isProfileComplete) {
-      // Bloquear KYB y Proyectos si falta completar perfil
-      if (
-        location.pathname.includes('/partner/kyb') ||
-        location.pathname.includes('/partner/projects')
-      ) {
+      if (location.pathname.includes('/partner/kyb') || location.pathname.includes('/partner/projects')) {
         navigate('/partner/profile', { replace: true });
       }
-    } else if (!isKybVerified) {
-      // Bloquear Proyectos si KYB no ha sido aprobado por el admin
-      if (location.pathname.includes('/partner/projects')) {
-        navigate('/partner/kyb', { replace: true });
-      }
+    } else if (!isKybVerified && location.pathname.includes('/partner/projects')) {
+      navigate('/partner/kyb', { replace: true });
     }
   }, [profile, onboarding, kybStatus, isProfileComplete, isKybVerified, location.pathname, navigate, isDataLoaded]);
+
+  // El menú móvil se cierra con Escape.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileMenuOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  // TRIPLE CANDADO: Configurar items de navegación con bloqueo condicional
-  const navItems = [
-    { 
-      path: '/partner', 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      exact: true, 
-      needsAttention: false,
-      locked: false // Dashboard siempre accesible
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
+      } catch {
+        /* sin almacenamiento: solo dura la sesión */
+      }
+      return next;
+    });
+  };
+
+  const navItems: NavItem[] = [
+    { path: '/partner', icon: LayoutDashboard, label: 'Resumen', end: true },
+    { path: '/partner/profile', icon: UserCircle, label: 'Mi perfil', attention: !isProfileComplete },
+    {
+      path: '/partner/kyb',
+      icon: Shield,
+      label: 'Verificación KYB',
+      attention: isProfileComplete && !isKybVerified,
+      locked: !isProfileComplete,
+      lockedMessage: 'Completa tu perfil para habilitar la verificación KYB',
     },
-    { 
-      path: '/partner/profile', 
-      icon: UserCircle, 
-      label: 'Mi Perfil', 
-      exact: false, 
-      needsAttention: !isProfileComplete,
-      locked: false // Perfil siempre accesible
-    },
-    { 
-      path: '/partner/kyb', 
-      icon: Shield, 
-      label: 'Verificación KYB', 
-      exact: false, 
-      needsAttention: isProfileComplete && !isKybVerified, // Alerta si Perfil está listo pero KYB no aprobado
-      locked: !isProfileComplete, // Bloqueado solo si falta completar perfil
-      lockedMessage: 'Complete Mi Perfil para habilitar la Verificación KYB'
-    },
-    { 
-      path: '/partner/projects', 
-      icon: FolderKanban, 
-      label: 'Mis Proyectos', 
-      exact: false, 
-      needsAttention: false,
-      locked: !isKybVerified, // Bloqueado hasta que el admin apruebe el KYB
+    {
+      path: '/partner/projects',
+      icon: FolderKanban,
+      label: 'Mis proyectos',
+      locked: !isKybVerified,
       lockedMessage: !isProfileComplete
-        ? 'Complete Mi Perfil y la Verificación KYB para acceder'
-        : 'Verificación KYB debe ser aprobada por un administrador'
+        ? 'Completa tu perfil y la verificación KYB para acceder'
+        : 'La verificación KYB debe ser aprobada por un administrador',
     },
   ];
 
+  const name = profile?.name || user?.name || 'Partner';
+  const email = profile?.contact_email || user?.email;
+  const sidebarProps = { items: navItems, canCreate: isKybVerified, name, email, logoUrl: profile?.logo_url, onLogout: handleLogout };
+
   return (
-    <div className="ptr-root !min-h-screen !bg-[#f6f8f7] !flex !font-sans !w-full">
-      {/* ====== Sidebar Desktop ====== */}
+    <div className="ptr-root min-h-screen w-full bg-[#f6f8f7] font-sans text-gray-900">
       <aside
-        className={`!hidden lg:!flex !flex-col !h-screen !bg-[#0b2a2a] !fixed !left-0 !top-0 !z-50 !overflow-y-auto !transition-all !duration-300 ${
-          sidebarCollapsed ? '!w-20' : '!w-72'
-        }`}
+        className={cx(
+          'hidden lg:flex flex-col fixed inset-y-0 left-0 z-50 bg-[#0b2a2a] transition-[width] duration-200',
+          sidebarCollapsed ? 'w-[72px]' : 'w-64',
+        )}
       >
-        {/* Logo */}
-        <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b border-white/10 !flex-shrink-0">
-          <img
-            src="/images/brand/logo-horizontal-white.svg"
-            alt="CompensaTuViaje"
-            className={`!h-10 !w-auto  !transition-all ${sidebarCollapsed ? '!hidden' : ''}`}
-          />
-          {sidebarCollapsed && (
-            <img src="/images/brand/logo-icon.svg" alt="CompensaTuViaje" className="!h-9 !w-9 !object-contain " />
-          )}
-        </div>
-
-        {/* Partner Info */}
-        <div className="!px-4 !py-4 !border-b border-white/10">
-          <div className={`!flex !items-center !gap-3 !p-4 !rounded-xl !bg-white/5 !border !border-white/10 ${sidebarCollapsed ? '!justify-center' : ''}`}>
-            {profile?.logo_url ? (
-              <img
-                src={profile.logo_url}
-                alt={profile.name}
-                className="!w-10 !h-10 !rounded-full !object-cover !flex-shrink-0 !shadow-lg"
-              />
-            ) : (
-              <div className="!w-10 !h-10 !rounded-full !bg-white/10 !flex !items-center !justify-center text-white !font-bold !flex-shrink-0">
-                <Building2 className="!w-5 !h-5" />
-              </div>
-            )}
-            {!sidebarCollapsed && (
-              <div className="!flex-1 !min-w-0">
-                <p className="!text-sm !font-bold text-white !truncate">{profile?.name || 'Partner'}</p>
-                <p className="!text-xs !text-[#9fb6b3] !truncate">{profile?.contact_email || user?.email}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="!flex-1 !px-4 !py-6 !space-y-2">
-          {navItems.map((item) => (
-            item.locked ? (
-              // ITEM BLOQUEADO - Mostrar con candado
-              <div
-                key={item.path}
-                className={`!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-left !font-medium !cursor-not-allowed !opacity-50 bg-slate-800/50 text-slate-500 ${sidebarCollapsed ? '!justify-center' : ''}`}
-                title={item.lockedMessage || 'Bloqueado'}
-              >
-                <div className="!relative">
-                  <item.icon className="!w-5 !h-5 !flex-shrink-0" />
-                  <Lock className="!absolute !-top-1 !-right-1 !w-3 !h-3 text-amber-400" />
-                </div>
-                {!sidebarCollapsed && (
-                  <>
-                    <span className="!truncate">{item.label}</span>
-                    <Lock className="!ml-auto !w-4 !h-4 text-amber-400" />
-                  </>
-                )}
-              </div>
-            ) : (
-              // ITEM NORMAL - NavLink activo
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.exact}
-                className={({ isActive }) =>
-                  `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-colors !text-left !font-medium !border-0 !outline-none !relative !no-underline ${
-                    isActive
-                      ? '!bg-white/10 !text-white !shadow-[inset_3px_0_0_#3ED32B]'
-                      : 'bg-transparent !text-[#c9d6d4] hover:!bg-white/5 hover:!text-white'
-                  } ${sidebarCollapsed ? '!justify-center' : ''}`
-                }
-                title={sidebarCollapsed ? item.label : undefined}
-              >
-                <item.icon className="!w-5 !h-5 !flex-shrink-0" />
-                {!sidebarCollapsed && (
-                  <span className="!truncate">{item.label}</span>
-                )}
-                {!sidebarCollapsed && item.needsAttention && (
-                  <span className="!ml-auto !w-2.5 !h-2.5 bg-amber-400 !rounded-full !shadow-lg !shadow-amber-400/50" />
-                )}
-              </NavLink>
-            )
-          ))}
-
-          {/* New Project Button - Bloqueado hasta que el admin apruebe KYB */}
-          {!sidebarCollapsed && (
-            <div className="!pt-4 !mt-4 !border-t border-white/10">
-              {!isKybVerified ? (
-                <div
-                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 bg-slate-700/50 text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60"
-                  title="Complete la verificación KYB para crear proyectos"
-                >
-                  <Lock className="!w-4 !h-4" />
-                  <span className="!line-through">Nuevo Proyecto</span>
-                </div>
-              ) : (
-                <NavLink
-                  to="/partner/projects/create"
-                  className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-[#3ED32B] !text-[#0b2a2a] !rounded-lg hover:!bg-[#93DC88] !transition-colors !font-semibold !no-underline"
-                >
-                  <Plus className="!w-5 !h-5" />
-                  Nuevo Proyecto
-                </NavLink>
-              )}
-            </div>
-          )}
-          {sidebarCollapsed && (
-            <div className="!pt-4 !mt-4 !border-t border-white/10 !flex !justify-center">
-              {!isKybVerified ? (
-                <div
-                  className="!p-3 bg-slate-700/50 text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60"
-                  title="Complete la verificación KYB para crear proyectos"
-                >
-                  <Lock className="!w-5 !h-5" />
-                </div>
-              ) : (
-                <NavLink
-                  to="/partner/projects/create"
-                  className="!p-3 !bg-[#3ED32B] !text-[#0b2a2a] !rounded-lg hover:!bg-[#93DC88] !transition-colors !no-underline"
-                  title="Nuevo Proyecto"
-                >
-                  <Plus className="!w-5 !h-5" />
-                </NavLink>
-              )}
-            </div>
-          )}
-        </nav>
-
-        {/* Footer */}
-        <div className="!mt-auto !px-4 !pb-6 !space-y-1 !flex-shrink-0 !border-t border-white/10 !pt-4">
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-[#c9d6d4] hover:!bg-white/5 hover:!text-white !bg-transparent !border-0 !transition-all !cursor-pointer"
-          >
-            {sidebarCollapsed ? <ChevronRight className="!w-5 !h-5" /> : <ChevronLeft className="!w-5 !h-5" />}
-            {!sidebarCollapsed && <span>Colapsar</span>}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl text-red-400 hover:bg-red-500/20 hover:text-red-300 !bg-transparent !border-0 !transition-all !cursor-pointer"
-          >
-            <LogOut className="!w-5 !h-5" />
-            {!sidebarCollapsed && <span>Cerrar Sesión</span>}
-          </button>
-        </div>
+        <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} {...sidebarProps} />
       </aside>
 
-      {/* ====== Sidebar Mobile ====== */}
       {mobileMenuOpen && (
-        <div
-          className="!fixed !inset-0 !z-[60] bg-black/60 !backdrop-blur-sm lg:!hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        >
+        <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setMobileMenuOpen(false)}>
           <aside
-            className="!fixed !left-0 !top-0 !h-full !w-72 !bg-[#0b2a2a] !flex !flex-col"
+            className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-[#0b2a2a] flex flex-col"
             onClick={(e) => e.stopPropagation()}
+            aria-label="Menú"
           >
-            <div className="!flex !items-center !justify-center !h-20 !px-6 !border-b border-white/10">
-              <img src="/images/brand/logo-horizontal-white.svg" alt="CompensaTuViaje" className="!h-10 !w-auto" />
-            </div>
-
-            <div className="!px-4 !py-4 !border-b border-white/10">
-              <div className="!flex !items-center !gap-3 !p-4 !rounded-xl !bg-white/5 !border !border-white/10">
-                {profile?.logo_url ? (
-                  <img src={profile.logo_url} alt={profile.name} className="!w-12 !h-12 !rounded-full !object-cover !shadow-lg" />
-                ) : (
-                  <div className="!w-12 !h-12 !rounded-full !bg-white/10 !flex !items-center !justify-center text-white !font-bold">
-                    <Building2 className="!w-6 !h-6" />
-                  </div>
-                )}
-                <div className="!flex-1 !min-w-0">
-                  <p className="!text-sm !font-bold text-white">{profile?.name || 'Partner'}</p>
-                  <p className="!text-xs !text-[#9fb6b3] !truncate">{profile?.contact_email || user?.email}</p>
-                </div>
-              </div>
-            </div>
-
-            <nav className="!flex-1 !px-4 !py-6 !space-y-2">
-              {navItems.map((item) => (
-                item.locked ? (
-                  // ITEM BLOQUEADO (Mobile)
-                  <div
-                    key={item.path}
-                    className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl !text-left !font-medium !cursor-not-allowed !opacity-50 bg-slate-800/50 text-slate-500"
-                    title={item.lockedMessage || 'Bloqueado'}
-                  >
-                    <div className="!relative">
-                      <item.icon className="!w-5 !h-5" />
-                      <Lock className="!absolute !-top-1 !-right-1 !w-3 !h-3 text-amber-400" />
-                    </div>
-                    {item.label}
-                    <Lock className="!ml-auto !w-4 !h-4 text-amber-400" />
-                  </div>
-                ) : (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.exact}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-lg !transition-colors !text-left !font-medium !border-0 !no-underline ${
-                        isActive
-                          ? '!bg-white/10 !text-white !shadow-[inset_3px_0_0_#3ED32B]'
-                          : 'text-slate-300 hover:bg-white/10'
-                      }`
-                    }
-                  >
-                    <item.icon className="!w-5 !h-5" />
-                    {item.label}
-                    {item.needsAttention && (
-                      <span className="!ml-auto !w-2.5 !h-2.5 bg-amber-400 !rounded-full" />
-                    )}
-                  </NavLink>
-                )
-              ))}
-              <div className="!pt-4 !mt-4 !border-t border-white/10">
-                {!isKybVerified ? (
-                  <div className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 bg-slate-700/50 text-slate-500 !rounded-xl !cursor-not-allowed !opacity-60">
-                    <Lock className="!w-4 !h-4" />
-                    <span className="!line-through">Nuevo Proyecto</span>
-                  </div>
-                ) : (
-                  <NavLink
-                    to="/partner/projects/create"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="!flex !items-center !justify-center !gap-2 !w-full !px-4 !py-3 !bg-[#3ED32B] !text-[#0b2a2a] !rounded-lg !font-semibold !no-underline"
-                  >
-                    <Plus className="!w-5 !h-5" />
-                    Nuevo Proyecto
-                  </NavLink>
-                )}
-              </div>
-            </nav>
-
-            <div className="!px-4 !pb-6 !border-t border-white/10 !pt-4">
-              <button
-                onClick={handleLogout}
-                className="!w-full !flex !items-center !gap-3 !px-4 !py-3 !rounded-xl text-red-400 hover:bg-red-500/20 !bg-transparent !border-0 !cursor-pointer"
-              >
-                <LogOut className="!w-5 !h-5" />
-                Cerrar Sesión
-              </button>
-            </div>
-
             <button
-              className="!absolute !top-4 !right-4 text-white/60 !text-2xl !border-0 !bg-transparent !cursor-pointer"
+              type="button"
               onClick={() => setMobileMenuOpen(false)}
               aria-label="Cerrar menú"
+              className="absolute top-4 right-3 w-8 h-8 rounded-lg border-0 bg-transparent text-[#c9d6d4] hover:bg-white/10 flex items-center justify-center cursor-pointer"
             >
-              ×
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
+            <Sidebar collapsed={false} onNavigate={() => setMobileMenuOpen(false)} {...sidebarProps} />
           </aside>
         </div>
       )}
 
-      {/* ====== Main Content ====== */}
-      <main className={`!flex-1 !min-h-screen !transition-all !duration-300 !w-full ${sidebarCollapsed ? 'lg:!ml-20' : 'lg:!ml-72'}`}>
-        {/* Header */}
-        <header className="bg-white/90 dark:bg-slate-900/90 !backdrop-blur-md border-b border-slate-200 dark:border-slate-700 !sticky !top-0 !z-40">
-          <div className="!max-w-7xl !mx-auto !px-6 !py-4">
-            <div className="!flex !items-center !justify-between">
-              <div className="!flex !items-center !gap-4">
-                <button
-                  onClick={() => setMobileMenuOpen(true)}
-                  aria-label="Abrir menú"
-                  className="lg:!hidden !p-2 !rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 !border-0 !cursor-pointer"
-                >
-                  <Menu className="!w-6 !h-6" />
-                </button>
-                <div>
-                  <p className="!text-sm !font-semibold !text-slate-900 !m-0">Portal de Impact Partners</p>
-                  <p className="!text-xs !text-slate-500 !m-0">Gestión de tus proyectos de compensación</p>
-                </div>
-              </div>
-
-              <div className="!flex !items-center !gap-3">
-                <NavLink
-                  to="/partner/profile"
-                  className="!hidden sm:!flex !items-center !gap-3 !no-underline"
-                >
-                  <div className="!text-right">
-                    <p className="!text-sm !font-bold text-slate-900 dark:text-slate-100">{profile?.name || user?.name || 'Partner'}</p>
-                    <p className="!text-xs text-slate-500 dark:text-slate-400">Impact Partner</p>
-                  </div>
-                  {profile?.logo_url ? (
-                    <img src={profile.logo_url} alt={profile.name} className="!w-9 !h-9 !rounded-full !object-contain !bg-white !border !border-slate-200" />
-                  ) : (
-                    <div className="!w-10 !h-10 !rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 !flex !items-center !justify-center !font-bold">
-                      {profile?.name?.charAt(0) || 'P'}
-                    </div>
-                  )}
-                </NavLink>
-              </div>
+      <main className={cx('min-h-screen transition-[margin] duration-200', sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64')}>
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
+          <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Abrir menú"
+                className={cx(btn.icon, 'lg:hidden')}
+              >
+                <Menu className="w-[18px] h-[18px]" aria-hidden="true" />
+              </button>
+              <p className="m-0 text-sm text-gray-500 truncate">
+                <span className="hidden sm:inline">Portal de partners</span>
+                <span className="hidden sm:inline mx-2 text-gray-300">/</span>
+                <span className="font-semibold text-gray-900">{sectionOf(location.pathname)}</span>
+              </p>
             </div>
+            <Link to="/partner/profile" className="flex items-center gap-3 no-underline min-w-0">
+              <span className="hidden sm:block text-right min-w-0">
+                <span className="block text-sm font-semibold text-gray-900 truncate">{name}</span>
+                <span className="block text-xs text-gray-500">Impact Partner</span>
+              </span>
+              <span className="rounded-lg border border-gray-200">
+                <PartnerLogo url={profile?.logo_url} name={name} size="sm" />
+              </span>
+            </Link>
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="!max-w-7xl !mx-auto !px-6 !py-8">
-          {/* KYB Required Banner - mostrar solo si el perfil está listo pero KYB aún no aprobado */}
-          {isProfileComplete && !isKybVerified && (
-            <div className="!mb-6 !p-4 bg-amber-50 dark:bg-amber-900/20 !border border-amber-200 dark:border-amber-800 !rounded-xl">
-              <div className="!flex !items-start !gap-3">
-                <AlertCircle className="!w-5 !h-5 text-amber-600 dark:text-amber-400 !flex-shrink-0 !mt-0.5" />
-                <div className="!flex-1">
-                  <h3 className="!text-sm !font-semibold text-amber-800 dark:text-amber-300">
-                    Verificación KYB Pendiente
-                  </h3>
-                  <p className="!text-sm text-amber-700 dark:text-amber-400 !mt-1">
-                    Para crear proyectos ESG, primero debe completar la verificación de su empresa (KYB).
-                    Este proceso nos permite validar su organización y habilitar todas las funcionalidades de la plataforma.
-                  </p>
-                  <NavLink
-                    to="/partner/kyb"
-                    className="!inline-flex !items-center !gap-2 !mt-3 !px-4 !py-2 !bg-[#073D3D] !text-white !rounded-lg hover:!bg-[#0b5250] !transition-colors !text-sm !font-medium !no-underline"
-                  >
-                    <Shield className="!w-4 !h-4" />
-                    Completar Verificación KYB
-                  </NavLink>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          {isProfileComplete && !isKybVerified && !location.pathname.startsWith('/partner/kyb') && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <ShieldAlert className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex-1 min-w-0">
+                <p className="m-0 text-sm font-semibold text-amber-900">Falta la verificación de tu empresa (KYB)</p>
+                <p className="m-0 mt-0.5 text-sm text-amber-800">
+                  La necesitamos para validar tu organización y habilitar la creación de proyectos.
+                </p>
               </div>
+              <Link to="/partner/kyb" className={cx(btn.secondary, btn.sm, 'flex-shrink-0')}>
+                Verificar
+              </Link>
             </div>
           )}
-          
           <Outlet />
         </div>
       </main>

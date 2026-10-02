@@ -1,433 +1,255 @@
 // ============================================
 // PARTNER DASHBOARD PAGE
-// Portal Principal del Partner
+// Resumen del partner: pasos pendientes, verificación, cifras y proyectos.
 // ============================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  PartnerStats,
-  OnboardingStatus,
-  EsgProject,
-  PROJECT_STATUS_LABELS,
-  PROJECT_STATUS_COLORS
-} from '../../../types/partner.types';
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  Clock,
+  FolderKanban,
+  Leaf,
+  Plus,
+  Shield,
+  ShieldCheck,
+  Wallet,
+  XCircle,
+} from 'lucide-react';
+import type { EsgProject, OnboardingStatus, PartnerStats } from '../../../types/partner.types';
 import type { KybStatusResponse } from '../../../types/kyb.types';
-import { getKybVisualStatus, KYB_TIER_LABELS, KYB_TIER_ICONS } from '../../../types/kyb.types';
-import { getPartnerStats, getPartnerProjects } from '../services/partnerApi';
+import { getKybVisualStatus, KYB_TIER_LABELS } from '../../../types/kyb.types';
+import { getPartnerProjects, getPartnerStats } from '../services/partnerApi';
 import { usePartnerContext } from '../context/PartnerContext';
-import { Shield, ArrowRight, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
+import {
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  cx,
+  EmptyState,
+  fmtCLP,
+  fmtInt,
+  fmtKgAuto,
+  PageHeader,
+  Progress,
+  ProjectStatusBadge,
+  Skeleton,
+  StatCard,
+  type Tone,
+} from '../ui';
 
 // ============================================
-// STAT CARD COMPONENT
+// PASOS DE CONFIGURACIÓN
 // ============================================
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ReactNode;
-  color: 'green' | 'blue' | 'yellow' | 'purple' | 'orange';
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, icon, color }) => {
-  const colorClasses = {
-    green: 'bg-brand-50 dark:bg-brand-600/10 text-brand-800 dark:text-brand-300 border-brand-200 dark:border-brand-700',
-    blue: 'bg-slate-50 dark:bg-brand-700/10 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-400',
-    yellow: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-    purple: 'bg-slate-50 dark:bg-brand-700/10 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-400',
-    orange: 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800'
-  };
-
-  return (
-    <div className={`!rounded-xl border-2 !p-6 ${colorClasses[color]}`}>
-      <div className="!flex !items-center !justify-between">
-        <div>
-          <p className="!text-sm !font-medium !opacity-80">{title}</p>
-          <p className="!text-3xl !font-bold !mt-1">{value}</p>
-          {subtitle && <p className="!text-xs !mt-1 !opacity-70">{subtitle}</p>}
-        </div>
-        <div className="!opacity-50">{icon}</div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// ONBOARDING PROGRESS COMPONENT
-// ============================================
-
-interface OnboardingProgressProps {
-  status: OnboardingStatus;
-}
-
-const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ status }) => {
-  if (status.completed) return null;
-
+const OnboardingCard: React.FC<{ status: OnboardingStatus }> = ({ status }) => {
   const steps = [
-    { key: 'profile', label: 'Completar perfil', completed: status.steps.profile },
-    { key: 'logo', label: 'Subir logo', completed: status.steps.logo },
-    { key: 'bank_details', label: 'Datos bancarios', completed: status.steps.bank_details }
+    { key: 'profile', label: 'Completar perfil', done: status.steps.profile },
+    { key: 'logo', label: 'Subir logo', done: status.steps.logo },
+    { key: 'bank_details', label: 'Datos bancarios', done: status.steps.bank_details },
   ];
-
   return (
-    <div className="bg-brand-700 !rounded-xl !p-6 text-white !mb-6">
-      <div className="!flex !items-center !justify-between !mb-4">
-        <div>
-          <h3 className="!text-lg !font-semibold">Completa tu onboarding</h3>
-          <p className="text-slate-100 !text-sm">
-            Configura tu cuenta para comenzar a crear proyectos
-          </p>
-        </div>
-        <div className="!text-right">
-          <span className="!text-3xl !font-bold">{status.percentage}%</span>
-          <p className="text-slate-100 !text-sm">completado</p>
-        </div>
-      </div>
-
-      <div className="!w-full bg-brand-700 !rounded-full !h-2 !mb-4">
-        <div
-          className="bg-white !rounded-full !h-2 !transition-all !duration-500"
-          style={{ width: `${status.percentage}%` }}
-        />
-      </div>
-
-      <div className="!flex !gap-4">
-        {steps.map((step) => (
-          <div
-            key={step.key}
-            className={`!flex !items-center !gap-2 !px-3 !py-2 !rounded-lg ${
-              step.completed ? 'bg-brand-700/50' : 'bg-brand-800/50'
-            }`}
-          >
-            {step.completed ? (
-              <svg className="!w-5 !h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            ) : (
-              <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-              </svg>
+    <Card>
+      <CardHeader
+        title="Termina de configurar tu cuenta"
+        subtitle="Con estos pasos listos podrás verificar tu empresa y crear proyectos."
+        action={<span className="text-2xl font-bold text-brand-700 tabular-nums">{status.percentage} %</span>}
+      />
+      <Progress value={status.percentage} label="Configuración completada" />
+      <ul className="m-0 p-0 list-none mt-5 grid gap-2 sm:grid-cols-3">
+        {steps.map((s) => (
+          <li
+            key={s.key}
+            className={cx(
+              'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm',
+              s.done ? 'border-brand-100 bg-brand-50 text-brand-800' : 'border-gray-200 text-gray-700',
             )}
-            <span className="!text-sm">{step.label}</span>
-          </div>
+          >
+            {s.done ? (
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+            ) : (
+              <Circle className="w-4 h-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
+            )}
+            <span>{s.label}</span>
+            <span className="sr-only">{s.done ? '(listo)' : '(pendiente)'}</span>
+          </li>
         ))}
-      </div>
-
-      <Link
-        to="/partner/profile"
-        className="!inline-flex !items-center !gap-2 !mt-4 !px-4 !py-2 bg-white text-slate-700 !rounded-lg !font-medium hover:bg-slate-50 !transition-colors"
-      >
+      </ul>
+      <Link to="/partner/profile" className={cx(btn.primary, 'mt-5')}>
         Continuar configuración
-        <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-        </svg>
+        <ArrowRight className="w-4 h-4" aria-hidden="true" />
       </Link>
-    </div>
+    </Card>
   );
 };
 
 // ============================================
-// RECENT PROJECTS COMPONENT
+// ESTADO DE VERIFICACIÓN (KYB)
 // ============================================
 
-interface RecentProjectsProps {
-  projects: EsgProject[];
-  loading: boolean;
-}
+const KYB_VIEW: Record<string, { icon: React.ComponentType<{ className?: string }>; tone: Tone; title: string; text: string; cta: string }> = {
+  approved: { icon: ShieldCheck, tone: 'success', title: 'Empresa verificada', text: 'Tu cuenta está activa y puedes publicar proyectos.', cta: 'Ver verificación' },
+  pending: { icon: Clock, tone: 'info', title: 'Verificación en proceso', text: 'Estamos evaluando el dossier de tu empresa.', cta: 'Ver estado' },
+  ai_approved_pending: { icon: Clock, tone: 'warning', title: 'Esperando revisión final', text: 'La evaluación automática terminó; falta la decisión del equipo.', cta: 'Ver resultados' },
+  ai_rejected_pending: { icon: Clock, tone: 'warning', title: 'Esperando revisión final', text: 'La evaluación automática terminó; falta la decisión del equipo.', cta: 'Ver resultados' },
+  rejected: { icon: XCircle, tone: 'danger', title: 'Verificación rechazada', text: 'Revisa el motivo y envía nueva documentación.', cta: 'Ver motivo' },
+  error: { icon: AlertTriangle, tone: 'danger', title: 'No pudimos evaluar tu dossier', text: 'Hubo un problema con la evaluación. Vuelve a intentarlo.', cta: 'Reintentar' },
+  none: { icon: Shield, tone: 'neutral', title: 'Verifica tu empresa', text: 'Es necesario para activar tu cuenta y publicar proyectos.', cta: 'Iniciar verificación' },
+};
 
-const RecentProjects: React.FC<RecentProjectsProps> = ({ projects, loading }) => {
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6">
-        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">Proyectos Recientes</h3>
-        <div className="!space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="!animate-pulse !flex !items-center !gap-4">
-              <div className="!w-12 !h-12 bg-gray-200 dark:bg-slate-700 !rounded-lg" />
-              <div className="!flex-1">
-                <div className="!h-4 bg-gray-200 dark:bg-slate-700 !rounded !w-3/4 !mb-2" />
-                <div className="!h-3 bg-gray-200 dark:bg-slate-700 !rounded !w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+const ICON_TONE: Record<Tone, string> = {
+  success: 'bg-brand-50 text-brand-700',
+  warning: 'bg-amber-50 text-amber-700',
+  danger: 'bg-rose-50 text-rose-700',
+  info: 'bg-sky-50 text-sky-800',
+  neutral: 'bg-gray-100 text-gray-600',
+  chain: 'bg-brand-900/5 text-brand-900',
+};
 
+const KybCard: React.FC<{ kybStatus: KybStatusResponse | null; loading: boolean }> = ({ kybStatus, loading }) => {
+  if (loading) return <Skeleton className="h-[88px]" />;
+  const evaluation = kybStatus?.latest_evaluation ?? null;
+  const visual = getKybVisualStatus(evaluation);
+  const view = KYB_VIEW[visual] ?? KYB_VIEW.none;
+  const Icon = view.icon;
+  const tier = evaluation?.partner_tier ? KYB_TIER_LABELS[evaluation.partner_tier] : null;
   return (
-    <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6">
-      <div className="!flex !items-center !justify-between !mb-4">
-        <h3 className="!text-lg !font-semibold text-gray-800 dark:text-slate-100">Proyectos Recientes</h3>
+    <Card className="p-5">
+      <div className="flex items-center gap-4 flex-wrap">
+        <span className={cx('w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0', ICON_TONE[view.tone])}>
+          <Icon className="w-5 h-5" aria-hidden="true" />
+        </span>
+        <div className="flex-1 min-w-[12rem]">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="m-0 text-base font-semibold text-gray-900">{view.title}</h2>
+            {visual === 'approved' && tier && <Badge tone="warning">Nivel {tier}</Badge>}
+          </div>
+          <p className="m-0 mt-0.5 text-sm text-gray-500">{view.text}</p>
+        </div>
         <Link
-          to="/partner/projects"
-          className="!text-sm text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 !font-medium !no-underline"
+          to="/partner/kyb"
+          className={cx(visual === 'none' || visual === 'rejected' || visual === 'error' ? btn.primary : btn.secondary, btn.sm)}
         >
-          Ver todos →
+          {view.cta}
         </Link>
       </div>
+    </Card>
+  );
+};
 
-      {projects.length === 0 ? (
-        <div className="!text-center !py-8">
-          <div className="!w-16 !h-16 bg-gray-100 dark:bg-slate-700 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
-            <svg className="!w-8 !h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
-          </div>
-          <p className="text-gray-500 dark:text-slate-400 !mb-4">No tienes proyectos aún</p>
-          <Link
-            to="/partner/projects/create"
-            className="!inline-flex !items-center !gap-2 !px-4 !py-2 bg-brand-600 text-white !rounded-lg hover:bg-brand-700 !transition-all !no-underline"
-          >
-            <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Crear primer proyecto
-          </Link>
-        </div>
-      ) : (
-        <div className="!space-y-3">
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              to={`/partner/projects/${project.id}`}
-              className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 !transition-colors !group"
-            >
-              <div className="!w-12 !h-12 bg-brand-50 dark:bg-brand-600/10 !rounded-lg !flex !items-center !justify-center text-brand-800 dark:text-brand-700">
-                <svg className="!w-6 !h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                  />
-                </svg>
-              </div>
-              <div className="!flex-1 !min-w-0">
-                <p className="!font-medium text-slate-800 dark:text-slate-100 !truncate group-hover:text-brand-800 dark:group-hover:text-brand-700">
-                  {project.name}
-                </p>
-                <p className="!text-sm text-gray-500 dark:text-slate-400">
-                  {project.code} • {project.location_country}
-                </p>
-              </div>
-              <span
-                className={`!px-2.5 !py-1 !text-xs !font-medium !rounded-full ${
-                  PROJECT_STATUS_COLORS[project.status]
-                }`}
-              >
-                {PROJECT_STATUS_LABELS[project.status]}
-              </span>
+// ============================================
+// PROYECTOS RECIENTES
+// ============================================
+
+const RecentProjects: React.FC<{ projects: EsgProject[]; loading: boolean; canCreate: boolean }> = ({ projects, loading, canCreate }) => (
+  <Card className="p-0">
+    <div className="px-6 pt-6">
+      <CardHeader
+        title="Proyectos recientes"
+        icon={FolderKanban}
+        action={
+          projects.length > 0 ? (
+            <Link to="/partner/projects" className={cx(btn.ghost, btn.sm)}>
+              Ver todos
             </Link>
-          ))}
-        </div>
-      )}
+          ) : undefined
+        }
+        className="mb-2"
+      />
     </div>
-  );
-};
-
-// ============================================
-// KYB STATUS CARD COMPONENT
-// ============================================
-
-interface KybStatusCardProps {
-  kybStatus: KybStatusResponse | null;
-  loading: boolean;
-}
-
-const KybStatusCard: React.FC<KybStatusCardProps> = ({ kybStatus, loading }) => {
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6 !animate-pulse">
-        <div className="!h-6 bg-gray-200 dark:bg-slate-700 !rounded !w-1/2 !mb-4" />
-        <div className="!h-16 bg-gray-200 dark:bg-slate-700 !rounded !mb-4" />
-        <div className="!h-10 bg-gray-200 dark:bg-slate-700 !rounded !w-1/3" />
-      </div>
-    );
-  }
-
-  const visualStatus = getKybVisualStatus(kybStatus?.latest_evaluation || null);
-  const evaluation = kybStatus?.latest_evaluation;
-
-  // Determine card style and content based on status
-  const getStatusConfig = () => {
-    switch (visualStatus) {
-      case 'approved':
-        return {
-          bgGradient: ' bg-brand-50  dark:bg-brand-600/10 ',
-          borderColor: 'border-brand-200 dark:border-brand-700',
-          icon: <CheckCircle className="!w-8 !h-8 text-brand-800 dark:text-brand-700" />,
-          title: 'Empresa Verificada',
-          description: evaluation?.partner_tier
-            ? `Nivel ${KYB_TIER_LABELS[evaluation.partner_tier]} ${KYB_TIER_ICONS[evaluation.partner_tier]}`
-            : 'Tu cuenta está activa',
-          buttonText: 'Ver Detalles',
-          buttonStyle: 'bg-brand-50 dark:bg-brand-600/10 text-brand-800 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-600/20'
-        };
-      case 'pending':
-        return {
-          bgGradient: ' bg-slate-50  dark:bg-brand-700/10 ',
-          borderColor: 'border-slate-200 dark:border-slate-400',
-          icon: <Clock className="!w-8 !h-8 text-slate-700 dark:text-slate-600 !animate-pulse" />,
-          title: 'Verificación en Proceso',
-          description: 'Nuestra IA está evaluando tu dossier empresarial',
-          buttonText: 'Ver Estado',
-          buttonStyle: 'bg-slate-50 dark:bg-brand-700/10 text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-brand-700/20'
-        };
-      case 'ai_approved_pending':
-      case 'ai_rejected_pending':
-        return {
-          bgGradient: ' bg-amber-50  dark:bg-amber-500/10 ',
-          borderColor: 'border-amber-200 dark:border-amber-800',
-          icon: <Clock className="!w-8 !h-8 text-amber-600 dark:text-amber-400" />,
-          title: 'Pendiente Revisión Admin',
-          description: 'La IA completó la evaluación, esperando decisión final',
-          buttonText: 'Ver Resultados',
-          buttonStyle: 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/20'
-        };
-      case 'rejected':
-        return {
-          bgGradient: ' bg-red-50  dark:bg-red-500/10 ',
-          borderColor: 'border-red-200 dark:border-red-800',
-          icon: <XCircle className="!w-8 !h-8 text-red-600 dark:text-red-400" />,
-          title: 'Verificación Rechazada',
-          description: 'Puedes enviar nueva documentación',
-          buttonText: 'Ver Motivo',
-          buttonStyle: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-500/20'
-        };
-      case 'error':
-        return {
-          bgGradient: ' bg-red-50  dark:bg-red-500/10 ',
-          borderColor: 'border-red-200 dark:border-red-800',
-          icon: <AlertTriangle className="!w-8 !h-8 text-red-600 dark:text-red-400" />,
-          title: 'Error en Evaluación',
-          description: 'Hubo un problema, intenta nuevamente',
-          buttonText: 'Reintentar',
-          buttonStyle: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-500/20'
-        };
-      default: // 'none'
-        return {
-          bgGradient: ' bg-slate-50  dark:bg-slate-800 ',
-          borderColor: 'border-slate-200 dark:border-slate-700',
-          icon: <Shield className="!w-8 !h-8 text-slate-400 dark:text-slate-500" />,
-          title: 'Verificación Pendiente',
-          description: 'Verifica tu empresa para activar tu cuenta',
-          buttonText: 'Iniciar Verificación',
-          buttonStyle: 'bg-brand-700 dark:bg-brand-700 text-white hover:bg-brand-700 dark:hover:bg-brand-700'
-        };
-    }
-  };
-
-  const config = getStatusConfig();
-
-  return (
-    <div className={`!rounded-xl !border !p-6 ${config.bgGradient} ${config.borderColor}`}>
-      <div className="!flex !items-start !gap-4">
-        <div className="!flex-shrink-0">
-          {config.icon}
-        </div>
-        <div className="!flex-grow">
-          <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-1">
-            {config.title}
-          </h3>
-          <p className="!text-sm text-slate-600 dark:text-slate-300 !mb-4">
-            {config.description}
-          </p>
-          <Link
-            to="/partner/kyb"
-            className={`!inline-flex !items-center !gap-2 !px-4 !py-2 !rounded-lg !font-medium !transition-colors !no-underline ${config.buttonStyle}`}
-          >
-            {config.buttonText}
-            <ArrowRight className="!w-4 !h-4" />
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// QUICK ACTIONS COMPONENT
-// ============================================
-
-const QuickActions: React.FC = () => {
-  const actions = [
-    {
-      title: 'Crear Proyecto',
-      description: 'Registra un nuevo proyecto ESG',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-        </svg>
-      ),
-      link: '/partner/projects/create',
-      color: 'bg-brand-600 hover:bg-brand-700'
-    },
-    {
-      title: 'Ver Proyectos',
-      description: 'Administra tus proyectos activos',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-          />
-        </svg>
-      ),
-      link: '/partner/projects',
-      color: 'bg-brand-700 hover:bg-brand-800'
-    },
-    {
-      title: 'Mi Perfil',
-      description: 'Actualiza tu información',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-          />
-        </svg>
-      ),
-      link: '/partner/profile',
-      color: 'bg-brand-700 hover:bg-brand-800'
-    }
-  ];
-
-  return (
-    <div className="bg-white dark:bg-slate-800 !rounded-xl !shadow-sm !border border-slate-200 dark:border-slate-700 !p-6">
-      <h3 className="!text-lg !font-semibold text-gray-800 dark:text-slate-100 !mb-4">Acciones Rápidas</h3>
-      <div className="!space-y-3">
-        {actions.map((action, index) => (
-          <Link
-            key={index}
-            to={action.link}
-            className="!flex !items-center !gap-4 !p-3 !rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 hover:!scale-[1.02] active:!scale-[0.98] !transition-all !group"
-          >
-            <div className={`!w-12 !h-12 ${action.color} !rounded-lg !flex !items-center !justify-center text-white !transition-colors`}>
-              {action.icon}
-            </div>
-            <div>
-              <p className="!font-medium text-slate-800 dark:text-slate-100 group-hover:text-brand-800 dark:group-hover:text-brand-700">{action.title}</p>
-              <p className="!text-sm text-slate-500 dark:text-slate-400">{action.description}</p>
-            </div>
-          </Link>
+    {loading ? (
+      <div className="px-6 pb-6 space-y-3">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-14" />
         ))}
       </div>
-    </div>
+    ) : projects.length === 0 ? (
+      <EmptyState
+        icon={FolderKanban}
+        title="Aún no tienes proyectos"
+        text={canCreate ? 'Registra tu primer proyecto para empezar a recibir compensaciones.' : 'Podrás crear proyectos cuando tu verificación KYB esté aprobada.'}
+        action={
+          canCreate ? (
+            <Link to="/partner/projects/create" className={btn.primary}>
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              Crear primer proyecto
+            </Link>
+          ) : undefined
+        }
+      />
+    ) : (
+      <ul className="m-0 p-0 list-none pb-2">
+        {projects.map((project) => (
+          <li key={project.id} className="border-t border-gray-100 first:border-t-0">
+            <Link
+              to={`/partner/projects/${project.id}`}
+              className="flex items-center gap-4 px-6 py-3.5 no-underline hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="m-0 text-sm font-semibold text-gray-900 truncate">{project.name}</p>
+                <p className="m-0 mt-0.5 text-xs text-gray-500 truncate">
+                  {project.code}
+                  {(project.location_region || project.location_country) && (
+                    <> · {[project.location_region, project.location_country].filter(Boolean).join(', ')}</>
+                  )}
+                </p>
+              </div>
+              <ProjectStatusBadge status={project.status} />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    )}
+  </Card>
+);
+
+// ============================================
+// CAPACIDAD Y STOCK
+// ============================================
+
+const CapacityCard: React.FC<{ stats: PartnerStats | null; loading: boolean }> = ({ stats, loading }) => {
+  if (loading) return <Skeleton className="h-64" />;
+  const c = stats?.compensations;
+  const total = c?.total_capacity_total ?? 0;
+  const sold = c?.total_capacity_sold ?? 0;
+  const approved = c?.monthly_stock_approved_total ?? 0;
+  const remaining = c?.monthly_stock_remaining_total ?? 0;
+  return (
+    <Card>
+      <CardHeader title="Capacidad y stock" subtitle="Suma de todos tus proyectos" icon={Leaf} />
+      {total === 0 && approved === 0 ? (
+        <p className="m-0 text-sm text-gray-500">Verás aquí la capacidad cuando tengas proyectos aprobados.</p>
+      ) : (
+        <dl className="m-0 space-y-5">
+          <div>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <dt className="text-gray-500">Capacidad vendida</dt>
+              <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                {fmtInt(sold)} / {fmtInt(total)}
+              </dd>
+            </div>
+            <Progress value={total ? (sold / total) * 100 : 0} label="Capacidad vendida" className="mt-2" />
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <dt className="text-gray-500">Stock disponible este mes</dt>
+              <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                {fmtInt(remaining)} / {fmtInt(approved)}
+              </dd>
+            </div>
+            <Progress value={approved ? (remaining / approved) * 100 : 0} label="Stock disponible este mes" className="mt-2" />
+          </div>
+          <div className="flex items-baseline justify-between gap-3 text-sm border-t border-gray-100 pt-4">
+            <dt className="text-gray-500">Certificados emitidos</dt>
+            <dd className="m-0 font-semibold text-gray-900 tabular-nums">{fmtInt(c?.total_certificates)}</dd>
+          </div>
+        </dl>
+      )}
+    </Card>
   );
 };
 
@@ -436,193 +258,80 @@ const QuickActions: React.FC = () => {
 // ============================================
 
 const PartnerDashboard: React.FC = () => {
-  const { profile, onboarding, kybStatus, loading: kybLoading } = usePartnerContext();
+  const { profile, onboarding, kybStatus, loading: kybLoading, isKybVerified } = usePartnerContext();
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [recentProjects, setRecentProjects] = useState<EsgProject[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
+    let active = true;
+    (async () => {
+      // stats y proyectos recientes no forman parte del estado compartido
+      // de onboarding/KYB (PartnerContext): se cargan aquí.
+      const [s, p] = await Promise.allSettled([getPartnerStats(), getPartnerProjects({ limit: 5 })]);
+      if (!active) return;
+      setStats(s.status === 'fulfilled' ? s.value : null);
+      setRecentProjects(p.status === 'fulfilled' ? p.value?.projects || [] : []);
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-
-      // stats y proyectos recientes no forman parte del estado compartido
-      // de onboarding/KYB (PartnerContext) — se cargan localmente aquí.
-      const results = await Promise.allSettled([
-        getPartnerStats(),
-        getPartnerProjects({ limit: 5 }),
-      ]);
-
-      const statsData = results[0].status === 'fulfilled' ? results[0].value : null;
-      const projectsData = results[1].status === 'fulfilled' ? results[1].value : null;
-
-      setStats(statsData);
-      setRecentProjects(projectsData?.projects || []);
-
-      results.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          const endpoints = ['stats', 'projects'];
-          console.warn(`Error loading ${endpoints[index]}:`, result.reason);
-        }
-      });
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatNumber = (num: number): string => {
-    return new Intl.NumberFormat('es-CL').format(num);
-  };
-
-  const formatCurrency = (num: number): string => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0
-    }).format(num);
-  };
+  const p = stats?.projects;
+  const c = stats?.compensations;
 
   return (
-    <div className="!space-y-6">
-      {/* Welcome Header */}
-      <div className="bg-brand-700 !rounded-2xl !p-8 text-white !shadow-lg">
-        <div className="!flex !flex-col sm:!flex-row !items-start sm:!items-center !justify-between !gap-6">
-          <div>
-            {loading ? (
-              <>
-                <div className="!h-8 bg-brand-600/50 !rounded !w-64 !mb-3 !animate-pulse" />
-                <div className="!h-5 bg-brand-600/30 !rounded !w-80 !animate-pulse" />
-              </>
-            ) : (
-              <>
-                <h1 className="!text-2xl !font-bold text-white">
-                  ¡Bienvenido, {profile?.name || 'Partner'}!
-                </h1>
-                <p className="text-brand-100 !mt-1">
-                  {stats?.projects.total === 0
-                    ? '¡Completa tu KyB y publica tu primer proyecto para empezar!'
-                    : 'Panel de control de tu organización ESG'}
-                </p>
-              </>
-            )}
-          </div>
-          <Link
-            to="/partner/projects/create"
-            className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 bg-white text-brand-800 !rounded-xl hover:bg-brand-50 !transition-colors !font-semibold !shadow-lg !no-underline"
-          >
-            <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Nuevo Proyecto
-          </Link>
+    <div className="space-y-6">
+      <PageHeader
+        title={`Hola, ${profile?.name || 'partner'}`}
+        subtitle="Resumen de tu organización y de tus proyectos de compensación."
+        actions={
+          isKybVerified ? (
+            <Link to="/partner/projects/create" className={btn.primary}>
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              Nuevo proyecto
+            </Link>
+          ) : undefined
+        }
+      />
+
+      {onboarding && !onboarding.completed && <OnboardingCard status={onboarding} />}
+
+      <KybCard kybStatus={kybStatus} loading={kybLoading} />
+
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[118px]" />
+          ))}
         </div>
-      </div>
-
-      {/* Content */}
-      <div className="!space-y-6">
-        {/* Onboarding Progress */}
-        {loading && !onboarding ? (
-          <div className="!h-36 bg-slate-50 dark:bg-brand-700/10 !rounded-xl !animate-pulse !mb-6" />
-        ) : onboarding && !onboarding.completed && (
-          <OnboardingProgress status={onboarding} />
-        )}
-
-        {/* KYB Status Card */}
-        <KybStatusCard kybStatus={kybStatus} loading={kybLoading} />
-
-        {/* Stats Grid */}
-        {loading ? (
-          <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="!h-32 bg-gray-100 dark:bg-slate-800 !rounded-xl !border-2 border-gray-200 dark:border-slate-700 !animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="!grid !grid-cols-1 md:!grid-cols-2 lg:!grid-cols-4 !gap-6 !mb-6">
-            <StatCard
-              title="Total Proyectos"
-            value={stats?.projects.total || 0}
-            subtitle={`${stats?.projects.active || 0} activos`}
-            color="green"
-            icon={
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            }
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard
+            label="Proyectos"
+            icon={FolderKanban}
+            value={fmtInt(p?.total)}
+            hint={`${fmtInt(p?.active)} ${p?.active === 1 ? 'activo' : 'activos'}`}
           />
           <StatCard
-            title="En Revisión"
-            value={stats?.projects.pending_review || 0}
-            subtitle="Pendientes de aprobación"
-            color="yellow"
-            icon={
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
+            label="En revisión"
+            icon={Clock}
+            value={fmtInt(p?.pending_review)}
+            tone={p?.pending_review ? 'warning' : 'default'}
+            hint="Esperando aprobación"
           />
-          <StatCard
-            title="CO₂ Compensado"
-            value={`${((stats?.compensations.total_kg_co2 || 0) / 1000).toLocaleString('es-CL', { maximumFractionDigits: 1 })} t`}
-            subtitle="Total acumulado"
-            color="blue"
-            icon={
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Ingresos Totales"
-            value={formatCurrency(stats?.compensations.total_revenue_clp || 0)}
-            subtitle="Por certificados vendidos"
-            color="purple"
-            icon={
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
-          />
-          </div>
-        )}
-
-        {/* Main Content Grid */}
-        <div className="!grid !grid-cols-1 lg:!grid-cols-3 !gap-6">
-          {/* Recent Projects */}
-          <div className="lg:!col-span-2">
-            <RecentProjects projects={recentProjects} loading={loading} />
-          </div>
-
-          {/* Quick Actions */}
-          <div>
-            <QuickActions />
-          </div>
+          <StatCard label="CO₂ compensado" icon={Leaf} value={fmtKgAuto(c?.total_kg_co2)} tone="good" hint="Total acumulado" />
+          <StatCard label="Ingresos" icon={Wallet} value={fmtCLP(c?.total_revenue_clp)} hint="Por certificados vendidos" />
         </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2">
+          <RecentProjects projects={recentProjects} loading={loading} canCreate={isKybVerified} />
+        </div>
+        <CapacityCard stats={stats} loading={loading} />
       </div>
     </div>
   );

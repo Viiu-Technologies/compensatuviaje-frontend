@@ -1,238 +1,301 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+// ============================================
+// MONTHLY RESTOCK PAGE
+// Evidencia mensual: libera el pago retenido y solicita stock nuevo.
+// ============================================
+
+import React, { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Clock, FolderKanban, History } from 'lucide-react';
 import { getProjectById } from '../services/partnerApi';
-import { submitMonthlyEvidence, getProjectEvidence } from '../services/evidenceApi';
+import { getProjectEvidence, submitMonthlyEvidence } from '../services/evidenceApi';
 import { EsgProject } from '../../../types/partner.types';
-import { EVIDENCE_STATUS_COLORS, EVIDENCE_STATUS_LABELS, ProjectEvidence } from '../../../types/evidence.types';
+import { EVIDENCE_STATUS_LABELS, EvidenceStatus, ProjectEvidence } from '../../../types/evidence.types';
 import FileUploader from '../../../shared/components/FileUploader';
-import DocumentViewer from '../../../shared/components/DocumentViewer';
+import {
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  EmptyState,
+  ErrorState,
+  fmtCLP,
+  fmtDate,
+  fmtInt,
+  inputCls,
+  labelCls,
+  PageHeader,
+  Progress,
+  Skeleton,
+  type Tone,
+  unitOf,
+} from '../ui';
+
+const EVIDENCE_TONES: Record<EvidenceStatus, Tone> = {
+  pending_approval: 'warning',
+  approved: 'success',
+  rejected: 'danger',
+};
 
 const MonthlyRestockPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const [project, setProject] = useState<EsgProject | null>(null);
   const [history, setHistory] = useState<ProjectEvidence[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
   const [unitsDelivered, setUnitsDelivered] = useState<number | ''>('');
   const [newStockRequested, setNewStockRequested] = useState<number | ''>('');
   const [note, setNote] = useState('');
   const [files, setFiles] = useState<File[]>([]);
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id]);
-
   const loadData = async () => {
     try {
       setLoading(true);
-      const [projRes, evRes] = await Promise.all([
-        getProjectById(id!),
-        getProjectEvidence(id!)
-      ]);
-      if (projRes) setProject(projRes);
+      setLoadFailed(false);
+      const [projRes, evRes] = await Promise.all([getProjectById(id!), getProjectEvidence(id!)]);
+      setProject(projRes);
       if (evRes?.success) setHistory(evRes.data?.evidences ?? []);
-    } catch (err: any) {
-      setError('Error al cargar la información del proyecto.');
+    } catch {
+      setLoadFailed(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const isPending = history.some(e => e.status === 'pending_approval');
+  useEffect(() => {
+    if (id) loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const isPending = history.some((e) => e.status === 'pending_approval');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!unitsDelivered || !newStockRequested || files.length === 0) {
-      setError('Por favor completa todos los campos requeridos y sube al menos una evidencia.');
+      setError('Completa las unidades entregadas, el stock solicitado y sube al menos un archivo de evidencia.');
       return;
     }
-
     try {
       setSubmitting(true);
       setError(null);
       await submitMonthlyEvidence(
         id!,
-        {
-          unitsDelivered: Number(unitsDelivered),
-          newStockRequested: Number(newStockRequested),
-          note
-        },
-        files
+        { unitsDelivered: Number(unitsDelivered), newStockRequested: Number(newStockRequested), note },
+        files,
       );
-      
-      // Reset and reload
+      toast.success('Evidencia enviada. Te avisaremos cuando sea revisada.');
       setUnitsDelivered('');
       setNewStockRequested('');
       setNote('');
       setFiles([]);
       await loadData();
     } catch (err: any) {
-      if (err.code === 'ECONNABORTED') {
-        setError('El envío tardó demasiado. Verifica tu conexión e intenta nuevamente con archivos más livianos si el problema persiste.');
-      } else {
-        setError(err.response?.data?.message || 'Error al enviar la solicitud.');
-      }
+      setError(
+        err?.code === 'ECONNABORTED'
+          ? 'El envío tardó demasiado. Revisa tu conexión o prueba con archivos más livianos.'
+          : err?.response?.data?.message || 'No pudimos enviar la evidencia. Inténtalo de nuevo.',
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Cargando...</div>;
-  if (!project) return <div className="p-8 text-center text-red-500">Proyecto no encontrado</div>;
+  const back = { to: `/partner/projects/${id}`, label: 'Volver al proyecto' };
 
-  return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4 border-b pb-4">
-        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-600">
-          ← Volver
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Ciclo de Desbloqueo Mensual</h1>
-          <p className="text-gray-500">{project.name} ({project.code})</p>
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-16 w-1/2" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-96 lg:col-span-2" />
+          <Skeleton className="h-60" />
         </div>
       </div>
+    );
+  }
 
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
-          {error}
-        </div>
-      )}
+  if (loadFailed) {
+    return (
+      <div>
+        <PageHeader back={back} title="Evidencia mensual" />
+        <ErrorState title="No pudimos cargar el proyecto" onRetry={loadData} />
+      </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT COLUMN: Submit new request */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">Solicitar Liberación de Fondos y Nuevo Stock</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Para recibir el pago por lo que ya entregaste ("escrow") y habilitar stock para el siguiente mes, necesitamos evidencia de lo realizado.
-            </p>
+  if (!project) {
+    return (
+      <Card>
+        <EmptyState
+          icon={FolderKanban}
+          title="No encontramos este proyecto"
+          action={
+            <Link to="/partner/projects" className={btn.secondary}>
+              Volver a mis proyectos
+            </Link>
+          }
+        />
+      </Card>
+    );
+  }
 
-            {isPending ? (
-              <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg flex items-start gap-3">
-                <span className="text-yellow-500 text-xl">⏳</span>
-                <div>
-                  <h3 className="font-semibold text-yellow-800">Solicitud en revisión</h3>
-                  <p className="text-sm text-yellow-700">Ya tienes una solicitud pendiente. Debes esperar a que sea aprobada o rechazada antes de subir una nueva.</p>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {project.impact_unit_type ? `${project.impact_unit_type}s Entregados (Este Mes)` : 'Unidades Entregadas'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      value={unitsDelivered}
-                      onChange={e => setUnitsDelivered(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-700 focus:border-brand-600"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Con esto liberamos el pago retenido.</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nuevo Stock Solicitado <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      value={newStockRequested}
-                      onChange={e => setNewStockRequested(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-700 focus:border-brand-600"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Lo que podrás vender el próximo mes.</p>
-                  </div>
-                </div>
+  const unit = unitOf(project);
+  const total = project.capacity_total || 0;
+  const sold = project.capacity_sold || 0;
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notas u Observaciones</label>
-                  <textarea
-                    rows={3}
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
-                    placeholder="Detalles sobre el avance de este mes, problemas, logros..."
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-700 focus:border-brand-600"
-                  />
-                </div>
+  return (
+    <div>
+      <PageHeader back={back} title="Evidencia mensual" subtitle={`${project.name} · ${project.code}`} />
 
-                <div className="bg-gray-50 p-4 rounded-lg border border-dashed">
-                  <FileUploader
-                    label="Evidencia Fotográfica y/o Documental"
-                    description="Sube guías de despacho, fotos georreferenciadas, reportes del mes."
-                    accept="image/*,application/pdf"
-                    maxFiles={10}
-                    required
-                    files={files}
-                    onFilesChange={setFiles}
-                  />
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <Card className="p-6 lg:col-span-2">
+          <CardHeader
+            title="Liberar el pago y solicitar stock"
+            subtitle="Con la evidencia de lo entregado este mes liberamos el pago retenido y habilitamos el stock del próximo."
+          />
 
-                <div className="flex justify-end pt-4">
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="px-6 py-2 bg-brand-700 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 font-medium"
-                  >
-                    {submitting ? 'Enviando...' : 'Enviar Evidencia y Solicitar'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Summary & History */}
-        <div className="space-y-6">
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
-            <h3 className="font-semibold text-slate-700 mb-4">Estado Actual</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-700">Stock Mensual Restante</span>
-                <span className="font-bold text-slate-700">{project.monthly_stock_remaining || 0} {project.impact_unit_type}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-700">Progreso Total</span>
-                <span className="font-bold text-slate-700">{project.capacity_sold || 0} / {project.capacity_total || 0}</span>
+          {isPending ? (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <Clock className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div>
+                <p className="m-0 text-sm font-semibold text-amber-900">Tienes una solicitud en revisión</p>
+                <p className="m-0 mt-0.5 text-sm text-amber-800">
+                  Podrás enviar una nueva cuando nuestro equipo apruebe o rechace la actual.
+                </p>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl border shadow-sm p-6">
-            <h3 className="font-semibold text-gray-800 mb-4">Historial de Verificaciones</h3>
-            {history.length === 0 ? (
-              <p className="text-sm text-gray-500 italic">No hay historial todavía.</p>
-            ) : (
-              <div className="space-y-4">
-                {history.map((ev) => (
-                  <div key={ev.id} className="border-b pb-4 last:border-0 last:pb-0">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-sm font-medium text-gray-700">{new Date(ev.createdAt).toLocaleDateString()}</span>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${EVIDENCE_STATUS_COLORS[ev.status]}`}>
-                        {EVIDENCE_STATUS_LABELS[ev.status]}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p>➤ Solicitado: {ev.newStockRequested} (Verificado: {ev.unitsVerified ?? '-'})</p>
-                      {ev.payoutApproved && <p className="text-brand-800">💵 Pago liberado: ${ev.payoutAmount?.toLocaleString('es-CL')}</p>}
-                      {ev.note && <p className="italic bg-gray-50 p-2 mt-2 rounded">"{ev.note}"</p>}
-                      {ev.adminNotes && <p className="text-red-800 bg-red-50 p-2 mt-2 rounded">Resp: "{ev.adminNotes}"</p>}
-                    </div>
-                  </div>
-                ))}
+          ) : (
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
+              {error && (
+                <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                  {error}
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label htmlFor="r-units" className={labelCls}>
+                    {unit.charAt(0).toUpperCase() + unit.slice(1)} entregados este mes
+                    <span className="text-rose-600 ml-0.5" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="r-units"
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    value={unitsDelivered}
+                    onChange={(e) => setUnitsDelivered(e.target.value ? Number(e.target.value) : '')}
+                    className={inputCls}
+                  />
+                  <p className="m-0 mt-1.5 text-xs text-gray-500">Con esto liberamos el pago retenido.</p>
+                </div>
+                <div>
+                  <label htmlFor="r-stock" className={labelCls}>
+                    Stock que solicitas
+                    <span className="text-rose-600 ml-0.5" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="r-stock"
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    value={newStockRequested}
+                    onChange={(e) => setNewStockRequested(e.target.value ? Number(e.target.value) : '')}
+                    className={inputCls}
+                  />
+                  <p className="m-0 mt-1.5 text-xs text-gray-500">Lo que podrás vender el próximo mes.</p>
+                </div>
               </div>
+
+              <div>
+                <label htmlFor="r-note" className={labelCls}>
+                  Notas
+                </label>
+                <textarea
+                  id="r-note"
+                  rows={3}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Avance del mes, problemas, logros…"
+                  className={inputCls}
+                />
+              </div>
+
+              <FileUploader
+                label="Evidencia fotográfica o documental"
+                description="Guías de despacho, fotos georreferenciadas, reportes del mes."
+                accept="image/*,application/pdf"
+                maxFiles={10}
+                required
+                files={files}
+                onFilesChange={setFiles}
+              />
+
+              <div className="flex justify-end pt-2">
+                <button type="submit" disabled={submitting} className={btn.primary}>
+                  {submitting ? 'Enviando…' : 'Enviar evidencia'}
+                </button>
+              </div>
+            </form>
+          )}
+        </Card>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader title="Estado actual" />
+            <dl className="m-0 space-y-5">
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <dt className="text-gray-500">Stock restante del mes</dt>
+                <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                  {fmtInt(project.monthly_stock_remaining)} {unit}
+                </dd>
+              </div>
+              {total > 0 && (
+                <div>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <dt className="text-gray-500">Capacidad vendida</dt>
+                    <dd className="m-0 font-semibold text-gray-900 tabular-nums">
+                      {fmtInt(sold)} / {fmtInt(total)} {unit}
+                    </dd>
+                  </div>
+                  <Progress value={(sold / total) * 100} label="Capacidad vendida" className="mt-2" />
+                </div>
+              )}
+            </dl>
+          </Card>
+
+          <Card>
+            <CardHeader title="Historial" icon={History} />
+            {history.length === 0 ? (
+              <p className="m-0 text-sm text-gray-500">Aún no has enviado evidencia mensual.</p>
+            ) : (
+              <ul className="m-0 p-0 list-none space-y-4">
+                {history.map((ev) => (
+                  <li key={ev.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-gray-800">{fmtDate(ev.createdAt)}</span>
+                      <Badge tone={EVIDENCE_TONES[ev.status] ?? 'neutral'}>{EVIDENCE_STATUS_LABELS[ev.status] ?? ev.status}</Badge>
+                    </div>
+                    <p className="m-0 mt-1.5 text-xs text-gray-600">
+                      Solicitado: {fmtInt(ev.newStockRequested)} · Verificado: {ev.unitsVerified != null ? fmtInt(ev.unitsVerified) : '—'}
+                    </p>
+                    {ev.payoutApproved && (
+                      <p className="m-0 mt-1 text-xs font-medium text-brand-700">Pago liberado: {fmtCLP(ev.payoutAmount)}</p>
+                    )}
+                    {ev.note && <p className="m-0 mt-2 rounded-lg bg-gray-50 p-2 text-xs text-gray-600">{ev.note}</p>}
+                    {ev.adminNotes && (
+                      <p className="m-0 mt-2 rounded-lg bg-rose-50 p-2 text-xs text-rose-800">
+                        <strong>Respuesta del equipo:</strong> {ev.adminNotes}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
-          </div>
+          </Card>
         </div>
       </div>
     </div>

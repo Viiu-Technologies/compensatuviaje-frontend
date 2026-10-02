@@ -5,72 +5,54 @@
 
 /**
  * CONCEPTO: Máquina de Estados Visual
- * 
- * Esta página maneja 5 estados visuales diferentes según el progreso
- * de la verificación KYB:
- * 
- * 1. NONE - Sin verificación: Mostrar formulario de upload
- * 2. PROCESSING - IA procesando: Mostrar estado de carga con polling
- * 3. AI_COMPLETED - IA terminó: Mostrar scores, esperando admin
- * 4. APPROVED - Admin aprobó: Mostrar certificación final
- * 5. REJECTED - Admin rechazó: Mostrar motivo y opción de reenviar
- * 
- * El flujo es: Upload → Polling → Resultados IA → Esperar Admin → Decisión Final
+ *
+ * 1. NONE - Sin verificación: formulario de envío
+ * 2. PROCESSING - IA procesando: estado de espera con polling
+ * 3. AI_COMPLETED - IA terminó: puntajes, esperando al admin
+ * 4. APPROVED - Admin aprobó: verificación final
+ * 5. REJECTED - Admin rechazó: motivo y opción de reenviar
+ *
+ * Flujo: Envío → Polling → Resultados IA → Esperar Admin → Decisión Final
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Building2, 
-  FileText, 
-  CheckCircle, 
-  XCircle, 
+import React, { useCallback, useEffect, useState } from 'react';
+import {
   AlertTriangle,
+  CheckCircle2,
   Clock,
-  Send,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
+  Coins,
+  FileText,
   History,
-  ShieldCheck, Coins, Settings, Phone, BarChart, Award, Bot, Calendar
+  Phone,
+  RefreshCw,
+  Send,
+  Settings,
+  ShieldCheck,
+  XCircle,
 } from 'lucide-react';
-
-// Types
-import type { 
-  KybStatusResponse, 
-  KybEvaluation,
-  KybHistoryResponse,
-  KybScores,
-  KybInsights
-} from '../../../types/kyb.types';
-import { 
-  getKybVisualStatus, 
-  KYB_TIER_LABELS, 
-  KYB_TIER_ICONS,
-  KYB_TIER_COLORS
-} from '../../../types/kyb.types';
+import type { KybEvaluation, KybHistoryResponse, KybInsights, KybScores, KybStatusResponse } from '../../../types/kyb.types';
+import { KYB_TIER_LABELS } from '../../../types/kyb.types';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
-
-// Services
 import kybApi from '../services/kybApi';
-
-// Hooks
 import { usePolling } from '../hooks/usePolling';
 import { usePartnerContext } from '../context/PartnerContext';
-
-// Shared Components
 import PdfUploader from '../components/shared/PdfUploader';
-import ScoreGauge, { ScoreCard } from '../components/shared/ScoreGauge';
-import { 
-  KybStatusBadge, 
-  TierBadge, 
-  AdminPendingBanner, 
-  ProcessingState 
-} from '../components/shared/StatusBadges';
-
-// ============================================
-// TYPES
-// ============================================
+import {
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  cx,
+  ErrorState,
+  fmtDate,
+  inputCls,
+  labelCls,
+  PageHeader,
+  ScoreTile,
+  scoreTone,
+  Skeleton,
+  type Tone,
+} from '../ui';
 
 type PageState = 'none' | 'processing' | 'ai_completed' | 'approved' | 'rejected' | 'error' | 'loading';
 
@@ -80,480 +62,262 @@ interface FormData {
   file: File | null;
 }
 
+const STATE_BADGE: Partial<Record<PageState, { tone: Tone; label: string }>> = {
+  processing: { tone: 'info', label: 'En evaluación' },
+  ai_completed: { tone: 'warning', label: 'Esperando revisión final' },
+  approved: { tone: 'success', label: 'Verificada' },
+  rejected: { tone: 'danger', label: 'Rechazada' },
+  error: { tone: 'danger', label: 'Error en la evaluación' },
+  none: { tone: 'neutral', label: 'Sin verificar' },
+};
+
+const overallOf = (e: KybEvaluation) => e.overall_score ?? e.scores?.overall ?? 0;
+
 // ============================================
-// SUB-COMPONENTS
+// FORMULARIO DE ENVÍO
 // ============================================
 
-/**
- * Estado: Sin verificación - Formulario de upload
- */
-interface UploadFormProps {
-  onSubmit: (data: FormData) => Promise<void>;
-  isSubmitting: boolean;
-  initialOrgName?: string;
-}
-
-const UploadForm: React.FC<UploadFormProps> = ({ onSubmit, isSubmitting, initialOrgName = '' }) => {
-  const [formData, setFormData] = useState<FormData>({
-    organizationName: initialOrgName,
-    rutTaxId: '',
-    file: null
-  });
+const UploadForm: React.FC<{ onSubmit: (data: FormData) => Promise<void>; isSubmitting: boolean; initialOrgName?: string; isRetry?: boolean }> = ({
+  onSubmit,
+  isSubmitting,
+  initialOrgName = '',
+  isRetry,
+}) => {
+  const [formData, setFormData] = useState<FormData>({ organizationName: initialOrgName, rutTaxId: '', file: null });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
-    
-    if (!formData.organizationName.trim()) {
-      newErrors.organizationName = 'El nombre de la organización es requerido';
-    }
-    
-    if (!formData.rutTaxId.trim()) {
-      newErrors.rutTaxId = 'El RUT tributario es requerido';
-    } else if (!/^[0-9]{7,8}-[0-9Kk]$/.test(formData.rutTaxId.trim())) {
-      newErrors.rutTaxId = 'Formato de RUT inválido (ej: 12345678-9)';
-    }
-    
-    if (!formData.file) {
-      newErrors.file = 'Debes seleccionar un archivo PDF';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  useEffect(() => {
+    if (initialOrgName) setFormData((p) => (p.organizationName ? p : { ...p, organizationName: initialOrgName }));
+  }, [initialOrgName]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      await onSubmit(formData);
-    }
-  };
-
-  const handleFileSelect = (file: File) => {
-    setFormData(prev => ({ ...prev, file }));
-    setErrors(prev => ({ ...prev, file: undefined }));
+  const validate = () => {
+    const e: Partial<Record<keyof FormData, string>> = {};
+    if (!formData.organizationName.trim()) e.organizationName = 'Escribe la razón social';
+    if (!formData.rutTaxId.trim()) e.rutTaxId = 'Escribe el RUT de la empresa';
+    else if (!/^[0-9]{7,8}-[0-9Kk]$/.test(formData.rutTaxId.trim())) e.rutTaxId = 'Formato no válido. Ej.: 76123456-7 (sin puntos)';
+    if (!formData.file) e.file = 'Adjunta el dossier en PDF';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   return (
-    <div className="!space-y-6">
-      {/* Info Banner */}
-      <div className="!bg-amber-50 dark:!bg-amber-900/30 !border !border-amber-200 dark:!border-amber-800/50 !rounded-xl !p-6">
-        <div className="!flex !gap-4">
-          <AlertTriangle className="!w-6 !h-6 !text-amber-600 dark:!text-amber-400 !flex-shrink-0 !mt-0.5" />
-          <div>
-            <h3 className="!text-amber-800 dark:!text-amber-300 !font-semibold !mb-2">
-              Tu empresa aún no ha sido verificada
-            </h3>
-            <p className="!text-amber-700 dark:!text-amber-400 !text-sm !mb-3">
-              Para activar tu cuenta y operar en la plataforma, necesitas enviar tus documentos empresariales para evaluación.
-            </p>
-            <div className="!text-sm !text-amber-700 dark:!text-amber-400">
-              <p className="!font-medium !mb-1">Nuestra IA evaluará:</p>
-              <ul className="!space-y-1">
-                <li className="!flex !items-center !gap-2">
-                  <FileText className="!w-4 !h-4" /> Documentación legal
-                </li>
-                <li className="!flex !items-center !gap-2">
-                  <Coins className="!w-4 !h-4" /> Solidez financiera
-                </li>
-                <li className="!flex !items-center !gap-2">
-                  <Settings className="!w-4 !h-4" /> Capacidad técnica
-                </li>
-                <li className="!flex !items-center !gap-2">
-                  <Phone className="!w-4 !h-4" /> Referencias comerciales
-                </li>
-              </ul>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <Card className="p-6 lg:col-span-2">
+        <CardHeader
+          title={isRetry ? 'Enviar nueva documentación' : 'Envía el dossier de tu empresa'}
+          subtitle="Un solo PDF con la documentación legal, financiera y técnica de la organización."
+        />
+        <form
+          noValidate
+          onSubmit={async (ev) => {
+            ev.preventDefault();
+            if (validate()) await onSubmit(formData);
+          }}
+          className="space-y-5"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label htmlFor="k-org" className={labelCls}>
+                Razón social<span className="text-rose-600 ml-0.5" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="k-org"
+                type="text"
+                value={formData.organizationName}
+                onChange={(e) => setFormData((p) => ({ ...p, organizationName: e.target.value }))}
+                placeholder="Ej.: EcoForest Chile SpA"
+                disabled={isSubmitting}
+                aria-invalid={!!errors.organizationName || undefined}
+                className={cx(inputCls, errors.organizationName && 'border-rose-400')}
+              />
+              {errors.organizationName && <p className="m-0 mt-1.5 text-xs text-rose-700">{errors.organizationName}</p>}
+            </div>
+            <div>
+              <label htmlFor="k-rut" className={labelCls}>
+                RUT de la empresa<span className="text-rose-600 ml-0.5" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="k-rut"
+                type="text"
+                value={formData.rutTaxId}
+                onChange={(e) => setFormData((p) => ({ ...p, rutTaxId: e.target.value }))}
+                placeholder="76123456-7"
+                disabled={isSubmitting}
+                aria-invalid={!!errors.rutTaxId || undefined}
+                className={cx(inputCls, errors.rutTaxId && 'border-rose-400')}
+              />
+              {errors.rutTaxId ? (
+                <p className="m-0 mt-1.5 text-xs text-rose-700">{errors.rutTaxId}</p>
+              ) : (
+                <p className="m-0 mt-1.5 text-xs text-gray-500">Sin puntos y con guion.</p>
+              )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Upload Form */}
-      <form onSubmit={handleSubmit} className="!space-y-6">
-        <div>
-          <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-white !mb-4">
-            Subir Dossier KYB
-          </h3>
-          
-          {/* Organization Name */}
-          <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">
-              Nombre de la Organización *
-            </label>
-            <input
-              type="text"
-              value={formData.organizationName}
-              onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
-              placeholder="Ej: EcoForest Chile SpA"
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-brand-700 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
-                errors.organizationName ? '!border-red-300 dark:!border-red-500/50 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
-              }`}
-              disabled={isSubmitting}
-            />
-            {errors.organizationName && (
-              <p className="!text-red-600 dark:!text-red-400 !text-sm !mt-1">{errors.organizationName}</p>
-            )}
-          </div>
-
-          {/* RUT */}
-          <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-1">
-              RUT Tributario *
-            </label>
-            <input
-              type="text"
-              value={formData.rutTaxId}
-              onChange={(e) => setFormData(prev => ({ ...prev, rutTaxId: e.target.value }))}
-              placeholder="Ej: 76123456-7"
-              className={`!w-full !px-4 !py-3 !border !rounded-lg !transition-colors focus:!outline-none focus:!ring-2 focus:!ring-brand-700 !bg-white dark:!bg-slate-800 !text-slate-900 dark:!text-white ${
-                errors.rutTaxId ? '!border-red-300 dark:!border-red-500/50 !bg-red-50 dark:!bg-red-900/20' : '!border-slate-300 dark:!border-slate-600'
-              }`}
-              disabled={isSubmitting}
-            />
-            {errors.rutTaxId && (
-              <p className="!text-red-600 dark:!text-red-400 !text-sm !mt-1">{errors.rutTaxId}</p>
-            )}
-          </div>
-
-          {/* PDF Upload */}
-          <div className="!mb-4">
-            <label className="!block !text-sm !font-medium !text-slate-700 dark:!text-slate-300 !mb-2">
-              Dossier Empresarial (PDF) *
-            </label>
+          <div>
+            <p className={cx(labelCls, 'm-0')}>
+              Dossier empresarial (PDF)<span className="text-rose-600 ml-0.5" aria-hidden="true">*</span>
+            </p>
             <PdfUploader
-              onFileSelect={handleFileSelect}
+              onFileSelect={(file) => {
+                setFormData((p) => ({ ...p, file }));
+                setErrors((p) => ({ ...p, file: undefined }));
+              }}
               disabled={isSubmitting}
               isUploading={isSubmitting}
-              instruction="Arrastra tu dossier empresarial aquí o haz clic para seleccionar"
+              instruction="Arrastra el PDF aquí o haz clic para elegirlo"
             />
-            {errors.file && (
-              <p className="!text-red-600 !text-sm !mt-1">{errors.file}</p>
-            )}
+            {errors.file && <p className="m-0 mt-1.5 text-xs text-rose-700">{errors.file}</p>}
           </div>
-        </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-brand-700 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-brand-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <>
-              <RefreshCw className="!w-5 !h-5 !animate-spin" />
-              Enviando...
-            </>
-          ) : (
-            <>
-              <Send className="!w-5 !h-5" />
-              Enviar para Evaluación
-            </>
-          )}
-        </button>
-      </form>
-    </div>
-  );
-};
-
-/**
- * Scores Grid - Muestra los 4 scores de evaluación
- */
-interface ScoresGridProps {
-  scores: KybScores;
-  insights?: KybInsights | null;
-}
-
-const ScoresGrid: React.FC<ScoresGridProps> = ({ scores, insights }) => {
-  const [expandedInsight, setExpandedInsight] = useState<string | null>(null);
-
-  const scoreItems = [
-    { key: 'legal', label: 'Legal', icon: <FileText className="!w-4 !h-4" />, score: scores.legal, notes: insights?.legal_notes },
-    { key: 'financial', label: 'Financiero', icon: <Coins className="!w-4 !h-4" />, score: scores.financial, notes: insights?.financial_notes },
-    { key: 'technical', label: 'Técnico', icon: <Settings className="!w-4 !h-4" />, score: scores.technical, notes: insights?.technical_notes },
-    { key: 'references', label: 'Referencias', icon: <Phone className="!w-4 !h-4" />, score: scores.references, notes: insights?.references_notes },
-  ];
-
-  return (
-    <div className="!space-y-4">
-      <h4 className="!text-sm !font-semibold !text-slate-700 dark:!text-slate-300 !uppercase !tracking-wide">
-        Scores Detallados
-      </h4>
-      <div className="!grid !grid-cols-2 md:!grid-cols-4 !gap-4">
-        {scoreItems.map((item) => (
-          <div key={item.key} className="!relative">
-            <ScoreCard
-              score={item.score}
-              label={item.label}
-              icon={item.icon}
-              description={item.notes || undefined}
-            />
-            {item.notes && (
-              <button
-                onClick={() => setExpandedInsight(expandedInsight === item.key ? null : item.key)}
-                className="!absolute !top-2 !right-2 !text-slate-400 hover:!text-slate-600 dark:hover:!text-slate-200 !transition-colors"
-                title="Ver detalle"
-              >
-                {expandedInsight === item.key ? (
-                  <ChevronUp className="!w-4 !h-4" />
-                ) : (
-                  <ChevronDown className="!w-4 !h-4" />
-                )}
-              </button>
-            )}
+          <div className="flex justify-end pt-1">
+            <button type="submit" disabled={isSubmitting} className={btn.primary}>
+              {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Send className="w-4 h-4" aria-hidden="true" />}
+              {isSubmitting ? 'Enviando…' : 'Enviar para evaluación'}
+            </button>
           </div>
-        ))}
-      </div>
-      
-      {/* Expanded Insight */}
-      {expandedInsight && (
-        <div className="!bg-slate-50 dark:!bg-slate-800/50 !border !border-slate-200 dark:!border-slate-700 !rounded-lg !p-4 !mt-4">
-          <h5 className="!font-medium !text-slate-700 dark:!text-slate-200 !mb-2">
-            {scoreItems.find(s => s.key === expandedInsight)?.icon}{' '}
-            Notas - {scoreItems.find(s => s.key === expandedInsight)?.label}
-          </h5>
-          <p className="!text-sm !text-slate-600 dark:!text-slate-400">
-            {scoreItems.find(s => s.key === expandedInsight)?.notes}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-};
+        </form>
+      </Card>
 
-/**
- * Estado: IA completó evaluación, esperando admin
- */
-interface AiCompletedStateProps {
-  evaluation: KybEvaluation;
-}
-
-const AiCompletedState: React.FC<AiCompletedStateProps> = ({ evaluation }) => {
-  return (
-    <div className="!space-y-6">
-      <AdminPendingBanner />
-      
-      {/* Summary Cards */}
-      <div className="!grid !grid-cols-3 !gap-4">
-        <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1 !flex !items-center !justify-center !gap-1">
-            <BarChart className="!w-4 !h-4" /> Score General
-          </p>
-          <p className="!text-3xl !font-bold !text-slate-800 dark:!text-slate-100">
-            {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}
-            <span className="!text-lg !font-normal !text-slate-400 dark:!text-slate-500">/100</span>
-          </p>
-        </div>
-        <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1 !flex !items-center !justify-center !gap-1">
-            <Award className="!w-4 !h-4" /> Tier Asignado
-          </p>
-          {evaluation.partner_tier ? (
-            <TierBadge tier={evaluation.partner_tier} size="lg" />
-          ) : (
-            <p className="!text-slate-400 dark:!text-slate-500">Por determinar</p>
-          )}
-        </div>
-        <div className="!bg-white dark:!bg-slate-700/50 !border !border-slate-200 dark:!border-slate-600 !rounded-xl !p-4 !text-center">
-          <p className="!text-sm !text-slate-500 dark:!text-slate-400 !mb-1 !flex !items-center !justify-center !gap-1">
-            <Bot className="!w-4 !h-4" /> Decisión IA
-          </p>
-          <p className={`!text-lg !font-semibold !flex !items-center !justify-center !gap-1 ${
-            evaluation.ai_status === 'ai_approved' ? '!text-brand-800 dark:!text-brand-700' : '!text-red-600 dark:!text-red-400'
-          }`}>
-            {evaluation.ai_status === 'ai_approved' ? <><CheckCircle className="!w-5 !h-5" /> Aprobado</>  : <><XCircle className="!w-5 !h-5" /> Rechazado</>}
-          </p>
-        </div>
-      </div>
-
-      {/* Scores */}
-      {evaluation.scores && (
-        <ScoresGrid scores={evaluation.scores} insights={evaluation.ai_insights} />
-      )}
-
-      {/* Waiting message */}
-      <div className="!flex !items-center !gap-3 !p-4 !bg-slate-50 dark:!bg-slate-800/80 !rounded-lg !border !border-slate-200 dark:!border-slate-700">
-        <Clock className="!w-5 !h-5 !text-slate-500 dark:!text-slate-400 !animate-pulse" />
-        <p className="!text-slate-600 dark:!text-slate-300">
-          Esperando revisión del equipo de administración...
+      <Card>
+        <CardHeader title="Qué evaluamos" />
+        <ul className="m-0 p-0 list-none space-y-3 text-sm text-gray-700">
+          {[
+            [FileText, 'Documentación legal'],
+            [Coins, 'Solidez financiera'],
+            [Settings, 'Capacidad técnica'],
+            [Phone, 'Referencias comerciales'],
+          ].map(([Icon, text]) => {
+            const I = Icon as React.ComponentType<{ className?: string }>;
+            return (
+              <li key={text as string} className="flex items-center gap-2.5">
+                <I className="w-4 h-4 text-gray-400" aria-hidden="true" />
+                {text as string}
+              </li>
+            );
+          })}
+        </ul>
+        <p className="m-0 mt-5 pt-4 border-t border-gray-100 text-xs text-gray-500">
+          Primero lo revisa nuestra IA y luego una persona del equipo toma la decisión final. Suele tomar entre unas horas y un día.
         </p>
-      </div>
+      </Card>
     </div>
   );
 };
 
-/**
- * Estado: KYB Aprobado
- */
-interface ApprovedStateProps {
-  evaluation: KybEvaluation;
-  history: KybHistoryResponse | null;
-}
+// ============================================
+// PUNTAJES
+// ============================================
 
-const ApprovedState: React.FC<ApprovedStateProps> = ({ evaluation, history }) => {
+const ScoresGrid: React.FC<{ scores: KybScores; insights?: KybInsights | null }> = ({ scores, insights }) => (
+  <Card>
+    <CardHeader title="Puntajes por dimensión" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <ScoreTile label="Legal" icon={FileText} score={scores.legal} notes={insights?.legal_notes} />
+      <ScoreTile label="Financiero" icon={Coins} score={scores.financial} notes={insights?.financial_notes} />
+      <ScoreTile label="Técnico" icon={Settings} score={scores.technical} notes={insights?.technical_notes} />
+      <ScoreTile label="Referencias" icon={Phone} score={scores.references} notes={insights?.references_notes} />
+    </div>
+  </Card>
+);
+
+/** Resumen: puntaje general, nivel y (si aplica) decisión de la IA. */
+const Summary: React.FC<{ evaluation: KybEvaluation; showAi?: boolean }> = ({ evaluation, showAi }) => {
+  const overall = overallOf(evaluation);
+  const tone = scoreTone(overall);
   return (
-    <div className="!space-y-6">
-      {/* Success Banner */}
-      <div className="!bg-brand-50 dark:!bg-brand-700/30 !border !border-brand-200 dark:!border-brand-700 !rounded-xl !p-6">
-        <div className="!flex !items-start !gap-4">
-          <div className="!w-12 !h-12 !bg-brand-50 dark:!bg-brand-700 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
-            <CheckCircle className="!w-6 !h-6 !text-brand-800 dark:!text-brand-700" />
-          </div>
-          <div className="!flex-grow">
-            <h3 className="!text-brand-800 dark:!text-brand-300 !font-semibold !text-lg !mb-1">
-              Empresa Verificada
-            </h3>
-            <div className="!flex !flex-wrap !items-center !gap-3 !mb-2">
-              {evaluation.partner_tier && (
-                <TierBadge tier={evaluation.partner_tier} size="md" />
+    <div className={cx('grid gap-4', showAi ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}>
+      <Card className="p-5">
+        <p className="m-0 text-sm text-gray-500">Puntaje general</p>
+        <p className={cx('m-0 mt-1.5 text-3xl font-bold tabular-nums leading-none', tone === 'good' ? 'text-brand-700' : tone === 'warning' ? 'text-amber-700' : 'text-rose-700')}>
+          {overall}
+          <span className="text-base font-medium text-gray-400"> / 100</span>
+        </p>
+      </Card>
+      <Card className="p-5">
+        <p className="m-0 text-sm text-gray-500">Nivel asignado</p>
+        <p className="m-0 mt-1.5 text-3xl font-bold text-gray-900 leading-none">
+          {evaluation.partner_tier ? KYB_TIER_LABELS[evaluation.partner_tier] : <span className="text-base font-medium text-gray-500">Por definir</span>}
+        </p>
+      </Card>
+      {showAi && (
+        <Card className="p-5">
+          <p className="m-0 text-sm text-gray-500">Recomendación de la IA</p>
+          <p className={cx('m-0 mt-2 flex items-center gap-1.5 text-lg font-semibold', evaluation.ai_status === 'ai_approved' ? 'text-brand-700' : 'text-rose-700')}>
+            {evaluation.ai_status === 'ai_approved' ? <CheckCircle2 className="w-5 h-5" aria-hidden="true" /> : <XCircle className="w-5 h-5" aria-hidden="true" />}
+            {evaluation.ai_status === 'ai_approved' ? 'Aprobar' : 'Rechazar'}
+          </p>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// HISTORIAL
+// ============================================
+
+const EvaluationHistory: React.FC<{ evaluations: KybHistoryResponse['evaluations'] }> = ({ evaluations }) => (
+  <Card className="p-0">
+    <details className="group">
+      <summary className="flex items-center justify-between gap-3 px-6 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+          <History className="w-4 h-4 text-gray-400" aria-hidden="true" />
+          Historial de evaluaciones
+          <span className="font-normal text-gray-500">({evaluations.length})</span>
+        </span>
+        <span className="text-xs font-medium text-brand-700 group-open:hidden">Ver</span>
+        <span className="text-xs font-medium text-brand-700 hidden group-open:inline">Ocultar</span>
+      </summary>
+      <ul className="m-0 p-0 list-none border-t border-gray-100">
+        {evaluations.map((ev) => (
+          <li key={ev.id} className="flex items-center justify-between gap-4 px-6 py-3 border-b border-gray-100 last:border-0">
+            <div className="min-w-0">
+              <p className="m-0 text-sm text-gray-800">{fmtDate(ev.created_at)}</p>
+              <p className="m-0 text-xs text-gray-500 truncate">{ev.document_name}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {ev.admin_decision === 'approved' ? (
+                <Badge tone="success">Aprobada</Badge>
+              ) : ev.admin_decision === 'rejected' ? (
+                <Badge tone="danger">Rechazada</Badge>
+              ) : (
+                <Badge tone="neutral">Sin decisión</Badge>
               )}
-              <span className="!flex !items-center !gap-1 !text-brand-800 dark:!text-brand-700">
-                <BarChart className="!w-4 !h-4" /> Score: {evaluation.overall_score ?? evaluation.scores?.overall ?? 0}/100
-              </span>
+              <span className="text-sm text-gray-600 tabular-nums">{ev.overall_score}</span>
             </div>
-            <p className="!flex !items-center !gap-1 !text-brand-800 dark:!text-brand-700 !text-sm">
-              <Calendar className="!w-4 !h-4" /> Verificada: {evaluation.admin_decided_at 
-                ? new Date(evaluation.admin_decided_at).toLocaleDateString('es-CL', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })
-                : 'N/A'
-              }
-            </p>
-            <p className="!text-brand-800 dark:!text-brand-700 !text-sm !mt-2">
-              Tu empresa ha sido verificada exitosamente. Tu cuenta está activa y puedes operar en la plataforma.
-            </p>
-          </div>
-        </div>
-      </div>
+          </li>
+        ))}
+      </ul>
+    </details>
+  </Card>
+);
 
-      {/* Scores */}
-      {evaluation.scores && (
-        <ScoresGrid scores={evaluation.scores} insights={evaluation.ai_insights} />
-      )}
+// ============================================
+// AVISOS DE ESTADO
+// ============================================
 
-      {/* History */}
-      {(history?.evaluations?.length ?? 0) > 0 && (
-        <EvaluationHistory evaluations={history.evaluations} />
-      )}
-    </div>
-  );
-};
-
-/**
- * Estado: KYB Rechazado
- */
-interface RejectedStateProps {
-  evaluation: KybEvaluation;
-  history: KybHistoryResponse | null;
-  onRetry: () => void;
-}
-
-const RejectedState: React.FC<RejectedStateProps> = ({ evaluation, history, onRetry }) => {
+const Notice: React.FC<{ tone: 'success' | 'warning' | 'danger' | 'info'; icon: React.ComponentType<{ className?: string }>; title: string; children?: React.ReactNode; action?: React.ReactNode }> = ({
+  tone,
+  icon: Icon,
+  title,
+  children,
+  action,
+}) => {
+  const styles = {
+    success: ['border-brand-100 bg-brand-50', 'text-brand-700', 'text-brand-900', 'text-brand-800'],
+    warning: ['border-amber-200 bg-amber-50', 'text-amber-700', 'text-amber-900', 'text-amber-800'],
+    danger: ['border-rose-200 bg-rose-50', 'text-rose-700', 'text-rose-900', 'text-rose-800'],
+    info: ['border-sky-100 bg-sky-50', 'text-sky-800', 'text-sky-900', 'text-sky-900'],
+  }[tone];
   return (
-    <div className="!space-y-6">
-      {/* Rejected Banner */}
-      <div className="!bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-800/50 !rounded-xl !p-6">
-        <div className="!flex !items-start !gap-4">
-          <div className="!w-12 !h-12 !bg-red-100 dark:!bg-red-900 !rounded-full !flex !items-center !justify-center !flex-shrink-0">
-            <XCircle className="!w-6 !h-6 !text-red-600 dark:!text-red-400" />
-          </div>
-          <div className="!flex-grow">
-            <h3 className="!text-red-800 dark:!text-red-300 !font-semibold !text-lg !mb-2">
-              Verificación Rechazada
-            </h3>
-            {evaluation.admin_reason && (
-              <div className="!bg-white dark:!bg-red-900/50 !border !border-red-200 dark:!border-red-700 !rounded-lg !p-3 !mb-3">
-                <p className="!text-red-800 dark:!text-red-200 !text-sm">
-                  <strong>Motivo:</strong> "{evaluation.admin_reason}"
-                </p>
-              </div>
-            )}
-            <p className="!text-red-600 dark:!text-red-400 !text-sm">
-              Puedes corregir la documentación y volver a enviarla.
-            </p>
-          </div>
-        </div>
+    <div className={cx('flex items-start gap-3 rounded-2xl border p-5', styles[0])}>
+      <Icon className={cx('w-5 h-5 flex-shrink-0 mt-0.5', styles[1])} aria-hidden="true" />
+      <div className="flex-1 min-w-0">
+        <p className={cx('m-0 text-base font-semibold', styles[2])}>{title}</p>
+        {children && <div className={cx('mt-1 text-sm', styles[3])}>{children}</div>}
+        {action && <div className="mt-4">{action}</div>}
       </div>
-
-      {/* Retry Button */}
-      <button
-        onClick={onRetry}
-        className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3 !bg-brand-700 !text-white !font-semibold !rounded-lg !transition-all hover:!bg-brand-700"
-      >
-        <RefreshCw className="!w-5 !h-5" />
-        Enviar Nueva Documentación
-      </button>
-
-      {/* History */}
-      {(history?.evaluations?.length ?? 0) > 0 && (
-        <EvaluationHistory evaluations={history.evaluations} />
-      )}
-    </div>
-  );
-};
-
-/**
- * Historial de evaluaciones
- */
-interface EvaluationHistoryProps {
-  evaluations: Array<KybEvaluation & { overall_score: number }>;
-}
-
-const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <div className="!border !border-slate-200 dark:!border-slate-700 !rounded-xl !overflow-hidden">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="!w-full !flex !items-center !justify-between !p-4 !bg-slate-50 dark:!bg-slate-800/80 !text-left hover:!bg-slate-100 dark:hover:!bg-slate-700/50 !transition-colors"
-      >
-        <div className="!flex !items-center !gap-2">
-          <History className="!w-5 !h-5 !text-slate-500 dark:!text-slate-400" />
-          <span className="!font-medium !text-slate-700 dark:!text-slate-200">Historial de Evaluaciones</span>
-          <span className="!text-sm !text-slate-500 dark:!text-slate-400">({evaluations.length})</span>
-        </div>
-        {isExpanded ? (
-          <ChevronUp className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
-        ) : (
-          <ChevronDown className="!w-5 !h-5 !text-slate-400 dark:!text-slate-500" />
-        )}
-      </button>
-
-      {isExpanded && (
-        <div className="!divide-y !divide-slate-200 dark:!divide-slate-700">
-          {evaluations.map((eval_, index) => (
-            <div key={eval_.id} className="!p-4 !flex !items-center !justify-between">
-              <div className="!flex !items-center !gap-3">
-                <span className={`!flex !items-center !justify-center !w-8 !h-8 !rounded-full ${
-                  eval_.admin_decision === 'approved' ? '!bg-brand-50 !text-brand-800 dark:!bg-brand-700/30 dark:!text-brand-700' : 
-                  eval_.admin_decision === 'rejected' ? '!bg-red-100 !text-red-600 dark:!bg-red-900/30 dark:!text-red-400' : '!bg-slate-50 !text-slate-700 dark:!bg-brand-800/30 dark:!text-slate-600'
-                }`}>
-                  {eval_.admin_decision === 'approved' ? <CheckCircle className="!w-5 !h-5" /> : 
-                   eval_.admin_decision === 'rejected' ? <XCircle className="!w-5 !h-5" /> : <RefreshCw className="!w-4 !h-4" />}
-                </span>
-                <div>
-                  <p className="!text-sm !text-slate-600 dark:!text-slate-300">
-                    {new Date(eval_.created_at).toLocaleDateString('es-CL')}
-                  </p>
-                  <p className="!text-xs !text-slate-500 dark:!text-slate-400">
-                    {eval_.document_name}
-                  </p>
-                </div>
-              </div>
-              <div className="!flex !items-center !gap-3">
-                {eval_.partner_tier && (
-                  <TierBadge tier={eval_.partner_tier} size="sm" />
-                )}
-                <span className="!text-sm !text-slate-600 dark:!text-slate-300">
-                  Score: {eval_.overall_score}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -563,10 +327,8 @@ const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evaluations }) =>
 // ============================================
 
 const KybVerificationPage: React.FC = () => {
-  const navigate = useNavigate();
   const { refetch: refetchPartnerContext } = usePartnerContext();
 
-  // State
   const [pageState, setPageState] = useState<PageState>('loading');
   const [evaluation, setEvaluation] = useState<KybEvaluation | null>(null);
   const [history, setHistory] = useState<KybHistoryResponse | null>(null);
@@ -575,223 +337,187 @@ const KybVerificationPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
 
-  /**
-   * Determine page state based on evaluation
-   */
-  const determinePageState = useCallback((statusResponse: KybStatusResponse): PageState => {
-    if (!statusResponse.has_evaluation || !statusResponse.latest_evaluation) {
-      return 'none';
-    }
-
-    const eval_ = statusResponse.latest_evaluation;
-    
-    if (eval_.admin_decision === 'approved') return 'approved';
-    if (eval_.admin_decision === 'rejected') return 'rejected';
-    
-    if (eval_.ai_status === 'pending') return 'processing';
-    if (eval_.ai_status === 'error') return 'error';
-    if (eval_.ai_status === 'ai_approved' || eval_.ai_status === 'ai_rejected') {
-      return 'ai_completed';
-    }
-    
+  const determinePageState = useCallback((s: KybStatusResponse): PageState => {
+    if (!s.has_evaluation || !s.latest_evaluation) return 'none';
+    const e = s.latest_evaluation;
+    if (e.admin_decision === 'approved') return 'approved';
+    if (e.admin_decision === 'rejected') return 'rejected';
+    if (e.ai_status === 'pending') return 'processing';
+    if (e.ai_status === 'error') return 'error';
+    if (e.ai_status === 'ai_approved' || e.ai_status === 'ai_rejected') return 'ai_completed';
     return 'none';
   }, []);
 
-  /**
-   * Handle status response update
-   */
-  const handleStatusUpdate = useCallback((status: KybStatusResponse) => {
-    setEvaluation(status.latest_evaluation);
-    setPartnerName(status.partner.name);
-    const newState = determinePageState(status);
-    setPageState(newState);
-
-    // If we just got approved/rejected, fetch history
-    if (newState === 'approved' || newState === 'rejected') {
-      kybApi.getHistory().then(setHistory).catch(console.error);
-    }
-
-    // Avisar al PartnerLayout (doble candado de navegación) del cambio de
-    // estado — cubre tanto la subida inicial del dossier como la detección
-    // por polling de una decisión del admin, sin esperar al ciclo propio
-    // del PartnerContext.
-    refetchPartnerContext();
-  }, [determinePageState]);
-
-  /**
-   * Polling hook - polls while status is 'processing'
-   */
-  const { data: statusData, loading: pollingLoading, refetch } = usePolling<KybStatusResponse>(
-    () => kybApi.getStatus(),
-    (status) => {
-      // Continue polling if AI is still processing
-      const latestEval = status?.latest_evaluation;
-      return latestEval?.ai_status === 'pending' && !latestEval?.admin_decision;
+  const handleStatusUpdate = useCallback(
+    (status: KybStatusResponse) => {
+      setError(null);
+      setEvaluation(status.latest_evaluation);
+      setPartnerName(status.partner?.name ?? '');
+      setPageState(determinePageState(status));
+      // Avisar al PartnerLayout (doble candado de navegación) del cambio de
+      // estado: cubre la subida inicial del dossier y la decisión del admin
+      // detectada por polling, sin esperar al ciclo propio del PartnerContext.
+      refetchPartnerContext();
     },
-    30000, // 30 seconds
-    {
-      onSuccess: handleStatusUpdate,
-      onError: (err) => {
-        console.error('Polling error:', err);
-        setError('Error al obtener el estado de verificación');
-      }
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [determinePageState],
   );
 
-  /**
-   * Handle form submission
-   */
+  // Consulta cada 30 s mientras la IA está procesando
+  const { refetch } = usePolling<KybStatusResponse>(
+    () => kybApi.getStatus(),
+    (status) => status?.latest_evaluation?.ai_status === 'pending' && !status?.latest_evaluation?.admin_decision,
+    30000,
+    {
+      onSuccess: handleStatusUpdate,
+      onError: () => setError('No pudimos obtener el estado de la verificación.'),
+    },
+  );
+
+  useEffect(() => {
+    if (pageState === 'approved' || pageState === 'rejected') {
+      kybApi.getHistory().then(setHistory).catch(() => setHistory(null));
+    }
+  }, [pageState]);
+
   const handleSubmit = async (formData: FormData) => {
     if (!formData.file) return;
-    
     setIsSubmitting(true);
     setError(null);
-    
     try {
-      const submitFormData = new FormData();
-      submitFormData.append('file', formData.file);
-      submitFormData.append('organizationName', formData.organizationName);
-      submitFormData.append('rutTaxId', formData.rutTaxId);
-      
-      await kybApi.upload(submitFormData);
-      
-      // After successful upload, refetch status
+      const fd = new FormData();
+      fd.append('file', formData.file);
+      fd.append('organizationName', formData.organizationName);
+      fd.append('rutTaxId', formData.rutTaxId);
+      await kybApi.upload(fd);
       setShowUploadForm(false);
       setPageState('processing');
       await refetch();
-    } catch (err: any) {
-      console.error('Upload error:', err);
+    } catch (err) {
       setError(getErrorMessage(err, 'No pudimos enviar el dossier. Vuelve a intentarlo en unos momentos.'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  /**
-   * Handle retry (show upload form again)
-   */
-  const handleRetry = () => {
-    setShowUploadForm(true);
-  };
-
-  // Fetch history on mount if already approved/rejected
-  useEffect(() => {
-    if (pageState === 'approved' || pageState === 'rejected') {
-      kybApi.getHistory().then(setHistory).catch(console.error);
-    }
-  }, [pageState]);
-
-  // ============================================
-  // RENDER
-  // ============================================
+  const badge = STATE_BADGE[pageState];
+  const showForm = pageState === 'none' || showUploadForm;
+  const pastEvaluations = history?.evaluations ?? [];
 
   return (
-    <div className="!max-w-4xl !mx-auto !bg-slate-50 dark:!bg-slate-900 !p-6 md:!p-8 !rounded-3xl">
-      {/* Header */}
-      <div className="!mb-8">
-        <div className="!flex !items-center !gap-3 !mb-2">
-          <div className="!w-10 !h-10 !bg-brand-50 dark:!bg-brand-700/50 !rounded-xl !flex !items-center !justify-center">
-            <Building2 className="!w-5 !h-5 !text-brand-800 dark:!text-brand-700" />
-          </div>
-          <h1 className="!text-2xl !font-bold !text-slate-800 dark:!text-slate-100">
-            Verificación Empresarial (KYB)
-          </h1>
-        </div>
-        {evaluation && (
-          <div className="!ml-13">
-            <KybStatusBadge evaluation={evaluation} size="md" />
-          </div>
-        )}
-      </div>
+    <div className="max-w-5xl">
+      <PageHeader
+        title="Verificación de empresa (KYB)"
+        subtitle="Validamos tu organización antes de que puedas publicar proyectos."
+        meta={badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : undefined}
+        actions={
+          showUploadForm && pageState !== 'none' ? (
+            <button type="button" className={btn.secondary} onClick={() => setShowUploadForm(false)}>
+              Cancelar
+            </button>
+          ) : undefined
+        }
+      />
 
-      {/* Error Banner */}
-      {error && (
-        <div className="!mb-6 !bg-red-50 dark:!bg-red-900/30 !border !border-red-200 dark:!border-red-800/50 !rounded-lg !p-4 !flex !items-start !gap-3">
-          <AlertTriangle className="!w-5 !h-5 !text-red-500 dark:!text-red-400 !flex-shrink-0 !mt-0.5" />
-          <div>
-            <p className="!text-red-800 dark:!text-red-300 !font-medium">Error</p>
-            <p className="!text-red-600 dark:!text-red-400 !text-sm">{error}</p>
-          </div>
-          <button
-            onClick={() => setError(null)}
-            className="!ml-auto !text-red-400 hover:!text-red-600 dark:hover:!text-red-300"
-          >
-            ×
-          </button>
+      {error && pageState !== 'loading' && (
+        <div role="alert" className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {error}
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="!bg-white dark:!bg-slate-800 !rounded-2xl !shadow-sm !border !border-slate-200 dark:!border-slate-700 !p-6 md:!p-8">
-        
-        {/* Loading State */}
-        {pageState === 'loading' && (
-          <div className="!flex !flex-col !items-center !justify-center !py-12">
-            <div className="!w-12 !h-12 !border-4 !border-brand-200 dark:!border-brand-700 !border-t-emerald-600 !rounded-full !animate-spin !mb-4" />
-            <p className="!text-slate-600 dark:!text-slate-400">Cargando estado de verificación...</p>
+      {pageState === 'loading' ? (
+        error ? (
+          <ErrorState title="No pudimos cargar tu verificación" onRetry={() => refetch()} />
+        ) : (
+          <div className="space-y-6">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-48" />
           </div>
-        )}
+        )
+      ) : showForm ? (
+        <UploadForm onSubmit={handleSubmit} isSubmitting={isSubmitting} initialOrgName={partnerName} isRetry={pageState !== 'none'} />
+      ) : (
+        <div className="space-y-6">
+          {pageState === 'processing' && (
+            <Notice tone="info" icon={Clock} title="Estamos evaluando tu dossier">
+              <p className="m-0">
+                Lo recibimos{evaluation?.created_at && <> el {fmtDate(evaluation.created_at, 'long')}</>}. La evaluación suele tomar entre unas horas y un día; esta
+                página se actualiza sola.
+              </p>
+              {evaluation?.document_name && (
+                <p className="m-0 mt-2 inline-flex items-center gap-1.5 text-xs">
+                  <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                  {evaluation.document_name}
+                </p>
+              )}
+            </Notice>
+          )}
 
-        {/* State: None - No evaluation, show upload form */}
-        {(pageState === 'none' || showUploadForm) && !pollingLoading && (
-          <UploadForm
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            initialOrgName={partnerName}
-          />
-        )}
+          {pageState === 'ai_completed' && evaluation && (
+            <>
+              <Notice tone="warning" icon={Clock} title="Falta la revisión del equipo">
+                La IA terminó su evaluación. Una persona del equipo revisará los resultados y tomará la decisión final.
+              </Notice>
+              <Summary evaluation={evaluation} showAi />
+              {evaluation.scores && <ScoresGrid scores={evaluation.scores} insights={evaluation.ai_insights} />}
+            </>
+          )}
 
-        {/* State: Processing - AI is evaluating */}
-        {pageState === 'processing' && !showUploadForm && (
-          <ProcessingState
-            title="Evaluación en Proceso"
-            message="Tu dossier fue recibido y está siendo evaluado por nuestra IA. Este proceso puede tomar de algunas horas hasta un día."
-            documentName={evaluation?.document_name}
-            submittedAt={evaluation?.created_at}
-          />
-        )}
+          {pageState === 'approved' && evaluation && (
+            <>
+              <Notice tone="success" icon={ShieldCheck} title="Tu empresa está verificada">
+                <p className="m-0">
+                  Tu cuenta está activa y puedes publicar proyectos.
+                  {evaluation.admin_decided_at && <> Verificada el {fmtDate(evaluation.admin_decided_at, 'long')}.</>}
+                </p>
+              </Notice>
+              <Summary evaluation={evaluation} />
+              {evaluation.scores && <ScoresGrid scores={evaluation.scores} insights={evaluation.ai_insights} />}
+              {pastEvaluations.length > 0 && <EvaluationHistory evaluations={pastEvaluations} />}
+            </>
+          )}
 
-        {/* State: AI Completed - Waiting for admin */}
-        {pageState === 'ai_completed' && evaluation && !showUploadForm && (
-          <AiCompletedState evaluation={evaluation} />
-        )}
+          {pageState === 'rejected' && evaluation && (
+            <>
+              <Notice
+                tone="danger"
+                icon={XCircle}
+                title="La verificación fue rechazada"
+                action={
+                  <button type="button" onClick={() => setShowUploadForm(true)} className={btn.primary}>
+                    <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                    Enviar nueva documentación
+                  </button>
+                }
+              >
+                {evaluation.admin_reason && (
+                  <p className="m-0 mb-2 rounded-lg bg-white/70 px-3 py-2">
+                    <strong>Motivo:</strong> {evaluation.admin_reason}
+                  </p>
+                )}
+                <p className="m-0">Corrige la documentación y vuelve a enviarla.</p>
+              </Notice>
+              {pastEvaluations.length > 0 && <EvaluationHistory evaluations={pastEvaluations} />}
+            </>
+          )}
 
-        {/* State: Approved */}
-        {pageState === 'approved' && evaluation && !showUploadForm && (
-          <ApprovedState evaluation={evaluation} history={history} />
-        )}
-
-        {/* State: Rejected */}
-        {pageState === 'rejected' && evaluation && !showUploadForm && (
-          <RejectedState 
-            evaluation={evaluation} 
-            history={history}
-            onRetry={handleRetry}
-          />
-        )}
-
-        {/* State: Error */}
-        {pageState === 'error' && (
-          <div className="!text-center !py-12">
-            <div className="!w-16 !h-16 !bg-red-100 dark:!bg-red-900/50 !rounded-full !flex !items-center !justify-center !mx-auto !mb-4">
-              <AlertTriangle className="!w-8 !h-8 !text-red-500 dark:!text-red-400" />
-            </div>
-            <h3 className="!text-lg !font-semibold !text-slate-800 dark:!text-white !mb-2">
-              Error en la Evaluación
-            </h3>
-            <p className="!text-slate-600 dark:!text-slate-400 !mb-4">
-              Ocurrió un error durante la evaluación de tu dossier. Por favor, intenta enviar nuevamente.
-            </p>
-            <button
-              onClick={handleRetry}
-              className="!inline-flex !items-center !gap-2 !px-4 !py-2 !bg-brand-700 !text-white !rounded-lg hover:!bg-brand-700 !transition-colors"
+          {pageState === 'error' && (
+            <Notice
+              tone="danger"
+              icon={AlertTriangle}
+              title="No pudimos evaluar tu dossier"
+              action={
+                <button type="button" onClick={() => setShowUploadForm(true)} className={btn.primary}>
+                  <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                  Enviar de nuevo
+                </button>
+              }
             >
-              <RefreshCw className="!w-4 !h-4" />
-              Reintentar
-            </button>
-          </div>
-        )}
-      </div>
+              Hubo un problema durante la evaluación. Vuelve a enviar el documento; si se repite, escríbenos.
+            </Notice>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,93 +1,111 @@
 // ============================================
 // PARTNER PROFILE PAGE
-// Perfil y configuración del Partner
+// Perfil, datos bancarios y contraseña del partner
 // ============================================
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Building2, CreditCard, ImageIcon, Info, Lock, UserCircle } from 'lucide-react';
 import {
-  PartnerProfile as PartnerProfileType,
-  OnboardingStatus,
   BankDetailsResponse,
-  UpdatePartnerProfileRequest,
-  UpdateBankDetailsRequest,
   ChangePasswordRequest,
+  OnboardingStatus,
   PARTNER_STATUS_LABELS,
-  PARTNER_STATUS_COLORS
+  PartnerProfile as PartnerProfileType,
+  PartnerStatus,
+  UpdateBankDetailsRequest,
+  UpdatePartnerProfileRequest,
 } from '../../../types/partner.types';
 import {
-  getPartnerProfile,
-  updatePartnerProfile,
-  updatePartnerLogo,
-  getOnboardingStatus,
+  changePassword,
   getBankDetails,
+  getOnboardingStatus,
+  getPartnerProfile,
   updateBankDetails,
-  changePassword
+  updatePartnerLogo,
+  updatePartnerProfile,
 } from '../services/partnerApi';
 import { usePartnerContext } from '../context/PartnerContext';
+import {
+  Badge,
+  btn,
+  Card,
+  CardHeader,
+  cx,
+  ErrorState,
+  Field,
+  fmtDate,
+  inputCls,
+  labelCls,
+  PageHeader,
+  Skeleton,
+  type Tone,
+} from '../ui';
+
+const apiMessage = (err: unknown, fallback: string) =>
+  (err as { response?: { data?: { message?: string } } })?.response?.data?.message || fallback;
+
+const STATUS_TEXT: Record<PartnerStatus, string> = {
+  onboarding: 'Cuenta en configuración',
+  active: 'Cuenta activa',
+  suspended: 'Cuenta suspendida',
+  inactive: 'Cuenta inactiva',
+};
+
+const STATUS_TONES: Record<PartnerStatus, Tone> = {
+  onboarding: 'warning',
+  active: 'success',
+  suspended: 'danger',
+  inactive: 'neutral',
+};
+
+const Label: React.FC<{ htmlFor: string; required?: boolean; children: React.ReactNode }> = ({ htmlFor, required, children }) => (
+  <label htmlFor={htmlFor} className={labelCls}>
+    {children}
+    {required && (
+      <span className="text-rose-600 ml-0.5" aria-hidden="true">
+        *
+      </span>
+    )}
+  </label>
+);
+
+const FormError: React.FC<{ message: string | null }> = ({ message }) =>
+  message ? (
+    <div role="alert" className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+      {message}
+    </div>
+  ) : null;
 
 // ============================================
-// TAB NAVIGATION
+// TABS
 // ============================================
 
 type TabType = 'profile' | 'bank' | 'security';
 
-interface TabProps {
-  active: TabType;
-  onChange: (tab: TabType) => void;
-  onboardingStatus?: OnboardingStatus;
-}
-
-const TabNavigation: React.FC<TabProps> = ({ active, onChange, onboardingStatus }) => {
-  const tabs: { id: TabType; label: string; icon: React.ReactNode; needsAttention?: boolean }[] = [
-    {
-      id: 'profile',
-      label: 'Perfil',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-      needsAttention: onboardingStatus && (!onboardingStatus.steps.profile || !onboardingStatus.steps.logo)
-    },
-    {
-      id: 'bank',
-      label: 'Datos Bancarios',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      ),
-      needsAttention: onboardingStatus && !onboardingStatus.steps.bank_details
-    },
-    {
-      id: 'security',
-      label: 'Seguridad',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      )
-    }
+const Tabs: React.FC<{ active: TabType; onChange: (t: TabType) => void; onboarding?: OnboardingStatus }> = ({ active, onChange, onboarding }) => {
+  const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }>; attention?: boolean }[] = [
+    { id: 'profile', label: 'Organización', icon: UserCircle, attention: !!onboarding && (!onboarding.steps.profile || !onboarding.steps.logo) },
+    { id: 'bank', label: 'Datos bancarios', icon: CreditCard, attention: !!onboarding && !onboarding.steps.bank_details },
+    { id: 'security', label: 'Seguridad', icon: Lock },
   ];
-
   return (
-    <div className="flex border-b border-slate-200 dark:border-slate-700 mb-6">
-      {tabs.map((tab) => (
+    <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto" role="tablist" aria-label="Secciones del perfil">
+      {tabs.map((t) => (
         <button
-          key={tab.id}
-          onClick={() => onChange(tab.id)}
-          className={`!flex !items-center !gap-2 !px-4 !py-3 !border-b-2 !font-medium !text-sm !transition-colors !relative ${
-            active === tab.id
-              ? 'border-brand-600 text-brand-800 dark:text-brand-700'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
-          }`}
-        >
-          {tab.icon}
-          {tab.label}
-          {tab.needsAttention && (
-            <span className="!absolute !-top-1 !-right-1 !w-3 !h-3 bg-amber-400 !rounded-full" />
+          key={t.id}
+          type="button"
+          role="tab"
+          aria-selected={active === t.id}
+          onClick={() => onChange(t.id)}
+          className={cx(
+            'relative flex items-center gap-2 px-4 py-3 -mb-px border-0 border-b-2 bg-transparent text-sm font-medium cursor-pointer whitespace-nowrap transition-colors',
+            active === t.id ? 'border-brand-700 text-brand-800' : 'border-transparent text-gray-500 hover:text-gray-800',
           )}
+        >
+          <t.icon className="w-4 h-4" aria-hidden="true" />
+          {t.label}
+          {t.attention && <span className="w-2 h-2 rounded-full bg-amber-400" aria-label="Pendiente" />}
         </button>
       ))}
     </div>
@@ -95,705 +113,549 @@ const TabNavigation: React.FC<TabProps> = ({ active, onChange, onboardingStatus 
 };
 
 // ============================================
-// PROFILE TAB CONTENT
+// ORGANIZACIÓN
 // ============================================
 
-interface ProfileTabProps {
-  profile: PartnerProfileType | null;
-  loading: boolean;
-  onUpdate: () => void;
-}
-
-const ProfileTab: React.FC<ProfileTabProps> = ({ profile, loading, onUpdate }) => {
+const ProfileTab: React.FC<{ profile: PartnerProfileType | null; onUpdate: () => void }> = ({ profile, onUpdate }) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingLogo, setSavingLogo] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [formData, setFormData] = useState<UpdatePartnerProfileRequest>({
-    name: '',
-    contact_email: '',
-    website_url: ''
-  });
+  const [formData, setFormData] = useState<UpdatePartnerProfileRequest>({ name: '', contact_email: '', website_url: '' });
   const [logoUrl, setLogoUrl] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoUploadType, setLogoUploadType] = useState<'url' | 'file'>('url');
+  const [logoMode, setLogoMode] = useState<'url' | 'file'>('file');
+
+  const reset = () => {
+    if (!profile) return;
+    setFormData({ name: profile.name, contact_email: profile.contact_email, website_url: profile.website_url || '' });
+  };
 
   useEffect(() => {
+    reset();
     if (profile) {
-      setFormData({
-        name: profile.name,
-        contact_email: profile.contact_email,
-        website_url: profile.website_url || ''
-      });
-      setLogoUrl(profile.logo_url || '');      setLogoUploadType(profile.logo_url ? 'url' : 'file');    }
+      setLogoUrl(profile.logo_url || '');
+      setLogoMode(profile.logo_url ? 'url' : 'file');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
     setSaving(true);
-
     try {
       await updatePartnerProfile(formData);
-      setSuccess('Perfil actualizado correctamente');
+      toast.success('Datos de la organización guardados');
       setEditing(false);
       onUpdate();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar el perfil');
+    } catch (err) {
+      setError(apiMessage(err, 'No pudimos guardar los datos. Inténtalo de nuevo.'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleSaveLogo = async () => {
-    if (logoUploadType === 'url' && !logoUrl.trim()) return;
-    if (logoUploadType === 'file' && !logoFile) return;
-
-    setError(null);
-    setSuccess(null);
-    setSaving(true);
-
+    if (logoMode === 'url' && !logoUrl.trim()) return;
+    if (logoMode === 'file' && !logoFile) return;
+    setSavingLogo(true);
     try {
       await updatePartnerLogo({
-        logo_url: logoUploadType === 'url' ? logoUrl.trim() : undefined,
-        logo_file: logoUploadType === 'file' ? logoFile : undefined
+        logo_url: logoMode === 'url' ? logoUrl.trim() : undefined,
+        logo_file: logoMode === 'file' ? logoFile : undefined,
       });
-      setSuccess('Logo actualizado correctamente');
-      setLogoFile(null); // Reset file after success
+      toast.success('Logo actualizado');
+      setLogoFile(null);
       onUpdate();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar el logo');
+    } catch (err) {
+      toast.error(apiMessage(err, 'No pudimos actualizar el logo'));
     } finally {
-      setSaving(false);
+      setSavingLogo(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-6">
-        <div className="h-24 bg-gray-200 dark:bg-slate-700 rounded-lg" />
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-gray-200 dark:bg-slate-700 rounded" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const preview = logoMode === 'file' && logoFile ? URL.createObjectURL(logoFile) : profile?.logo_url;
 
   return (
-    <div className="!space-y-6">
-      {/* Status Banner */}
-      {profile && (
-        <div className={`!px-4 !py-3 !rounded-lg ${PARTNER_STATUS_COLORS[profile.status]}`}>
-          <div className="!flex !items-center !justify-between">
-            <span className="!font-medium">
-              Estado: {PARTNER_STATUS_LABELS[profile.status]}
-            </span>
-            {profile.status === 'onboarding' && (
-              <span className="!text-sm">
-                Completa tu perfil para activar tu cuenta
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Messages */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-lg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="bg-brand-50 dark:bg-brand-600/10 border border-brand-200 dark:border-brand-600 text-brand-800 dark:text-brand-300 !px-4 !py-3 !rounded-lg">
-          {success}
-        </div>
-      )}
-
-      {/* Logo Section */}
-      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
-        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-4">Logo de la Organización</h3>
-        <div className="!flex !items-start !gap-6">
-          <div className="!w-24 !h-24 bg-slate-100 dark:bg-slate-700 !rounded-lg !overflow-hidden !flex !items-center !justify-center">
-            {profile?.logo_url ? (
-              <img
-                src={profile.logo_url}
-                alt="Logo"
-                className="!w-full !h-full !object-cover"
-              />
+    <div className="space-y-6">
+      <Card className="p-6 border-gray-200">
+        <CardHeader title="Logo" subtitle="Se muestra en tus proyectos y en los certificados." icon={ImageIcon} />
+        <div className="flex flex-col sm:flex-row gap-5">
+          <div className="w-28 h-28 rounded-xl border border-gray-200 bg-white flex items-center justify-center p-2 flex-shrink-0">
+            {preview ? (
+              <img src={preview} alt="Logo de la organización" className="max-w-full max-h-full object-contain" />
             ) : (
-              <svg className="!w-12 !h-12 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <Building2 className="w-8 h-8 text-gray-300" aria-hidden="true" />
             )}
           </div>
-          <div className="!flex-1">
-            <div className="!flex !items-center !justify-between !mb-2">
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200">
-                Logo de la Organización
-              </label>
-              <div className="!flex !gap-1 bg-slate-100 dark:bg-slate-700 !rounded-lg !p-1">
+          <div className="flex-1 min-w-0">
+            <div className="inline-flex rounded-full bg-gray-100 p-1 mb-3" role="group" aria-label="Origen del logo">
+              {(['file', 'url'] as const).map((m) => (
                 <button
+                  key={m}
                   type="button"
-                  onClick={() => setLogoUploadType('url')}
-                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'url' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-slate-100 !shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                  aria-pressed={logoMode === m}
+                  onClick={() => setLogoMode(m)}
+                  className={cx(
+                    'rounded-full border-0 px-3.5 py-1 text-xs font-semibold cursor-pointer',
+                    logoMode === m ? 'bg-white text-gray-900 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-800',
+                  )}
                 >
-                  Usar URL
+                  {m === 'file' ? 'Subir archivo' : 'Usar una URL'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setLogoUploadType('file')}
-                  className={`!px-3 !py-1 !text-xs !font-medium !rounded-md transition-colors ${logoUploadType === 'file' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-slate-100 !shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                >
-                  Subir Archivo
-                </button>
-              </div>
+              ))}
             </div>
-            <div className="!flex !gap-2">
-              {logoUploadType === 'url' ? (
+            <div className="flex flex-col sm:flex-row gap-2">
+              {logoMode === 'url' ? (
                 <input
                   type="url"
+                  aria-label="URL del logo"
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                   placeholder="https://ejemplo.com/logo.png"
-                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  className={cx(inputCls, 'flex-1 min-w-0')}
                 />
               ) : (
                 <input
                   type="file"
+                  aria-label="Archivo del logo"
                   accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                  onChange={(e) => { if (e.target.files && e.target.files[0]) setLogoFile(e.target.files[0]); }}
-                  className="!flex-1 !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 file:!mr-4 file:!py-2 file:!px-4 file:!rounded-full file:!border-0 file:!text-sm file:!font-semibold file:bg-brand-50 dark:file:bg-brand-600/10 file:text-brand-800 dark:file:text-brand-300 hover:file:bg-brand-50 dark:hover:file:bg-brand-600/20"
+                  onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
+                  className={cx(
+                    inputCls,
+                    'flex-1 min-w-0 py-2 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-brand-800',
+                  )}
                 />
               )}
               <button
+                type="button"
                 onClick={handleSaveLogo}
-                disabled={saving || (logoUploadType === 'url' ? !logoUrl.trim() : !logoFile)}
-                className="!px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 disabled:!cursor-not-allowed !font-medium"
+                disabled={savingLogo || (logoMode === 'url' ? !logoUrl.trim() || logoUrl.trim() === profile?.logo_url : !logoFile)}
+                className={btn.primary}
               >
-                {saving ? 'Guardando...' : 'Guardar'}
+                {savingLogo ? 'Guardando…' : 'Guardar logo'}
               </button>
             </div>
-            <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">
-              {logoUploadType === 'url' ? 'Ingresa la URL de tu logo' : 'Sube un archivo de imagen (PNG, JPG)'}
-            </p>
+            <p className="m-0 mt-1.5 text-xs text-gray-500">PNG, JPG, WEBP o SVG. Mejor con fondo transparente.</p>
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Profile Form */}
-      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
-        <div className="!flex !items-center !justify-between !mb-4">
-          <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Información de la Organización</h3>
-          {!editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="!text-sm text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 !font-medium"
-            >
-              Editar
-            </button>
-          )}
-        </div>
-
-        <form onSubmit={handleSaveProfile}>
-          <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
-            <div>
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                Nombre de la Organización *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                disabled={!editing}
-                required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-              />
+      <Card>
+        <CardHeader
+          title="Datos de la organización"
+          icon={Building2}
+          action={
+            !editing ? (
+              <button type="button" onClick={() => setEditing(true)} className={cx(btn.secondary, btn.sm)}>
+                Editar
+              </button>
+            ) : undefined
+          }
+        />
+        {!editing ? (
+          <dl className="m-0 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            <Field label="Nombre">{profile?.name || '—'}</Field>
+            <Field label="Email de contacto">{profile?.contact_email || '—'}</Field>
+            <Field label="Sitio web" className="sm:col-span-2">
+              {profile?.website_url ? (
+                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 break-all">
+                  {profile.website_url}
+                </a>
+              ) : (
+                <span className="text-gray-500">Sin sitio web</span>
+              )}
+            </Field>
+          </dl>
+        ) : (
+          <form onSubmit={handleSaveProfile}>
+            <FormError message={error} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <Label htmlFor="p-name" required>
+                  Nombre de la organización
+                </Label>
+                <input
+                  id="p-name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <Label htmlFor="p-email" required>
+                  Email de contacto
+                </Label>
+                <input
+                  id="p-email"
+                  type="email"
+                  required
+                  value={formData.contact_email}
+                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                  className={inputCls}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="p-web">Sitio web</Label>
+                <input
+                  id="p-web"
+                  type="url"
+                  value={formData.website_url}
+                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                  placeholder="https://www.ejemplo.cl"
+                  className={inputCls}
+                />
+              </div>
             </div>
-
-            <div>
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                Email de Contacto *
-              </label>
-              <input
-                type="email"
-                value={formData.contact_email}
-                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                disabled={!editing}
-                required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-              />
-            </div>
-
-            <div className="md:!col-span-2">
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                Sitio Web
-              </label>
-              <input
-                type="url"
-                value={formData.website_url}
-                onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                disabled={!editing}
-                placeholder="https://www.ejemplo.com"
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {editing && (
-            <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-2 mt-6 pt-5 border-t border-gray-100">
               <button
                 type="button"
+                className={btn.secondary}
                 onClick={() => {
                   setEditing(false);
-                  if (profile) {
-                    setFormData({
-                      name: profile.name,
-                      contact_email: profile.contact_email,
-                      website_url: profile.website_url || ''
-                    });
-                  }
+                  setError(null);
+                  reset();
                 }}
-                className="!px-4 !py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 !rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 Cancelar
               </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="!px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 !font-medium"
-              >
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
+              <button type="submit" disabled={saving} className={btn.primary}>
+                {saving ? 'Guardando…' : 'Guardar cambios'}
               </button>
             </div>
-          )}
-        </form>
-      </div>
+          </form>
+        )}
+      </Card>
     </div>
   );
 };
 
 // ============================================
-// BANK DETAILS TAB CONTENT
+// DATOS BANCARIOS
 // ============================================
 
-interface BankTabProps {
-  onUpdate: () => void;
-}
+const BANKS = [
+  'Banco de Chile', 'Banco Estado', 'Banco Santander Chile', 'Banco BCI', 'Banco Itaú Chile', 'Banco Scotiabank Chile',
+  'Banco BICE', 'Banco Security', 'Banco Falabella', 'Banco Ripley', 'Banco Consorcio', 'Otro',
+];
 
-const BankTab: React.FC<BankTabProps> = ({ onUpdate }) => {
+const EMPTY_BANK: UpdateBankDetailsRequest = {
+  bank_name: '',
+  account_type: 'checking',
+  account_number: '',
+  account_holder_name: '',
+  account_holder_rut: '',
+  currency: 'CLP',
+};
+
+const formatRut = (value: string): string => {
+  const cleaned = value.replace(/[^0-9kK]/g, '');
+  if (cleaned.length <= 1) return cleaned;
+  const body = cleaned.slice(0, -1);
+  const dv = cleaned.slice(-1).toUpperCase();
+  return `${body.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${dv}`;
+};
+
+const BankTab: React.FC<{ onUpdate: () => void }> = ({ onUpdate }) => {
   const [bankDetails, setBankDetails] = useState<BankDetailsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [formData, setFormData] = useState<UpdateBankDetailsRequest>({
-    bank_name: '',
-    account_type: 'checking',
-    account_number: '',
-    account_holder_name: '',
-    account_holder_rut: '',
-    currency: 'CLP'
-  });
-
-  useEffect(() => {
-    loadBankDetails();
-  }, []);
+  const [formData, setFormData] = useState<UpdateBankDetailsRequest>(EMPTY_BANK);
 
   const loadBankDetails = async () => {
     try {
       setLoading(true);
+      setLoadFailed(false);
       const data = await getBankDetails();
       setBankDetails(data);
-      if (!data) {
-        setEditing(true);
-      }
-    } catch (error) {
-      console.error('Error loading bank details:', error);
+      if (!data) setEditing(true);
+    } catch {
+      setLoadFailed(true);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadBankDetails();
+  }, []);
+
+  // Antes "Modificar" abría el formulario vacío y había que reescribir todo.
+  const startEditing = () => {
+    if (bankDetails) {
+      setFormData({
+        bank_name: bankDetails.bank_name,
+        account_type: bankDetails.account_type === 'savings' ? 'savings' : 'checking',
+        account_number: bankDetails.account_number,
+        account_holder_name: bankDetails.account_holder_name,
+        account_holder_rut: bankDetails.account_holder_rut,
+        currency: 'CLP',
+      });
+    }
+    setError(null);
+    setEditing(true);
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
     setSaving(true);
-
     try {
       await updateBankDetails(formData);
-      setSuccess('Datos bancarios actualizados correctamente');
+      toast.success('Datos bancarios guardados');
       setEditing(false);
       loadBankDetails();
       onUpdate();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar los datos bancarios');
+    } catch (err) {
+      setError(apiMessage(err, 'No pudimos guardar los datos bancarios. Inténtalo de nuevo.'));
     } finally {
       setSaving(false);
     }
   };
 
-  const formatRut = (value: string): string => {
-    const cleaned = value.replace(/[^0-9kK]/g, '');
-    if (cleaned.length <= 1) return cleaned;
-    const body = cleaned.slice(0, -1);
-    const dv = cleaned.slice(-1).toUpperCase();
-    const formatted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${formatted}-${dv}`;
-  };
-
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-6">
-        <div className="h-48 bg-gray-200 dark:bg-slate-700 rounded-lg" />
-      </div>
-    );
-  }
-
-  const banks = [
-    'Banco de Chile',
-    'Banco Estado',
-    'Banco Santander Chile',
-    'Banco BCI',
-    'Banco Itaú Chile',
-    'Banco Scotiabank Chile',
-    'Banco BICE',
-    'Banco Security',
-    'Banco Falabella',
-    'Banco Ripley',
-    'Banco Consorcio',
-    'Otro'
-  ];
+  if (loading) return <Skeleton className="h-72" />;
+  if (loadFailed) return <ErrorState title="No pudimos cargar tus datos bancarios" onRetry={loadBankDetails} />;
 
   return (
-    <div className="!space-y-6">
-      {/* Messages */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-lg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="bg-brand-50 dark:bg-brand-600/10 border border-brand-200 dark:border-brand-600 text-brand-800 dark:text-brand-300 !px-4 !py-3 !rounded-lg">
-          {success}
-        </div>
-      )}
-
-      {/* Info Banner */}
-      <div className="bg-slate-50 dark:bg-brand-700/10 border border-slate-200 dark:border-slate-300 !rounded-lg !p-4">
-        <div className="!flex !items-start !gap-3">
-          <svg className="!w-5 !h-5 text-slate-600 dark:text-slate-600 !mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <p className="!text-sm text-slate-700 dark:text-slate-400 !font-medium">
-              Información importante
-            </p>
-            <p className="!text-sm text-slate-700 dark:text-slate-400 !mt-1">
-              Los datos bancarios son necesarios para recibir los pagos por compensaciones realizadas a través de tus proyectos ESG.
-            </p>
-          </div>
-        </div>
+    <div className="space-y-6">
+      <div className="flex gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+        <Info className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <p className="m-0 text-sm text-gray-600">
+          Los usamos para transferirte los pagos por las compensaciones de tus proyectos.
+        </p>
       </div>
 
-      {/* Current Bank Details or Form */}
-      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
+      <Card>
         {!editing && bankDetails ? (
           <>
-            <div className="!flex !items-center !justify-between !mb-6">
-              <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100">Datos Bancarios Registrados</h3>
-              <button
-                onClick={() => setEditing(true)}
-                className="!text-sm text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 !font-medium"
-              >
-                Modificar
-              </button>
-            </div>
-
-            <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
-              <div>
-                <p className="!text-sm text-slate-500 dark:text-slate-400">Banco</p>
-                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.bank_name}</p>
-              </div>
-              <div>
-                <p className="!text-sm text-slate-500 dark:text-slate-400">Tipo de Cuenta</p>
-                <p className="!font-medium text-slate-800 dark:text-slate-100">
-                  {bankDetails.account_type === 'checking' ? 'Cuenta Corriente' : 'Cuenta de Ahorro'}
-                </p>
-              </div>
-              <div>
-                <p className="!text-sm text-slate-500 dark:text-slate-400">Número de Cuenta</p>
-                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.account_number}</p>
-              </div>
-              <div>
-                <p className="!text-sm text-slate-500 dark:text-slate-400">Titular</p>
-                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.account_holder_name}</p>
-              </div>
-              <div>
-                <p className="!text-sm text-slate-500 dark:text-slate-400">RUT Titular</p>
-                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.account_holder_rut}</p>
-              </div>
-              <div>
-                <p className="!text-sm text-slate-500 dark:text-slate-400">Moneda</p>
-                <p className="!font-medium text-slate-800 dark:text-slate-100">{bankDetails.currency}</p>
-              </div>
-            </div>
-
+            <CardHeader
+              title="Cuenta registrada"
+              icon={CreditCard}
+              action={
+                <button type="button" onClick={startEditing} className={cx(btn.secondary, btn.sm)}>
+                  Modificar
+                </button>
+              }
+            />
+            <dl className="m-0 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+              <Field label="Banco">{bankDetails.bank_name}</Field>
+              <Field label="Tipo de cuenta">{bankDetails.account_type === 'savings' ? 'Cuenta de ahorro' : 'Cuenta corriente'}</Field>
+              <Field label="Número de cuenta">
+                <span className="tabular-nums">{bankDetails.account_number}</span>
+              </Field>
+              <Field label="Titular">{bankDetails.account_holder_name}</Field>
+              <Field label="RUT del titular">
+                <span className="tabular-nums">{bankDetails.account_holder_rut}</span>
+              </Field>
+              <Field label="Moneda">{bankDetails.currency}</Field>
+            </dl>
             {bankDetails.updated_at && (
-              <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-6 !pt-4 border-t border-slate-200 dark:border-slate-700">
-                Última actualización: {new Date(bankDetails.updated_at).toLocaleDateString('es-CL')}
+              <p className="m-0 mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500">
+                Actualizado el {fmtDate(bankDetails.updated_at, 'long')}
               </p>
             )}
           </>
         ) : (
           <>
-            <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-6">
-              {bankDetails ? 'Modificar Datos Bancarios' : 'Configurar Datos Bancarios'}
-            </h3>
-
+            <CardHeader title={bankDetails ? 'Modificar cuenta' : 'Agrega tu cuenta bancaria'} icon={CreditCard} />
             <form onSubmit={handleSave}>
-              <div className="!grid !grid-cols-1 md:!grid-cols-2 !gap-6">
+              <FormError message={error} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                    Banco *
-                  </label>
+                  <Label htmlFor="b-bank" required>
+                    Banco
+                  </Label>
                   <select
+                    id="b-bank"
+                    required
                     value={formData.bank_name}
                     onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                    required
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className={inputCls}
                   >
-                    <option value="">Seleccionar banco...</option>
-                    {banks.map((bank) => (
-                      <option key={bank} value={bank}>{bank}</option>
+                    <option value="">Selecciona un banco</option>
+                    {BANKS.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
                     ))}
                   </select>
                 </div>
-
                 <div>
-                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                    Tipo de Cuenta *
-                  </label>
+                  <Label htmlFor="b-type" required>
+                    Tipo de cuenta
+                  </Label>
                   <select
+                    id="b-type"
+                    required
                     value={formData.account_type}
                     onChange={(e) => setFormData({ ...formData, account_type: e.target.value as 'checking' | 'savings' })}
-                    required
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className={inputCls}
                   >
-                    <option value="checking">Cuenta Corriente</option>
-                    <option value="savings">Cuenta de Ahorro</option>
+                    <option value="checking">Cuenta corriente</option>
+                    <option value="savings">Cuenta de ahorro</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                    Número de Cuenta *
-                  </label>
+                  <Label htmlFor="b-number" required>
+                    Número de cuenta
+                  </Label>
                   <input
+                    id="b-number"
                     type="text"
+                    inputMode="numeric"
+                    required
                     value={formData.account_number}
                     onChange={(e) => setFormData({ ...formData, account_number: e.target.value.replace(/[^0-9]/g, '') })}
-                    required
-                    placeholder="Ej: 12345678"
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    placeholder="Ej.: 12345678"
+                    className={inputCls}
                   />
                 </div>
-
                 <div>
-                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                    Nombre del Titular *
-                  </label>
+                  <Label htmlFor="b-holder" required>
+                    Nombre del titular
+                  </Label>
                   <input
+                    id="b-holder"
                     type="text"
+                    required
                     value={formData.account_holder_name}
                     onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
-                    required
-                    placeholder="Nombre completo"
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    placeholder="Nombre completo o razón social"
+                    className={inputCls}
                   />
                 </div>
-
                 <div>
-                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                    RUT del Titular *
-                  </label>
+                  <Label htmlFor="b-rut" required>
+                    RUT del titular
+                  </Label>
                   <input
+                    id="b-rut"
                     type="text"
+                    required
+                    maxLength={12}
                     value={formData.account_holder_rut}
                     onChange={(e) => setFormData({ ...formData, account_holder_rut: formatRut(e.target.value) })}
-                    required
                     placeholder="12.345.678-9"
-                    maxLength={12}
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                    className={inputCls}
                   />
                 </div>
-
                 <div>
-                  <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                    Moneda *
-                  </label>
-                  <select
-                    value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'CLP' })}
-                    required
-                    className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-                  >
-                    <option value="CLP">Peso Chileno (CLP)</option>
+                  <Label htmlFor="b-currency">Moneda</Label>
+                  <select id="b-currency" value="CLP" disabled className={inputCls}>
+                    <option value="CLP">Peso chileno (CLP)</option>
                   </select>
                 </div>
               </div>
-
-              <div className="!flex !justify-end !gap-3 !mt-6 !pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex justify-end gap-2 mt-6 pt-5 border-t border-gray-100">
                 {bankDetails && (
-                  <button
-                    type="button"
-                    onClick={() => setEditing(false)}
-                    className="!px-4 !py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 !rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"
-                  >
+                  <button type="button" onClick={() => setEditing(false)} className={btn.secondary}>
                     Cancelar
                   </button>
                 )}
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="!px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 !font-medium"
-                >
-                  {saving ? 'Guardando...' : 'Guardar Datos Bancarios'}
+                <button type="submit" disabled={saving} className={btn.primary}>
+                  {saving ? 'Guardando…' : 'Guardar datos bancarios'}
                 </button>
               </div>
             </form>
           </>
         )}
-      </div>
+      </Card>
     </div>
   );
 };
 
 // ============================================
-// SECURITY TAB CONTENT
+// SEGURIDAD
 // ============================================
 
 const SecurityTab: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState<ChangePasswordRequest & { confirmPassword: string }>({
     current_password: '',
     new_password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
-
-    if (formData.new_password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-
-    if (formData.new_password.length < 8) {
-      setError('La nueva contraseña debe tener al menos 8 caracteres');
-      return;
-    }
-
+    if (formData.new_password.length < 8) return setError('La nueva contraseña debe tener al menos 8 caracteres.');
+    if (formData.new_password !== formData.confirmPassword) return setError('Las contraseñas nuevas no coinciden.');
     setSaving(true);
-
     try {
-      await changePassword({
-        current_password: formData.current_password,
-        new_password: formData.new_password
-      });
-      setSuccess('Contraseña actualizada correctamente');
-      setFormData({
-        current_password: '',
-        new_password: '',
-        confirmPassword: ''
-      });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cambiar la contraseña');
+      await changePassword({ current_password: formData.current_password, new_password: formData.new_password });
+      toast.success('Contraseña actualizada');
+      setFormData({ current_password: '', new_password: '', confirmPassword: '' });
+    } catch (err) {
+      setError(apiMessage(err, 'No pudimos cambiar la contraseña. Revisa la contraseña actual.'));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="!space-y-6">
-      {/* Messages */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 !px-4 !py-3 !rounded-lg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="bg-brand-50 dark:bg-brand-600/10 border border-brand-200 dark:border-brand-600 text-brand-800 dark:text-brand-300 !px-4 !py-3 !rounded-lg">
-          {success}
-        </div>
-      )}
-
-      {/* Change Password Form */}
-      <div className="bg-white dark:bg-slate-800 !rounded-lg border border-slate-200 dark:border-slate-700 !p-6">
-        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-6">Cambiar Contraseña</h3>
-
-        <form onSubmit={handleChangePassword} className="!max-w-md">
-          <div className="!space-y-4">
-            <div>
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                Contraseña Actual *
-              </label>
-              <input
-                type="password"
-                value={formData.current_password}
-                onChange={(e) => setFormData({ ...formData, current_password: e.target.value })}
-                required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-              />
-            </div>
-
-            <div>
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                Nueva Contraseña *
-              </label>
-              <input
-                type="password"
-                value={formData.new_password}
-                onChange={(e) => setFormData({ ...formData, new_password: e.target.value })}
-                required
-                minLength={8}
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-              />
-              <p className="!text-sm text-slate-500 dark:text-slate-400 !mt-1">Mínimo 8 caracteres</p>
-            </div>
-
-            <div>
-              <label className="!block !text-sm !font-medium text-slate-700 dark:text-slate-200 !mb-2">
-                Confirmar Nueva Contraseña *
-              </label>
-              <input
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                required
-                className="!w-full !px-4 !py-2 border border-slate-300 dark:border-slate-600 !rounded-lg focus:!ring-2 focus:ring-brand-700 dark:focus:ring-brand-700 focus:border-brand-600 dark:focus:border-brand-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
-              />
-            </div>
+    <Card>
+      <CardHeader title="Cambiar contraseña" icon={Lock} />
+      <form onSubmit={handleChangePassword} className="max-w-md">
+        <FormError message={error} />
+        <div className="space-y-5">
+          <div>
+            <Label htmlFor="s-current" required>
+              Contraseña actual
+            </Label>
+            <input
+              id="s-current"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={formData.current_password}
+              onChange={(e) => setFormData({ ...formData, current_password: e.target.value })}
+              className={inputCls}
+            />
           </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="!mt-6 !px-4 !py-2 !bg-brand-600 !text-white !rounded-lg hover:!bg-brand-700 disabled:!opacity-50 !font-medium"
-          >
-            {saving ? 'Guardando...' : 'Cambiar Contraseña'}
-          </button>
-        </form>
-      </div>
-    </div>
+          <div>
+            <Label htmlFor="s-new" required>
+              Nueva contraseña
+            </Label>
+            <input
+              id="s-new"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={formData.new_password}
+              onChange={(e) => setFormData({ ...formData, new_password: e.target.value })}
+              className={inputCls}
+            />
+            <p className="m-0 mt-1.5 text-xs text-gray-500">Mínimo 8 caracteres.</p>
+          </div>
+          <div>
+            <Label htmlFor="s-confirm" required>
+              Repite la nueva contraseña
+            </Label>
+            <input
+              id="s-confirm"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              className={inputCls}
+            />
+          </div>
+        </div>
+        <button type="submit" disabled={saving} className={cx(btn.primary, 'mt-6')}>
+          {saving ? 'Guardando…' : 'Cambiar contraseña'}
+        </button>
+      </form>
+    </Card>
   );
 };
 
@@ -808,79 +670,50 @@ const PartnerProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { refetch: refetchPartnerContext } = usePartnerContext();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
-      setLoading(true);
-      const results = await Promise.allSettled([
-        getPartnerProfile(),
-        getOnboardingStatus()
-      ]);
-
-      if (results[0].status === 'fulfilled') setProfile(results[0].value);
-      if (results[1].status === 'fulfilled') setOnboarding(results[1].value || undefined);
-
+      const [p, o] = await Promise.allSettled([getPartnerProfile(), getOnboardingStatus()]);
+      if (p.status === 'fulfilled') setProfile(p.value);
+      if (o.status === 'fulfilled') setOnboarding(o.value || undefined);
       // Avisar al PartnerLayout (y cualquier otra pantalla) del cambio,
       // para que el "doble candado" de navegación se actualice sin F5.
       refetchPartnerContext();
-    } catch (error) {
-      console.error('Error loading profile data:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !items-center !gap-4">
-        <Link
-          to="/partner"
-          className="!p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 !rounded-lg !transition-colors !no-underline"
-        >
-          <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100">Mi Perfil</h1>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">Configura tu cuenta y datos de la organización</p>
-        </div>
-      </div>
+    <div className="max-w-4xl">
+      <PageHeader
+        title="Mi perfil"
+        subtitle="Datos de tu organización, cuenta bancaria y acceso."
+        meta={
+          profile ? (
+            <Badge tone={STATUS_TONES[profile.status] ?? 'neutral'}>{STATUS_TEXT[profile.status] ?? PARTNER_STATUS_LABELS[profile.status] ?? profile.status}</Badge>
+          ) : undefined
+        }
+      />
 
-      {/* Content */}
-      <div className="bg-white dark:bg-slate-900 !rounded-xl !shadow-sm border border-slate-200 dark:border-slate-700 !overflow-hidden">
-        <div className="!p-6">
-          <TabNavigation
-            active={activeTab}
-            onChange={setActiveTab}
-            onboardingStatus={onboarding}
-          />
-
-          {activeTab === 'profile' && (
-            <ProfileTab
-              profile={profile}
-              loading={loading}
-              onUpdate={loadData}
-            />
-          )}
-          {activeTab === 'bank' && (
-            <BankTab onUpdate={loadData} />
-          )}
-          {activeTab === 'security' && (
-            <SecurityTab />
-          )}
+      {profile?.status === 'onboarding' && (
+        <div className="mb-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <Info className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="m-0 text-sm text-amber-900">Completa los datos de tu organización, el logo y la cuenta bancaria para activar tu cuenta.</p>
         </div>
-      </div>
+      )}
+
+      <Tabs active={activeTab} onChange={setActiveTab} onboarding={onboarding} />
+
+      {activeTab === 'profile' && (loading ? <Skeleton className="h-96" /> : <ProfileTab profile={profile} onUpdate={loadData} />)}
+      {activeTab === 'bank' && <BankTab onUpdate={loadData} />}
+      {activeTab === 'security' && <SecurityTab />}
     </div>
   );
 };
 
 export default PartnerProfilePage;
-
-
-
-

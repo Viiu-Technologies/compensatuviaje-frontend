@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { FileText, Upload, X } from 'lucide-react';
 
 interface FileUploaderProps {
   accept?: string;
@@ -108,9 +108,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   return (
     <div className="space-y-3">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700">
+        <label className="block text-sm font-medium text-gray-700">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-rose-600 ml-0.5" aria-hidden="true">*</span>}
         </label>
       )}
 
@@ -120,12 +120,22 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => !disabled && fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={`${label}: ${description}`}
+        aria-disabled={disabled || undefined}
         className={`
-          relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer
+          relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700
           transition-all duration-200
           ${isDragging
-            ? 'border-emerald-400 bg-emerald-50'
-            : 'border-gray-300 hover:border-emerald-400 hover:bg-gray-50'
+            ? 'border-brand-600 bg-brand-50'
+            : 'border-gray-300 hover:border-brand-600 hover:bg-gray-50'
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -151,8 +161,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
       {/* Error */}
       {error && (
-        <p className="text-sm text-red-500 flex items-center gap-1">
-          ⚠️ {error}
+        <p className="text-sm text-rose-700" role="alert">
+          {error}
         </p>
       )}
 
@@ -172,8 +182,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
                   className="w-12 h-12 rounded-md object-cover"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-md bg-red-50 flex items-center justify-center text-red-500 text-lg">
-                  📄
+                <div className="w-12 h-12 rounded-md bg-white border border-gray-200 flex items-center justify-center text-gray-500">
+                  <FileText className="w-5 h-5" aria-hidden="true" />
                 </div>
               )}
 
@@ -193,9 +203,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
                     e.stopPropagation();
                     removeFile(index);
                   }}
-                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                  aria-label={`Quitar ${file.name}`}
+                  className="text-gray-400 hover:text-rose-600 transition-colors p-1 border-0 bg-transparent cursor-pointer"
                 >
-                  ✕
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </button>
               )}
             </div>

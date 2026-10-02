@@ -3,387 +3,172 @@
 // Lista de proyectos ESG del Partner
 // ============================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { ChevronLeft, ChevronRight, FolderKanban, Pencil, Plus, Trash2 } from 'lucide-react';
+import { EsgProject, PROJECT_TYPE_LABELS } from '../../../types/partner.types';
+import { deleteProject, getPartnerProjects } from '../services/partnerApi';
 import {
-  EsgProject,
-  ProjectStatus,
-  PROJECT_TYPE_LABELS,
-  PROJECT_STATUS_LABELS,
-  PROJECT_STATUS_COLORS
-} from '../../../types/partner.types';
-import { getPartnerProjects, deleteProject } from '../services/partnerApi';
+  btn,
+  Card,
+  cx,
+  Dialog,
+  EmptyState,
+  ErrorState,
+  fmtCLP,
+  fmtDate,
+  fmtInt,
+  PageHeader,
+  Progress,
+  ProjectStatusBadge,
+  Skeleton,
+  unitOf,
+} from '../ui';
+
+const STATUS_FILTERS: { value: string; label: string }[] = [
+  { value: '', label: 'Todos' },
+  { value: 'draft', label: 'Borrador' },
+  { value: 'pending_review', label: 'En revisión' },
+  { value: 'approved', label: 'Aprobado' },
+  { value: 'active', label: 'Activo' },
+  { value: 'rejected', label: 'Rechazado' },
+  { value: 'paused', label: 'Pausado' },
+  { value: 'completed', label: 'Completado' },
+];
 
 // ============================================
-// FILTER COMPONENT
+// PROJECT CARD
 // ============================================
 
-interface FilterProps {
-  currentStatus: string;
-  onStatusChange: (status: string) => void;
-}
-
-const ProjectFilters: React.FC<FilterProps> = ({ currentStatus, onStatusChange }) => {
-  const statusOptions: { value: string; label: string }[] = [
-    { value: '', label: 'Todos los estados' },
-    { value: 'draft', label: 'Borrador' },
-    { value: 'pending_review', label: 'En Revisión' },
-    { value: 'approved', label: 'Aprobado' },
-    { value: 'active', label: 'Activo' },
-    { value: 'rejected', label: 'Rechazado' },
-    { value: 'paused', label: 'Pausado' },
-    { value: 'completed', label: 'Completado' }
-  ];
-
-  return (
-    <div className="bg-white dark:bg-slate-800 !rounded-lg !border !p-4 !mb-6">
-      <div className="!flex !flex-wrap !items-center !gap-4">
-        <div className="!flex !items-center !gap-2">
-          <svg className="!w-5 !h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <span className="!text-sm text-slate-600 dark:text-slate-300">Filtrar:</span>
-        </div>
-        <select
-          value={currentStatus}
-          onChange={(e) => onStatusChange(e.target.value)}
-          className="!px-3 !py-2 !border border-slate-300 dark:border-slate-600 !rounded-lg !text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:!ring-2 focus:ring-brand-700 focus:border-brand-600"
-        >
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// PROJECT CARD COMPONENT
-// ============================================
-
-interface ProjectCardProps {
-  project: EsgProject;
-  onDelete: (id: string) => void;
-}
-
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, onDelete }) => {
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    try {
-      await onDelete(project.id);
-    } finally {
-      setDeleting(false);
-      setShowDeleteModal(false);
-    }
-  };
-
+const ProjectCard: React.FC<{ project: EsgProject; onDelete: (p: EsgProject) => void }> = ({ project, onDelete }) => {
   const canDelete = project.status === 'draft';
   const canEdit = ['draft', 'rejected'].includes(project.status);
+  const unit = unitOf(project);
 
-  const formatNumber = (n: number | undefined | null): string => {
-    if (n === null || n === undefined || isNaN(n)) return '0';
-    return new Intl.NumberFormat('es-CL').format(n);
-  };
-
-  const capacityTotal = project.capacity_total || 0;
-  const capacitySold = project.capacity_sold || 0;
-  const capacityAvailable = project.capacity_available ?? Math.max(0, capacityTotal - capacitySold);
-  const soldPct = capacityTotal > 0 ? Math.min(100, Math.round((capacitySold / capacityTotal) * 100)) : 0;
+  const total = project.capacity_total || 0;
+  const sold = project.capacity_sold || 0;
+  const available = project.capacity_available ?? Math.max(0, total - sold);
   const monthlyApproved = project.monthly_stock_approved || 0;
   const monthlyRemaining = project.monthly_stock_remaining || 0;
-  const monthlyPct = monthlyApproved > 0 ? Math.min(100, Math.round((monthlyRemaining / monthlyApproved) * 100)) : 0;
-  const unitLabel = project.impact_unit || project.impact_unit_type || 'unidades';
+  const location = [project.location_region, project.location_country].filter(Boolean).join(', ');
 
   return (
-    <>
-      <div className="bg-white dark:bg-slate-800 !rounded-xl !border !shadow-sm hover:!shadow-md !transition-shadow !overflow-hidden">
-        {/* Card Header */}
-        <div className="!p-6">
-          <div className="!flex !items-start !justify-between">
-            <div className="!flex-1 !min-w-0">
-              <div className="!flex !items-center !gap-3 !mb-2">
-                <div className="!w-10 !h-10 bg-brand-50 dark:bg-brand-600/10 !rounded-lg !flex !items-center !justify-center text-brand-800 dark:text-brand-300">
-                  <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <span className="!text-xs !font-mono text-slate-500 dark:text-slate-400">{project.code}</span>
-                  <h3 className="!font-semibold text-slate-800 dark:text-slate-100 !truncate">{project.name}</h3>
-                </div>
-              </div>
-
-              <p className="!text-sm text-slate-500 dark:text-slate-400 !line-clamp-2 !mb-4">
-                {project.description || 'Sin descripción'}
-              </p>
-
-              <div className="!flex !flex-wrap !items-center !gap-2 !text-sm !mb-4">
-                <span className={`!px-2.5 !py-1 !text-xs !font-medium !rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>
-                  {PROJECT_STATUS_LABELS[project.status]}
-                </span>
-                <span className="text-slate-400 dark:text-slate-500">•</span>
-                <span className="text-slate-600 dark:text-slate-300">
-                  {PROJECT_TYPE_LABELS[project.type]}
-                </span>
-                <span className="text-slate-400 dark:text-slate-500">•</span>
-                <span className="text-slate-600 dark:text-slate-300">
-                  {project.location_country}
-                  {project.location_region && `, ${project.location_region}`}
-                </span>
-              </div>
-
-              {/* Capacity progress */}
-              {capacityTotal > 0 && (
-                <div className="!mb-3">
-                  <div className="!flex !items-center !justify-between !text-xs !mb-1">
-                    <span className="text-slate-500 dark:text-slate-400">Capacidad total</span>
-                    <span className="!font-medium text-slate-700 dark:text-slate-200">
-                      {formatNumber(capacityAvailable)} / {formatNumber(capacityTotal)} {unitLabel} disponibles
-                    </span>
-                  </div>
-                  <div className="!w-full bg-slate-100 dark:bg-slate-700 !rounded-full !h-2 !overflow-hidden">
-                    <div
-                      className="!h-2 !bg-brand-600 !transition-all"
-                      style={{ width: `${soldPct}%` }}
-                    />
-                  </div>
-                  <p className="!text-[11px] text-slate-400 dark:text-slate-500 !mt-1">
-                    {formatNumber(capacitySold)} {unitLabel} vendidas ({soldPct}%)
-                  </p>
-                </div>
-              )}
-
-              {/* Monthly stock progress */}
-              {monthlyApproved > 0 && (
-                <div className="!mb-1">
-                  <div className="!flex !items-center !justify-between !text-xs !mb-1">
-                    <span className="text-slate-500 dark:text-slate-400">Stock mensual</span>
-                    <span className="!font-medium text-slate-700 dark:text-slate-200">
-                      {formatNumber(monthlyRemaining)} / {formatNumber(monthlyApproved)} {unitLabel}
-                    </span>
-                  </div>
-                  <div className="!w-full bg-slate-100 dark:bg-slate-700 !rounded-full !h-2 !overflow-hidden">
-                    <div
-                      className="!h-2 !bg-brand-700 !transition-all"
-                      style={{ width: `${monthlyPct}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Quick facts row */}
-              <div className="!flex !flex-wrap !gap-x-4 !gap-y-1 !text-xs text-slate-500 dark:text-slate-400 !mt-3">
-                {project.provider_cost_unit_clp !== undefined && project.provider_cost_unit_clp > 0 && (
-                  <span>Costo: <strong className="text-slate-700 dark:text-slate-200">${formatNumber(project.provider_cost_unit_clp)} CLP/{unitLabel}</strong></span>
-                )}
-                {project.certification && (
-                  <span>Certificación: <strong className="text-slate-700 dark:text-slate-200">{project.certification}</strong></span>
-                )}
-                {(project.documents_count ?? 0) > 0 && (
-                  <span>Documentos: <strong className="text-slate-700 dark:text-slate-200">{project.documents_count}</strong></span>
-                )}
-                {(project.evidence_count ?? 0) > 0 && (
-                  <span>Evidencias: <strong className="text-slate-700 dark:text-slate-200">{project.evidence_count}</strong></span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card Footer */}
-        <div className="!px-6 !py-4 bg-slate-50 dark:bg-slate-900 !border-t !flex !items-center !justify-between">
-          <div className="!text-sm text-slate-500 dark:text-slate-400">
-            Creado: {new Date(project.created_at).toLocaleDateString('es-CL')}
-          </div>
-          <div className="!flex !items-center !gap-2">
-            {canDelete && (
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="!p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 !rounded-lg !transition-colors"
-                title="Eliminar"
-              >
-                <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            )}
-            {canEdit && (
-              <Link
-                to={`/partner/projects/${project.id}/edit`}
-                className="!p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-brand-800/30 !rounded-lg !transition-colors"
-                title="Editar"
-              >
-                <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+    <Card className="p-0 flex flex-col" as="article">
+      <div className="p-6 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="m-0 text-xs font-medium text-gray-500 tabular-nums">{project.code}</p>
+            <h2 className="m-0 mt-0.5 text-base font-semibold text-gray-900 leading-snug">
+              <Link to={`/partner/projects/${project.id}`} className="text-inherit no-underline hover:text-brand-700">
+                {project.name}
               </Link>
-            )}
-            <Link
-              to={`/partner/projects/${project.id}`}
-              className="!inline-flex !items-center !gap-1 !px-3 !py-2 !text-sm !font-medium text-brand-800 dark:text-brand-700 hover:text-brand-800 dark:hover:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-600/10 !rounded-lg !transition-colors !no-underline"
-            >
-              Ver detalle
-              <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+            </h2>
           </div>
+          <ProjectStatusBadge status={project.status} />
         </div>
+        <p className="m-0 mt-1 text-sm text-gray-500">
+          {PROJECT_TYPE_LABELS[project.type] ?? project.type}
+          {location && <> · {location}</>}
+        </p>
+        {project.description && <p className="m-0 mt-3 text-sm text-gray-600 line-clamp-2">{project.description}</p>}
+
+        {(total > 0 || monthlyApproved > 0) && (
+          <div className="mt-5 space-y-4">
+            {total > 0 && (
+              <div>
+                <div className="flex items-baseline justify-between gap-3 text-xs">
+                  <span className="text-gray-500">Capacidad vendida</span>
+                  <span className="font-medium text-gray-800 tabular-nums">
+                    {fmtInt(sold)} de {fmtInt(total)} {unit}
+                  </span>
+                </div>
+                <Progress value={(sold / total) * 100} label="Capacidad vendida" className="mt-1.5" />
+                <p className="m-0 mt-1 text-xs text-gray-500">{fmtInt(available)} disponibles</p>
+              </div>
+            )}
+            {monthlyApproved > 0 && (
+              <div>
+                <div className="flex items-baseline justify-between gap-3 text-xs">
+                  <span className="text-gray-500">Stock del mes</span>
+                  <span className="font-medium text-gray-800 tabular-nums">
+                    {fmtInt(monthlyRemaining)} de {fmtInt(monthlyApproved)} {unit}
+                  </span>
+                </div>
+                <Progress value={(monthlyRemaining / monthlyApproved) * 100} label="Stock del mes" className="mt-1.5" />
+              </div>
+            )}
+          </div>
+        )}
+
+        <dl className="m-0 mt-5 flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
+          {(project.provider_cost_unit_clp ?? 0) > 0 && (
+            <div className="flex gap-1">
+              <dt>Costo por unidad</dt>
+              <dd className="m-0 font-semibold text-gray-800">{fmtCLP(project.provider_cost_unit_clp)}</dd>
+            </div>
+          )}
+          {project.certification && (
+            <div className="flex gap-1">
+              <dt>Certificación</dt>
+              <dd className="m-0 font-semibold text-gray-800">{project.certification}</dd>
+            </div>
+          )}
+          <div className="flex gap-1">
+            <dt>Documentos</dt>
+            <dd className="m-0 font-semibold text-gray-800">{fmtInt(project.documents_count)}</dd>
+          </div>
+          <div className="flex gap-1">
+            <dt>Evidencias</dt>
+            <dd className="m-0 font-semibold text-gray-800">{fmtInt(project.evidence_count)}</dd>
+          </div>
+        </dl>
       </div>
 
-      {/* Delete Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Eliminar proyecto</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Esta acción no se puede deshacer</p>
-              </div>
-            </div>
-            <p className="text-slate-600 dark:text-slate-300 mb-6">
-              ¿Estás seguro de que deseas eliminar el proyecto <strong>{project.name}</strong>?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                disabled={deleting}
-                className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-              >
-                {deleting ? 'Eliminando...' : 'Eliminar'}
-              </button>
-            </div>
-          </div>
+      <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between gap-3">
+        <span className="text-xs text-gray-500">Creado el {fmtDate(project.created_at)}</span>
+        <div className="flex items-center gap-1.5">
+          {canDelete && (
+            <button type="button" onClick={() => onDelete(project)} className={btn.icon} aria-label={`Eliminar ${project.name}`} title="Eliminar">
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
+            </button>
+          )}
+          {canEdit && (
+            <Link to={`/partner/projects/${project.id}/edit`} className={btn.icon} aria-label={`Editar ${project.name}`} title="Editar">
+              <Pencil className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          )}
+          <Link to={`/partner/projects/${project.id}`} className={cx(btn.secondary, btn.sm)}>
+            Ver detalle
+          </Link>
         </div>
-      )}
-    </>
+      </div>
+    </Card>
   );
 };
 
 // ============================================
-// EMPTY STATE COMPONENT
+// PAGINATION
 // ============================================
 
-const EmptyState: React.FC<{ hasFilter: boolean }> = ({ hasFilter }) => (
-  <div className="bg-white dark:bg-slate-800 !rounded-xl !border !p-12 !text-center">
-    <div className="!w-20 !h-20 bg-slate-100 dark:bg-slate-800 !rounded-full !flex !items-center !justify-center !mx-auto !mb-6">
-      <svg className="!w-10 !h-10 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-        />
-      </svg>
-    </div>
-    {hasFilter ? (
-      <>
-        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-2">
-          No hay proyectos con este filtro
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 !mb-6">
-          Intenta cambiar los filtros de búsqueda
-        </p>
-      </>
-    ) : (
-      <>
-        <h3 className="!text-lg !font-semibold text-slate-800 dark:text-slate-100 !mb-2">
-          No tienes proyectos aún
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 !mb-6">
-          Crea tu primer proyecto ESG para comenzar a recibir compensaciones
-        </p>
-        <Link
-          to="/partner/projects/create"
-          className="!inline-flex !items-center !gap-2 !px-6 !py-3 !bg-brand-600 !text-white !rounded-xl hover:!bg-brand-700 !transition-all !font-semibold !shadow-lg !no-underline"
-        >
-          <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Crear primer proyecto
-        </Link>
-      </>
-    )}
-  </div>
-);
-
-// ============================================
-// PAGINATION COMPONENT
-// ============================================
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination: React.FC<{ currentPage: number; totalPages: number; onPageChange: (page: number) => void }> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
   if (totalPages <= 1) return null;
-
-  const pages = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
-
   return (
-    <div className="!flex !items-center !justify-center !gap-2 !mt-6">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="!p-2 !border border-slate-300 dark:border-slate-600 !rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 disabled:!opacity-50 disabled:!cursor-not-allowed"
-      >
-        <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-        </svg>
+    <nav className="flex items-center justify-center gap-3 mt-6" aria-label="Paginación">
+      <button type="button" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className={btn.icon} aria-label="Página anterior">
+        <ChevronLeft className="w-4 h-4" aria-hidden="true" />
       </button>
-      
-      {pages.map((page) => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`!w-10 !h-10 !rounded-lg !font-medium ${
-            page === currentPage
-              ? 'bg-brand-700 !text-white'
-              : '!border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900'
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-      
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="!p-2 !border border-slate-300 dark:border-slate-600 !rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 disabled:!opacity-50 disabled:!cursor-not-allowed"
-      >
-        <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-        </svg>
+      <span className="text-sm text-gray-600 tabular-nums">
+        Página {currentPage} de {totalPages}
+      </span>
+      <button type="button" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className={btn.icon} aria-label="Página siguiente">
+        <ChevronRight className="w-4 h-4" aria-hidden="true" />
       </button>
-    </div>
+    </nav>
   );
 };
 
@@ -395,143 +180,164 @@ const PartnerProjects: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState<EsgProject[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-  });
+  const [failed, setFailed] = useState(false);
+  const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 });
+  const [toDelete, setToDelete] = useState<EsgProject | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const currentStatus = searchParams.get('status') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
-  useEffect(() => {
-    loadProjects();
-  }, [currentStatus, currentPage]);
-
   const loadProjects = async () => {
+    setLoading(true);
+    setFailed(false);
     try {
-      setLoading(true);
-      const result = await getPartnerProjects({
-        page: currentPage,
-        limit: 10,
-        status: currentStatus || undefined
+      const result = await getPartnerProjects({ page: currentPage, limit: 10, status: currentStatus || undefined });
+      if (!result) throw new Error('sin respuesta');
+      setProjects(result.projects || []);
+      // La API devuelve la paginación en snake_case o camelCase
+      const pag = result.pagination || {};
+      setPagination({
+        page: pag.page || 1,
+        total: pag.total || 0,
+        totalPages: pag.total_pages || pag.totalPages || 1,
       });
-
-      if (result) {
-        setProjects(result.projects);
-        // API returns snake_case pagination, normalize to our format
-        const pag = result.pagination || {};
-        setPagination({
-          page: pag.page || 1,
-          limit: pag.limit || 10,
-          total: pag.total || 0,
-          totalPages: pag.total_pages || pag.totalPages || 1
-        });
-      }
-    } catch (error) {
-      console.error('Error loading projects:', error);
+    } catch {
+      setFailed(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusChange = (status: string) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (status) {
-      newParams.set('status', status);
-    } else {
-      newParams.delete('status');
-    }
-    newParams.set('page', '1');
-    setSearchParams(newParams);
+  useEffect(() => {
+    loadProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStatus, currentPage]);
+
+  const setParam = (changes: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(changes).forEach(([k, v]) => (v ? next.set(k, v) : next.delete(k)));
+    setSearchParams(next);
   };
 
-  const handlePageChange = (page: number) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('page', page.toString());
-    setSearchParams(newParams);
-  };
-
-  const handleDelete = async (id: string) => {
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    setDeleting(true);
     try {
-      const success = await deleteProject(id);
-      if (success) {
-        loadProjects();
-      }
-    } catch (error) {
-      console.error('Error deleting project:', error);
+      const ok = await deleteProject(toDelete.id);
+      if (!ok) throw new Error('no eliminado');
+      toast.success('Proyecto eliminado');
+      setToDelete(null);
+      loadProjects();
+    } catch {
+      toast.error('No pudimos eliminar el proyecto. Inténtalo de nuevo.');
+    } finally {
+      setDeleting(false);
     }
   };
 
   return (
-    <div className="!space-y-6">
-      {/* Header */}
-      <div className="!flex !items-center !justify-between">
-        <div>
-          <h1 className="!text-2xl !font-bold text-slate-800 dark:text-slate-100">Mis Proyectos ESG</h1>
-          <p className="text-slate-500 dark:text-slate-400 !mt-1">
-            {pagination.total} proyecto{pagination.total !== 1 ? 's' : ''} en total
-          </p>
-        </div>
-        <Link
-          to="/partner/projects/create"
-          className="!inline-flex !items-center !gap-2 !px-5 !py-2.5 !bg-brand-600 !text-white !rounded-xl hover:!bg-brand-700 !transition-all !font-semibold !shadow-lg !no-underline"
-        >
-          <svg className="!w-5 !h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Nuevo Proyecto
-        </Link>
+    <div>
+      <PageHeader
+        title="Mis proyectos"
+        subtitle={loading ? ' ' : `${fmtInt(pagination.total)} ${pagination.total === 1 ? 'proyecto' : 'proyectos'}${currentStatus ? ' con este estado' : ' en total'}`}
+        actions={
+          <Link to="/partner/projects/create" className={btn.primary}>
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            Nuevo proyecto
+          </Link>
+        }
+      />
+
+      <div className="flex gap-2 overflow-x-auto pb-1 mb-6 -mx-1 px-1" role="group" aria-label="Filtrar por estado">
+        {STATUS_FILTERS.map((f) => {
+          const active = f.value === currentStatus;
+          return (
+            <button
+              key={f.value || 'all'}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setParam({ status: f.value || null, page: null })}
+              className={cx(
+                'flex-shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium cursor-pointer transition-colors',
+                active ? 'bg-brand-700 border-brand-700 text-white' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50',
+              )}
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Filters */}
-        <ProjectFilters
-          currentStatus={currentStatus}
-          onStatusChange={handleStatusChange}
-        />
-
-        {/* Projects Grid */}
-        {loading ? (
-          <div className="!grid !grid-cols-1 lg:!grid-cols-2 !gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 !rounded-xl !border !p-6 !animate-pulse">
-                <div className="!flex !items-start !gap-4">
-                  <div className="!w-10 !h-10 bg-slate-200 dark:bg-slate-700 !rounded-lg" />
-                  <div className="!flex-1">
-                    <div className="!h-4 bg-slate-200 dark:bg-slate-700 !rounded !w-1/4 !mb-2" />
-                    <div className="!h-5 bg-slate-200 dark:bg-slate-700 !rounded !w-3/4 !mb-4" />
-                    <div className="!h-4 bg-slate-200 dark:bg-slate-700 !rounded !w-full !mb-4" />
-                    <div className="!flex !gap-2">
-                      <div className="!h-6 bg-slate-200 dark:bg-slate-700 !rounded !w-20" />
-                      <div className="!h-6 bg-slate-200 dark:bg-slate-700 !rounded !w-24" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-72" />
+          ))}
+        </div>
+      ) : failed ? (
+        <ErrorState title="No pudimos cargar tus proyectos" onRetry={loadProjects} />
+      ) : projects.length === 0 ? (
+        <Card>
+          {currentStatus ? (
+            <EmptyState
+              icon={FolderKanban}
+              title="No hay proyectos con este estado"
+              action={
+                <button type="button" className={btn.secondary} onClick={() => setParam({ status: null, page: null })}>
+                  Ver todos
+                </button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon={FolderKanban}
+              title="Aún no tienes proyectos"
+              text="Registra tu primer proyecto ESG para comenzar a recibir compensaciones."
+              action={
+                <Link to="/partner/projects/create" className={btn.primary}>
+                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  Crear primer proyecto
+                </Link>
+              }
+            />
+          )}
+        </Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} onDelete={setToDelete} />
             ))}
           </div>
-        ) : projects.length === 0 ? (
-          <EmptyState hasFilter={!!currentStatus} />
-        ) : (
-          <>
-            <div className="!grid !grid-cols-1 lg:!grid-cols-2 !gap-6">
-              {projects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={(page) => setParam({ page: String(page) })}
+          />
+        </>
+      )}
 
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              onPageChange={handlePageChange}
-            />
+      <Dialog
+        open={!!toDelete}
+        title="¿Eliminar este proyecto?"
+        onClose={() => setToDelete(null)}
+        busy={deleting}
+        footer={
+          <>
+            <button type="button" className={btn.secondary} onClick={() => setToDelete(null)} disabled={deleting}>
+              Cancelar
+            </button>
+            <button type="button" className={btn.danger} onClick={confirmDelete} disabled={deleting}>
+              {deleting ? 'Eliminando…' : 'Eliminar'}
+            </button>
           </>
-        )}
+        }
+      >
+        <p className="m-0">
+          Se eliminará <strong>{toDelete?.name}</strong>. Esta acción no se puede deshacer.
+        </p>
+      </Dialog>
     </div>
   );
 };

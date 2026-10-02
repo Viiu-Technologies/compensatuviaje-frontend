@@ -1,5 +1,6 @@
 import React from 'react';
-import type { IconType } from 'react-icons';
+/** Íconos de react-icons (B2C) o lucide (partners). */
+export type IconType = React.ComponentType<{ className?: string }>;
 
 /**
  * Piezas comunes del área B2C.
@@ -43,7 +44,7 @@ export const CardHeader: React.FC<{
     <div className="flex items-start gap-3 min-w-0">
       {Icon && (
         <span className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0">
-          <Icon className="text-sm" aria-hidden="true" />
+          <Icon className="text-sm [&.lucide]:w-4 [&.lucide]:h-4" aria-hidden="true" />
         </span>
       )}
       <div className="min-w-0">
@@ -66,7 +67,7 @@ export const Stat: React.FC<{
 }> = ({ label, value, unit, hint, icon: Icon, tone = 'default' }) => (
   <div className="min-w-0">
     <div className="flex items-center gap-2 text-sm text-gray-500">
-      {Icon && <Icon className="text-gray-400" aria-hidden="true" />}
+      {Icon && <Icon className="text-gray-400 [&.lucide]:w-4 [&.lucide]:h-4" aria-hidden="true" />}
       <span>{label}</span>
     </div>
     <div
@@ -113,7 +114,7 @@ export const Badge: React.FC<{ tone?: Tone; icon?: IconType; children: React.Rea
       className,
     )}
   >
-    {Icon && <Icon className="text-[11px]" aria-hidden="true" />}
+    {Icon && <Icon className="text-[11px] [&.lucide]:w-3 [&.lucide]:h-3" aria-hidden="true" />}
     {children}
   </span>
 );
@@ -126,7 +127,7 @@ export const EmptyState: React.FC<{ icon: IconType; title: string; text?: React.
 }) => (
   <div className="text-center py-12 px-6">
     <span className="mx-auto mb-4 w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
-      <Icon className="text-xl" aria-hidden="true" />
+      <Icon className="text-xl [&.lucide]:w-5 [&.lucide]:h-5" aria-hidden="true" />
     </span>
     <h3 className="text-base font-semibold text-gray-900 m-0">{title}</h3>
     {text && <p className="text-sm text-gray-500 m-0 mt-1.5 max-w-md mx-auto">{text}</p>}
