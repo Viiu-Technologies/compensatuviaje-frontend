@@ -1,0 +1,48 @@
+# CI del frontend: compila en cada Pull Request.
+#
+# Si el build falla, el PR queda en rojo. Mientras la organización no tenga un
+# plan de GitHub con protección de ramas, no se puede bloquear el merge
+# automáticamente: el acuerdo del equipo es no hacer merge con el CI en rojo.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Build y tipos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # La versión sale del campo packageManager de package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # --frozen-lockfile: falla si package.json y pnpm-lock.yaml no coinciden,
+      # en vez de instalar versiones distintas a las que usa el resto del equipo.
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      # Hoy hay ~27 errores de TypeScript heredados (tarea del backlog).
+      # Mientras tanto se informan pero no ponen el PR en rojo. Cuando se
+      # corrijan, quitar continue-on-error para que un error nuevo sí bloquee.
+      - name: Tipos (informativo)
+        run: pnpm typecheck
+        continue-on-error: true
