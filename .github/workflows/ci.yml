@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Hoy hay ~27 errores de TypeScript heredados (tarea del backlog).
+      # Hay errores de TypeScript heredados (tarea del backlog).
       # Mientras tanto se informan pero no ponen el PR en rojo. Cuando se
       # corrijan, quitar continue-on-error para que un error nuevo sí bloquee.
       - name: Tipos (informativo)
