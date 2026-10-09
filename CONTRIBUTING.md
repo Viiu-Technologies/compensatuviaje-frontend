@@ -25,12 +25,16 @@ cp .env.example .env     # ya apunta al backend local
 pnpm dev                 # http://localhost:3000
 ```
 
-Entra al panel con el superadmin que crea el seed del backend:
-`superadmin@compensatuviaje.com` / `ChangeMeInProduction!`.
+En `/login` aparece el recuadro **"Entorno local de pruebas"** (solo en
+desarrollo) con acceso a cada perfil:
 
-El login de personas (B2C) necesita las claves de Supabase en el `.env`. Sin
-ellas funcionan la landing, la calculadora y los paneles de empresa, partner y
-admin.
+- **Persona (B2C):** botón "Entrar como persona de prueba", sin Google.
+- **Empresa y partner:** botones que rellenan `empresa@example.com` y
+  `partner@example.com` (contraseña `Prueba1234!`).
+- **Superadmin:** `superadmin@compensatuviaje.com` / `ChangeMeInProduction!`.
+
+Las cuentas las crea el seed del backend. Cómo probar pagos, archivos y el resto
+de los flujos está en `backend/docs/entorno-local.md`, en el repo del backend.
 
 ### Comandos útiles
 
