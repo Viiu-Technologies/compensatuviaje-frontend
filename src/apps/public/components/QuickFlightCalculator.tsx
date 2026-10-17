@@ -10,6 +10,8 @@ import {
 import { useAuth } from '../../auth/context/AuthContext';
 import './QuickFlightCalculator.css';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import AirportPicker from './AirportPicker';
+import type { AirportOption } from '../services/publicApi';
 
 const QUICK_ROUTES = [
   { origin: 'SCL', destination: 'LIM', label: 'Santiago → Lima' },
@@ -59,14 +61,25 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Aeropuertos elegidos en el buscador que no están entre los populares: se
+  // guardan para mostrar su ciudad y nombre en la tarjeta.
+  const [searchedAirports, setSearchedAirports] = useState<AirportOption[]>([]);
+  const knownAirports = useMemo(() => [...POPULAR_AIRPORTS, ...searchedAirports], [searchedAirports]);
+
   const originAirport = useMemo(
-    () => POPULAR_AIRPORTS.find((a) => a.code === origin) || POPULAR_AIRPORTS[0],
-    [origin]
+    () => knownAirports.find((a) => a.code === origin) || POPULAR_AIRPORTS[0],
+    [origin, knownAirports]
   );
   const destAirport = useMemo(
-    () => POPULAR_AIRPORTS.find((a) => a.code === destination) || POPULAR_AIRPORTS[1],
-    [destination]
+    () => knownAirports.find((a) => a.code === destination) || POPULAR_AIRPORTS[1],
+    [destination, knownAirports]
   );
+
+  const rememberAirport = (airport: AirportOption) => {
+    if (!knownAirports.some((a) => a.code === airport.code)) {
+      setSearchedAirports((prev) => [...prev, airport]);
+    }
+  };
 
   const calculate = useCallback(
     async (orig: string, dest: string, cabin: typeof cabinCode, pax: number, isRound: boolean) => {
@@ -219,39 +232,17 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
       {/* ── Selector de Ruta: Tarjetas Amplias de Origen y Destino ── */}
       <div className="qfc-route-section">
         {/* Tarjeta Origen */}
-        <div className="qfc-airport-card">
-          <div className="qfc-card-top">
-            <span className="qfc-card-tag">
-              <FaPlane className="qfc-tag-icon qfc-tag-icon--depart" aria-hidden="true" />
-              Origen
-            </span>
-            <HiChevronDown className="qfc-chevron" aria-hidden="true" />
-          </div>
-          <div className="qfc-airport-visual">
-            <span className="qfc-airport-code">{originAirport.code}</span>
-            <div className="qfc-airport-meta">
-              <span className="qfc-airport-city">{originAirport.city}, {originAirport.country}</span>
-              <span className="qfc-airport-name">{originAirport.name}</span>
-            </div>
-          </div>
-          <select
-            id="qfc-origin-select"
-            className="qfc-hidden-select"
-            value={origin}
-            onChange={(e) => {
-              const val = e.target.value;
-              setOrigin(val);
-              calculate(val, destination, cabinCode, passengers, roundTrip);
-            }}
-            aria-label="Aeropuerto de origen"
-          >
-            {POPULAR_AIRPORTS.map((a) => (
-              <option key={a.code} value={a.code} disabled={a.code === destination}>
-                {a.code} - {a.city}, {a.country} ({a.name})
-              </option>
-            ))}
-          </select>
-        </div>
+        <AirportPicker
+          label="Origen"
+          icon={<FaPlane className="qfc-tag-icon qfc-tag-icon--depart" aria-hidden="true" />}
+          value={originAirport}
+          excludeCode={destination}
+          onSelect={(airport) => {
+            rememberAirport(airport);
+            setOrigin(airport.code);
+            calculate(airport.code, destination, cabinCode, passengers, roundTrip);
+          }}
+        />
 
         {/* Botón de Intercambio Central */}
         <div className="qfc-swap-container">
@@ -267,39 +258,17 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
         </div>
 
         {/* Tarjeta Destino */}
-        <div className="qfc-airport-card">
-          <div className="qfc-card-top">
-            <span className="qfc-card-tag">
-              <FaPlane className="qfc-tag-icon qfc-tag-icon--arrive" aria-hidden="true" />
-              Destino
-            </span>
-            <HiChevronDown className="qfc-chevron" aria-hidden="true" />
-          </div>
-          <div className="qfc-airport-visual">
-            <span className="qfc-airport-code">{destAirport.code}</span>
-            <div className="qfc-airport-meta">
-              <span className="qfc-airport-city">{destAirport.city}, {destAirport.country}</span>
-              <span className="qfc-airport-name">{destAirport.name}</span>
-            </div>
-          </div>
-          <select
-            id="qfc-destination-select"
-            className="qfc-hidden-select"
-            value={destination}
-            onChange={(e) => {
-              const val = e.target.value;
-              setDestination(val);
-              calculate(origin, val, cabinCode, passengers, roundTrip);
-            }}
-            aria-label="Aeropuerto de destino"
-          >
-            {POPULAR_AIRPORTS.map((a) => (
-              <option key={a.code} value={a.code} disabled={a.code === origin}>
-                {a.code} - {a.city}, {a.country} ({a.name})
-              </option>
-            ))}
-          </select>
-        </div>
+        <AirportPicker
+          label="Destino"
+          icon={<FaPlane className="qfc-tag-icon qfc-tag-icon--arrive" aria-hidden="true" />}
+          value={destAirport}
+          excludeCode={origin}
+          onSelect={(airport) => {
+            rememberAirport(airport);
+            setDestination(airport.code);
+            calculate(origin, airport.code, cabinCode, passengers, roundTrip);
+          }}
+        />
       </div>
 
       {/* ── Parámetros de Vuelo: Cabina & Pasajeros con Espacio Holgado ── */}
