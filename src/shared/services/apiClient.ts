@@ -4,6 +4,8 @@
 
 import type { ErrorResponse } from '../../types';
 
+import { refreshSession, redirectToLogin } from './tokenRefresh';
+
 const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 // Error codes mapping
@@ -28,8 +30,6 @@ interface RequestConfig extends RequestInit {
 
 class ApiClient {
   private baseUrl: string;
-  private isRefreshing = false;
-  private refreshSubscribers: Array<(token: string) => void> = [];
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -38,103 +38,6 @@ class ApiClient {
   // Get access token from localStorage
   private getAccessToken(): string | null {
     return localStorage.getItem('access_token');
-  }
-
-  // Get refresh token from localStorage
-  private getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
-  }
-
-  // Set tokens in localStorage
-  private setTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
-  }
-
-  // Clear tokens from localStorage
-  private clearTokens(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-  }
-
-  // Subscribe to token refresh
-  private subscribeTokenRefresh(callback: (token: string) => void): void {
-    this.refreshSubscribers.push(callback);
-  }
-
-  // Notify all subscribers with new token
-  private onTokenRefreshed(token: string): void {
-    this.refreshSubscribers.forEach((callback) => callback(token));
-    this.refreshSubscribers = [];
-  }
-
-  // Refresh the access token
-  async refreshAccessToken(): Promise<string | null> {
-    const refreshToken = this.getRefreshToken();
-    
-    if (!refreshToken) {
-      this.clearTokens();
-      return null;
-    }
-
-    try {
-      const response = await fetch(`${this.baseUrl}/public/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (!response.ok) {
-        this.clearTokens();
-        return null;
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.access_token) {
-        const nextRefreshToken = data.refresh_token || refreshToken;
-        this.setTokens(data.access_token, nextRefreshToken);
-        return data.access_token;
-      }
-      
-      this.clearTokens();
-      return null;
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      this.clearTokens();
-      return null;
-    }
-  }
-
-  // Handle token refresh with queue
-  private async handleTokenRefresh(): Promise<string | null> {
-    if (this.isRefreshing) {
-      return new Promise((resolve) => {
-        this.subscribeTokenRefresh((token: string) => {
-          resolve(token);
-        });
-      });
-    }
-
-    this.isRefreshing = true;
-    
-    try {
-      const newToken = await this.refreshAccessToken();
-      
-      if (newToken) {
-        this.onTokenRefreshed(newToken);
-        return newToken;
-      }
-      
-      // Redirect to login if refresh fails
-      window.location.href = '/login';
-      return null;
-    } finally {
-      this.isRefreshing = false;
-    }
   }
 
   // Get error message from response
@@ -171,26 +74,29 @@ class ApiClient {
         credentials: 'include',
       });
 
-      // Handle 401 - Token expired
-      if (response.status === 401 && !skipAuth) {
-        const data = await response.json();
-        
-        if (data.error_code === 'TOKEN_EXPIRED') {
-          const newToken = await this.handleTokenRefresh();
-          
-          if (newToken) {
-            // Retry request with new token
-            (headers as Record<string, string>)['Authorization'] = `Bearer ${newToken}`;
-            response = await fetch(url, {
-              ...fetchConfig,
-              headers,
-              credentials: 'include',
-            });
-          }
+      // El cuerpo se lee una sola vez: antes se leía en el 401 y otra vez
+      // abajo, y la segunda lectura fallaba con "body already used".
+      let data = await response.json();
+
+      // Access token vencido: renovar y reintentar una vez. La renovación es
+      // compartida con el cliente axios (ver tokenRefresh.ts).
+      if (response.status === 401 && !skipAuth && data?.error_code === 'TOKEN_EXPIRED') {
+        const result = await refreshSession();
+
+        if (result.status === 'refreshed') {
+          (headers as Record<string, string>)['Authorization'] = `Bearer ${result.accessToken}`;
+          response = await fetch(url, {
+            ...fetchConfig,
+            headers,
+            credentials: 'include',
+          });
+          data = await response.json();
+        } else if (result.status === 'expired') {
+          // Solo si el backend rechazó el refresh token. Si no respondió, la
+          // request falla pero la sesión sigue.
+          redirectToLogin();
         }
       }
-
-      const data = await response.json();
 
       if (!response.ok) {
         const errorMessage = this.getErrorMessage(data);

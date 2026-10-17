@@ -3,6 +3,7 @@
 // ============================================
 
 import apiClient from '../../../shared/services/apiClient';
+import { refreshSession } from '../../../shared/services/tokenRefresh';
 import { decodeJwtPayload } from '../../../shared/utils/jwt';
 import type {
   LoginResponse,
@@ -187,37 +188,18 @@ class AuthService {
     }
   }
 
-  // Refresh token
+  // Refresh token: la misma renovación compartida que usan los clientes HTTP
+  // (ver shared/services/tokenRefresh.ts). Solo borra la sesión si el backend
+  // rechaza el refresh token, no ante un 429 o un error de red.
   async refreshToken(): Promise<RefreshTokenResponse | null> {
-    const refreshToken = localStorage.getItem('refresh_token');
-    
-    if (!refreshToken) {
+    const result = await refreshSession();
+    if (result.status !== 'refreshed') {
       return null;
     }
 
-    try {
-      const response = await apiClient.post<RefreshTokenResponse>(
-        '/public/auth/refresh',
-        { refreshToken },
-        { skipAuth: true }
-      );
-
-      if (response.success) {
-        localStorage.setItem('access_token', response.access_token);
-        if (response.refresh_token) {
-          localStorage.setItem('refresh_token', response.refresh_token);
-        }
-        
-        // Agregar user_type
-        response.user_info.user_type = determineUserType(response.user_info);
-      }
-
-      return response;
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      this.clearTokens();
-      return null;
-    }
+    const response = result.data as RefreshTokenResponse;
+    response.user_info.user_type = determineUserType(response.user_info);
+    return response;
   }
 
   // Recuperar contraseña
