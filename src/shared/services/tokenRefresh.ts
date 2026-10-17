@@ -18,6 +18,7 @@
 // cuando el backend rechaza el refresh token.
 
 import { API_URL } from '../../config/env';
+import { decodeJwtPayload } from '../utils/jwt';
 
 export type RefreshResult =
   /** `data` es la respuesta completa del backend (incluye user_info). */
@@ -45,6 +46,14 @@ export function refreshSession(): Promise<RefreshResult> {
 async function doRefresh(): Promise<RefreshResult> {
   const refreshToken = localStorage.getItem('refresh_token');
   if (!refreshToken) {
+    return { status: 'expired' };
+  }
+
+  // Refresh token ya vencido: no hace falta preguntarle al backend, que
+  // además en ese caso respondía 500 en vez de 401 y la sesión quedaba rota.
+  const exp = decodeJwtPayload<{ exp?: number }>(refreshToken)?.exp;
+  if (exp && exp * 1000 <= Date.now()) {
+    clearSession();
     return { status: 'expired' };
   }
 
