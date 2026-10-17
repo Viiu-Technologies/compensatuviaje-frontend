@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL
 /**
  * Wrapper para fetch con autenticación automática
  */
-export const authFetch = async (url, options = {}) => {
+export const authFetch = async (url: string, options: RequestInit = {}) => {
   const token = authService.getToken();
   
   const defaultHeaders = {

@@ -2,7 +2,7 @@
 // API Client con Interceptors - Compensa Tu Viaje
 // ============================================
 
-import type { ErrorResponse } from '../../types';
+import type { ErrorResponse } from '../../types/api.types';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 

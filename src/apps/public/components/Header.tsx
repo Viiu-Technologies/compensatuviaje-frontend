@@ -467,7 +467,7 @@ const Header: React.FC = () => {
                     <FaUser />
                   </div>
                   <span className="ctv-liquid-user__name">
-                    {user?.firstName || user?.name}
+                    {user?.name}
                   </span>
                 </div>
 
@@ -699,10 +699,10 @@ const Header: React.FC = () => {
                   </div>
                   <div>
                     <p className="ctv-liquid-drawer__user-name">
-                      {user?.firstName || user?.name}
+                      {user?.name}
                     </p>
                     <p className="ctv-liquid-drawer__user-role">
-                      {user?.roles?.[0] || 'Usuario'}
+                      Usuario
                     </p>
                   </div>
                 </div>

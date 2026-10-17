@@ -32,7 +32,7 @@ interface NFTCertificateCardProps {
 }
 
 // Iconos por tipo de viaje
-const TravelIcons: Record<TravelType, React.ElementType> = {
+const TravelIcons: Record<TravelType, React.ComponentType<{ className?: string }>> = {
   flight: Plane,
   bus: Bus,
   car: Car,

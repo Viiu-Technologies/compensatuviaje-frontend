@@ -3,7 +3,7 @@ import './Card.css';
 
 export type CardVariant = 'flat' | 'elevated' | 'outlined';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   variant?: CardVariant;
   /** Aplica hover y foco visibles. Úsalo solo si la tarjeta entera actúa. */
   interactive?: boolean;
