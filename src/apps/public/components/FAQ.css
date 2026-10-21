@@ -11,18 +11,14 @@
   position: relative;
 }
 
-/* Mismo contenedor que el resto de las secciones (así el título alinea a la
-   izquierda con ellas); el ancho de lectura se limita en la lista y el CTA. */
+/* Mismo contenedor que el resto de las secciones: título, lista y CTA ocupan
+   todo el ancho. El ancho de lectura se limita solo en el texto de cada
+   respuesta (.faq-item__a). */
 .faq-container {
   width: 100%;
   max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
-}
-
-.faq-list,
-.faq-cta {
-  max-width: 920px;
 }
 
 /* ── Header ─────────────────────────────────────────── */
