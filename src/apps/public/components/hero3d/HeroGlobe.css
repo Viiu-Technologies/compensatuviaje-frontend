@@ -27,7 +27,8 @@
       rgba(16, 185, 129, 0.12) 40%,
       rgba(7, 61, 61, 0.05) 70%,
       transparent 100%);
-  filter: blur(48px);
+  /* Sin filter: blur(48px): el gradiente ya termina en transparente, y el
+     filtro se volvía a aplicar en cada frame de la animación de respiración. */
   pointer-events: none;
   z-index: 0;
   animation: heroGlobeHaloBreath 6s ease-in-out infinite alternate;
@@ -72,10 +73,10 @@
   gap: 0.45rem;
   padding: 0.35rem 0.8rem;
   border-radius: var(--ctv-radius-pill);
-  background: rgba(255, 255, 255, 0.85);
+  /* Sin backdrop-filter: sobre un canvas WebGL que se redibuja en cada frame,
+     el blur se recalculaba constantemente. Fondo más opaco para compensar. */
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(7, 61, 61, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 4px 16px rgba(7, 61, 61, 0.08);
   font-size: 0.72rem;
   font-weight: 600;
@@ -110,10 +111,9 @@
   gap: 0.45rem;
   padding: 0.35rem 0.95rem;
   border-radius: var(--ctv-radius-pill);
-  background: rgba(255, 255, 255, 0.9);
+  /* Sin backdrop-filter, igual que el badge superior. */
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(7, 61, 61, 0.10);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 4px 18px rgba(7, 61, 61, 0.07);
   font-size: 0.76rem;
   pointer-events: none;

@@ -9,7 +9,7 @@
    -------------------------------------------------------------------------- */
 :root {
   --lq-bg: rgba(5, 27, 25, 0.90);
-  --lq-bg-scrolled: rgba(4, 22, 20, 0.96);
+  --lq-bg-scrolled: rgba(4, 22, 20, 0.98);
   --lq-bg-expanded: rgba(4, 22, 20, 0.97);
   --lq-border: rgba(62, 211, 43, 0.24);
   --lq-border-expanded: rgba(62, 211, 43, 0.38);
@@ -86,11 +86,11 @@
 .ctv-liquid-surface--scrolled {
   top: 10px;
   background: var(--lq-bg-scrolled);
-  /* Con el fondo al 96% de opacidad apenas se transparenta un 4% de lo que
-     pasa por debajo: un blur corto sin saturate se ve igual y el navegador
-     no tiene que recalcular un desenfoque de 28px en cada frame de scroll. */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Sin backdrop-filter al scrollear: con el fondo al 98% de opacidad el
+     desenfoque no se percibe, y recalcularlo en cada frame de scroll sobre
+     contenido en movimiento era el repintado más caro del header. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: rgba(62, 211, 43, 0.32);
   box-shadow:
     0 20px 48px -10px rgba(0, 0, 0, 0.7),

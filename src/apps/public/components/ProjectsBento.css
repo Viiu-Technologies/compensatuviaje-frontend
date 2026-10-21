@@ -149,8 +149,8 @@
   font-weight: 700;
   padding: 0.35rem 0.75rem;
   border-radius: var(--ctv-radius-pill);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Sin backdrop-filter: los fondos de los badges ya son del 85% al 95%
+     opacos, así que el blur sobre la foto apenas se veía. */
 }
 
 .pb-badge--standard {

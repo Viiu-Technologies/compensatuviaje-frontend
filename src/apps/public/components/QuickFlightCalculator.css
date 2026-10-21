@@ -6,9 +6,9 @@
 
 .qfc-card {
   position: relative;
+  /* Sin backdrop-filter: con un fondo al 98% el blur no se veía, pero se
+     recalculaba en cada frame de scroll por el parallax del Hero. */
   background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
   border: 1px solid rgba(7, 61, 61, 0.12);
   border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 3.8vw, 3rem);
@@ -89,21 +89,44 @@
   flex-wrap: wrap;
 }
 
+/* El pulso se hace con dos anillos en pseudo-elementos que solo cambian de
+   opacidad (compuesto en GPU). Animar box-shadow obligaba a repintar en cada
+   frame, sin fin. */
 .qfc-indicator-dot {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: var(--ctv-radius-full);
   background: var(--ctv-brand);
-  box-shadow: 0 0 0 4px rgba(8, 174, 6, 0.16);
-  animation: qfcPulseDot 2.4s infinite ease-in-out;
 }
 
-@keyframes qfcPulseDot {
+.qfc-indicator-dot::before,
+.qfc-indicator-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: qfcPulseRing 2.4s infinite ease-in-out;
+}
+
+.qfc-indicator-dot::before {
+  box-shadow: 0 0 0 4px rgba(8, 174, 6, 0.16);
+  /* Medio ciclo de desfase: este anillo está visible cuando el otro no. */
+  animation-delay: -1.2s;
+}
+
+.qfc-indicator-dot::after {
+  box-shadow: 0 0 0 8px rgba(8, 174, 6, 0.28);
+  opacity: 0;
+}
+
+@keyframes qfcPulseRing {
   0%, 100% {
-    box-shadow: 0 0 0 4px rgba(8, 174, 6, 0.16);
+    opacity: 0;
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(8, 174, 6, 0.28);
+    opacity: 1;
   }
 }
 

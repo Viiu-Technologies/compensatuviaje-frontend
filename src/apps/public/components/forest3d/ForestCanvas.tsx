@@ -106,11 +106,14 @@ function NativeTree({
     tree.options.bark.maps.roughness = barkRoughness;
     tree.generate();
 
+    // Solo el árbol que proyecta sombra la recibe (autosombreado). En los
+    // acompañantes, recibirla costaba una consulta al shadow map por cada
+    // fragmento de hoja, con mucho sobredibujado y casi sin efecto visible.
     tree.castShadow = castShadow;
-    tree.receiveShadow = true;
+    tree.receiveShadow = castShadow;
     tree.traverse((o: THREE.Object3D) => {
       o.castShadow = castShadow;
-      o.receiveShadow = true;
+      o.receiveShadow = castShadow;
     });
     return tree;
   }, [presetName, leafType, leafTexture, barkColor, barkNormal, barkRoughness, castShadow]);
@@ -212,9 +215,14 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
           camera={{ position: [0, 4.5, 17], fov: 45 }}
           dpr={[1, 1.25]}
           frameloop={isVisible ? 'always' : 'never'}
-          shadows
+          // 'percentage' (PCF) es lo que three ya usaba: en three 0.184
+          // PCFSoftShadowMap está deprecado y cae a PCF con un warning.
+          shadows="percentage"
           gl={{
-            antialias: true,
+            // Sin MSAA: las hojas usan alpha test, que el antialiasing por
+            // multisample no suaviza, y el costo en una escena con tanto
+            // sobredibujado era alto.
+            antialias: false,
             powerPreference: 'high-performance',
           }}
           onCreated={({ gl, scene }) => {

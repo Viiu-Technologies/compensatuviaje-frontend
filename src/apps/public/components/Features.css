@@ -96,8 +96,9 @@
   border-radius: var(--ctv-radius-xl);
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  /* Sin backdrop-filter: detrás de las tarjetas solo hay el fondo de la
+     sección y el BlobField al 3% de opacidad, así que el blur casi no se
+     notaba y costaba en cada frame de scroll. */
   box-shadow: var(--ctv-shadow-card);
   transition: transform 0.35s var(--ctv-ease-out),
     box-shadow 0.35s var(--ctv-ease-out),
@@ -141,7 +142,8 @@
   background: radial-gradient(circle at center, rgba(8, 174, 6, 0.08) 0%, transparent 75%);
   border-radius: var(--ctv-radius-lg);
   padding: var(--ctv-space-3);
-  will-change: transform;
+  /* Sin will-change permanente: mantenía una capa de GPU por tarjeta todo el
+     tiempo. El navegador promueve la capa solo durante la transición de hover. */
   transition: transform 0.4s var(--ctv-ease-out);
 }
 
