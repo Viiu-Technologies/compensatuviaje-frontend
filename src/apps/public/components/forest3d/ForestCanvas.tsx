@@ -1,5 +1,5 @@
-import React, { useRef, useMemo, Suspense } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import React, { useRef, useMemo, useEffect, Suspense } from 'react';
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { Tree as EZTree, TreePreset } from './ez-tree';
@@ -39,6 +39,31 @@ const ATMOSPHERE = {
     groundTint: '#4a3328',
   },
 };
+
+/**
+ * Marca el shadow map para que se redibuje en el próximo frame.
+ *
+ * Las sombras son estáticas: el sol y los árboles no se mueven, y el viento
+ * de EZTree vive en el shader de color de las hojas (la pasada de sombras usa
+ * el material de profundidad por defecto, sin balanceo). Por eso el renderer
+ * corre con shadowMap.autoUpdate = false y solo se recalcula cuando cambia lo
+ * que proyecta o lo que ilumina.
+ */
+function useShadowRefresh(deps: React.DependencyList) {
+  const gl = useThree((state) => state.gl);
+  useEffect(() => {
+    gl.shadowMap.needsUpdate = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gl, ...deps]);
+}
+
+/**
+ * Recalcula las sombras cuando cambia la posición del sol (momento del día).
+ */
+function SunShadowSync({ timeOfDay }: { timeOfDay: TimeOfDay }) {
+  useShadowRefresh([timeOfDay]);
+  return null;
+}
 
 /**
  * Árbol 3D procedural basado en EZTree
@@ -89,6 +114,10 @@ function NativeTree({
     });
     return tree;
   }, [presetName, leafType, leafTexture, barkColor, barkNormal, barkRoughness, castShadow]);
+
+  // El shadow map no se recalcula solo (ver onCreated): se pide uno nuevo
+  // cuando este árbol entra en la escena.
+  useShadowRefresh([treeObject]);
 
   // Animación del viento en las hojas provista por el método nativo de EZTree
   useFrame((state) => {
@@ -181,7 +210,7 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
       <Suspense fallback={<ForestFallback />}>
         <Canvas
           camera={{ position: [0, 4.5, 17], fov: 45 }}
-          dpr={[1, 1.5]}
+          dpr={[1, 1.25]}
           frameloop={isVisible ? 'always' : 'never'}
           shadows
           gl={{
@@ -189,6 +218,10 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
             powerPreference: 'high-performance',
           }}
           onCreated={({ gl, scene }) => {
+            // Sombras estáticas: se redibujan bajo demanda (useShadowRefresh)
+            // en vez de en cada frame.
+            gl.shadowMap.autoUpdate = false;
+            gl.shadowMap.needsUpdate = true;
             gl.toneMapping = THREE.NeutralToneMapping;
             gl.toneMappingExposure = 1.6;
             scene.fog = new THREE.FogExp2(atmo.fogColor, atmo.fogDensity);
@@ -212,6 +245,7 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
             shadow-camera-bottom={-12}
             shadow-bias={-0.0008}
           />
+          <SunShadowSync timeOfDay={timeOfDay} />
 
           {/* Suelo del ecosistema */}
           <ForestGround groundTint={atmo.groundTint} />

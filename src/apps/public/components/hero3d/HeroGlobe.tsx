@@ -361,7 +361,7 @@ export const HeroGlobe: React.FC = () => {
         <Suspense fallback={<GlobeFallback />}>
           <Canvas
             camera={{ position: [0, 0, 3.8], fov: 48 }}
-            dpr={[1, 1.5]}
+            dpr={[1, 1.25]}
             frameloop={isVisible ? 'always' : 'never'}
             gl={{
               antialias: true,

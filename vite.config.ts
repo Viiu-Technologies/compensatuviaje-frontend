@@ -29,6 +29,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
     port: 3000,
     open: true,
     allowedHosts: ['karima-pseudocommissural-discoverably.ngrok-free.dev'],
