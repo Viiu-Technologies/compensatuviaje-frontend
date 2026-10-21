@@ -17,7 +17,7 @@
 ## Antes de pedir revisión
 
 - [ ] El PR es chico (menos de ~400 líneas). Si es más grande, explico por qué no se pudo dividir.
-- [ ] Mi rama está al día con `main`.
+- [ ] Mi rama está al día con `develop`.
 - [ ] `pnpm build` funciona en mi máquina.
 - [ ] Si toco un archivo caliente (`App.tsx`, `src/shared/services/`, `package.json`, `pnpm-lock.yaml`), lo avisé en el chat y va en un PR propio.
 - [ ] No muestro datos inventados como si fueran reales: si no hay datos, se ve un estado vacío.
