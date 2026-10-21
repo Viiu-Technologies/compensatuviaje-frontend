@@ -72,7 +72,64 @@ export interface AuthSession {
   user: any;
 }
 
+// ── Entorno local de pruebas ────────────────────────────────────────────────
+// Login B2C sin Google (ver backend/docs/entorno-local.md). Requiere
+// VITE_DEV_LOGIN=true en el frontend y DEV_AUTH=true en el backend.
+// Nunca en un build de producción: import.meta.env.PROD lo apaga siempre.
+export const DEV_LOGIN_ENABLED =
+  import.meta.env.VITE_DEV_LOGIN === 'true' && !import.meta.env.PROD;
+
+const DEV_SESSION_KEY = 'ctv_dev_b2c_session';
+
+function readDevSession(): AuthSession | null {
+  if (!DEV_LOGIN_ENABLED) return null;
+  try {
+    const raw = localStorage.getItem(DEV_SESSION_KEY);
+    return raw ? (JSON.parse(raw) as AuthSession) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearDevSession() {
+  try {
+    localStorage.removeItem(DEV_SESSION_KEY);
+  } catch {
+    // Sin localStorage no hay sesión de prueba que borrar.
+  }
+}
+
 class AuthService {
+  /**
+   * Entorno local: entra como persona de prueba sin pasar por Google.
+   * El backend firma un token que acepta como si viniera de Supabase.
+   */
+  async loginAsTestUser(email?: string): Promise<B2CUser | null> {
+    if (!DEV_LOGIN_ENABLED) {
+      throw new Error('El login de prueba solo existe en desarrollo (VITE_DEV_LOGIN=true)');
+    }
+    const response = await fetch(`${API_URL}/dev/b2c-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(email ? { email } : {}),
+    });
+    if (!response.ok) {
+      throw new Error(
+        response.status === 404
+          ? 'El backend no tiene el login de prueba activo (DEV_AUTH=true en backend/.env)'
+          : 'No se pudo iniciar la sesión de prueba'
+      );
+    }
+    const { data } = await response.json();
+    const session: AuthSession = {
+      access_token: data.access_token,
+      refresh_token: '',
+      user: data.user,
+    };
+    localStorage.setItem(DEV_SESSION_KEY, JSON.stringify(session));
+    return this.getCurrentUser(session);
+  }
+
   /**
    * Obtener la URL para iniciar login con Google
    */
@@ -149,6 +206,9 @@ class AuthService {
    * Obtener sesión actual de Supabase
    */
   async getSession(): Promise<AuthSession | null> {
+    const devSession = readDevSession();
+    if (devSession) return devSession;
+
     if (!supabase) {
       console.warn('[B2C Auth] Supabase not configured, no session available');
       return null;
@@ -239,6 +299,8 @@ class AuthService {
         console.error('Error notificando logout al backend:', error);
       }
     }
+
+    clearDevSession();
 
     // Cerrar sesión en Supabase
     if (supabase) {

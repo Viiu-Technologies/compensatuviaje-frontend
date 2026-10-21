@@ -2,6 +2,7 @@ import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
+import { DEV_LOGIN_ENABLED } from '../../b2c/services/authService';
 import { getRedirectPath } from '../services/authService';
 import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
@@ -21,12 +22,21 @@ interface FormData {
   rememberMe: boolean;
 }
 
+// Cuentas que crea `pnpm prisma:seed` con SEED_DEV_DATA=true (backend).
+// Solo se muestran en desarrollo; ver backend/docs/entorno-local.md.
+const DEV_ACCOUNTS = [
+  { label: 'Empresa (B2B)', email: 'empresa@example.com' },
+  { label: 'Partner', email: 'partner@example.com' },
+];
+const DEV_SEED_PASSWORD = import.meta.env.VITE_DEV_SEED_PASSWORD || 'Prueba1234!';
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, error, clearError, isLoading: authLoading } = useAuth();
-  const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
-  
+  const { login: loginWithGoogle, loginAsTestUser, loading: googleLoading } = useB2CAuth();
+  const [isTestSigningIn, setIsTestSigningIn] = useState(false);
+
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -326,6 +336,52 @@ const Login: React.FC = () => {
               )}
               <span>{isGoogleSigningIn ? 'Conectando...' : 'Iniciar sesión con Google'}</span>
             </button>
+
+            {DEV_LOGIN_ENABLED && (
+              <div className="!mt-5 !p-4 !rounded-2xl !border !border-dashed !border-amber-300/60 !bg-amber-400/10 !text-left">
+                <p className="!text-amber-200 !text-xs !font-bold !uppercase !tracking-wide !mb-3">
+                  Entorno local de pruebas
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      setIsTestSigningIn(true);
+                      await loginAsTestUser();
+                      navigate('/b2c/dashboard', { replace: true });
+                    } catch (err: any) {
+                      toast.error('No se pudo entrar como persona de prueba', {
+                        description: err?.message,
+                      });
+                    } finally {
+                      setIsTestSigningIn(false);
+                    }
+                  }}
+                  disabled={isTestSigningIn || loading}
+                  className="!w-full !flex !items-center !justify-center !gap-2 !py-2.5 !px-4 !rounded-full !bg-amber-300 !text-emerald-950 !text-sm !font-semibold hover:!bg-amber-200 !transition-colors disabled:!opacity-60"
+                >
+                  {isTestSigningIn && <Loader2 className="!w-4 !h-4 !animate-spin" />}
+                  Entrar como persona de prueba (B2C, sin Google)
+                </button>
+                <div className="!flex !gap-2 !mt-2">
+                  {DEV_ACCOUNTS.map((account) => (
+                    <button
+                      key={account.email}
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, email: account.email, password: DEV_SEED_PASSWORD }))
+                      }
+                      className="!flex-1 !py-2 !px-3 !rounded-full !border !border-amber-300/60 !text-amber-100 !text-xs !font-semibold hover:!bg-amber-300/20 !transition-colors"
+                    >
+                      Usar cuenta: {account.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="!text-amber-100/70 !text-xs !mt-2">
+                  Las cuentas de empresa y partner se crean con <code>pnpm prisma:seed</code>. Solo visible en desarrollo.
+                </p>
+              </div>
+            )}
 
             <div className="!mt-6">
               <span className="!text-emerald-200/80">¿No tienes cuenta? </span>

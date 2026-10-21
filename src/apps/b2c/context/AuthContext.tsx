@@ -7,6 +7,8 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   login: () => Promise<void>;
+  /** Entorno local: entra como persona de prueba, sin Google. */
+  loginAsTestUser: (email?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -107,6 +109,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login       = useCallback(async () => { await authService.loginWithGoogle(); }, []);
+  const loginAsTestUser = useCallback(async (email?: string) => {
+    const testUser = await authService.loginAsTestUser(email);
+    if (!testUser) throw new Error('El backend no reconoció la sesión de prueba');
+    setUser(testUser);
+  }, []);
   const logout      = useCallback(async () => { await authService.logout(); setUser(null); }, []);
   const refreshUser = useCallback(async () => { await loadUser(); }, []);
 
@@ -119,10 +126,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       loading,
       isAuthenticated: user !== null,
       login,
+      loginAsTestUser,
       logout,
       refreshUser,
     }),
-    [user, loading, login, logout, refreshUser]
+    [user, loading, login, loginAsTestUser, logout, refreshUser]
   );
 
   return (
