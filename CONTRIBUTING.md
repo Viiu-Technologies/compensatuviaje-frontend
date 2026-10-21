@@ -49,18 +49,19 @@ de los flujos está en `backend/docs/entorno-local.md`, en el repo del backend.
 
 ### Ramas
 
-- **`main` es la fuente de verdad.** No se hace push directo: todo entra por
-  Pull Request.
-- **Producción** solo se actualiza desde `main`, y solo lo hacen los líderes.
+- **`develop` junta el trabajo de todos.** Las ramas salen de `develop` y vuelven
+  a `develop` por Pull Request. Nadie hace push directo a `develop` ni a `main`.
+- **`main` es producción.** Solo recibe las salidas a producción desde
+  `develop`, y solo las hacen los líderes.
 - **Una rama por tarea del backlog**, con su ID de Notion:
   `feat/CTV-23-ingresos-separados`, `fix/CTV-41-refresh-token`.
 - **Las ramas viven máximo 2 días.** Si la tarea es más grande, divídela en
   varios PRs.
-- **Actualiza tu rama con `main` todos los días:**
+- **Actualiza tu rama con `develop` todos los días:**
 
   ```bash
   git fetch origin
-  git rebase origin/main
+  git rebase origin/develop
   ```
 
 ### Pull Requests
@@ -89,7 +90,7 @@ Reglas:
 - Avisa en el chat antes de tocarlos.
 - Van en un **PR propio y chico**, separado de la funcionalidad.
 - En un conflicto de `pnpm-lock.yaml`, no lo edites a mano: acepta la versión de
-  `main` y corre `pnpm install`.
+  `develop` y corre `pnpm install`.
 
 ### Variables de entorno
 
