@@ -2,7 +2,7 @@
 // API Client con Interceptors - Compensa Tu Viaje
 // ============================================
 
-import type { ErrorResponse } from '../../types';
+import type { ErrorResponse } from '../../types/api.types';
 
 import { refreshSession, redirectToLogin } from './tokenRefresh';
 

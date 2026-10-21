@@ -21,7 +21,10 @@ export interface PaginatedResponse<T> {
   pagination: PaginationMeta;
 }
 
-export type AdminDecision = 'approved' | 'rejected' | null;
+// Mismo tipo que el de KYB: se reexporta para que el barrel de types no lo
+// exporte dos veces.
+import type { AdminDecision } from './kyb.types';
+export type { AdminDecision };
 
 // ============================================
 // CERTIFICATIONS (Agent 2)
