@@ -42,6 +42,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const location              = useLocation();
   // Track whether Supabase has been initialized to avoid duplicate subscriptions
   const initializedRef        = useRef(false);
+  // La suscripción a Supabase vive más que un render: lee la persona actual
+  // desde aquí y no desde el closure.
+  const userRef               = useRef<B2CUser | null>(null);
+  userRef.current             = user;
 
   useEffect(() => {
     const onB2C = isB2CPath(location.pathname);
@@ -80,9 +84,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Subscribe to Supabase auth events (handles token refresh automatically)
     const { data } = authService.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      if (event === 'SIGNED_IN' && session)           await loadUser(session);
-      else if (event === 'SIGNED_OUT')                setUser(null);
-      else if (event === 'TOKEN_REFRESHED' && session) await loadUser(session);
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+      } else if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        // Supabase emite estos eventos también al renovar el token (cada hora)
+        // y al volver a la pestaña. Antes se recargaba la persona con spinner
+        // y, si el backend tardaba más de 5 s o fallaba, getCurrentUser
+        // devolvía null y la sesión se cerraba sola. Si ya hay alguien
+        // cargado, sus datos se actualizan en silencio y se conservan si la
+        // consulta falla.
+        if (userRef.current) {
+          const freshUser = await authService.getCurrentUser(session);
+          if (mounted && freshUser) setUser(freshUser);
+        } else {
+          await loadUser(session);
+        }
+      }
     });
 
     return () => {

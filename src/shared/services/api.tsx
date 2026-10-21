@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { refreshSession, redirectToLogin } from './tokenRefresh';
 
 // Configuración base de la API
 const API_URL = import.meta.env.VITE_APP_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -42,40 +43,27 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Si el token expiró (401), intentar refrescarlo
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Si el access token venció, renovarlo y reintentar una vez. La
+    // renovación es compartida: varias requests que vencen a la vez esperan
+    // la misma (ver tokenRefresh.ts).
+    if (
+      error.response?.status === 401 &&
+      error.response?.data?.error_code === 'TOKEN_EXPIRED' &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
-      
-      try {
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (refreshToken) {
-          // Llamar al endpoint de refresh del backend
-          const response = await axios.post(`${API_URL}/public/auth/refresh`, {
-            refreshToken
-          });
-          
-          // El backend devuelve: { success, access_token, refresh_token, expires_in }
-          if (response.data.success) {
-            const { access_token, refresh_token } = response.data;
-            localStorage.setItem('access_token', access_token);
+      const result = await refreshSession();
 
-            // Si backend no rota refresh token, mantener el actual guardado.
-            if (refresh_token) {
-              localStorage.setItem('refresh_token', refresh_token);
-            }
-            
-            // Reintentar la request original con el nuevo token
-            originalRequest.headers.Authorization = `Bearer ${access_token}`;
-            return api(originalRequest);
-          }
-        }
-      } catch (refreshError) {
-        // Si falla el refresh, limpiar storage y redirigir a login
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+      if (result.status === 'refreshed') {
+        originalRequest.headers.Authorization = `Bearer ${result.accessToken}`;
+        return api(originalRequest);
+      }
+
+      // Solo se cierra la sesión si el backend rechazó el refresh token. Si no
+      // respondió (429, 500, sin red), la request falla pero la sesión sigue.
+      if (result.status === 'expired') {
+        redirectToLogin();
       }
     }
 
