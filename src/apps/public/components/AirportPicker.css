@@ -1,0 +1,174 @@
+/* ── Tarjeta de aeropuerto con buscador (AirportPicker) ──
+   La tarjeta conserva los estilos qfc-airport-card de la calculadora; aquí
+   solo va el botón que la abre y el panel de búsqueda. */
+
+/* Mientras el panel está abierto, la ruta queda sobre la fila de cabina y
+   pasajeros (que viene después en el DOM con el mismo z-index). */
+.qfc-route-section:has(.ap-card--open) {
+  z-index: 4;
+}
+
+.ap-card--open {
+  z-index: 5;
+  border-color: var(--ctv-brand);
+  background: #ffffff;
+}
+
+.ap-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--ctv-radius-md);
+}
+
+.ap-trigger:focus-visible {
+  outline: 2px solid var(--ctv-brand);
+  outline-offset: 6px;
+}
+
+.ap-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: min(22rem, 60vh);
+  background: #ffffff;
+  border: 1.5px solid rgba(7, 61, 61, 0.12);
+  border-radius: var(--ctv-radius-lg);
+  box-shadow: 0 18px 40px -12px rgba(7, 61, 61, 0.25);
+  overflow: hidden;
+}
+
+.ap-search {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(7, 61, 61, 0.08);
+}
+
+.ap-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 1.5rem;
+  transform: translateY(-50%);
+  color: var(--ctv-ink-mute);
+  pointer-events: none;
+}
+
+.ap-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem 0.7rem 2.4rem;
+  border: 1.5px solid rgba(7, 61, 61, 0.15);
+  border-radius: var(--ctv-radius-md);
+  font: inherit;
+  font-size: 1rem; /* 16px: evita el zoom automático de iOS al enfocar */
+  color: var(--ctv-ink);
+  background: #F9FBFA;
+}
+
+.ap-input:focus {
+  outline: none;
+  border-color: var(--ctv-brand);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(8, 174, 6, 0.15);
+}
+
+.ap-hint {
+  margin: 0;
+  padding: 0.6rem 1rem 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-mute);
+}
+
+.ap-list {
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ap-option {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.6rem 0.65rem;
+  border-radius: var(--ctv-radius-md);
+  cursor: pointer;
+}
+
+.ap-option--active {
+  background: var(--ctv-brand-soft);
+}
+
+.ap-option-code {
+  flex-shrink: 0;
+  min-width: 2.75rem;
+  font-family: var(--ctv-font-mono);
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+}
+
+.ap-option-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ap-option-city,
+.ap-option-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ap-option-city {
+  font-weight: 600;
+  color: var(--ctv-ink);
+}
+
+.ap-option-name {
+  font-size: 0.82rem;
+  color: var(--ctv-ink-soft);
+}
+
+.ap-status {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  color: var(--ctv-ink-soft);
+}
+
+.ap-status--error {
+  color: #B42318;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ap-popover {
+    animation: ap-pop-in 0.16s var(--ctv-ease-out);
+  }
+}
+
+@keyframes ap-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
