@@ -62,6 +62,15 @@
   outline: none;
 }
 
+/* En táctil, OrbitControls fija touch-action: none inline y el globo (casi
+   todo el ancho del viewport) atrapaba el scroll. pan-y deja pasar el scroll
+   vertical de la página; el arrastre horizontal sigue rotando el globo. */
+@media (pointer: coarse) {
+  .hero-globe-canvas-box canvas {
+    touch-action: pan-y !important;
+  }
+}
+
 /* Badge superior de telemetría flotante */
 .hero-globe-badge {
   position: absolute;
@@ -184,6 +193,11 @@
   animation: hgfSpin 2s linear infinite;
 }
 
+.hgf-static-icon {
+  font-size: 0.95rem;
+  color: #22d3ee;
+}
+
 @keyframes hgfSpin {
   100% {
     transform: rotate(360deg);
@@ -203,7 +217,7 @@
     margin: 1.5rem auto 0;
   }
   .hero-globe-badge {
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     padding: 0.28rem 0.65rem;
     top: 0;
     right: 0;

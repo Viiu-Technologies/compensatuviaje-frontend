@@ -1,5 +1,5 @@
-import React from 'react';
-import { HiShieldCheck, HiCheckCircle } from 'react-icons/hi';
+import React, { useState } from 'react';
+import { HiShieldCheck, HiCheckCircle, HiPause, HiPlay } from 'react-icons/hi';
 import './StandardsRibbon.css';
 
 interface StandardItem {
@@ -37,6 +37,9 @@ const STANDARDS: StandardItem[] = [
 ];
 
 export const StandardsRibbon: React.FC = () => {
+  // WCAG 2.2.2: el usuario puede pausar la cinta animada (también en táctil)
+  const [paused, setPaused] = useState(false);
+
   return (
     <section className="st-ribbon-section" aria-label="Estándares y metodologías de cálculo">
       <div className="st-ribbon-container">
@@ -48,12 +51,25 @@ export const StandardsRibbon: React.FC = () => {
           <p className="st-ribbon-text">
             Metodologías oficiales validadas para cálculo individual y reportes corporativos de sostenibilidad:
           </p>
+          <button
+            type="button"
+            className="st-ribbon-toggle"
+            aria-pressed={paused}
+            aria-label={paused ? 'Reanudar animación de estándares' : 'Pausar animación de estándares'}
+            onClick={() => setPaused((p) => !p)}
+          >
+            {paused ? <HiPlay aria-hidden="true" /> : <HiPause aria-hidden="true" />}
+          </button>
         </div>
 
         <div className="st-ribbon-track-wrapper">
-          <div className="st-ribbon-track" aria-hidden="true">
+          <div className={`st-ribbon-track${paused ? ' st-ribbon-track--paused' : ''}`} aria-hidden="true">
             {[...STANDARDS, ...STANDARDS].map((item, idx) => (
-              <div key={`${item.name}-${idx}`} className="st-item">
+              <div
+                key={`${item.name}-${idx}`}
+                className={`st-item${idx >= STANDARDS.length ? ' st-item--dup' : ''}`}
+                aria-hidden="true"
+              >
                 <div className="st-item-header">
                   <span className="st-item-name">{item.name}</span>
                   <HiCheckCircle className="st-item-check" aria-hidden="true" />

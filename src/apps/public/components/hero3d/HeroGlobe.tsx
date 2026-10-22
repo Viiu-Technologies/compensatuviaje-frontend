@@ -4,6 +4,7 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { HiGlobeAlt, HiSparkles } from 'react-icons/hi';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { WebGLBoundary, isLowPowerDevice } from './WebGLBoundary';
 import './HeroGlobe.css';
 
 const EARTH_RADIUS = 1.5;
@@ -321,6 +322,24 @@ function GlobeFallback() {
 }
 
 /**
+ * Fallback estático (sin 3D) cuando WebGL no está disponible o el Canvas falla
+ */
+function GlobeStaticFallback() {
+  return (
+    <div className="hero-globe-fallback" aria-hidden="true">
+      <div className="hgf-sphere">
+        <div className="hgf-glow" />
+        <div className="hgf-grid" />
+        <div className="hgf-loader-badge">
+          <HiGlobeAlt className="hgf-static-icon" />
+          <span>Rutas aéreas desde Santiago</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Componente principal HeroGlobe:
  * Contenedor autónomo, pausado por visibilidad y optimizado para 60 FPS
  */
@@ -328,6 +347,8 @@ export const HeroGlobe: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const prefersReducedMotion = usePrefersReducedMotion();
+  // En táctil / pantallas chicas se reduce el costo de render (ver gl y dpr)
+  const [lowPower] = useState(isLowPowerDevice);
 
   // Pausar el render loop cuando el usuario scrollea hacia abajo
   useEffect(() => {
@@ -358,14 +379,15 @@ export const HeroGlobe: React.FC = () => {
       </div>
 
       <div className="hero-globe-canvas-box">
+        <WebGLBoundary fallback={<GlobeStaticFallback />}>
         <Suspense fallback={<GlobeFallback />}>
           <Canvas
             camera={{ position: [0, 0, 3.8], fov: 48 }}
-            dpr={[1, 1.25]}
+            dpr={lowPower ? [1, 1] : [1, 1.25]}
             frameloop={isVisible ? 'always' : 'never'}
             gl={{
-              antialias: true,
-              powerPreference: 'high-performance',
+              antialias: !lowPower,
+              powerPreference: lowPower ? 'default' : 'high-performance',
               alpha: true,
             }}
           >
@@ -388,6 +410,7 @@ export const HeroGlobe: React.FC = () => {
             />
           </Canvas>
         </Suspense>
+        </WebGLBoundary>
       </div>
 
       {/* Chip informativo inferior */}

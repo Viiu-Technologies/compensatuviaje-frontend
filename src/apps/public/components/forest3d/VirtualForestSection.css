@@ -107,6 +107,15 @@
   outline: none;
 }
 
+/* En táctil, OrbitControls fija touch-action: none inline y el canvas
+   atrapaba el scroll de la página. pan-y deja pasar el scroll vertical; el
+   arrastre horizontal sigue rotando la cámara. */
+@media (pointer: coarse) {
+  .forest-canvas-container canvas {
+    touch-action: pan-y !important;
+  }
+}
+
 /* Fallback de Carga */
 .forest-canvas-fallback {
   position: absolute;
@@ -136,6 +145,10 @@
   font-size: 1.1rem;
   color: #08ae06;
   animation: fcfSpin 2s linear infinite;
+}
+
+.fcf-icon--static {
+  animation: none;
 }
 
 @keyframes fcfSpin {
@@ -328,7 +341,14 @@
 
 .vfs-explore-btn:hover {
   background: #0b8a4a;
-  transform: translateX(2px);
+}
+
+/* El desplazamiento solo en dispositivos con hover real: en táctil el :hover
+   queda "pegado" tras el tap. */
+@media (hover: hover) {
+  .vfs-explore-btn:hover {
+    transform: translateX(2px);
+  }
 }
 
 /* ── Pista de Interacción 3D ─────────────────────────────────── */
@@ -370,6 +390,26 @@
   }
   .vfs-orbit-hint {
     display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Textos mínimos de 12px y áreas táctiles de 44px en móvil */
+  .vfs-ctrl-label,
+  .vfs-telemetry-header,
+  .vfs-telemetry-unit,
+  .vfs-orbit-hint {
+    font-size: 0.75rem;
+  }
+  .vfs-telemetry-sub,
+  .vfs-telemetry-badge {
+    font-size: 0.75rem;
+  }
+  .vfs-pill-btn,
+  .vfs-explore-btn {
+    min-height: 44px;
+    font-size: 0.8rem;
+    justify-content: center;
   }
 }
 

@@ -1,4 +1,5 @@
-import React, { useRef, useMemo, useEffect, Suspense } from 'react';
+import React, { useRef, useMemo, useEffect, useState, Suspense } from 'react';
+import { WebGLBoundary, isLowPowerDevice } from '../hero3d/WebGLBoundary';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -184,6 +185,20 @@ function ForestFallback() {
 }
 
 /**
+ * Fallback estático (sin 3D) cuando WebGL no está disponible o el Canvas falla
+ */
+function ForestStaticFallback() {
+  return (
+    <div className="forest-canvas-fallback" role="img" aria-label="Vista del bosque no disponible">
+      <div className="fcf-indicator">
+        <HiSparkles className="fcf-icon fcf-icon--static" />
+        <span>Vista 3D no disponible en este dispositivo</span>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Componente principal del Canvas 3D del Bosque
  */
 export const ForestCanvas: React.FC<ForestCanvasProps> = ({
@@ -192,6 +207,8 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
   species,
 }) => {
   const atmo = ATMOSPHERE[timeOfDay];
+  // En táctil / pantallas chicas se reduce el costo de render (dpr y GPU)
+  const [lowPower] = useState(isLowPowerDevice);
 
   // Configuración de presets según la especie elegida
   const heroPreset = species === 'alerce' ? 'Pine Medium' : 'Oak Medium';
@@ -210,10 +227,11 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
 
   return (
     <div className="forest-canvas-container">
+      <WebGLBoundary fallback={<ForestStaticFallback />}>
       <Suspense fallback={<ForestFallback />}>
         <Canvas
           camera={{ position: [0, 4.5, 17], fov: 45 }}
-          dpr={[1, 1.25]}
+          dpr={lowPower ? [1, 1] : [1, 1.25]}
           frameloop={isVisible ? 'always' : 'never'}
           // 'percentage' (PCF) es lo que three ya usaba: en three 0.184
           // PCFSoftShadowMap está deprecado y cae a PCF con un warning.
@@ -223,7 +241,7 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
             // multisample no suaviza, y el costo en una escena con tanto
             // sobredibujado era alto.
             antialias: false,
-            powerPreference: 'high-performance',
+            powerPreference: lowPower ? 'default' : 'high-performance',
           }}
           onCreated={({ gl, scene }) => {
             // Sombras estáticas: se redibujan bajo demanda (useShadowRefresh)
@@ -295,6 +313,7 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
           />
         </Canvas>
       </Suspense>
+      </WebGLBoundary>
     </div>
   );
 };

@@ -61,8 +61,31 @@
   animation: stMarquee 38s linear infinite;
 }
 
-.st-ribbon-track:hover {
+.st-ribbon-track:hover,
+.st-ribbon-track--paused {
   animation-play-state: paused;
+}
+
+/* Botón pausar/reanudar (WCAG 2.2.2) */
+.st-ribbon-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border-radius: var(--ctv-radius-full);
+  border: 1px solid rgba(7, 61, 61, 0.14);
+  background: #ffffff;
+  color: var(--ctv-brand-deep);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.st-ribbon-toggle:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--ctv-focus-ring);
 }
 
 .st-item {
@@ -126,8 +149,25 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* El scroll va en el wrapper (el track es max-content y no desborda por sí
+     mismo); sin animación se ve la lista una sola vez y se desplaza a mano. */
+  .st-ribbon-track-wrapper {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+    scroll-snap-type: x proximity;
+  }
+
   .st-ribbon-track {
     animation: none;
-    overflow-x: auto;
+  }
+
+  .st-item {
+    scroll-snap-align: start;
+  }
+
+  .st-item--dup,
+  .st-ribbon-toggle {
+    display: none;
   }
 }

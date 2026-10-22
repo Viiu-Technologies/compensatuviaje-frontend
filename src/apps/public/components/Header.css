@@ -153,9 +153,12 @@
   transition: transform var(--lq-transition), opacity var(--lq-transition);
 }
 
-.ctv-liquid-logo:hover {
-  transform: scale(1.02);
-  opacity: 0.94;
+/* Solo con puntero real: en táctil el :hover queda "pegado" tras el tap */
+@media (hover: hover) {
+  .ctv-liquid-logo:hover {
+    transform: scale(1.02);
+    opacity: 0.94;
+  }
 }
 
 .ctv-liquid-logo__img {
@@ -386,7 +389,7 @@
    Badges Liquid vinculados a los tokens de marca
    -------------------------------------------------------------------------- */
 .ctv-badge {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -527,7 +530,12 @@
   background: var(--ctv-gradient-brand);
   border-color: var(--ctv-brand-bright);
   box-shadow: 0 6px 24px rgba(62, 211, 43, 0.45), 0 0 12px rgba(8, 174, 6, 0.3);
-  transform: translateY(-1px);
+}
+
+@media (hover: hover) {
+  .ctv-btn-liquid--glow:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .ctv-btn-liquid__arrow {
@@ -589,8 +597,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: var(--lq-radius-pill);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--lq-border);
@@ -682,8 +692,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
