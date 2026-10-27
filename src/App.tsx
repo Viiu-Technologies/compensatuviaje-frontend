@@ -64,16 +64,6 @@ const VerificationPage = lazy(() => import('./apps/admin/pages/VerificationPage'
 
 const PartnerRoutes = lazy(() => import('./apps/partner').then(m => ({ default: m.PartnerRoutes })));
 
-// TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off.
-// Los lazy() se crean solo en desarrollo: si se declaran fuera del guard, Vite
-// sigue emitiendo sus chunks en produccion (~100KB) aunque la ruta no exista.
-const BusinessCardStackPreview = import.meta.env.DEV
-  ? lazy(() => import('./threejs-assets/BusinessCardStackPreview'))
-  : null;
-const LeaningCardsPreview = import.meta.env.DEV
-  ? lazy(() => import('./threejs-assets/LeaningCardsPreview'))
-  : null;
-
 // Loading fallback minimalista
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
@@ -145,15 +135,6 @@ function App() {
             <Route path="/terms" element={<Navigate to="/terminos" replace />} />
             <Route path="/privacy" element={<Navigate to="/privacidad" replace />} />
 
-            {/* TEMP dev-only previews for img2threejs blockout pass review -- remove after sign-off */}
-            {/* Previews temporales de revision: solo en desarrollo. */}
-            {BusinessCardStackPreview && (
-              <Route path="/dev/business-card-stack" element={<BusinessCardStackPreview />} />
-            )}
-            {LeaningCardsPreview && (
-              <Route path="/dev/leaning-cards" element={<LeaningCardsPreview />} />
-            )}
-            
             {/* Auth Callback for OAuth */}
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             
