@@ -1,0 +1,30 @@
+{
+  "name": "compensatuviaje-launch-video",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "stills": "remotion still Launch-16x9 out/v2-hero.png --frame=300 && remotion still Launch-16x9 out/v2-calc.png --frame=630 && remotion still Launch-16x9 out/v2-how.png --frame=840 && remotion still Launch-16x9 out/v2-method.png --frame=1080 && remotion still Launch-16x9 out/v2-verify.png --frame=1300 && remotion still Launch-16x9 out/v2-outro.png --frame=1480",
+    "render": "remotion render Launch-16x9 out/launch-16x9.mp4",
+    "render:4x5": "remotion render Launch-4x5 out/launch-4x5.mp4",
+    "typecheck": "tsc --noEmit",
+    "render:v1": "remotion render v1-Launch-16x9 out/v1-launch-16x9.mp4"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.6.1",
+    "@remotion/cli": "4.0.534",
+    "@remotion/google-fonts": "4.0.534",
+    "@remotion/three": "4.0.534",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-icons": "5.5.0",
+    "remotion": "4.0.534",
+    "three": "0.184.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/three": "0.184.1",
+    "typescript": "5.9.3"
+  }
+}
