@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, useMemo, lazy, Suspense, FormEvent, ChangeEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
@@ -8,6 +8,11 @@ import { Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { BsGoogle } from 'react-icons/bs';
 import { toast } from 'sonner';
+import { tripOf, routeOf } from './compensationRoute/model';
+import { POPULAR_AIRPORTS } from '../../public/services/publicApi';
+
+// La Fig. 2 solo se ve en escritorio (el panel se oculta en móvil): se carga aparte.
+const CompensationRoute = lazy(() => import('./compensationRoute/CompensationRoute'));
 
 interface LocationState {
   from?: {
@@ -45,6 +50,11 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Vuelo que trae la URL de destino (la calculadora pública manda aquí con
+  // /b2c/calculator?origin=…&destination=…). Personaliza el titular y la Fig. 2.
+  const trip = useMemo(() => tripOf((location.state as LocationState | null)?.from?.search), [location.state]);
+  const destinationCity = trip ? POPULAR_AIRPORTS.find((a) => a.code === trip.destination)?.city ?? trip.destination : null;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value, type, checked } = e.target;
@@ -109,107 +119,66 @@ const Login: React.FC = () => {
     }
   };
 
-  const treeVariants: Variants = {
-    hidden: { y: 100, opacity: 0 },
-    visible: (custom: number) => ({
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.8, delay: custom * 0.2, type: "spring", bounce: 0.4 }
-    })
-  };
+  // Colores: la escala brand-* es la paleta de marca (brand-900 = #073D3D, el
+  // teal del logotipo). Antes el login usaba los esmeralda de Tailwind, una
+  // ola con una costura visible y árboles triangulares de plantilla.
+  const field =
+    '!w-full !px-4 !py-3.5 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] !border-brand-900/15 !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none';
 
   return (
-    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
-      
-      {/* LEFT PANEL - Illustration */}
-      <motion.div 
-        className="!hidden lg:!flex !w-[55%] !relative !bg-brand-100 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
+    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-white">
+
+      {/* Panel izquierdo: la Fig. 2, lo que pasa después de entrar */}
+      <motion.div
+        className="!hidden lg:!flex !w-[55%] !relative !bg-[#EDF4F1] !flex-col !justify-center !px-12 xl:!px-16 !py-24 !overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        <Link to="/" className="!absolute !top-8 !left-10 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" /></Link>
-                
-        {/* Content */}
-        <div className="!relative !z-10 !max-w-lg !w-full !text-center">
-          <motion.h2 
-            className="!text-5xl !font-extrabold !text-emerald-900 !mb-4 !tracking-tight"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Te damos la bienvenida
-          </motion.h2>
-          <motion.p 
-            className="!text-xl !text-emerald-800/80 !mb-12"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            Calcula, compensa y sigue el impacto de tus viajes.
-          </motion.p>
+        <Link to="/" className="!absolute !top-8 !left-12 xl:!left-16 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" width={1117} height={240} /></Link>
 
+        <div className="!relative !z-10 !w-full !max-w-[720px]">
+          <div className="!flex !items-center !gap-3 !mb-4 !text-xs !font-semibold !uppercase !tracking-[0.16em] !text-brand-900/70">
+            <span className="!w-7 !h-0.5 !bg-brand-500" aria-hidden="true" />
+            <span>{trip ? `Tu vuelo ${routeOf(trip)}` : 'Cómo funciona'}</span>
+          </div>
+          <h2 className="!font-display !text-4xl xl:!text-5xl !font-semibold !text-brand-900 !mb-3 !tracking-tight !leading-[1.08]">
+            {trip ? `Compensa tu vuelo a ${destinationCity}` : 'Te damos la bienvenida'}
+          </h2>
+          <p className="!text-lg !text-brand-900/70 !mb-8 !max-w-[56ch]">
+            {trip
+              ? 'Al entrar calculamos tu vuelo con los datos que ingresaste. Después sigue esta ruta:'
+              : 'Calcula, compensa y sigue el impacto de tus viajes. Esta es la ruta de cada compensación:'}
+          </p>
+          <Suspense fallback={<div className="!aspect-[650/470] !w-full" aria-hidden="true" />}>
+            <CompensationRoute trip={trip} />
+          </Suspense>
         </div>
-
-        {/* Landscape / Trees Illustration */}
-        <div className="!absolute !bottom-0 !left-0 !right-0 !h-1/3 !z-0 !pointer-events-none">
-          {/* Hills */}
-          <div className="!absolute !bottom-0 !left-0 !w-full !h-full !bg-emerald-400/20 !rounded-tr-[100%] !transform !translate-y-10"></div>
-          <div className="!absolute !bottom-0 !right-0 !w-3/4 !h-3/4 !bg-emerald-500/20 !rounded-tl-[100%] !transform !translate-y-5"></div>
-          
-          {/* Trees */}
-          <motion.div custom={1} variants={treeVariants} className="!absolute !bottom-0 !left-[10%] !text-emerald-800/20">
-            <svg width="100" height="180" viewBox="0 0 100 180" fill="currentColor">
-              <path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" />
-            </svg>
-          </motion.div>
-          <motion.div custom={2} variants={treeVariants} className="!absolute !bottom-0 !left-[25%] !text-emerald-700/30 !transform !scale-75">
-            <svg width="100" height="180" viewBox="0 0 100 180" fill="currentColor">
-              <path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" />
-            </svg>
-          </motion.div>
-          <motion.div custom={3} variants={treeVariants} className="!absolute !bottom-0 !right-[30%] !text-emerald-800/20 !transform !scale-125">
-            <svg width="100" height="180" viewBox="0 0 100 180" fill="currentColor">
-              <path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" />
-            </svg>
-          </motion.div>
-        </div>
-
       </motion.div>
 
-      {/* RIGHT PANEL - Form */}
-      <div className="!w-full lg:!w-[45%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-8 lg:!p-16">
-        
-        {/* Wave Separator (Desktop only) */}
-        <div className="!hidden lg:!block !absolute !top-0 !-left-1 !h-full !w-24 !z-20 !text-emerald-900">
-           {/* Better approach: Absolute SVG on the left edge of the right panel */}
-           <div className="!absolute !inset-y-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden">
-             <svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b">
-               <path d="M100 0 C 20 20 20 80 100 100 V 0 Z" />
-             </svg>
-           </div>
-        </div>
-
-        <motion.div 
+      {/* Panel derecho: formulario */}
+      <div className="!w-full lg:!w-[45%] !relative !bg-white !flex !items-center !justify-center !p-8 lg:!p-16 lg:!border-l lg:!border-brand-900/10">
+        <motion.div
           className="!w-full !max-w-md !relative !z-30"
           initial="hidden"
           animate="visible"
           variants={formVariants}
         >
           <div className="!mb-10 !text-center lg:!text-left">
-            <Link to="/" className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
+            <Link to="/" className="!inline-flex !items-center !gap-2 !text-sm !text-brand-900/70 hover:!text-brand-700 !transition-colors !mb-6">
               <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
             </Link>
-            <h1 className="!text-4xl !font-bold !text-white !mb-3">Iniciar Sesión</h1>
-            <div className="!h-1 !w-20 !bg-emerald-500 !rounded-full !mb-4 lg:!mx-0 !mx-auto"></div>
-            <p className="!text-emerald-200/80">Accede a tu cuenta de Compensa tu Viaje</p>
+            <h1 className="!font-display !text-4xl !font-semibold !text-brand-900 !mb-3">Iniciar sesión</h1>
+            <p className="!text-brand-900/70">
+              {trip ? `Accede para compensar tu vuelo ${routeOf(trip)}.` : 'Accede a tu cuenta de CompensaTuViaje.'}
+            </p>
           </div>
 
           {error && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
-              className="!mb-6 !p-4 !bg-red-500/10 !border !border-red-500/20 !rounded-xl !flex !items-start !gap-3 !text-red-200"
+              className="!mb-6 !p-4 !bg-[#FEE2E2] !border !border-[#FCA5A5] !rounded-xl !flex !items-start !gap-3 !text-[#991B1B]"
             >
               <AlertCircle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
               <span className="!text-sm">{error}</span>
@@ -218,7 +187,7 @@ const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="!space-y-6">
             <div className="!space-y-2">
-              <label htmlFor="email" className="!text-sm !font-medium !text-emerald-100 !ml-1">Correo Electrónico</label>
+              <label htmlFor="email" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Correo Electrónico</label>
               <div className="!relative !group">
                 <input
                   type="email"
@@ -230,13 +199,13 @@ const Login: React.FC = () => {
                   autoComplete="email"
                   placeholder="tu@email.com"
                   disabled={loading}
-                  className="!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
+                  className={field}
                 />
               </div>
             </div>
 
             <div className="!space-y-2">
-              <label htmlFor="password" className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
+              <label htmlFor="password" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Contraseña</label>
               <div className="!relative !group">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -248,14 +217,14 @@ const Login: React.FC = () => {
                   autoComplete="current-password"
                   placeholder="••••••••"
                   disabled={loading}
-                  className="!w-full !px-6 !py-4 !pr-14 !rounded-full !bg-emerald-800/50 !border !border-emerald-700 !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70"
+                  className={`${field} !pr-14`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-emerald-400 hover:!text-white !transition-colors !p-2"
+                  className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-brand-900/50 hover:!text-brand-900 !transition-colors !p-2"
                 >
                   {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
                 </button>
@@ -271,16 +240,16 @@ const Login: React.FC = () => {
                     checked={formData.rememberMe}
                     onChange={handleChange}
                     disabled={loading}
-                    className="!peer !appearance-none !w-5 !h-5 !border-2 !border-emerald-600 !rounded !bg-transparent checked:!bg-emerald-500 checked:!border-emerald-500 !transition-all"
+                    className="!peer !appearance-none !w-5 !h-5 !border-2 !border-brand-900/30 !rounded !bg-white checked:!bg-brand-900 checked:!border-brand-900 !transition-all"
                   />
                   <svg className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2 !transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </div>
-                <span className="!text-emerald-200 group-hover:!text-white !transition-colors">Recordarme</span>
+                <span className="!text-brand-900/70 group-hover:!text-brand-900 !transition-colors">Recordarme</span>
               </label>
 
-              <Link to="/forgot-password" className="!text-emerald-400 hover:!text-emerald-300 !font-medium !transition-colors">
+              <Link to="/forgot-password" className="!text-brand-700 hover:!text-brand-800 !font-semibold !transition-colors">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
@@ -290,7 +259,7 @@ const Login: React.FC = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="!w-full !py-4 !px-6 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !text-lg !rounded-full !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+              className="!w-full !py-4 !px-6 !bg-brand-900 !text-white hover:!bg-[#044443] !font-bold !text-base !rounded-xl !shadow-[0_4px_14px_rgba(7,61,61,0.22)] hover:!shadow-[0_8px_24px_rgba(7,61,61,0.3)] !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
             >
               {loading ? (
                 <>
@@ -305,9 +274,9 @@ const Login: React.FC = () => {
 
           <div className="!mt-10 !text-center">
             <div className="!flex !items-center !gap-4 !mb-5">
-              <div className="!flex-1 !h-px !bg-emerald-700/60" />
-              <p className="!text-emerald-200/60 !text-sm !whitespace-nowrap">O continúa con</p>
-              <div className="!flex-1 !h-px !bg-emerald-700/60" />
+              <div className="!flex-1 !h-px !bg-brand-900/10" />
+              <p className="!text-brand-900/50 !text-sm !whitespace-nowrap">O continúa con</p>
+              <div className="!flex-1 !h-px !bg-brand-900/10" />
             </div>
 
             <button
@@ -327,7 +296,7 @@ const Login: React.FC = () => {
                 }
               }}
               disabled={googleLoading || isGoogleSigningIn || loading}
-              className="!w-full !flex !items-center !justify-center !gap-3 !py-3.5 !px-6 !rounded-full !bg-white !text-emerald-900 !font-semibold !shadow-lg hover:!bg-emerald-50 hover:!shadow-emerald-500/20 !transition-all disabled:!opacity-60 disabled:!cursor-not-allowed"
+              className="!w-full !flex !items-center !justify-center !gap-3 !py-3.5 !px-6 !rounded-xl !bg-white !border-[1.5px] !border-brand-900/15 !text-brand-900 !font-semibold hover:!bg-[#EDF4F1] !transition-all disabled:!opacity-60 disabled:!cursor-not-allowed"
             >
               {isGoogleSigningIn ? (
                 <Loader2 className="!w-5 !h-5 !animate-spin" />
@@ -338,8 +307,8 @@ const Login: React.FC = () => {
             </button>
 
             {DEV_LOGIN_ENABLED && (
-              <div className="!mt-5 !p-4 !rounded-2xl !border !border-dashed !border-amber-300/60 !bg-amber-400/10 !text-left">
-                <p className="!text-amber-200 !text-xs !font-bold !uppercase !tracking-wide !mb-3">
+              <div className="!mt-5 !p-4 !rounded-2xl !border !border-dashed !border-amber-400 !bg-amber-50 !text-left">
+                <p className="!text-amber-800 !text-xs !font-bold !uppercase !tracking-wide !mb-3">
                   Entorno local de pruebas
                 </p>
                 <button
@@ -358,7 +327,7 @@ const Login: React.FC = () => {
                     }
                   }}
                   disabled={isTestSigningIn || loading}
-                  className="!w-full !flex !items-center !justify-center !gap-2 !py-2.5 !px-4 !rounded-full !bg-amber-300 !text-emerald-950 !text-sm !font-semibold hover:!bg-amber-200 !transition-colors disabled:!opacity-60"
+                  className="!w-full !flex !items-center !justify-center !gap-2 !py-2.5 !px-4 !rounded-xl !bg-amber-300 !text-brand-950 !text-sm !font-semibold hover:!bg-amber-200 !transition-colors disabled:!opacity-60"
                 >
                   {isTestSigningIn && <Loader2 className="!w-4 !h-4 !animate-spin" />}
                   Entrar como persona de prueba (B2C, sin Google)
@@ -371,21 +340,21 @@ const Login: React.FC = () => {
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, email: account.email, password: DEV_SEED_PASSWORD }))
                       }
-                      className="!flex-1 !py-2 !px-3 !rounded-full !border !border-amber-300/60 !text-amber-100 !text-xs !font-semibold hover:!bg-amber-300/20 !transition-colors"
+                      className="!flex-1 !py-2 !px-3 !rounded-xl !border !border-amber-400 !text-amber-900 !text-xs !font-semibold hover:!bg-amber-100 !transition-colors"
                     >
                       Usar cuenta: {account.label}
                     </button>
                   ))}
                 </div>
-                <p className="!text-amber-100/70 !text-xs !mt-2">
+                <p className="!text-amber-900/70 !text-xs !mt-2">
                   Las cuentas de empresa y partner se crean con <code>pnpm prisma:seed</code>. Solo visible en desarrollo.
                 </p>
               </div>
             )}
 
             <div className="!mt-6">
-              <span className="!text-emerald-200/80">¿No tienes cuenta? </span>
-              <Link to="/register" state={location.state} className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
+              <span className="!text-brand-900/70">¿No tienes cuenta? </span>
+              <Link to="/register" state={location.state} className="!text-brand-900 !font-bold hover:!text-brand-700 !underline !decoration-2 !underline-offset-4 !transition-colors">
                 Regístrate aquí
               </Link>
             </div>

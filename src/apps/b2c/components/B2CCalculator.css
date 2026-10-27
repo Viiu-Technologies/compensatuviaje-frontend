@@ -1,0 +1,710 @@
+/* ==========================================================================
+   B2CCalculator.css — Calculadora de huella (área logueada)
+   Mismo lenguaje visual que la calculadora del landing (QuickFlightCalculator):
+   mismos tokens --ctv-*, mismas sombras en capas, misma tipografía display y
+   el mismo panel de impacto de tres columnas. Así el usuario no percibe un
+   cambio de producto al pasar del Hero público a esta pantalla.
+   ========================================================================== */
+@import '../../public/components/landing/tokens.css';
+
+.b2cc-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: clamp(1.25rem, 2.2vw, 1.75rem);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .b2cc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Tarjeta principal: mismo vidrio y sombra que qfc-card ── */
+.b2cc-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(7, 61, 61, 0.12);
+  border-radius: var(--ctv-radius-xl);
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  box-shadow: var(--ctv-shadow-card);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+}
+
+/* Tarjeta secundaria: neutro con tinte teal, para no competir en verde con
+   el formulario, que es la acción principal de la pantalla. */
+.b2cc-card--side {
+  background: var(--ctv-canvas-2);
+  border: 1px solid var(--ctv-rule);
+  box-shadow: none;
+}
+
+.b2cc-card--side .b2cc-card-icon {
+  background: #ffffff;
+}
+
+.b2cc-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.b2cc-card-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ctv-radius-full);
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-accent-contrast);
+  font-size: 0.95rem;
+}
+
+.b2cc-card-title {
+  margin: 0;
+  font-family: var(--ctv-font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  line-height: 1.3;
+}
+
+.b2cc-card-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ctv-ink-mute);
+}
+
+/* ── Estructura del formulario ── */
+.b2cc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.b2cc-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.b2cc-row--wide {
+  gap: 1.5rem;
+}
+
+.b2cc-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* ── Buscador de aeropuertos: misma superficie que qfc-airport-card,
+   pero con input de texto en vez de <select> oculto (necesita autocomplete) ── */
+.b2cc-field {
+  position: relative;
+}
+
+.b2cc-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ctv-ink-mute);
+  margin-bottom: 0.5rem;
+}
+
+.b2cc-input-wrap {
+  position: relative;
+  background: #F9FBFA;
+  border: 1.5px solid rgba(7, 61, 61, 0.12);
+  border-radius: var(--ctv-radius-lg);
+  transition: all 0.22s var(--ctv-ease-out);
+}
+
+.b2cc-input-wrap:focus-within,
+.b2cc-input-wrap--filled {
+  border-color: var(--ctv-brand);
+  background: #ffffff;
+  box-shadow: 0 10px 28px -8px rgba(8, 174, 6, 0.16);
+}
+
+.b2cc-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.9rem 2.6rem 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+}
+
+.b2cc-input::placeholder {
+  color: var(--ctv-ink-mute);
+  font-weight: 500;
+}
+
+.b2cc-input-status {
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  color: var(--ctv-ink-mute);
+}
+
+.b2cc-input-status--ok {
+  color: var(--ctv-accent-contrast);
+}
+
+/* Solo el spinner gira; el check de "seleccionado" queda quieto. */
+.b2cc-input-status--loading svg {
+  animation: b2ccSpin 0.8s linear infinite;
+}
+
+@keyframes b2ccSpin {
+  to { transform: rotate(360deg); }
+}
+
+.b2cc-suggestions {
+  position: absolute;
+  z-index: var(--ctv-z-dropdown);
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid rgba(7, 61, 61, 0.14);
+  border-radius: var(--ctv-radius-lg);
+  box-shadow: var(--ctv-shadow-card-hover);
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.b2cc-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.6rem 0.65rem;
+  border-radius: var(--ctv-radius-md);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.b2cc-suggestion:hover {
+  background: var(--ctv-brand-soft);
+}
+
+.b2cc-suggestion-code {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ctv-radius-sm);
+  background: rgba(7, 61, 61, 0.06);
+  font-family: var(--ctv-font-mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--ctv-brand-deep);
+}
+
+.b2cc-suggestion-text {
+  min-width: 0;
+}
+
+.b2cc-suggestion-city {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ctv-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.b2cc-suggestion-name {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ctv-ink-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.b2cc-suggestion-country {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--ctv-ink-mute);
+}
+
+/* ── Distancia aproximada ── */
+.b2cc-distance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--ctv-canvas-2);
+  border: 1px solid var(--ctv-rule);
+  border-radius: var(--ctv-radius-md);
+  padding: 0.75rem 1.1rem;
+  font-size: 0.88rem;
+  color: var(--ctv-ink-soft);
+}
+
+.b2cc-distance strong {
+  color: var(--ctv-ink);
+  font-weight: 700;
+}
+
+/* ── Clase de cabina / tipo de viaje: mismos chips que la landing ── */
+.b2cc-chip-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.b2cc-chip-group--4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 540px) {
+  .b2cc-chip-group--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* min-height 2.75rem (44px): misma altura que el stepper de pasajeros, que
+   comparte fila con los chips de tipo de viaje, y área táctil mínima. */
+.b2cc-chip {
+  min-height: 2.75rem;
+  background: #ffffff;
+  border: 1.5px solid rgba(7, 61, 61, 0.14);
+  border-radius: var(--ctv-radius-md);
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ctv-ink-soft);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.b2cc-chip:hover {
+  border-color: rgba(8, 174, 6, 0.35);
+  background: var(--ctv-brand-soft);
+}
+
+.b2cc-chip--active {
+  background: var(--ctv-brand-deep);
+  border-color: var(--ctv-brand-deep);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(7, 61, 61, 0.15);
+}
+
+/* ── Tipo de viaje: copia de qfc-trip-toggle (opción activa en blanco sobre
+   un riel gris-teal), a la altura del stepper con el que comparte fila. ── */
+.b2cc-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 2.75rem;
+  background: rgba(7, 61, 61, 0.05);
+  padding: 4px;
+  border-radius: var(--ctv-radius-md);
+  border: 1px solid rgba(7, 61, 61, 0.08);
+}
+
+.b2cc-toggle-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
+  border-radius: var(--ctv-radius-sm);
+  cursor: pointer;
+  transition: all 0.22s var(--ctv-ease-out);
+}
+
+.b2cc-toggle-btn--active {
+  background: #ffffff;
+  color: var(--ctv-brand-deep);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(7, 61, 61, 0.08);
+}
+
+/* ── Stepper de pasajeros (idéntico al de la landing) ── */
+.b2cc-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 2.75rem;
+  background: #ffffff;
+  border: 1.5px solid rgba(7, 61, 61, 0.14);
+  border-radius: var(--ctv-radius-md);
+  padding: 3px;
+}
+
+.b2cc-stepper-btn {
+  width: 36px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(7, 61, 61, 0.04);
+  color: var(--ctv-ink);
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: var(--ctv-radius-sm);
+  transition: all 0.18s ease;
+}
+
+.b2cc-stepper-btn:hover:not(:disabled) {
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-accent-contrast);
+}
+
+.b2cc-stepper-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.b2cc-stepper-display {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ctv-brand-deep);
+}
+
+/* ── Mensaje de error ── */
+.b2cc-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+  border-radius: var(--ctv-radius-md);
+  font-size: 0.85rem;
+}
+
+.b2cc-error-icon {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+/* ── Botón principal: copia de qfc-compensate-btn (teal sólido, radio md),
+   para que "Compensar huella" del landing y este botón sean el mismo. ── */
+.b2cc-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  background: var(--ctv-brand-deep);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--ctv-radius-md);
+  padding: 0.95rem 1.85rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  font-family: var(--ctv-font-body);
+  cursor: pointer;
+  transition: all 0.25s var(--ctv-ease-out);
+  box-shadow: 0 4px 14px rgba(7, 61, 61, 0.22);
+}
+
+.b2cc-submit-btn:hover:not(:disabled) {
+  background: var(--ctv-teal-800);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(7, 61, 61, 0.3);
+}
+
+.b2cc-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* En pantallas angostas "Elegir proyecto para compensar" no cabía en una
+   línea y el ícono quedaba separado del texto. */
+@media (max-width: 639px) {
+  .b2cc-submit-btn {
+    padding-inline: 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+.b2cc-submit-btn svg.b2cc-spin {
+  animation: b2ccSpin 0.8s linear infinite;
+}
+
+/* ── Panel lateral "Cómo funciona" ── */
+.b2cc-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.b2cc-step {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.b2cc-step-num {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--ctv-radius-full);
+  background: #ffffff;
+  color: var(--ctv-accent-contrast);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.b2cc-step-text {
+  font-size: 0.85rem;
+  color: var(--ctv-brand-deep);
+  line-height: 1.5;
+}
+
+.b2cc-step-text b {
+  color: var(--ctv-brand-deep);
+}
+
+/* ── Resultado: mismo panel de impacto que la landing, en versión vertical.
+   Sin equivalencia en árboles a propósito: aquí no hay un dato del backend
+   que la respalde y no coincidía con la de los certificados. ── */
+.b2cc-result {
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+.b2cc-result-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.b2cc-result-airports {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.b2cc-result-code {
+  font-family: var(--ctv-font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--ctv-brand-deep);
+  line-height: 1;
+}
+
+.b2cc-result-arrow {
+  color: var(--ctv-ink-mute);
+}
+
+.b2cc-result-city {
+  font-size: 0.82rem;
+  color: var(--ctv-ink-mute);
+  text-align: center;
+}
+
+.b2cc-result-meta {
+  font-size: 0.85rem;
+  color: var(--ctv-ink-soft);
+  text-align: right;
+}
+
+/* En móvil la meta baja a su propia línea: alineada a la izquierda con la ruta. */
+@media (max-width: 639px) {
+  .b2cc-result-meta {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+.b2cc-impact-panel {
+  margin-top: 1.5rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(228, 246, 224, 0.9) 0%, #ffffff 100%);
+  border: 1.5px solid rgba(8, 174, 6, 0.32);
+  border-radius: var(--ctv-radius-xl);
+  padding: clamp(1.6rem, 2.6vw, 2.25rem);
+  box-shadow: 0 12px 36px -10px rgba(8, 174, 6, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+}
+
+.b2cc-impact-caption {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ctv-accent-contrast);
+}
+
+.b2cc-impact-number {
+  margin-top: 0.4rem;
+  font-family: var(--ctv-font-display);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: var(--ctv-brand-deep);
+  line-height: 1;
+}
+
+.b2cc-impact-number span {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.b2cc-impact-tons {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--ctv-accent-contrast);
+  font-weight: 600;
+}
+
+.b2cc-result-note {
+  margin-top: 1.25rem;
+  text-align: center;
+  text-wrap: pretty;
+  font-size: 0.88rem;
+  color: var(--ctv-ink-soft);
+}
+
+.b2cc-result-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .b2cc-result-actions {
+    flex-direction: row;
+  }
+}
+
+.b2cc-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1.5px solid rgba(7, 61, 61, 0.16);
+  color: var(--ctv-ink);
+  border-radius: var(--ctv-radius-md);
+  padding: 0.85rem 1.4rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.b2cc-btn-secondary:hover {
+  background: var(--ctv-canvas-2);
+}
+
+@media (min-width: 640px) {
+  .b2cc-result-actions .b2cc-btn-secondary {
+    flex: 1;
+  }
+  .b2cc-result-actions .b2cc-submit-btn {
+    flex: 2;
+  }
+}
+
+.b2cc-login-note {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ctv-ink-mute);
+}
+
+/* ── Cálculo automático al llegar con un vuelo en la URL ── */
+.b2cc-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: clamp(2.5rem, 5vw, 3.5rem) 1.5rem;
+  text-align: center;
+}
+
+.b2cc-loading svg {
+  font-size: 1.6rem;
+  color: var(--ctv-accent-contrast);
+  margin-bottom: 0.5rem;
+  animation: b2ccSpin 0.8s linear infinite;
+}
+
+.b2cc-loading-title {
+  margin: 0;
+  font-family: var(--ctv-font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+}
+
+.b2cc-loading-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ctv-ink-soft);
+}
+
+/* Foco de teclado: el anillo de marca (3.78:1 sobre blanco, WCAG 2.4.11). */
+.b2cc-chip:focus-visible,
+.b2cc-toggle-btn:focus-visible,
+.b2cc-stepper-btn:focus-visible,
+.b2cc-submit-btn:focus-visible,
+.b2cc-btn-secondary:focus-visible,
+.b2cc-suggestion:focus-visible {
+  outline: none;
+  box-shadow: var(--ctv-focus-ring);
+}
+
+/* Va al final para ganarle por orden a las reglas de animación de arriba. */
+@media (prefers-reduced-motion: reduce) {
+  .b2cc-input-status--loading svg,
+  .b2cc-submit-btn svg.b2cc-spin,
+  .b2cc-loading svg {
+    animation: none;
+  }
+
+  .b2cc-submit-btn,
+  .b2cc-submit-btn:hover:not(:disabled),
+  .b2cc-chip,
+  .b2cc-input-wrap {
+    transition: none;
+    transform: none;
+  }
+}

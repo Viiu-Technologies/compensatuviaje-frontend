@@ -1,0 +1,25 @@
+/* La tarjeta del kit dentro del panel del login. Mismo acabado que la Fig. 1. */
+.compensation-route {
+  width: 100%;
+  max-width: 720px;
+}
+
+.compensation-route .iso-figure {
+  margin: 0;
+}
+
+.compensation-route .iso-plate {
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px var(--anatomy-faint), var(--anatomy-lift);
+}
+
+.compensation-route .iso-stage {
+  touch-action: pan-y;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.compensation-route .iso-stage:focus-visible {
+  outline: 1px solid var(--anatomy-muted);
+  outline-offset: 6px;
+}

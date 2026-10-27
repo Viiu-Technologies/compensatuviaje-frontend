@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FaPlane, FaLeaf, FaMapMarkerAlt, FaUsers, FaExchangeAlt, FaCheckCircle, FaArrowLeft, FaSpinner, FaInfoCircle,
@@ -6,12 +6,21 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import B2CLayout from './B2CLayout';
-import { Card, CardHeader, btn, cx, fmtInt, fmtNum } from '../ui';
+import { cx, fmtInt, fmtNum } from '../ui';
+import './B2CCalculator.css';
 
 /**
  * Calculadora de huella de un vuelo (área B2C).
  *
- * Cambios respecto de la versión anterior:
+ * Migrada al mismo lenguaje visual que la calculadora del Hero público
+ * (QuickFlightCalculator): mismos tokens --ctv-*, mismas tarjetas con vidrio
+ * y sombra en capas, mismo panel de impacto. Antes usaba las utilidades
+ * Tailwind genéricas de `ui/components.tsx` (pensadas para el admin), lo que
+ * hacía que el usuario pasara de una pieza de marketing con identidad fuerte
+ * a un panel de back-office apenas hacía clic en "Compensar huella" desde
+ * el landing — el salto se notaba y se leía como hecho por partes distintas.
+ *
+ * Cambios respecto de la versión anterior (antes de esta migración visual):
  *  - Vive dentro del layout del área (menú lateral), no con encabezado propio.
  *  - Sin emojis para las clases de cabina ni degradados.
  *  - Se quitó el paso "¡Felicitaciones!": nunca se mostraba (el pago ocurre en
@@ -77,7 +86,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-/** Buscador de aeropuertos con sugerencias. */
+/** Buscador de aeropuertos con sugerencias, en la misma piel que las tarjetas de ruta del landing. */
 const AirportSearchInput: React.FC<{
   id: string;
   value: Airport | null;
@@ -131,12 +140,12 @@ const AirportSearchInput: React.FC<{
   };
 
   return (
-    <div className="relative">
-      <label htmlFor={id} className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-        <FaMapMarkerAlt className="text-gray-400" aria-hidden="true" />
+    <div className="b2cc-field">
+      <label htmlFor={id} className="b2cc-field-label">
+        <FaMapMarkerAlt aria-hidden="true" />
         {label}
       </label>
-      <div className="relative">
+      <div className={cx('b2cc-input-wrap', value ? 'b2cc-input-wrap--filled' : '')}>
         <input
           id={id}
           type="text"
@@ -148,38 +157,35 @@ const AirportSearchInput: React.FC<{
           placeholder={placeholder}
           aria-autocomplete="list"
           aria-expanded={showResults}
-          className={cx(
-            'w-full rounded-xl border px-4 py-3 pr-10 text-gray-900 bg-white outline-none transition-colors placeholder:text-gray-400',
-            value ? 'border-brand-700 bg-brand-50/40' : 'border-gray-300 focus:border-brand-700',
-          )}
+          className="b2cc-input"
         />
-        <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
-          {isLoading ? (
-            <FaSpinner className="animate-spin text-gray-400" aria-hidden="true" />
-          ) : value ? (
-            <FaCheckCircle className="text-brand-700" aria-label="Aeropuerto seleccionado" />
-          ) : null}
-        </span>
+        {isLoading ? (
+          <span className="b2cc-input-status b2cc-input-status--loading">
+            <FaSpinner aria-hidden="true" />
+          </span>
+        ) : value ? (
+          <span className="b2cc-input-status b2cc-input-status--ok">
+            <FaCheckCircle aria-label="Aeropuerto seleccionado" />
+          </span>
+        ) : null}
       </div>
 
       {showResults && results.length > 0 && (
-        <ul className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-lg border border-gray-200 max-h-72 overflow-y-auto z-50 m-0 p-1 list-none" role="listbox">
+        <ul className="b2cc-suggestions" role="listbox">
           {results.map((airport) => (
             <li key={airport.code}>
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(airport)}
-                className="w-full px-3 py-2.5 text-left rounded-lg hover:bg-gray-50 flex items-center gap-3 cursor-pointer bg-transparent border-0"
+                className="b2cc-suggestion"
               >
-                <span className="w-12 h-9 rounded-lg bg-gray-100 text-gray-800 font-mono font-semibold text-sm flex items-center justify-center flex-shrink-0">
-                  {airport.code}
+                <span className="b2cc-suggestion-code">{airport.code}</span>
+                <span className="b2cc-suggestion-text">
+                  <span className="b2cc-suggestion-city">{airport.city}</span>
+                  <span className="b2cc-suggestion-name">{airport.name}</span>
                 </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block font-medium text-gray-900 truncate">{airport.city}</span>
-                  <span className="block text-sm text-gray-500 truncate">{airport.name}</span>
-                </span>
-                <span className="text-xs text-gray-500">{airport.country}</span>
+                <span className="b2cc-suggestion-country">{airport.country}</span>
               </button>
             </li>
           ))}
@@ -189,70 +195,188 @@ const AirportSearchInput: React.FC<{
   );
 };
 
-const choice = (active: boolean) =>
-  cx(
-    'rounded-xl border px-3 py-2.5 text-sm font-medium cursor-pointer transition-colors text-center',
-    active ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
-  );
+const EMPTY_FORM = {
+  origin: null as Airport | null,
+  destination: null as Airport | null,
+  cabinCode: 'economy',
+  passengers: 1,
+  roundTrip: true,
+};
+
+interface TripInput {
+  origin: Airport;
+  destination: Airport;
+  cabinCode: string;
+  passengers: number;
+  roundTrip: boolean;
+}
+
+/** Firma de un viaje, para saber si el formulario sigue siendo un viaje ya guardado. */
+const tripKey = (t: TripInput) =>
+  [t.origin.code, t.destination.code, t.cabinCode, t.passengers, t.roundTrip].join('|');
+
+/** Busca un aeropuerto por código IATA; si no hay coincidencia exacta, el primero que devuelva la búsqueda. */
+async function findAirport(code: string): Promise<Airport | null> {
+  const res = await fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(code)}`);
+  const data = await res.json();
+  // El backend responde { success: true, data: airports[] }
+  const list: Airport[] = data.success ? data.data : data.airports || [];
+  return list.find((a) => a.code === code) || list[0] || null;
+}
 
 const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>('form');
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Si se llega con un vuelo en la URL (desde el landing o "Mis viajes") se
+  // calcula solo. Mientras tanto se muestra "Calculando…": sin esto el
+  // formulario aparecía un instante y luego saltaba al resultado.
+  const [autoCalculating, setAutoCalculating] = useState(
+    () => Boolean(searchParams.get('origin') && searchParams.get('destination')),
+  );
 
-  const [formData, setFormData] = useState({
-    origin: null as Airport | null,
-    destination: null as Airport | null,
-    cabinCode: 'economy',
-    passengers: 1,
-    roundTrip: true,
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  // Cambia al reiniciar el formulario para que los buscadores de aeropuerto,
+  // que guardan su propio texto, se monten de nuevo vacíos.
+  const [formKey, setFormKey] = useState(0);
 
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [calculationId, setCalculationId] = useState<string | null>(null);
   const [distance, setDistance] = useState(0);
 
-  // Precarga desde "Mis viajes" (query params)
+  /**
+   * Cálculo ya guardado para el viaje actual. El backend guarda un cálculo
+   * nuevo cada vez que recibe userId, así que si el formulario sigue siendo
+   * este viaje se recalcula sin userId y se reutiliza el id. Antes, llegar
+   * desde "Mis viajes" y pulsar "Calcular huella" duplicaba el viaje.
+   */
+  const savedTrip = useRef<{ key: string; id: string } | null>(null);
+  // URL ya procesada: en desarrollo StrictMode ejecuta los efectos dos veces,
+  // y cada cálculo automático con userId terminaría guardado dos veces.
+  const autoRanFor = useRef<string | null>(null);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  /** Calcula el viaje y pasa al resultado. Devuelve el id del cálculo, si lo hay. */
+  const runCalculation = async (trip: TripInput): Promise<string | null> => {
+    const key = tripKey(trip);
+    const reuseId = savedTrip.current?.key === key ? savedTrip.current.id : null;
+    setIsCalculating(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/public/calculator/estimate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origin: trip.origin.code,
+          destination: trip.destination.code,
+          cabinCode: trip.cabinCode,
+          passengers: trip.passengers,
+          roundTrip: trip.roundTrip,
+          // Sin userId el backend no guarda: un viaje ya guardado no se duplica.
+          userId: reuseId ? undefined : user?.id,
+        }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        const id: string | null = reuseId ?? data.calculationId ?? null;
+        if (id) savedTrip.current = { key, id };
+        setResult(data);
+        // Explícito, también cuando es null: antes se conservaba el id del
+        // viaje anterior aunque el usuario hubiera cambiado la ruta.
+        setCalculationId(id);
+        setCurrentStep('result');
+        return id;
+      }
+      setError(data.message || 'No pudimos calcular las emisiones de este vuelo.');
+    } catch (err) {
+      console.error('Error calculating:', err);
+      // Antes: "Verifica que el servidor esté corriendo" (mensaje para desarrolladores).
+      setError('No pudimos calcular. Revisa tu conexión y vuelve a intentarlo.');
+    } finally {
+      setIsCalculating(false);
+    }
+    return null;
+  };
+
+  // Vuelo en la URL: precargar el formulario y calcular sin pedir otro clic.
   useEffect(() => {
     const origin = searchParams.get('origin');
     const destination = searchParams.get('destination');
-    const cabin = searchParams.get('cabin');
-    const passengers = searchParams.get('passengers');
-    const roundTrip = searchParams.get('roundTrip');
+    if (!origin || !destination) {
+      // Se venía de una URL con vuelo y ahora no hay (p. ej. "Calcular CO₂"
+      // en el menú lateral, que es la misma ruta): volver al formulario vacío
+      // en vez de seguir mostrando el resultado anterior.
+      if (autoRanFor.current !== null) {
+        autoRanFor.current = null;
+        savedTrip.current = null;
+        setFormData(EMPTY_FORM);
+        setFormKey((k) => k + 1);
+        setResult(null);
+        setCalculationId(null);
+        setError(null);
+        setCurrentStep('form');
+      }
+      return;
+    }
+
+    const urlKey = searchParams.toString();
+    if (autoRanFor.current === urlKey) return;
+    autoRanFor.current = urlKey;
+
+    const cabinCode = searchParams.get('cabin') || 'economy';
+    const passengers = Math.max(1, parseInt(searchParams.get('passengers') || '1', 10) || 1);
+    const roundTrip = searchParams.get('roundTrip') === 'true';
     const calcId = searchParams.get('calculationId');
 
-    if (origin && destination) {
-      setFormData((prev) => ({
-        ...prev,
-        cabinCode: cabin || 'economy',
-        passengers: passengers ? parseInt(passengers) : 1,
-        roundTrip: roundTrip === 'true',
-      }));
-      if (calcId) setCalculationId(calcId);
+    setFormData((prev) => ({ ...prev, cabinCode, passengers, roundTrip }));
+    if (calcId) setCalculationId(calcId);
 
-      const fetchAirports = async () => {
-        try {
-          const [originRes, destRes] = await Promise.all([
-            fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(origin)}`),
-            fetch(`${API_URL}/public/airports/search?q=${encodeURIComponent(destination)}`),
-          ]);
-          const originData = await originRes.json();
-          const destData = await destRes.json();
-          const originAirports = originData.success ? originData.data : originData.airports || [];
-          const destAirports = destData.success ? destData.data : destData.airports || [];
-          const originAirport = originAirports.find((a: any) => a.code === origin) || originAirports[0];
-          const destAirport = destAirports.find((a: any) => a.code === destination) || destAirports[0];
-          if (originAirport) setFormData((prev) => ({ ...prev, origin: originAirport }));
-          if (destAirport) setFormData((prev) => ({ ...prev, destination: destAirport }));
-        } catch (err) {
-          console.error('Error precargando aeropuertos:', err);
+    const prefillAndCalculate = async () => {
+      try {
+        const [originAirport, destAirport] = await Promise.all([findAirport(origin), findAirport(destination)]);
+        if (!mounted.current) return;
+        setFormData((prev) => ({
+          ...prev,
+          origin: originAirport ?? prev.origin,
+          destination: destAirport ?? prev.destination,
+        }));
+        if (!originAirport || !destAirport) {
+          setError('No encontramos uno de los aeropuertos de tu vuelo. Revísalo y calcula de nuevo.');
+          return;
         }
-      };
-      fetchAirports();
-    }
+
+        const trip: TripInput = { origin: originAirport, destination: destAirport, cabinCode, passengers, roundTrip };
+        if (calcId) savedTrip.current = { key: tripKey(trip), id: calcId };
+        const id = await runCalculation(trip);
+
+        // Deja el id en la URL: si el usuario recarga, se reutiliza en vez de
+        // guardar el mismo viaje otra vez.
+        if (id && id !== calcId && mounted.current) {
+          const next = new URLSearchParams(searchParams);
+          next.set('calculationId', id);
+          autoRanFor.current = next.toString();
+          setSearchParams(next, { replace: true });
+        }
+      } catch (err) {
+        console.error('Error precargando el vuelo:', err);
+        if (mounted.current) setError('No pudimos cargar tu vuelo. Revisa tu conexión y vuelve a intentarlo.');
+      } finally {
+        if (mounted.current) setAutoCalculating(false);
+      }
+    };
+    prefillAndCalculate();
+    // runCalculation y setSearchParams no cambian el resultado de este efecto:
+    // solo debe reaccionar a una URL nueva.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Distancia de referencia (gran círculo) mientras se completa el formulario
@@ -272,38 +396,10 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
     }
   }, [formData.origin, formData.destination]);
 
-  const handleCalculate = async () => {
-    if (!formData.origin || !formData.destination) return;
-    setIsCalculating(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_URL}/public/calculator/estimate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          origin: formData.origin.code,
-          destination: formData.destination.code,
-          cabinCode: formData.cabinCode,
-          passengers: formData.passengers,
-          roundTrip: formData.roundTrip,
-          userId: user?.id, // Enviar userId si está autenticado
-        }),
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        setResult(data);
-        if (data.calculationId) setCalculationId(data.calculationId);
-        setCurrentStep('result');
-      } else {
-        setError(data.message || 'No pudimos calcular las emisiones de este vuelo.');
-      }
-    } catch (err) {
-      console.error('Error calculating:', err);
-      // Antes: "Verifica que el servidor esté corriendo" (mensaje para desarrolladores).
-      setError('No pudimos calcular. Revisa tu conexión y vuelve a intentarlo.');
-    } finally {
-      setIsCalculating(false);
-    }
+  const handleCalculate = () => {
+    const { origin, destination } = formData;
+    if (!origin || !destination) return;
+    runCalculation({ ...formData, origin, destination });
   };
 
   const handleViewProjects = () => {
@@ -320,15 +416,32 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
 
   return (
     <B2CLayout title="Calcular CO₂" subtitle="Calcula la huella de un vuelo y compénsala con un proyecto verificado">
-      {currentStep === 'form' && (
-        <div className="grid lg:grid-cols-3 gap-6 items-start">
-          <Card className="p-6 lg:col-span-2">
-            <CardHeader icon={FaPlane} title="Datos del vuelo" subtitle="Busca por ciudad o código IATA" />
+      {autoCalculating && (
+        <div className="b2cc-result">
+          <div className="b2cc-card b2cc-loading" role="status" aria-live="polite">
+            <FaSpinner aria-hidden="true" />
+            <p className="b2cc-loading-title">Calculando la huella de tu vuelo…</p>
+            <p className="b2cc-loading-sub">Usamos los datos que ingresaste, no tienes que escribirlos de nuevo.</p>
+          </div>
+        </div>
+      )}
+
+      {!autoCalculating && currentStep === 'form' && (
+        <div className="b2cc-grid" key={formKey}>
+          <div className="b2cc-card">
+            <div className="b2cc-card-header">
+              <span className="b2cc-card-icon" aria-hidden="true"><FaPlane /></span>
+              <div>
+                <h2 className="b2cc-card-title">Datos del vuelo</h2>
+                <p className="b2cc-card-subtitle">Busca por ciudad o código IATA</p>
+              </div>
+            </div>
+
             <form
-              className="space-y-6"
+              className="b2cc-form"
               onSubmit={(e) => { e.preventDefault(); if (canCalculate && !isCalculating) handleCalculate(); }}
             >
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="b2cc-row">
                 <AirportSearchInput
                   id="calc-origin"
                   value={formData.origin}
@@ -346,24 +459,24 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
               </div>
 
               {distance > 0 && (
-                <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Distancia aproximada</span>
-                  <span className="font-semibold text-gray-900">
+                <div className="b2cc-distance">
+                  <span>Distancia aproximada</span>
+                  <strong>
                     {fmtInt(distance)} km{formData.roundTrip && ` · ${fmtInt(distance * 2)} km ida y vuelta`}
-                  </span>
+                  </strong>
                 </div>
               )}
 
-              <fieldset className="border-0 p-0 m-0">
-                <legend className="text-sm font-medium text-gray-700 mb-1.5">Clase de cabina</legend>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <fieldset className="b2cc-fieldset">
+                <legend className="b2cc-field-label">Clase de cabina</legend>
+                <div className="b2cc-chip-group b2cc-chip-group--4">
                   {CABIN_OPTIONS.map((cabin) => (
                     <button
                       key={cabin.value}
                       type="button"
                       aria-pressed={formData.cabinCode === cabin.value}
                       onClick={() => setFormData((prev) => ({ ...prev, cabinCode: cabin.value }))}
-                      className={choice(formData.cabinCode === cabin.value)}
+                      className={cx('b2cc-chip', formData.cabinCode === cabin.value && 'b2cc-chip--active')}
                     >
                       {cabin.label}
                     </button>
@@ -371,29 +484,29 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
                 </div>
               </fieldset>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="b2cc-row b2cc-row--wide">
                 <div>
-                  <span className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-                    <FaUsers className="text-gray-400" aria-hidden="true" /> Pasajeros
+                  <span className="b2cc-field-label">
+                    <FaUsers aria-hidden="true" /> Pasajeros
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="b2cc-stepper">
                     <button
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, passengers: Math.max(1, prev.passengers - 1) }))}
                       disabled={formData.passengers <= 1}
-                      className={cx(btn.icon, 'w-11 h-11 rounded-xl')}
+                      className="b2cc-stepper-btn"
                       aria-label="Quitar un pasajero"
                     >
                       <FaMinus aria-hidden="true" />
                     </button>
-                    <output className="flex-1 h-11 rounded-xl border border-gray-300 flex items-center justify-center text-lg font-semibold text-gray-900" aria-live="polite">
+                    <output className="b2cc-stepper-display" aria-live="polite">
                       {formData.passengers}
                     </output>
                     <button
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, passengers: Math.min(10, prev.passengers + 1) }))}
                       disabled={formData.passengers >= 10}
-                      className={cx(btn.icon, 'w-11 h-11 rounded-xl')}
+                      className="b2cc-stepper-btn"
                       aria-label="Agregar un pasajero"
                     >
                       <FaPlus aria-hidden="true" />
@@ -402,71 +515,87 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
                 </div>
 
                 <div>
-                  <span className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-                    <FaExchangeAlt className="text-gray-400" aria-hidden="true" /> Tipo de viaje
+                  <span className="b2cc-field-label">
+                    <FaExchangeAlt aria-hidden="true" /> Tipo de viaje
                   </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button type="button" aria-pressed={formData.roundTrip} onClick={() => setFormData((prev) => ({ ...prev, roundTrip: true }))} className={choice(formData.roundTrip)}>
-                      Ida y vuelta
-                    </button>
-                    <button type="button" aria-pressed={!formData.roundTrip} onClick={() => setFormData((prev) => ({ ...prev, roundTrip: false }))} className={choice(!formData.roundTrip)}>
+                  {/* Mismo interruptor segmentado que la calculadora del landing. */}
+                  <div className="b2cc-toggle" role="radiogroup" aria-label="Tipo de viaje">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={!formData.roundTrip}
+                      onClick={() => setFormData((prev) => ({ ...prev, roundTrip: false }))}
+                      className={cx('b2cc-toggle-btn', !formData.roundTrip && 'b2cc-toggle-btn--active')}
+                    >
                       Solo ida
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={formData.roundTrip}
+                      onClick={() => setFormData((prev) => ({ ...prev, roundTrip: true }))}
+                      className={cx('b2cc-toggle-btn', formData.roundTrip && 'b2cc-toggle-btn--active')}
+                    >
+                      Ida y vuelta
                     </button>
                   </div>
                 </div>
               </div>
 
               {error && (
-                <div role="alert" className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 flex items-start gap-2 text-sm text-rose-700">
-                  <FaInfoCircle className="mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <div role="alert" className="b2cc-error">
+                  <FaInfoCircle className="b2cc-error-icon" aria-hidden="true" />
                   <span>{error}</span>
                 </div>
               )}
 
-              <button type="submit" disabled={!canCalculate || isCalculating} className={cx(btn.primary, 'w-full py-3 text-base')}>
+              <button type="submit" disabled={!canCalculate || isCalculating} className="b2cc-submit-btn">
                 {isCalculating ? (
-                  <><FaSpinner className="animate-spin" aria-hidden="true" /> Calculando…</>
+                  <><FaSpinner className="b2cc-spin" aria-hidden="true" /> Calculando…</>
                 ) : (
-                  'Calcular huella'
+                  <><FaLeaf aria-hidden="true" /> Calcular huella</>
                 )}
               </button>
             </form>
-          </Card>
+          </div>
 
-          <Card className="p-6">
-            <CardHeader icon={FaLeaf} title="Cómo funciona" />
-            <ol className="m-0 p-0 list-none space-y-4 text-sm text-gray-600">
+          <div className="b2cc-card b2cc-card--side">
+            <div className="b2cc-card-header">
+              <span className="b2cc-card-icon" aria-hidden="true"><FaLeaf /></span>
+              <h2 className="b2cc-card-title">Cómo funciona</h2>
+            </div>
+            <ol className="b2cc-steps">
               {[
                 ['Calcula', 'Estimamos las emisiones de tu vuelo según la distancia, la cabina y los pasajeros.'],
-                ['Elige un proyecto', 'Proyectos evaluados por Verita AI y revisión humana: reforestación, agua, conservación y más.'],
+                ['Elige un proyecto', 'Proyectos evaluados por Veritas AI y revisión humana: reforestación, agua, conservación y más.'],
                 ['Compensa', 'Pagas con Webpay y recibes un certificado con lo que tu compensación financió.'],
               ].map(([title, text], i) => (
-                <li key={title} className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-800 text-xs font-semibold flex items-center justify-center flex-shrink-0">{i + 1}</span>
-                  <span><b className="text-gray-900">{title}.</b> {text}</span>
+                <li key={title} className="b2cc-step">
+                  <span className="b2cc-step-num">{i + 1}</span>
+                  <span className="b2cc-step-text"><b>{title}.</b> {text}</span>
                 </li>
               ))}
             </ol>
-          </Card>
+          </div>
         </div>
       )}
 
-      {currentStep === 'result' && result && (
-        <div className="max-w-3xl mx-auto space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900 font-mono">{result.meta.route.origin.code}</div>
-                  <div className="text-sm text-gray-500">{result.meta.route.origin.city}</div>
+      {!autoCalculating && currentStep === 'result' && result && (
+        <div className="b2cc-result">
+          <div className="b2cc-card">
+            <div className="b2cc-result-route">
+              <div className="b2cc-result-airports">
+                <div>
+                  <div className="b2cc-result-code">{result.meta.route.origin.code}</div>
+                  <div className="b2cc-result-city">{result.meta.route.origin.city}</div>
                 </div>
-                <FaArrowRight className="text-gray-300" aria-hidden="true" />
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900 font-mono">{result.meta.route.destination.code}</div>
-                  <div className="text-sm text-gray-500">{result.meta.route.destination.city}</div>
+                <FaArrowRight className="b2cc-result-arrow" aria-hidden="true" />
+                <div>
+                  <div className="b2cc-result-code">{result.meta.route.destination.code}</div>
+                  <div className="b2cc-result-city">{result.meta.route.destination.city}</div>
                 </div>
               </div>
-              <div className="text-sm text-gray-600 text-right">
+              <div className="b2cc-result-meta">
                 <div>{result.meta.tripType === 'round_trip' ? 'Ida y vuelta' : 'Solo ida'}</div>
                 <div>
                   {fmtInt(result.meta.distanceKmTotal)} km · {fmtInt(result.emissions.passengers)}{' '}
@@ -475,30 +604,30 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl bg-brand-50 border border-brand-100 p-6 text-center">
-              <div className="text-sm font-medium text-brand-800">Huella de este vuelo</div>
-              <div className="mt-1 text-5xl font-bold text-brand-800 tabular-nums">
-                {fmtInt(result.emissions.kgCO2e)} <span className="text-xl font-semibold">kg CO₂e</span>
+            <div className="b2cc-impact-panel">
+              <div className="b2cc-impact-caption">Huella de este vuelo</div>
+              <div className="b2cc-impact-number">
+                {fmtInt(result.emissions.kgCO2e)} <span>kg CO₂e</span>
               </div>
-              <div className="mt-2 text-sm text-brand-800">{fmtNum(result.emissions.tonCO2e, 2)} toneladas</div>
+              <div className="b2cc-impact-tons">{fmtNum(result.emissions.tonCO2e, 2)} toneladas</div>
             </div>
 
-            <p className="mt-5 mb-0 text-sm text-gray-600 text-center">
+            <p className="b2cc-result-note">
               En el siguiente paso eliges el proyecto y ves exactamente qué financia tu compensación y cuánto cuesta.
             </p>
 
-            <div className="mt-5 flex flex-col-reverse sm:flex-row gap-3">
-              <button type="button" onClick={() => setCurrentStep('form')} className={cx(btn.secondary, 'sm:flex-1')}>
+            <div className="b2cc-result-actions">
+              <button type="button" onClick={() => setCurrentStep('form')} className="b2cc-btn-secondary">
                 <FaArrowLeft aria-hidden="true" /> Modificar vuelo
               </button>
-              <button type="button" onClick={handleViewProjects} disabled={!calculationId} className={cx(btn.primary, 'sm:flex-[2]')}>
+              <button type="button" onClick={handleViewProjects} disabled={!calculationId} className="b2cc-submit-btn">
                 <FaLeaf aria-hidden="true" /> Elegir proyecto para compensar
               </button>
             </div>
             {!calculationId && (
-              <p className="mt-3 mb-0 text-xs text-gray-500 text-center">Para compensar necesitas iniciar sesión: el cálculo se guarda en tu cuenta.</p>
+              <p className="b2cc-login-note">Para compensar necesitas iniciar sesión: el cálculo se guarda en tu cuenta.</p>
             )}
-          </Card>
+          </div>
         </div>
       )}
     </B2CLayout>
