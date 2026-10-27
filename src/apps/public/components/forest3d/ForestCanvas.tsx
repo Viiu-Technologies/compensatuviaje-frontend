@@ -41,6 +41,12 @@ const ATMOSPHERE = {
 };
 
 /**
+ * Hojas con versión WebP (tools/images-to-webp.mjs). Pino y álamo se quedan en
+ * PNG: en WebP pesaban casi lo mismo (menos de un 10 % de ahorro).
+ */
+const LEAF_WEBP = new Set(['oak', 'ash']);
+
+/**
  * Árbol 3D procedural basado en EZTree
  */
 function NativeTree({
@@ -59,7 +65,7 @@ function NativeTree({
   const groupRef = useRef<THREE.Group>(null);
 
   const [leafTexture, barkColor, barkNormal, barkRoughness] = useLoader(THREE.TextureLoader, [
-    `/textures/tree/leaves/${leafType}.png`,
+    `/textures/tree/leaves/${leafType}.${LEAF_WEBP.has(leafType) ? 'webp' : 'png'}`,
     '/textures/bark/Bark001_1K-JPG/Bark001_1K-JPG_Color.jpg',
     '/textures/bark/Bark001_1K-JPG/Bark001_1K-JPG_NormalGL.jpg',
     '/textures/bark/Bark001_1K-JPG/Bark001_1K-JPG_Roughness.jpg',

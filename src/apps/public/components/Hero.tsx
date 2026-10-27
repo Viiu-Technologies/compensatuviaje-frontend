@@ -1,9 +1,10 @@
 import React, { lazy, Suspense } from 'react';
 import { HiArrowRight, HiShieldCheck } from 'react-icons/hi';
 import { FaBuilding } from 'react-icons/fa';
-import { gsap, useGsapReveal } from '../hooks/useGsapReveal';
+import { gsap, useGsapReveal, reveal } from '../hooks/useGsapReveal';
 import { TechGrid } from './landing/EcoArt';
 import QuickFlightCalculator from './QuickFlightCalculator';
+import { scrollToSection } from './DeferredSection';
 import './Hero.css';
 
 // Lazy: keeps three.js/@react-three/fiber/drei out of the entry chunk. HeroGlobe is
@@ -23,14 +24,10 @@ const Hero: React.FC = () => {
     });
 
     // Animación de título y textos
-    tl.from('.hero-display .hero-line__inner', {
-      yPercent: 110,
-      stagger: 0.12,
-      duration: 1.0,
-    }, 0);
+    tl.add(reveal(root, '.hero-display'), 0);
 
     tl.from('.hero-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0.1);
-    tl.from('.hero-lede', { y: 16, autoAlpha: 0, duration: 0.7 }, 0.35);
+    tl.add(reveal(root, '.hero-lede', 'text'), 0.35);
     tl.from('.hero__planet-col', { scale: 0.9, autoAlpha: 0, duration: 1.1, ease: 'power2.out' }, 0.4);
     tl.from('.hero-calculator-wrap', { y: 28, autoAlpha: 0, scale: 0.98, duration: 0.85 }, 0.5);
     tl.from('.hero-trust-bar', { y: 20, autoAlpha: 0, duration: 0.7 }, 0.75);
@@ -43,9 +40,7 @@ const Hero: React.FC = () => {
     });
   }, []);
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Monta antes las secciones diferidas: si no, el destino podría moverse.
 
   // Sin inclinación 3D al mover el mouse: la calculadora es un formulario y
   // moverla mientras se completa distraía.

@@ -63,6 +63,7 @@
 
 /* Badge superior de telemetría flotante */
 .hero-globe-badge {
+  /* Sin backdrop-filter: sobre un lienzo 3D se recalculaba en cada cuadro. Fondo un poco más opaco en su lugar. */
   position: absolute;
   top: 10px;
   right: 12px;
@@ -72,10 +73,8 @@
   gap: 0.45rem;
   padding: 0.35rem 0.8rem;
   border-radius: var(--ctv-radius-pill);
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(7, 61, 61, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(7, 61, 61, 0.12);
   box-shadow: 0 4px 16px rgba(7, 61, 61, 0.08);
   font-size: 0.72rem;
   font-weight: 600;
@@ -100,6 +99,7 @@
 
 /* Chip informativo inferior */
 .hero-globe-caption {
+  /* Sin backdrop-filter: con el fondo casi opaco no se veía y costaba en cada cuadro. */
   position: absolute;
   bottom: 16px;
   left: 50%;
@@ -111,9 +111,7 @@
   padding: 0.35rem 0.95rem;
   border-radius: var(--ctv-radius-pill);
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(7, 61, 61, 0.10);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(7, 61, 61, 0.10);
   box-shadow: 0 4px 18px rgba(7, 61, 61, 0.07);
   font-size: 0.76rem;
   pointer-events: none;
@@ -135,58 +133,31 @@
   font-weight: 600;
 }
 
-/* Fallback de carga */
-.hero-globe-fallback {
+/* Imagen fija del globo mientras se carga la escena 3D (misma pose inicial).
+   Queda debajo del lienzo y se funde cuando la escena pinta su primer cuadro. */
+.hero-globe-poster {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.6s ease;
 }
 
-.hgf-sphere {
+.hero-globe-canvas-box > div {
   position: relative;
-  width: 72%;
-  height: 72%;
-  border-radius: var(--ctv-radius-full);
-  background: radial-gradient(circle at 35% 35%, #0e7490 0%, #073d3d 70%, #032020 100%);
-  box-shadow: 0 0 40px rgba(6, 182, 212, 0.25), inset -20px -20px 40px rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 1;
 }
 
-.hgf-glow {
-  position: absolute;
-  inset: -6px;
-  border-radius: var(--ctv-radius-full);
-  border: 1.5px solid rgba(34, 211, 238, 0.4);
-  filter: blur(2px);
+.hero-globe-canvas-box.is-ready .hero-globe-poster {
+  opacity: 0;
 }
 
-.hgf-loader-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ctv-space-2);
-  font-size: 0.75rem;
-  color: #ffffff;
-  font-weight: 500;
-  background: rgba(7, 61, 61, 0.85);
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--ctv-radius-pill);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.hgf-loader-icon {
-  font-size: 0.95rem;
-  color: #22d3ee;
-  animation: hgfSpin 2s linear infinite;
-}
-
-@keyframes hgfSpin {
-  100% {
-    transform: rotate(360deg);
+@media (prefers-reduced-motion: reduce) {
+  .hero-globe-poster {
+    transition: none;
   }
 }
 

@@ -13,13 +13,10 @@ import Footer from '../components/Footer';
 import ContactSection from '../components/ContactSection';
 import './ContactPage.css';
 import { useSeo } from '../../../shared/utils/useSeo';
+import { PUBLIC_SEO } from '../../../shared/config/publicSeo';
 
 const ContactPage: React.FC = () => {
-  useSeo({
-    title: 'Contacto y Soporte',
-    description: 'Escríbenos para consultas de personas, empresas, aliados o prensa sobre compensación de huella de carbono.',
-    path: '/contacto',
-  });
+  useSeo(PUBLIC_SEO['/contacto']);
 
   useEffect(() => {
     window.scrollTo(0, 0);
