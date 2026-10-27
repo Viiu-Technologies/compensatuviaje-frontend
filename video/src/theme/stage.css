@@ -1,0 +1,134 @@
+/* ==========================================================================
+   stage.css — Adapta el CSS real de la landing a un render por frames.
+   El CSS del front se importa tal cual (ver ui/Stage.tsx); aquí solo va lo
+   que Remotion necesita distinto.
+   ========================================================================== */
+
+/* En Remotion cada frame es una captura: una transición o animación CSS
+   quedaría a medias en un frame y terminada en otro, según la pestaña. */
+*,
+*::before,
+*::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* La app carga el preflight de Tailwind; el escenario no, así que se repite
+   lo que el CSS de la landing da por hecho. */
+.ctv-stage *,
+.ctv-stage *::before,
+.ctv-stage *::after {
+  box-sizing: border-box;
+}
+.ctv-stage button {
+  font-family: inherit;
+  line-height: inherit;
+}
+.ctv-stage svg {
+  display: block;
+  vertical-align: middle;
+}
+
+/* El escenario es un escritorio de 1920 px, pero el viewport real es el del
+   video (1920 o 1080). Los clamp(…vw…) del front darían tamaños distintos en
+   cada formato, así que se fijan aquí a su valor de escritorio (todos están en
+   el máximo a partir de 1440 px). */
+.ctv-stage {
+  --ctv-text-display: 4rem;
+  --ctv-text-h1: 3rem;
+  --ctv-text-h2: 2.25rem;
+  --ctv-gutter: 2.5rem;
+  position: relative;
+  width: 1920px;
+  background: var(--ctv-canvas);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+  overflow: hidden;
+}
+
+.ctv-stage .qfc-card { padding: 3rem; }
+.ctv-stage .qfc-route-section { gap: 1.85rem; }
+.ctv-stage .qfc-airport-card { padding: 1.6rem 1.85rem; }
+.ctv-stage .qfc-airport-code { font-size: 3.2rem; }
+.ctv-stage .qfc-airport-city { font-size: 1.2rem; }
+.ctv-stage .qfc-config-row { gap: 1.75rem; }
+.ctv-stage .qfc-impact-panel { gap: 2.25rem; padding: 2.34rem 2.6rem; }
+.ctv-stage .qfc-impact-context { padding: 0 1.62rem; }
+.ctv-stage .qfc-metric-number { font-size: 3rem; }
+.ctv-stage .qfc-price-amount { font-size: 2.2rem; }
+
+/* Header: en la web es fixed y se desliza al cargar. En el escenario va
+   anclado arriba y siempre visible. "Registrarse" solo aparece en ≥1200 px de
+   viewport; en 4:5 (1080) desaparecería, así que se fuerza. */
+.ctv-stage .ctv-liquid-surface {
+  position: absolute;
+  top: 14px;
+}
+.ctv-stage .ctv-liquid-actions__register {
+  display: inline-flex !important;
+}
+
+/* El hero real usa min-height: 100svh y paddings en vh; el escenario fija los
+   suyos en ui/Stage.tsx. */
+.ctv-stage .hero__container {
+  padding-top: 150px;
+  padding-bottom: 72px;
+}
+
+/* Se reemplaza el punto que late en CSS por uno estático: el pulso no aporta
+   en video y "nada de animaciones fuera de useCurrentFrame()". */
+.ctv-stage .qfc-indicator-dot {
+  box-shadow: 0 0 0 4px rgba(8, 174, 6, 0.16);
+}
+
+/* Placeholders antes de que la cascada llene los campos */
+.vid-placeholder {
+  color: var(--ctv-ink-mute);
+  font-weight: 500;
+}
+
+/* Estado "Huella compensada" (no existe en la landing; usa su lenguaje) */
+.vid-done {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.6rem;
+  text-align: right;
+}
+/* El bloque es algo más alto que la columna de acción: sin esto, flex
+   comprime el check y lo deja ovalado. */
+.vid-done > * {
+  flex-shrink: 0;
+}
+.vid-done__badge {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--ctv-radius-full);
+  background: var(--ctv-brand-soft);
+  border: 1.5px solid rgba(7, 151, 5, 0.35);
+  color: #079705;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+.vid-done__title {
+  font-family: var(--ctv-font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ctv-brand-deep);
+}
+.vid-done__detail {
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--ctv-ink-soft);
+}
+.vid-done__detail strong {
+  color: var(--ctv-brand-deep);
+  font-weight: 700;
+}

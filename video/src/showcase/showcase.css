@@ -1,0 +1,38 @@
+/* Estilos de la web que usan las escenas del video v2 (mismas clases, mismos
+   colores). Encima, dos reglas propias del video. */
+@import '../../../src/apps/public/components/landing/tokens.css';
+@import '../../../src/apps/public/components/heroScroll/HeroScroll.css';
+@import '../../../src/apps/public/components/howItWorks/HowItWorks.css';
+@import '../../../src/apps/public/components/factorRings/FactorRings.css';
+@import '../../../src/apps/public/components/verificationFlow/VerificationFlow.css';
+
+/* En Remotion todo se mueve por frame: una transición o animación CSS correría
+   en tiempo real y saldría distinta en cada render. */
+.sv-root *,
+.sv-root *::before,
+.sv-root *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Montañas del hero: la apertura y la noche las escriben variables por frame. */
+.sv-hero .hs-mountains {
+  transform: translateY(var(--mtn-rise, 0px));
+}
+
+.sv-hero .hs-mtn--0 .hs-mtn__half--l { transform: translateX(calc(var(--open-0, 0px) * -1)); }
+.sv-hero .hs-mtn--0 .hs-mtn__half--r { transform: translateX(var(--open-0, 0px)); }
+.sv-hero .hs-mtn--1 .hs-mtn__half--l { transform: translateX(calc(var(--open-1, 0px) * -1)); }
+.sv-hero .hs-mtn--1 .hs-mtn__half--r { transform: translateX(var(--open-1, 0px)); }
+.sv-hero .hs-mtn--2 .hs-mtn__half--l { transform: translateX(calc(var(--open-2, 0px) * -1)); }
+.sv-hero .hs-mtn--2 .hs-mtn__half--r { transform: translateX(var(--open-2, 0px)); }
+.sv-hero .hs-mtn--3 .hs-mtn__half--l { transform: translateX(calc(var(--open-3, 0px) * -1)); }
+.sv-hero .hs-mtn--3 .hs-mtn__half--r { transform: translateX(var(--open-3, 0px)); }
+
+.sv-hero .hs-mtn__night {
+  opacity: var(--night, 0);
+}
+
+.sv-hero .hs-mtn__snow {
+  opacity: calc(0.9 * (1 - var(--night, 0)));
+}
