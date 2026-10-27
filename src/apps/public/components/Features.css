@@ -7,7 +7,7 @@
   background: var(--ctv-canvas-2);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  padding: var(--ctv-section-y) 0;
+  padding: clamp(3rem, 6vw, 4.5rem) 0;
   position: relative;
   overflow: hidden;
 }
@@ -33,7 +33,30 @@
 /* ── Header ─────────────────────────────────────────── */
 .ft-header {
   max-width: 760px;
-  margin: 0 0 clamp(3rem, 6vw, 5rem);
+  margin: 0 0 clamp(2rem, 4vw, 3rem);
+}
+
+/* En móvil el corte fijo entre las dos líneas deja renglones disparejos:
+   el título fluye como texto corrido. */
+@media (max-width: 639px) {
+  .ft-title .hero-line { display: inline; overflow: visible; padding: 0; margin: 0; }
+  .ft-title .hero-line__inner { display: inline; }
+  .ft-title .hero-line + .hero-line::before { content: ' '; }
+}
+
+/* En escritorio el título y la bajada van lado a lado: el encabezado
+   ocupa la mitad del alto y las tarjetas entran en el primer vistazo. */
+@media (min-width: 1024px) {
+  .ft-header {
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: end;
+  }
+  .ft-header .ft-eyebrow { grid-column: 1 / -1; justify-self: start; }
+  .ft-header .ft-title { margin: 0; }
+  .ft-header .ft-lede { padding-bottom: 0.35rem; }
 }
 
 .ft-eyebrow {
@@ -45,7 +68,7 @@
   text-transform: uppercase;
   color: var(--ctv-ink-soft);
   font-weight: 500;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
 }
 
 .ft-eyebrow__line {
@@ -62,7 +85,7 @@
   line-height: 1.08;
   letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
 }
 
 
@@ -77,7 +100,7 @@
 /* ── Steps 01 / 02 / 03 — tarjetas modernas con ilustraciones grandes ─────────── */
 .ft-steps {
   list-style: none;
-  margin: 0 0 clamp(4rem, 8vw, 6rem);
+  margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
@@ -94,10 +117,8 @@
   position: relative;
   padding: 2.25rem 2rem 2.5rem;
   border-radius: var(--ctv-radius-xl);
-  background: var(--ctv-glass-bg);
-  border: 1px solid var(--ctv-glass-border);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(7, 61, 61, 0.08);
   box-shadow: var(--ctv-shadow-card);
   transition: transform 0.35s var(--ctv-ease-out),
     box-shadow 0.35s var(--ctv-ease-out),
@@ -130,35 +151,11 @@
   opacity: 1;
 }
 
-/* Ilustración agrandada a al menos 1/3 de la altura del card */
+/* Figura del paso: a sangre en la parte superior de la tarjeta. */
 .ft-step__art {
-  width: 100%;
-  height: 165px;
-  margin-bottom: var(--ctv-space-6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at center, rgba(8, 174, 6, 0.08) 0%, transparent 75%);
-  border-radius: var(--ctv-radius-lg);
-  padding: var(--ctv-space-3);
-  will-change: transform;
-  transition: transform 0.4s var(--ctv-ease-out);
-}
-
-.ft-step:hover .ft-step__art {
-  transform: scale(1.05) translateY(-4px);
-}
-
-.ft-step__art svg {
-  width: 100%;
-  height: 100%;
-  max-height: 145px;
-  object-fit: contain;
-  transition: filter 0.4s var(--ctv-ease-out), transform 0.4s var(--ctv-ease-out);
-}
-
-.ft-step:hover .ft-step__art svg {
-  filter: drop-shadow(0 14px 28px rgba(8, 174, 6, 0.3));
+  margin: -2.25rem -2rem 1.5rem;
+  border-bottom: 1px solid rgba(7, 61, 61, 0.08);
+  overflow: hidden;
 }
 
 .ft-step__num {

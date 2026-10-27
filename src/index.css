@@ -7,6 +7,25 @@
    en vez del default `prefers-color-scheme` de Tailwind v4. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Respaldos con métricas de Outfit e Inter: mientras llegan las fuentes de Google,
+   Arial se escala para ocupar lo mismo y el cambio no mueve el layout (CLS). */
+@font-face {
+  font-family: 'Outfit Fallback';
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Helvetica');
+  size-adjust: 93.1%;
+  ascent-override: 107.4%;
+  descent-override: 27.9%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Helvetica');
+  size-adjust: 105.6%;
+  ascent-override: 91.7%;
+  descent-override: 22.9%;
+  line-gap-override: 0%;
+}
+
 /* Theme customization para Tailwind v4 */
 @theme {
   /* Primary - Verde sostenible */
@@ -81,8 +100,8 @@
   --color-neutral-950: #0a0a0a;
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Outfit', 'Inter', sans-serif;
+  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+  --font-display: 'Outfit', 'Outfit Fallback', 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   
   /* Custom shadows */

@@ -1,0 +1,369 @@
+/* ==========================================================================
+   HowItWorks.css — figuras planas de "Cómo funciona" (mapa, embudo,
+   certificado). Paleta del hero: teal, verdes y neutros. El verde fuerte solo
+   marca lo que importa o lo que se puede tocar.
+   ========================================================================== */
+@import '../landing/tokens.css';
+
+.hw-step-art {
+  display: flex;
+  flex-direction: column;
+  background: #F3F7F5;
+}
+
+.hw-figure {
+  position: relative;
+  aspect-ratio: 360 / 228;
+}
+
+.hw-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Línea de datos: hasta dos líneas, alto fijo para que las tres tarjetas queden parejas. */
+.hw-readout {
+  margin: 0;
+  padding: 0.6rem 1rem 0.75rem;
+  min-height: calc(2.8em + 1.35rem);
+  font-family: var(--ctv-font-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  color: var(--ctv-ink-soft);
+  border-top: 1px solid rgba(14, 59, 54, 0.06);
+  text-wrap: balance;
+}
+
+.hw-readout__tag {
+  display: inline-block;
+  margin-right: 0.4rem;
+  padding: 0 0.4rem;
+  border-radius: var(--ctv-radius-pill);
+  background: rgba(14, 59, 54, 0.07);
+  color: var(--ctv-ink);
+}
+
+/* ── Paso 1: mapa ── */
+.hw-sea {
+  fill: #DCEDE6;
+}
+
+.hw-grid line {
+  stroke: rgba(14, 59, 54, 0.07);
+  stroke-width: 0.8;
+}
+
+.hw-land {
+  fill: #F7FAF8;
+  stroke: #B7D2C6;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.hw-route {
+  fill: none;
+  stroke: #1F8A4C;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 6;
+}
+
+.hw-pin__dot {
+  fill: #0E3B36;
+  stroke: #ffffff;
+  stroke-width: 1.6;
+}
+
+.hw-pin__pulse {
+  fill: none;
+  stroke: #1F8A4C;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hw-pulse 2.4s ease-out infinite;
+}
+
+.hw-pin--to .hw-pin__pulse {
+  animation-delay: 1.2s;
+}
+
+@keyframes hw-pulse {
+  from { transform: scale(1); opacity: 0.8; }
+  to { transform: scale(4); opacity: 0; }
+}
+
+.hw-pin__label {
+  font-family: var(--ctv-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  fill: #0E3B36;
+  paint-order: stroke;
+  stroke: #F7FAF8;
+  stroke-width: 3px;
+}
+
+.hw-plane {
+  fill: #0E3B36;
+}
+
+.hw-map-chips {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Lo único clicable de la figura: en verde, como lo interactivo del sitio. */
+.hw-map-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.6rem;
+  font-family: var(--ctv-font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #0E3B36;
+  border: 0;
+  border-radius: var(--ctv-radius-pill);
+  box-shadow: 0 4px 10px -4px rgba(14, 59, 54, 0.45);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hw-map-chip:hover {
+  background: #1F8A4C;
+}
+
+.hw-map-chip:focus-visible,
+.hw-info__btn:focus-visible {
+  outline: 2px solid #1F8A4C;
+  outline-offset: 2px;
+}
+
+.hw-map-chip svg {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* ── Paso 2: embudo ── */
+.hw-chip rect {
+  fill: #ffffff;
+  stroke: rgba(14, 59, 54, 0.14);
+}
+
+.hw-chip text {
+  font-family: var(--ctv-font-mono);
+  font-size: 10.5px;
+  fill: #0E3B36;
+}
+
+.hw-funnel__body {
+  fill: #E4EEEA;
+  stroke: #B7D2C6;
+  stroke-linejoin: round;
+}
+
+.hw-funnel__rim {
+  fill: #CFE2DA;
+}
+
+.hw-funnel__flow {
+  fill: #5EC48A;
+  opacity: 0.85;
+}
+
+.hw-funnel__shine {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.hw-result rect {
+  fill: #1F8A4C;
+}
+
+.hw-result text {
+  fill: #ffffff;
+}
+
+.hw-result__number {
+  font-family: var(--ctv-font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hw-result__unit {
+  font-family: var(--ctv-font-body);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hw-info {
+  position: absolute;
+  transform: translateY(-50%);
+}
+
+.hw-info__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: #1F8A4C;
+  background: #ffffff;
+  border: 1px solid rgba(31, 138, 76, 0.35);
+  border-radius: 50%;
+  box-shadow: 0 3px 8px -4px rgba(14, 59, 54, 0.35);
+  cursor: pointer;
+}
+
+.hw-info__btn svg {
+  font-size: 1rem;
+}
+
+.hw-info__btn:hover,
+.hw-info__btn[aria-expanded='true'] {
+  color: #ffffff;
+  background: #1F8A4C;
+}
+
+.hw-info__panel {
+  position: absolute;
+  z-index: 2;
+  right: -0.5rem;
+  top: calc(100% + 0.4rem);
+  width: min(240px, 80vw);
+  padding: 0.6rem 0.7rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #F5F8F4;
+  background: #0E3B36;
+  border-radius: var(--ctv-radius-md);
+  box-shadow: 0 10px 24px -10px rgba(14, 59, 54, 0.5);
+}
+
+.hw-info__panel[hidden] {
+  display: none;
+}
+
+/* ── Paso 3: certificado ── */
+.hw-cert__card {
+  fill: #ffffff;
+  stroke: rgba(14, 59, 54, 0.1);
+}
+
+.hw-cert__eyebrow,
+.hw-cert__caption {
+  font-family: var(--ctv-font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  fill: var(--ctv-ink-mute);
+}
+
+.hw-cert__sky {
+  fill: #E4F2EC;
+}
+
+.hw-cert__sun {
+  fill: #F2C94C;
+  opacity: 0.85;
+}
+
+.hw-cert__hill {
+  fill: #CFE6D8;
+}
+
+.hw-cert__tree {
+  fill: #1F8A4C;
+}
+
+.hw-cert__panel path:first-child {
+  fill: #0E3B36;
+}
+
+.hw-cert__panel-grid {
+  fill: none;
+  stroke: #5E8F84;
+  stroke-width: 0.8;
+}
+
+.hw-cert__panel-leg {
+  stroke: #0E3B36;
+  stroke-width: 1.4;
+}
+
+.hw-cert__kg {
+  font-family: var(--ctv-font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  fill: #0E3B36;
+}
+
+.hw-cert__unit {
+  font-family: var(--ctv-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ctv-ink-soft);
+}
+
+.hw-cert__status rect {
+  fill: #E4F6E0;
+}
+
+.hw-cert__status circle {
+  fill: #1F8A4C;
+}
+
+.hw-cert__status text {
+  font-family: var(--ctv-font-body);
+  font-size: 10px;
+  font-weight: 600;
+  fill: #0E3B36;
+}
+
+.hw-seal__outer {
+  fill: #ffffff;
+  stroke: #1F8A4C;
+  stroke-width: 2;
+}
+
+.hw-seal__inner {
+  fill: #E4F6E0;
+  stroke: #1F8A4C;
+  stroke-width: 0.8;
+  stroke-dasharray: 2 2;
+}
+
+.hw-seal__check {
+  fill: none;
+  stroke: #1F8A4C;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hw-seal__text {
+  font-family: var(--ctv-font-mono);
+  font-size: 5.2px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  fill: #0E3B36;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hw-pin__pulse {
+    animation: none;
+    opacity: 0;
+  }
+}

@@ -3,16 +3,24 @@
    ========================================================================== */
 @import '../landing/tokens.css';
 
+/* Sección oscura a pantalla completa: rompe la serie de fondos claros con
+   cards y cierra la historia (regeneración) con el mismo teal de la escena
+   final del hero. El visor 3D conserva su cielo: queda como una ventana. */
 .virtual-forest-section {
   position: relative;
-  background: var(--ctv-canvas);
-  color: var(--ctv-ink);
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: linear-gradient(180deg, #0B2F2B 0%, #0E3B36 100%);
+  color: #F5F8F4;
   font-family: var(--ctv-font-body);
   padding: var(--ctv-section-y) 0;
   overflow: hidden;
 }
 
 .vfs-container {
+  width: 100%;
   max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
@@ -37,7 +45,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--ctv-ink-soft);
+  color: rgba(245, 248, 244, 0.72);
   margin-bottom: var(--ctv-space-4);
 }
 
@@ -54,27 +62,14 @@
   font-size: var(--ctv-text-h1);
   line-height: 1.08;
   letter-spacing: var(--ctv-display-tracking);
-  color: var(--ctv-brand-deep);
+  color: #F5F8F4;
   margin: 0 0 1.25rem;
-}
-
-/* Ver nota en Hero.css: la cursiva sobresale del ancho de avance y
-   background-clip: text recortaba la ultima letra ("bosque vivo"). */
-.vfs-title em {
-  font-style: italic;
-  background: var(--ctv-gradient-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
-  padding-inline-end: 0.12em;
-  margin-inline-end: -0.12em;
 }
 
 .vfs-lede {
   font-size: clamp(1rem, 1.25vw, 1.14rem);
   line-height: 1.6;
-  color: var(--ctv-ink-soft);
+  color: rgba(245, 248, 244, 0.78);
   max-width: 60ch;
   margin: 0 auto;
 }
@@ -86,10 +81,10 @@
   height: clamp(540px, 68vh, 760px);
   border-radius: var(--ctv-radius-xl);
   overflow: hidden;
-  box-shadow: 0 24px 64px -16px rgba(7, 61, 61, 0.14),
-              0 0 0 1px rgba(7, 61, 61, 0.08);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.55),
+              0 0 0 1px rgba(245, 248, 244, 0.08);
   background: #cbe7d8;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(245, 248, 244, 0.1);
 }
 
 .forest-canvas-container {
@@ -119,16 +114,16 @@
 }
 
 .fcf-indicator {
+  /* Sin backdrop-filter: sobre un lienzo 3D se recalculaba en cada cuadro. Fondo un poco más opaco en su lugar. */
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
   font-size: 0.85rem;
   font-weight: 600;
   color: #073d3d;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.94);
   padding: 0.65rem 1.35rem;
   border-radius: var(--ctv-radius-pill);
-  backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(7, 61, 61, 0.12);
   border: 1px solid rgba(7, 61, 61, 0.10);
 }
@@ -161,12 +156,11 @@
 }
 
 .vfs-ctrl-group {
+  /* Sin backdrop-filter: sobre un lienzo 3D se recalculaba en cada cuadro. Fondo un poco más opaco en su lugar. */
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.94);
   padding: 0.35rem 0.5rem 0.35rem 0.95rem;
   border-radius: var(--ctv-radius-pill);
   border: 1px solid rgba(7, 61, 61, 0.10);
@@ -219,14 +213,13 @@
 
 /* ── Tarjeta de Telemetría Flotante Inferior ──────────────────── */
 .vfs-telemetry-card {
+  /* Sin backdrop-filter: sobre un lienzo 3D se recalculaba en cada cuadro. Fondo un poco más opaco en su lugar. */
   position: absolute;
   bottom: 24px;
   left: 24px;
   max-width: 480px;
   width: calc(100% - 48px);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(7, 61, 61, 0.12);
   border-radius: var(--ctv-radius-xl);
   padding: 1.25rem 1.4rem;
@@ -335,6 +328,7 @@
 
 /* ── Pista de Interacción 3D ─────────────────────────────────── */
 .vfs-orbit-hint {
+  /* Sin backdrop-filter: sobre un lienzo 3D se recalculaba en cada cuadro. Fondo un poco más opaco en su lugar. */
   position: absolute;
   bottom: 24px;
   right: 24px;
@@ -343,9 +337,7 @@
   gap: 0.45rem;
   padding: 0.4rem 0.95rem;
   border-radius: var(--ctv-radius-pill);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(7, 61, 61, 0.10);
   font-size: 0.72rem;
   font-weight: 600;

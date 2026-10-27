@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LegalLayout, { type LegalSection } from '../../components/legal/LegalLayout';
 import { LEGAL, LEGAL_ROUTES } from '../../../../shared/config/legal';
+import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 
 // Almacenamiento real que usa el frontend. Si se agrega analítica o
 // publicidad (GA, Meta Pixel, etc.) hay que listarla aquí y pedir
@@ -74,8 +75,8 @@ const sections: LegalSection[] = [
 
 const CookiesPage: React.FC = () => (
   <LegalLayout
-    title="Política de Cookies"
-    description={`Qué cookies y almacenamiento local usa ${LEGAL.brand} y cómo controlarlos.`}
+    title={PUBLIC_SEO[LEGAL_ROUTES.cookies].title}
+    description={PUBLIC_SEO[LEGAL_ROUTES.cookies].description}
     path={LEGAL_ROUTES.cookies}
     intro={<p>Te contamos qué guardamos en tu navegador y para qué.</p>}
     sections={sections}

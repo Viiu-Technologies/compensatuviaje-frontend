@@ -18,6 +18,7 @@ import b2cApi from '../services/b2cApi';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
 import { Progress, firstName, fmtNum, fmtPercent, fmtInt } from '../ui';
+import './b2cTheme.css';
 
 interface B2CLayoutProps {
   children: React.ReactNode;
@@ -163,7 +164,7 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, header
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans text-gray-800 w-full box-border">
+    <div className="ctv-b2c min-h-screen bg-gray-50 flex font-sans text-gray-800 w-full box-border">
       {/* Menú lateral de escritorio */}
       <aside className="hidden lg:flex flex-col w-60 h-screen bg-white border-r border-gray-200 fixed left-0 top-0 z-50">
         <Link to="/b2c/dashboard" className="flex items-center h-16 px-5 border-b border-gray-100 flex-shrink-0 no-underline">

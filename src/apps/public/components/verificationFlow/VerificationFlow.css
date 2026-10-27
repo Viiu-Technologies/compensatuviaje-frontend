@@ -1,0 +1,184 @@
+/* ==========================================================================
+   VerificationFlow.css — certificado → huella → cadena → registro público.
+   Neutros suaves; el verde solo marca lo que confirma algo (checks, cadena).
+   ========================================================================== */
+@import '../landing/tokens.css';
+
+.vf {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.vf__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.vf__caption {
+  margin-top: var(--ctv-space-2);
+  font-family: var(--ctv-font-mono);
+  font-size: 0.72rem;
+  text-align: center;
+  color: var(--ctv-ink-mute);
+}
+
+/* ── Tarjetas ── */
+.vf-card {
+  fill: #ffffff;
+  stroke: rgba(14, 59, 54, 0.08);
+  stroke-width: 1;
+}
+
+.vf-title {
+  font-family: var(--ctv-font-display);
+  font-size: 15px;
+  font-weight: 600;
+  fill: #0E3B36;
+}
+
+.vf-meta {
+  font-family: var(--ctv-font-mono);
+  font-size: 11px;
+  fill: var(--ctv-ink-soft);
+}
+
+.vf-line {
+  fill: #E6EFEA;
+}
+
+.vf-leaf {
+  fill: #1F8A4C;
+}
+
+.vf-leaf__vein {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+/* ── Píldoras de estado ── */
+.vf-pill__bg {
+  fill: #E4F6E0;
+}
+
+.vf-pill__bg--muted {
+  fill: #EDF1EF;
+}
+
+.vf-pill__text {
+  font-family: var(--ctv-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  fill: #0E3B36;
+}
+
+.vf-check circle {
+  fill: #1F8A4C;
+}
+
+.vf-check path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Huella ── */
+.vf-fp__disc {
+  fill: #F3F7F5;
+  stroke: rgba(14, 59, 54, 0.06);
+}
+
+.vf-fp__ridge {
+  fill: none;
+  stroke: #1F8A4C;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.vf-fp__scan {
+  fill: #5EE08A;
+  opacity: 0;
+}
+
+.vf-fp__hash {
+  font-family: var(--ctv-font-mono);
+  font-size: 11.5px;
+  fill: var(--ctv-ink-soft);
+}
+
+/* ── Cadena ── */
+.vf-chain__spoke {
+  fill: none;
+  stroke: rgba(31, 138, 76, 0.35);
+  stroke-width: 1.4;
+}
+
+.vf-cube--side .vf-cube__top { fill: #C9E8D4; }
+.vf-cube--side .vf-cube__left { fill: #8FC9A5; }
+.vf-cube--side .vf-cube__right { fill: #A9D8BA; }
+
+.vf-cube--core .vf-cube__top { fill: #3FA36A; }
+.vf-cube--core .vf-cube__left { fill: #17713E; }
+.vf-cube--core .vf-cube__right { fill: #1F8A4C; }
+
+.vf-cube__glyph rect,
+.vf-link-icon rect {
+  fill: none;
+  stroke-width: 1.6;
+}
+
+.vf-cube__glyph rect {
+  stroke: #E4F6E0;
+}
+
+.vf-link-icon rect {
+  stroke: #1F8A4C;
+}
+
+/* ── Registro ── */
+.vf-dots circle {
+  fill: #E1E9E5;
+}
+
+.vf-registry__meta {
+  font-family: var(--ctv-font-mono);
+  font-size: 10.5px;
+  fill: var(--ctv-ink-soft);
+}
+
+.vf-external {
+  fill: none;
+  stroke: #1F8A4C;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Conexiones y pulsos ── */
+.vf-link {
+  fill: none;
+  stroke: #1F8A4C;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.vf-pulse {
+  fill: #5EE08A;
+  opacity: 0;
+}
+
+/* Si no se encontró el certificado, el recorrido queda en la primera pieza. */
+.vf--invalid .vf-fp,
+.vf--invalid .vf-chain,
+.vf--invalid .vf-registry,
+.vf--invalid .vf-links {
+  opacity: 0.25;
+}

@@ -4,6 +4,7 @@ import { HiArrowRight, HiShieldCheck, HiLocationMarker } from 'react-icons/hi';
 import { FaTree, FaCheck } from 'react-icons/fa';
 import { getPublicProjects, type B2CProject } from '../../b2c/services/b2cApi';
 import { formatCLPPerTon } from '../../../utils/currency';
+import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import './ProjectsBento.css';
 
 export interface ProjectData {
@@ -54,7 +55,7 @@ const REFERENCE_PROJECTS: ProjectData[] = [
     description: 'Restauración ecológica con especies nativas (lenga, coihue y ñirre) en cuencas degradadas, protegiendo biodiversidad y capturando carbono de largo plazo.',
     imageUrl: '/images/projects/ref-patagonia.webp',
     href: '/calculadora',
-    ctaLabel: 'Calcular mi huella',
+    ctaLabel: 'Calcula tu huella',
   },
   {
     id: 'ref-atacama',
@@ -249,7 +250,7 @@ const SideCard: React.FC<CardProps> = ({ project, isReference }) => (
         <div className="pb-side-price">
           <span className="pb-side-price-tag">{project.priceLabel}</span>
           <Link to={project.href} className="pb-side-link">
-            <span>{isReference ? 'Calcular' : 'Elegir'}</span>
+            <span>{isReference ? 'Calcula tu huella' : 'Elegir'}</span>
             <HiArrowRight aria-hidden="true" />
           </Link>
         </div>
@@ -285,12 +286,20 @@ export const ProjectsBento: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
+  // Solo la cabecera: las tarjetas llegan después, cuando responde la API.
+  const scopeRef = useGsapReveal<HTMLElement>((root) => {
+    sectionTimeline(root)
+      .from('.pb-eyebrow', { y: 10, autoAlpha: 0 }, 0)
+      .add(reveal(root, '.pb-title'), 0.05)
+      .add(reveal(root, '.pb-lede', 'text'), 0.15);
+  }, []);
+
   const featured = projects?.[0];
   const sideProjects = projects?.slice(1) ?? [];
   const count = projects?.length ?? 0;
 
   return (
-    <section className="pb-section" id="proyectos" aria-label="Portafolio de proyectos de compensación">
+    <section ref={scopeRef} className="pb-section" id="proyectos" aria-label="Portafolio de proyectos de compensación">
       <div className="pb-container">
         {/* Encabezado Editorial de Sección */}
         <header className="pb-header">
@@ -303,15 +312,19 @@ export const ProjectsBento: React.FC = () => {
             <h2 className="pb-title">
               Proyectos concretos, evaluados antes de recibir tu compensación.
             </h2>
-            <p className="pb-lede">
-              Cada proyecto pasa por Veritas AI, nuestra certificación agéntica que evalúa su
-              evidencia documental, y por una revisión humana antes de poder recibir compensaciones.
+            {/* La nota va fuera del párrafo: la animación divide el párrafo en
+                palabras, y React no puede insertar después un hijo dentro de él. */}
+            <div>
+              <p className="pb-lede">
+                Cada proyecto pasa por Veritas AI, nuestra certificación agéntica que evalúa su
+                evidencia documental, y por una revisión humana antes de poder recibir compensaciones.
+              </p>
               {isReference && (
-                <span className="pb-reference-note">
+                <p className="pb-reference-note">
                   Los proyectos de abajo son ejemplos de referencia del tipo de iniciativa que evaluamos.
-                </span>
+                </p>
               )}
-            </p>
+            </div>
           </div>
         </header>
 

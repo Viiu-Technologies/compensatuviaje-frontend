@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LegalLayout, { type LegalSection } from '../../components/legal/LegalLayout';
 import { LEGAL, LEGAL_ROUTES, OWNER_NAME } from '../../../../shared/config/legal';
+import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 
 // Proveedores que tratan datos por cuenta de CompensaTuViaje. Mantener
 // sincronizado con las integraciones reales del backend.
@@ -225,8 +226,8 @@ const sections: LegalSection[] = [
 
 const PrivacyPage: React.FC = () => (
   <LegalLayout
-    title="Política de Privacidad"
-    description={`Cómo ${LEGAL.brand} trata tus datos personales: qué recolectamos, para qué, con quién los compartimos y cómo ejercer tus derechos.`}
+    title={PUBLIC_SEO[LEGAL_ROUTES.privacy].title}
+    description={PUBLIC_SEO[LEGAL_ROUTES.privacy].description}
     path={LEGAL_ROUTES.privacy}
     intro={
       <p>

@@ -50,8 +50,8 @@
   --adm-side-active: rgba(255, 255, 255, 0.1);
 
   --adm-radius: 8px;
-  --adm-font: 'Inter', system-ui, sans-serif;
-  --adm-font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --adm-font: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+  --adm-font-display: 'Outfit', 'Outfit Fallback', 'Inter', system-ui, sans-serif;
 
   font-family: var(--adm-font);
   color: var(--adm-ink);

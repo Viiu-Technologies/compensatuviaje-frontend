@@ -13,13 +13,10 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import './PaymentMethodsPage.css';
 import { useSeo } from '../../../shared/utils/useSeo';
+import { PUBLIC_SEO } from '../../../shared/config/publicSeo';
 
 const PaymentMethodsPage: React.FC = () => {
-  useSeo({
-    title: 'Métodos de Pago y Seguridad',
-    description: 'Paga tu compensación de carbono con Webpay (Transbank). No almacenamos los datos de tu tarjeta.',
-    path: '/pagos',
-  });
+  useSeo(PUBLIC_SEO['/pagos']);
 
   useEffect(() => {
     window.scrollTo(0, 0);

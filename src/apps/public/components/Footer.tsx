@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import gsap from 'gsap';
 import { HiArrowRight } from 'react-icons/hi';
-import { useGsapReveal } from '../hooks/useGsapReveal';
+import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import { LEGAL, LEGAL_ROUTES, ownerLine } from '../../../shared/config/legal';
 import { subscribeToNewsletter } from '../services/newsService';
 import './Footer.css';
@@ -68,14 +67,12 @@ const Footer = () => {
     if (res.ok) setEmail('');
   };
 
-  const scopeRef = useGsapReveal<HTMLElement>(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
-    tl.from('.ft-display .hero-line__inner', {
-      yPercent: 110, stagger: 0.08, duration: 0.9,
-    }, 0);
-    tl.from('.ft-newsletter', { y: 18, autoAlpha: 0, duration: 0.7 }, 0.3);
-    tl.from('.ft-col', { y: 14, autoAlpha: 0, stagger: 0.08, duration: 0.6 }, 0.45);
-    tl.from('.ft-bottom > *', { y: 10, autoAlpha: 0, stagger: 0.08, duration: 0.5 }, 0.7);
+  const scopeRef = useGsapReveal<HTMLElement>((root) => {
+    const tl = sectionTimeline(root);
+    tl.add(reveal(root, '.ft-display'), 0);
+    tl.from('.ft-newsletter', { y: 12, autoAlpha: 0 }, 0.15);
+    tl.from('.ft-col', { y: 10, autoAlpha: 0, stagger: 0.05 }, 0.2);
+    tl.from('.ft-bottom > *', { y: 8, autoAlpha: 0, stagger: 0.05, duration: 0.4 }, 0.3);
   }, []);
 
   return (
@@ -86,11 +83,11 @@ const Footer = () => {
         <div className="ft-display-block">
           <h2 className="ft-display">
             <span className="hero-line"><span className="hero-line__inner">La sostenibilidad</span></span>
-            <span className="hero-line"><span className="hero-line__inner"><em>es posible</em>.</span></span>
+            <span className="hero-line"><span className="hero-line__inner">es posible.</span></span>
           </h2>
 
           <Link to="/calculadora" className="ft-display-cta">
-            Empieza ahora
+            Calcula tu huella
             <HiArrowRight aria-hidden="true" />
           </Link>
         </div>
@@ -153,6 +150,8 @@ const Footer = () => {
               src="/images/brand/logo-horizontal-white.svg"
               alt="CompensaTuViaje"
               className="ft-logo"
+              width={1117}
+              height={240}
             />
             <p className="ft-tagline">
               Compensamos la huella de carbono de tus viajes apoyando proyectos

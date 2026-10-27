@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiArrowRight, HiSwitchHorizontal, HiSparkles, HiInformationCircle, HiChevronDown } from 'react-icons/hi';
 import { FaPlane, FaUsers, FaLeaf, FaTree } from 'react-icons/fa';
@@ -43,17 +43,35 @@ const EcoWatermarkLeaf: React.FC<{ className?: string }> = ({ className = '' }) 
   </svg>
 );
 
+export type CabinCode = 'economy' | 'premium_economy' | 'business' | 'first';
+
 export interface QuickFlightCalculatorProps {
   onCompensationSelect?: (data: EstimateResponse) => void;
+  /** Avisa cada cálculo exitoso. La página /calculadora lo usa para mostrar
+   *  la versión de la metodología que devolvió el backend; el hero, para que
+   *  "Cómo funciona" cuente el mismo vuelo. `cabinCode` va aparte porque la
+   *  respuesta no lo incluye. */
+  onEstimate?: (data: EstimateResponse, request: { cabinCode: CabinCode }) => void;
+  /** `compact`: card angosta para ir junto a un titular (escena final del hero
+   *  de la landing). Misma lógica y estado; cambia la cabecera y el resultado. */
+  variant?: 'default' | 'compact';
 }
 
-export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ onCompensationSelect }) => {
+export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
+  onCompensationSelect,
+  onEstimate,
+  variant = 'default',
+}) => {
+  const compact = variant === 'compact';
   const { user } = useAuth();
   const navigate = useNavigate();
+  // En una ref para no recrear `calculate` cada vez que el padre re-renderiza.
+  const onEstimateRef = useRef(onEstimate);
+  onEstimateRef.current = onEstimate;
 
   const [origin, setOrigin] = useState('SCL');
   const [destination, setDestination] = useState('LIM');
-  const [cabinCode, setCabinCode] = useState<'economy' | 'premium_economy' | 'business' | 'first'>('economy');
+  const [cabinCode, setCabinCode] = useState<CabinCode>('economy');
   const [passengers, setPassengers] = useState(1);
   const [roundTrip, setRoundTrip] = useState(false);
 
@@ -102,6 +120,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
 
         if (res.status === 'success') {
           setEstimate(res);
+          onEstimateRef.current?.(res, { cabinCode: cabin });
         } else {
           setError(getErrorMessage(res, 'No pudimos calcular las emisiones de este vuelo. Prueba con otra ruta.'));
         }
@@ -191,21 +210,32 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
   };
 
   return (
-    <div className="qfc-card" aria-label="Calculadora espaciosa de emisiones en vuelos">
+    <div
+      className={`qfc-card${compact ? ' qfc-card--compact' : ''}`}
+      aria-label="Calculadora de emisiones de vuelos"
+    >
       {/* Fondo ambiental sutil con marcas de agua orgánicas no invasivas */}
-      <div className="qfc-ambient-bg" aria-hidden="true">
-        <EcoWatermarkLeaf className="qfc-watermark-leaf--top" />
-        <EcoWatermarkLeaf className="qfc-watermark-leaf--bottom" />
-      </div>
+      {!compact && (
+        <div className="qfc-ambient-bg" aria-hidden="true">
+          <EcoWatermarkLeaf className="qfc-watermark-leaf--top" />
+          <EcoWatermarkLeaf className="qfc-watermark-leaf--bottom" />
+        </div>
+      )}
 
       {/* ── Cabecera Espaciosa ── */}
       <div className="qfc-header">
-        <div className="qfc-header-info">
-          <span className="qfc-indicator-dot" aria-hidden="true" />
-          <span className="qfc-header-title">Calculadora de huella aérea</span>
-          <span className="qfc-header-sep">·</span>
-          <span className="qfc-header-meta">{emissions?.methodology ?? 'DEFRA'} & GHG Protocol</span>
-        </div>
+        {compact ? (
+          <div className="qfc-header-info">
+            <span className="qfc-header-title">Huella de tu vuelo</span>
+          </div>
+        ) : (
+          <div className="qfc-header-info">
+            <span className="qfc-indicator-dot" aria-hidden="true" />
+            <span className="qfc-header-title">Calculadora de huella aérea</span>
+            <span className="qfc-header-sep">·</span>
+            <span className="qfc-header-meta">{emissions?.methodology ?? 'DEFRA'} & GHG Protocol</span>
+          </div>
+        )}
 
         <div className="qfc-trip-toggle" role="radiogroup" aria-label="Tipo de trayecto">
           <button
@@ -275,7 +305,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
       <div className="qfc-config-row">
         <div className="qfc-config-block qfc-config-block--cabin">
           <label htmlFor="qfc-cabin-select" className="qfc-config-label">
-            Clase de cabina
+            {compact ? 'Cabina' : 'Clase de cabina'}
           </label>
           <div className="qfc-select-wrapper">
             <select
@@ -295,8 +325,8 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
 
         <div className="qfc-config-block qfc-config-block--pax">
           <label className="qfc-config-label">
-            <FaUsers aria-hidden="true" />
-            Número de pasajeros
+            {!compact && <FaUsers aria-hidden="true" />}
+            {compact ? 'Pasajeros' : 'Número de pasajeros'}
           </label>
           <div className="qfc-stepper">
             <button
@@ -325,6 +355,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
       </div>
 
       {/* ── Rutas Frecuentes / Sugeridas (Barra limpia y espaciosa) ── */}
+      {!compact && (
       <div className="qfc-quick-routes-bar">
         <span className="qfc-routes-label">Rutas frecuentes:</span>
         <div className="qfc-routes-list">
@@ -343,6 +374,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           })}
         </div>
       </div>
+      )}
 
       {/* Mensaje de Error si aplica */}
       {error && (
@@ -352,7 +384,48 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
         </div>
       )}
 
-      {/* ── Panel de Resultados e Impacto (Espacioso, Limpio y Contundente) ── */}
+      {compact ? (
+        <>
+          {/* ── Resultado compacto: huella y aporte en una fila, botón debajo ── */}
+          <div className={`qfc-compact-result${loading ? ' qfc-impact-panel--loading' : ''}`}>
+            <div className="qfc-compact-metric">
+              <span className="qfc-compact-caption">Huella calculada</span>
+              <div className="qfc-metric-value-row">
+                <span className="qfc-metric-number">
+                  {emissions ? emissions.kgCO2e.toLocaleString('es-CL') : '—'}
+                </span>
+                <span className="qfc-metric-unit">kg CO₂e</span>
+              </div>
+              <span className="qfc-compact-sub">
+                {emissions
+                  ? `${emissions.tonCO2e.toLocaleString('es-CL', { maximumFractionDigits: 2 })} t`
+                  : roundTrip ? 'Ida y vuelta' : 'Solo ida'}
+                {estimate?.meta?.distanceKmTotal
+                  ? ` · ${Math.round(estimate.meta.distanceKmTotal).toLocaleString('es-CL')} km`
+                  : ''}
+              </span>
+            </div>
+            {pricing && (
+              <div className="qfc-compact-price">
+                <span className="qfc-compact-caption">Aporte</span>
+                <div className="qfc-price-row">
+                  <span className="qfc-price-amount">{fmtCLP(pricing.fromTotalCLP)}</span>
+                  <span className="qfc-price-currency">CLP</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button type="button" className="qfc-compensate-btn" onClick={handleCompensateClick}>
+            <span>Compensar huella</span>
+            <HiArrowRight aria-hidden="true" />
+          </button>
+
+          <p className="qfc-compact-note">
+            Certificado verificable en Polygon · factor {emissions?.methodology ?? 'DEFRA'}
+          </p>
+        </>
+      ) : (
       <div className={`qfc-impact-panel ${loading ? 'qfc-impact-panel--loading' : ''}`}>
         {/* Columna 1: Métrica Principal */}
         <div className="qfc-impact-metric">
@@ -427,6 +500,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 };

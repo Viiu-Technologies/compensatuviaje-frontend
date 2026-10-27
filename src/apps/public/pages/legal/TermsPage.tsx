@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LegalLayout, { type LegalSection } from '../../components/legal/LegalLayout';
 import { LEGAL, LEGAL_ROUTES, OWNER_NAME } from '../../../../shared/config/legal';
+import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 
 const sections: LegalSection[] = [
   {
@@ -241,8 +242,8 @@ const sections: LegalSection[] = [
 
 const TermsPage: React.FC = () => (
   <LegalLayout
-    title="Términos y Condiciones"
-    description={`Condiciones de uso de ${LEGAL.brand}: cálculo de huella de carbono, compra de compensaciones, certificados, retracto y reclamos.`}
+    title={PUBLIC_SEO[LEGAL_ROUTES.terms].title}
+    description={PUBLIC_SEO[LEGAL_ROUTES.terms].description}
     path={LEGAL_ROUTES.terms}
     intro={
       <p>

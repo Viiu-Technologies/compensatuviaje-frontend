@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiPlus, HiMinus, HiArrowRight } from 'react-icons/hi';
-import { useGsapReveal } from '../hooks/useGsapReveal';
+import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import './FAQ.css';
 
 const FAQS_B2C = [
@@ -95,32 +95,14 @@ const FAQ = () => {
   const panelsRef = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
-    gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
+    const tl = sectionTimeline(root);
 
-    const tl = gsap.timeline({ 
-      defaults: { ease: 'power3.out', duration: 0.8 },
-      scrollTrigger: {
-        trigger: root,
-        start: 'top 75%',
-        toggleActions: 'play none none none',
-      }
-    });
-
-    tl.from('.faq-eyebrow', { y: 16, autoAlpha: 0, duration: 0.6 }, 0);
-    tl.from('.faq-title .hero-line__inner', {
-      yPercent: 110, stagger: 0.1, duration: 0.9,
-    }, 0.1);
-    tl.from('.faq-tabs', { y: 20, autoAlpha: 0, duration: 0.6 }, 0.25);
-    // Animación de scroll-stagger: las preguntas suben desde abajo ordenándose en cascada
-    tl.from('.faq-item', { 
-      y: 55, 
-      autoAlpha: 0, 
-      stagger: 0.08, 
-      duration: 0.7, 
-      ease: 'power3.out',
-      clearProps: 'transform,opacity'
-    }, 0.35);
-    tl.from('.faq-cta', { y: 20, autoAlpha: 0, duration: 0.6 }, 0.7);
+    tl.from('.faq-eyebrow', { y: 10, autoAlpha: 0 }, 0);
+    tl.add(reveal(root, '.faq-title'), 0.05);
+    tl.from('.faq-tabs', { y: 12, autoAlpha: 0 }, 0.12);
+    // Las preguntas suben en una cascada corta
+    tl.from('.faq-item', { y: 16, autoAlpha: 0, stagger: 0.04, clearProps: 'transform,opacity' }, 0.18);
+    tl.from('.faq-cta', { y: 12, autoAlpha: 0 }, 0.3);
   }, []);
 
   const currentFaqs = activeTab === 'b2c' ? FAQS_B2C : activeTab === 'b2b' ? FAQS_B2B : FAQS_PARTNER;

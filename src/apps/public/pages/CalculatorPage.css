@@ -1,5 +1,8 @@
 /* ==========================================================================
-   CalculatorPage.css — Estilos para la Calculadora Completa
+   CalculatorPage.css — Página /calculadora
+   La calculadora en sí es QuickFlightCalculator (la misma del Hero) y trae
+   su propio CSS. Aquí solo queda el marco editorial de la página: encabezado
+   y metodología.
    ========================================================================== */
 @import '../components/landing/tokens.css';
 
@@ -7,7 +10,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--ctv-canvas-1);
+  /* Antes var(--ctv-canvas-1), que no existe en tokens.css: el fondo quedaba
+     transparente y dependía de lo que hubiera debajo. */
+  background: var(--ctv-canvas);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
 }
@@ -24,14 +29,17 @@
   padding: 0 var(--ctv-gutter);
 }
 
-/* ── Hero ─────────────────────────────────────────── */
+/* ── Encabezado ─────────────────────────────────────── */
 .calcp-hero {
-  padding: clamp(3rem, 6vw, 4.5rem) 0 2rem;
+  padding: clamp(3rem, 6vw, 4.5rem) 0 1rem;
   background: radial-gradient(circle at 75% 20%, rgba(8, 174, 6, 0.08) 0%, transparent 60%);
 }
 
+/* flex + fit-content: antes era inline-flex y quedaba en la misma línea que
+   la etiqueta de abajo, pegado a ella. */
 .calcp-back-link {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: var(--ctv-space-2);
   font-size: 0.875rem;
@@ -39,28 +47,40 @@
   color: var(--ctv-ink-soft);
   text-decoration: none;
   margin-bottom: var(--ctv-space-8);
+  border-radius: var(--ctv-radius-sm);
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .calcp-back-link:hover {
-  color: var(--ctv-brand);
+  color: var(--ctv-accent-contrast);
   transform: translateX(-3px);
 }
 
+.calcp-back-link:focus-visible {
+  outline: none;
+  box-shadow: var(--ctv-focus-ring);
+}
+
+/* Misma etiqueta que el Hero del landing (.hero-eyebrow): línea verde y texto
+   en tinta. La anterior era una píldora con verde vivo en texto de 12 px,
+   por debajo del contraste AA. */
 .calcp-eyebrow {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--ctv-space-2);
-  font-size: 0.8rem;
-  font-weight: 700;
+  gap: var(--ctv-space-3);
+  font-size: var(--ctv-text-caption);
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ctv-brand);
-  margin-bottom: var(--ctv-space-5);
-  background: rgba(8, 174, 6, 0.08);
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--ctv-radius-pill);
-  border: 1px solid rgba(8, 174, 6, 0.2);
+  color: var(--ctv-ink-soft);
+  margin-bottom: var(--ctv-space-4);
+}
+
+.calcp-eyebrow__line {
+  width: 28px;
+  height: 2px;
+  background: var(--ctv-brand);
+  flex-shrink: 0;
 }
 
 .calcp-title {
@@ -79,479 +99,18 @@
   line-height: 1.6;
   color: var(--ctv-ink-soft);
   max-width: 64ch;
-  margin-bottom: var(--ctv-space-8);
 }
 
-.calcp-quick-routes {
-  display: flex;
-  align-items: center;
-  gap: var(--ctv-space-4);
-  flex-wrap: wrap;
-}
-
-.calcp-quick-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ctv-ink-soft);
-}
-
-.calcp-quick-pills {
-  display: flex;
-  gap: var(--ctv-space-2);
-  flex-wrap: wrap;
-}
-
-.calcp-quick-pill {
-  background: var(--ctv-glass-bg);
-  border: 1px solid var(--ctv-glass-border);
-  border-radius: var(--ctv-radius-pill);
-  padding: 0.4rem 0.9rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--ctv-brand-deep);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.calcp-quick-pill:hover {
-  border-color: var(--ctv-brand);
-  color: var(--ctv-brand);
-  transform: translateY(-1px);
-}
-
-.calcp-quick-pill--active {
-  background: var(--ctv-brand);
-  color: #ffffff !important;
-  border-color: var(--ctv-brand);
-}
-
-/* ── Main Interactive Section ────────────────────── */
+/* ── Calculadora ────────────────────────────────────── */
 .calcp-calc-section {
   padding: 2rem 0 clamp(4rem, 8vw, 6rem);
 }
 
-.calcp-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ctv-space-8);
+.calcp-calculator {
   margin-bottom: 3.5rem;
 }
 
-@media (min-width: 1024px) {
-  .calcp-grid {
-    grid-template-columns: 1.15fr 1fr;
-  }
-}
-
-/* Card Formulario */
-.calcp-form-card {
-  background: var(--ctv-glass-bg);
-  border: 1px solid var(--ctv-glass-border);
-  border-radius: var(--ctv-radius-xl);
-  padding: clamp(1.75rem, 3.5vw, 2.5rem);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--ctv-shadow-card);
-}
-
-.calcp-form-header {
-  display: flex;
-  align-items: center;
-  gap: var(--ctv-space-3);
-  margin-bottom: 1.75rem;
-}
-
-.calcp-icon-green {
-  font-size: 1.5rem;
-  color: var(--ctv-brand);
-}
-
-.calcp-form-header h2 {
-  font-family: var(--ctv-font-display);
-  font-size: 1.4rem;
-  color: var(--ctv-brand-deep);
-  margin: 0;
-}
-
-.calcp-trip-type {
-  display: flex;
-  background: rgba(7, 61, 61, 0.05);
-  padding: 4px;
-  border-radius: var(--ctv-radius-md);
-  margin-bottom: 1.75rem;
-}
-
-.calcp-type-btn {
-  flex: 1;
-  padding: 0.65rem 1rem;
-  border: none;
-  background: transparent;
-  border-radius: var(--ctv-radius-sm);
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--ctv-ink-soft);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.calcp-type-btn--active {
-  background: #ffffff;
-  color: var(--ctv-brand-deep);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.calcp-airports-wrap {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--ctv-space-3);
-  margin-bottom: var(--ctv-space-6);
-}
-
-@media (max-width: 640px) {
-  .calcp-airports-wrap {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-.calcp-field {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.calcp-field label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--ctv-ink-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.calcp-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: var(--ctv-radius-md);
-  border: 1px solid var(--ctv-glass-border);
-  background: #ffffff;
-  color: var(--ctv-brand-deep);
-  font-size: 0.95rem;
-  font-weight: 500;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.calcp-select:focus {
-  border-color: var(--ctv-brand);
-  box-shadow: 0 0 0 3px rgba(8, 174, 6, 0.15);
-}
-
-.calcp-swap-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--ctv-radius-md);
-  border: 1px solid var(--ctv-glass-border);
-  background: #ffffff;
-  color: var(--ctv-brand-deep);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-bottom: 2px;
-  transition: all 0.2s ease;
-}
-
-.calcp-swap-btn:hover {
-  border-color: var(--ctv-brand);
-  color: var(--ctv-brand);
-  transform: rotate(180deg);
-}
-
-.calcp-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ctv-space-5);
-  margin-bottom: 1.75rem;
-}
-
-.calcp-counter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  border: 1px solid var(--ctv-glass-border);
-  border-radius: var(--ctv-radius-md);
-  padding: 0.35rem;
-}
-
-.calcp-counter button {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--ctv-radius-sm);
-  border: none;
-  background: rgba(7, 61, 61, 0.06);
-  color: var(--ctv-brand-deep);
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.calcp-counter button:hover:not(:disabled) {
-  background: rgba(8, 174, 6, 0.15);
-  color: var(--ctv-brand);
-}
-
-.calcp-counter button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.calcp-counter span {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--ctv-brand-deep);
-}
-
-.calcp-rf-toggle {
-  background: rgba(8, 174, 6, 0.04);
-  border: 1px solid rgba(8, 174, 6, 0.15);
-  border-radius: var(--ctv-radius-md);
-  padding: 1rem 1.25rem;
-}
-
-.calcp-checkbox-wrap {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ctv-space-3);
-  cursor: pointer;
-}
-
-.calcp-checkbox-wrap input {
-  margin-top: var(--ctv-space-1);
-  accent-color: var(--ctv-brand);
-  width: 18px;
-  height: 18px;
-}
-
-.calcp-checkbox-label {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--ctv-brand-deep);
-}
-
-.calcp-rf-note {
-  font-size: 0.78rem;
-  color: var(--ctv-ink-soft);
-  margin: 0.4rem 0 0 2rem;
-  line-height: 1.4;
-}
-
-.calcp-error {
-  margin-top: var(--ctv-space-4);
-  padding: 0.75rem 1rem;
-  background: rgba(227, 6, 19, 0.08);
-  border: 1px solid rgba(227, 6, 19, 0.25);
-  color: #E30613;
-  border-radius: var(--ctv-radius-sm);
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-/* Card Resultados */
-.calcp-results-card {
-  background: linear-gradient(135deg, var(--ctv-teal-900) 0%, var(--ctv-teal-950) 100%);
-  border: 1px solid var(--ctv-glass-border-dark);
-  border-radius: var(--ctv-radius-xl);
-  padding: clamp(1.75rem, 3.5vw, 2.5rem);
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 24px 60px -20px rgba(1, 33, 32, 0.6);
-}
-
-.calcp-results-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: rgba(62, 211, 43, 0.15);
-  border: 1px solid rgba(62, 211, 43, 0.35);
-  color: #3ED32B;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.3rem 0.75rem;
-  border-radius: var(--ctv-radius-pill);
-  align-self: flex-start;
-  margin-bottom: var(--ctv-space-6);
-}
-
-.calcp-emissions-highlight {
-  margin-bottom: 1.75rem;
-  text-align: center;
-}
-
-.calcp-emissions-number {
-  font-family: var(--ctv-font-display);
-  font-size: clamp(3rem, 6vw, 4.5rem);
-  font-weight: 900;
-  color: #3ED32B;
-  line-height: 1;
-  display: block;
-}
-
-.calcp-emissions-unit {
-  font-family: var(--ctv-font-display);
-  font-size: 1.25rem;
-  color: #ffffff;
-  display: block;
-  margin-top: 0.35rem;
-}
-
-.calcp-emissions-sub {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0.4rem 0 0;
-}
-
-.calcp-route-summary {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--ctv-radius-lg);
-  padding: var(--ctv-space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ctv-space-3);
-  margin-bottom: 1.75rem;
-}
-
-.calcp-route-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.88rem;
-}
-
-.calcp-route-item span {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.calcp-route-item strong {
-  color: #ffffff;
-}
-
-.calcp-price-tag {
-  color: #3ED32B !important;
-  font-size: 1.05rem;
-}
-
-.calcp-price-tag small {
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: normal;
-  font-size: 0.82rem;
-}
-
-/* Equivalencias */
-.calcp-equiv-section {
-  margin-bottom: 1.75rem;
-}
-
-.calcp-equiv-section h4 {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 0.85rem;
-}
-
-.calcp-equiv-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ctv-space-3);
-}
-
-.calcp-equiv-item {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--ctv-radius-md);
-  padding: 0.75rem 1rem;
-}
-
-.calcp-equiv-icon {
-  font-size: 1.35rem;
-  flex-shrink: 0;
-}
-
-.calcp-equiv-icon--tree {
-  color: #3ED32B;
-}
-
-.calcp-equiv-icon--car {
-  color: #60A5FA;
-}
-
-.calcp-equiv-icon--phone {
-  color: #FBBF24;
-}
-
-.calcp-equiv-item strong {
-  display: block;
-  font-size: 0.92rem;
-  color: #ffffff;
-}
-
-.calcp-equiv-item span {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.65);
-}
-
-/* CTA */
-.calcp-cta-box {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ctv-space-3);
-}
-
-.calcp-cta-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ctv-space-2);
-  background: var(--ctv-brand);
-  color: #ffffff;
-  padding: 1rem 1.5rem;
-  border-radius: var(--ctv-radius-md);
-  font-weight: 700;
-  font-size: 1rem;
-  text-decoration: none;
-  box-shadow: 0 4px 16px rgba(8, 174, 6, 0.35);
-  transition: all 0.2s ease;
-}
-
-.calcp-cta-btn:hover {
-  background: #068a04;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(8, 174, 6, 0.45);
-}
-
-.calcp-cta-guarantee {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
-
-/* ── Metodología y Fuentes Científicas ──────────── */
+/* ── Metodología y fuentes ──────────────────────────── */
 .calcp-method-box {
   background: var(--ctv-glass-bg);
   border: 1px solid var(--ctv-glass-border);
@@ -568,11 +127,12 @@
 }
 
 .calcp-method-header svg {
+  flex-shrink: 0;
   font-size: 1.6rem;
-  color: var(--ctv-brand);
+  color: var(--ctv-accent-contrast);
 }
 
-.calcp-method-header h3 {
+.calcp-method-header h2 {
   font-family: var(--ctv-font-display);
   font-size: clamp(1.3rem, 2.5vw, 1.65rem);
   color: var(--ctv-brand-deep);
@@ -587,21 +147,23 @@
   margin-bottom: var(--ctv-space-8);
 }
 
+/* Dos fuentes, dos columnas: con tres quedaba un hueco a la derecha. */
 .calcp-sources-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--ctv-space-5);
+  margin-top: var(--ctv-space-8);
 }
 
 @media (min-width: 768px) {
   .calcp-sources-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 .calcp-source-card {
   background: #ffffff;
-  border: 1px solid var(--ctv-glass-border);
+  border: 1px solid var(--ctv-rule);
   border-radius: var(--ctv-radius-lg);
   padding: var(--ctv-space-6);
   text-decoration: none;
@@ -617,21 +179,27 @@
   box-shadow: var(--ctv-shadow-card-hover);
 }
 
+.calcp-source-card:focus-visible {
+  outline: none;
+  box-shadow: var(--ctv-focus-ring);
+}
+
+/* Texto en --ctv-accent-contrast (7,5:1); el verde vivo no llega a AA. */
 .calcp-source-badge {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: rgba(8, 174, 6, 0.1);
-  color: var(--ctv-brand);
+  background: var(--ctv-brand-soft);
+  color: var(--ctv-accent-contrast);
   padding: 0.2rem 0.6rem;
   border-radius: var(--ctv-radius-pill);
   margin-bottom: 0.85rem;
   align-self: flex-start;
 }
 
-.calcp-source-card h4 {
+.calcp-source-card h3 {
   font-family: var(--ctv-font-display);
   font-size: 1.05rem;
   color: var(--ctv-brand-deep);
@@ -639,15 +207,25 @@
 }
 
 .calcp-source-card p {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.5;
   color: var(--ctv-ink-soft);
   margin-bottom: var(--ctv-space-5);
 }
 
 .calcp-source-link {
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ctv-brand);
+  color: var(--ctv-accent-contrast);
   margin-top: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calcp-back-link,
+  .calcp-back-link:hover,
+  .calcp-source-card,
+  .calcp-source-card:hover {
+    transition: none;
+    transform: none;
+  }
 }

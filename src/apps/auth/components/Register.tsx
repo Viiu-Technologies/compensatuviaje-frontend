@@ -1,4 +1,4 @@
-import React, { useState, useRef, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useRef, useMemo, lazy, Suspense, ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
@@ -11,10 +11,18 @@ import { BsGoogle } from 'react-icons/bs';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { tripOf, routeOf } from './compensationRoute/model';
+import { POPULAR_AIRPORTS } from '../../public/services/publicApi';
+
+// La Fig. 2 solo se ve en escritorio: se carga aparte, igual que en el login.
+const CompensationRoute = lazy(() => import('./compensationRoute/CompensationRoute'));
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  // El login pasa su state al enlace "Regístrate": si venía un vuelo, sigue aquí.
+  const trip = useMemo(() => tripOf((location.state as { from?: { search?: string } } | null)?.from?.search), [location.state]);
+  const destinationCity = trip ? POPULAR_AIRPORTS.find((a) => a.code === trip.destination)?.city ?? trip.destination : null;
   const { register, error: authError, clearError } = useAuth();
   const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
   
@@ -238,16 +246,9 @@ const Register: React.FC = () => {
     visible: { x: 0, opacity: 1, transition: { duration: 0.6, delay: 0.2, ease: "easeOut" } }
   };
 
-  const treeVariants: Variants = {
-    hidden: { y: 100, opacity: 0 },
-    visible: (custom: number) => ({
-      y: 0, opacity: 1, transition: { duration: 0.8, delay: custom * 0.2, type: "spring", bounce: 0.4 }
-    })
-  };
-
   const renderInput = (label: string, name: string, type: string = 'text', placeholder: string = '', icon?: React.ReactNode, fullWidth: boolean = false) => (
     <div className={`!space-y-2 ${fullWidth ? '!col-span-2' : ''}`}>
-      <label htmlFor={name} className="!text-sm !font-medium !text-emerald-100 !ml-1">{label}</label>
+      <label htmlFor={name} className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">{label}</label>
       <div className="!relative !group">
         <input
           type={type}
@@ -256,88 +257,70 @@ const Register: React.FC = () => {
           value={(formData as any)[name]}
           onChange={name.includes('rut') || name.includes('Rut') ? handleRUTChange : handleChange}
           placeholder={placeholder}
-          className={`!w-full !px-6 !py-4 ${icon ? '!pl-12' : ''} !rounded-full !bg-emerald-800/50 !border ${validationErrors[name] ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+          className={`!w-full !px-4 !py-3.5 ${icon ? '!pl-12' : ''} !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors[name] ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none`}
         />
-        {icon && <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400">{icon}</div>}
+        {icon && <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-brand-700">{icon}</div>}
       </div>
-      {validationErrors[name] && <span className="!text-xs !text-red-300 !ml-2">{validationErrors[name]}</span>}
+      {validationErrors[name] && <span className="!text-xs !text-[#991B1B] !ml-2">{validationErrors[name]}</span>}
     </div>
   );
 
   const renderSelect = (label: string, name: string, options: string[]) => (
     <div className="!space-y-2 !col-span-2">
-      <label htmlFor={name} className="!text-sm !font-medium !text-emerald-100 !ml-1">{label}</label>
+      <label htmlFor={name} className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">{label}</label>
       <div className="!relative !group">
         <select
           id={name}
           name={name}
           value={(formData as any)[name]}
           onChange={handleChange}
-          className={`!w-full !px-6 !py-4 !rounded-full !bg-emerald-800/50 !border ${validationErrors[name] ? '!border-red-400' : '!border-emerald-700'} !text-white focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70 appearance-none`}
+          className={`!w-full !px-4 !py-3.5 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors[name] ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none appearance-none`}
         >
           <option value="">Seleccionar...</option>
-          {options.map(opt => <option key={opt} value={opt} className="!bg-emerald-900">{opt}</option>)}
+          {options.map(opt => <option key={opt} value={opt} >{opt}</option>)}
         </select>
-        <div className="!absolute !right-6 !top-1/2 !-translate-y-1/2 !pointer-events-none !text-emerald-400">
+        <div className="!absolute !right-6 !top-1/2 !-translate-y-1/2 !pointer-events-none !text-brand-700">
           <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
       </div>
-      {validationErrors[name] && <span className="!text-xs !text-red-300 !ml-2">{validationErrors[name]}</span>}
+      {validationErrors[name] && <span className="!text-xs !text-[#991B1B] !ml-2">{validationErrors[name]}</span>}
     </div>
   );
 
   return (
-    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-emerald-50">
-      
-      {/* LEFT PANEL - Illustration */}
-      <motion.div 
-        className="!hidden lg:!flex !w-[45%] !relative !bg-brand-100 !flex-col !justify-center !items-center !p-12 !overflow-hidden"
+    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-white">
+
+      {/* Panel izquierdo: la Fig. 2, igual que en el login. Antes: colinas,
+          árboles triangulares y una ola con costura, en esmeralda de Tailwind. */}
+      <motion.div
+        className="!hidden lg:!flex !w-[45%] !relative !bg-[#EDF4F1] !flex-col !justify-center !px-10 xl:!px-14 !py-24 !overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        <Link to="/" className="!absolute !top-8 !left-10 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" /></Link>
-        
-        <div className="!relative !z-10 !max-w-lg !w-full !text-center">
-          <motion.h2 
-            className="!text-5xl !font-extrabold !text-emerald-900 !mb-6 !tracking-tight"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Únete a Nosotros
-          </motion.h2>
-          <motion.p 
-            className="!text-xl !text-emerald-800/80 !mb-8"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            Comienza tu viaje hacia un futuro más sostenible hoy mismo.
-          </motion.p>
-        </div>
+        <Link to="/" className="!absolute !top-8 !left-10 xl:!left-14 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" width={1117} height={240} /></Link>
 
-        {/* Trees Illustration */}
-        <div className="!absolute !bottom-0 !left-0 !right-0 !h-1/3 !z-0 !pointer-events-none">
-          <div className="!absolute !bottom-0 !left-0 !w-full !h-full !bg-emerald-400/20 !rounded-tr-[100%] !transform !translate-y-10"></div>
-          <motion.div custom={1} variants={treeVariants} className="!absolute !bottom-0 !left-[15%] !text-emerald-800/20">
-            <svg width="120" height="200" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg>
-          </motion.div>
-          <motion.div custom={2} variants={treeVariants} className="!absolute !bottom-0 !right-[20%] !text-emerald-700/30 !transform !scale-110">
-            <svg width="140" height="220" viewBox="0 0 100 180" fill="currentColor"><path d="M50 0 L90 120 L60 120 L60 180 L40 180 L40 120 L10 120 Z" /></svg>
-          </motion.div>
+        <div className="!relative !z-10 !w-full !max-w-[640px]">
+          <div className="!flex !items-center !gap-3 !mb-4 !text-xs !font-semibold !uppercase !tracking-[0.16em] !text-brand-900/70">
+            <span className="!w-7 !h-0.5 !bg-brand-500" aria-hidden="true" />
+            <span>{trip ? `Tu vuelo ${routeOf(trip)}` : 'Crea tu cuenta'}</span>
+          </div>
+          <h2 className="!font-display !text-4xl xl:!text-[2.75rem] !font-semibold !text-brand-900 !mb-3 !tracking-tight !leading-[1.08]">
+            {trip ? `Compensa tu vuelo a ${destinationCity}` : 'Únete a nosotros'}
+          </h2>
+          <p className="!text-lg !text-brand-900/70 !mb-8 !max-w-[52ch]">
+            {trip
+              ? 'Crea tu cuenta y calculamos tu vuelo con los datos que ingresaste. Después sigue esta ruta:'
+              : 'Comienza tu viaje hacia un futuro más sostenible. Esta es la ruta de cada compensación:'}
+          </p>
+          <Suspense fallback={<div className="!aspect-[650/470] !w-full" aria-hidden="true" />}>
+            <CompensationRoute trip={trip} caption={false} />
+          </Suspense>
         </div>
       </motion.div>
 
-      {/* RIGHT PANEL - Form */}
-      <div className="!w-full lg:!w-[55%] !relative !bg-emerald-900 !flex !items-center !justify-center !p-4 lg:!p-12 !overflow-y-auto">
-        
-        {/* Wave Separator */}
-        <div className="!hidden lg:!block !absolute !top-0 !-left-[100px] !w-[101px] !h-full !overflow-hidden !z-20">
-           <svg className="!h-full !w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="#064e3b">
-             <path d="M100 0 C 20 20 20 80 100 100 V 0 Z" />
-           </svg>
-        </div>
+      {/* Panel derecho: formulario */}
+      <div className="!w-full lg:!w-[55%] !relative !bg-white !flex !items-center !justify-center !p-4 lg:!p-12 !overflow-y-auto lg:!border-l lg:!border-brand-900/10">
 
         <motion.div 
           className="!w-full !max-w-2xl !relative !z-30 !py-8"
@@ -346,43 +329,43 @@ const Register: React.FC = () => {
           variants={formVariants}
         >
           <div className="!mb-8">
-            <Link to="/" className="!flex !w-fit !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-6">
+            <Link to="/" className="!flex !w-fit !items-center !gap-2 !text-sm !text-brand-900/70 hover:!text-brand-700 !transition-colors !mb-6">
               <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
             </Link>
             
             {/* Header dinámico según el paso */}
             {currentStep === 0 && accountType === 'none' && (
               <>
-                <h1 className="!text-3xl !font-bold !text-white !mb-2">¿Qué tipo de cuenta necesitas?</h1>
-                <p className="!text-emerald-200/80">Elige la opción que mejor se adapte a ti</p>
+                <h1 className="!font-display !text-3xl !font-semibold !text-brand-900 !mb-2">¿Qué tipo de cuenta necesitas?</h1>
+                <p className="!text-brand-900/70">Elige la opción que mejor se adapte a ti</p>
               </>
             )}
             {currentStep === 0 && accountType === 'b2c' && (
               <>
                 <button
                   onClick={() => setAccountType('none')}
-                  className="!inline-flex !items-center !gap-2 !text-sm !text-emerald-200 hover:!text-white !transition-colors !mb-4"
+                  className="!inline-flex !items-center !gap-2 !text-sm !text-brand-900/70 hover:!text-brand-700 !transition-colors !mb-4"
                 >
                   <ArrowLeft className="!w-4 !h-4" /> <span>Cambiar tipo de cuenta</span>
                 </button>
                 <div className="!flex !justify-center !mb-4">
-                  <div className="!w-16 !h-16 !bg-emerald-700 !rounded-2xl !flex !items-center !justify-center">
-                    <User className="!w-8 !h-8 !text-emerald-300" />
+                  <div className="!w-16 !h-16 !bg-brand-50 !rounded-2xl !flex !items-center !justify-center">
+                    <User className="!w-8 !h-8 !text-brand-700" />
                   </div>
                 </div>
-                <h1 className="!text-3xl !font-bold !text-white !text-center !mb-2">Crear Cuenta Personal</h1>
-                <p className="!text-emerald-200/80 !text-center">Regístrate con tu cuenta de Google</p>
+                <h1 className="!font-display !text-3xl !font-semibold !text-brand-900 !text-center !mb-2">Crear Cuenta Personal</h1>
+                <p className="!text-brand-900/70 !text-center">Regístrate con tu cuenta de Google</p>
               </>
             )}
             {currentStep >= 1 && (
               <>
                 <div className="!flex !items-end !justify-between !mb-2">
-                  <h1 className="!text-3xl !font-bold !text-white">Crear Cuenta</h1>
-                  <span className="!text-emerald-400 !font-medium">Paso {currentStep} de {totalSteps}</span>
+                  <h1 className="!font-display !text-3xl !font-semibold !text-brand-900">Crear Cuenta</h1>
+                  <span className="!text-brand-700 !font-medium">Paso {currentStep} de {totalSteps}</span>
                 </div>
-                <div className="!h-2 !w-full !bg-emerald-800 !rounded-full !overflow-hidden">
+                <div className="!h-2 !w-full !bg-brand-900/10 !rounded-full !overflow-hidden">
                   <motion.div 
-                    className="!h-full !bg-emerald-400"
+                    className="!h-full !bg-brand-500"
                     initial={{ width: 0 }}
                     animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
                     transition={{ duration: 0.5 }}
@@ -396,7 +379,7 @@ const Register: React.FC = () => {
             <motion.div 
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
-              className="!mb-6 !p-4 !bg-red-500/10 !border !border-red-500/20 !rounded-xl !flex !items-start !gap-3 !text-red-200"
+              className="!mb-6 !p-4 !bg-[#FEE2E2] !border !border-[#FCA5A5] !rounded-xl !flex !items-start !gap-3 !text-[#991B1B]"
             >
               <AlertCircle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
               <span className="!text-sm">{authError}</span>
@@ -414,28 +397,28 @@ const Register: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleSelectAccountType('b2b')}
-                      className="!w-full !p-6 !bg-emerald-800/50 !border !border-emerald-700 !rounded-2xl !text-left hover:!bg-emerald-800/70 !transition-all !group"
+                      className="!w-full !p-6 !bg-white !border-[1.5px] !border-brand-900/15 !rounded-2xl !text-left hover:!bg-[#F9FBFA] hover:!border-brand-500 !transition-all !group"
                     >
                       <div className="!flex !items-start !gap-4">
-                        <div className="!w-12 !h-12 !bg-blue-500/20 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
-                          <Building className="!w-6 !h-6 !text-blue-400" />
+                        <div className="!w-12 !h-12 !bg-brand-50 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
+                          <Building className="!w-6 !h-6 !text-brand-900" />
                         </div>
                         <div className="!flex-1">
-                          <h3 className="!text-lg !font-bold !text-white !mb-1">Cuenta Empresarial</h3>
-                          <p className="!text-emerald-200/70 !text-sm !mb-3">Para empresas y organizaciones que desean gestionar sus emisiones corporativas.</p>
+                          <h3 className="!text-lg !font-bold !text-brand-900 !mb-1">Cuenta Empresarial</h3>
+                          <p className="!text-brand-900/70 !text-sm !mb-3">Para empresas y organizaciones que desean gestionar sus emisiones corporativas.</p>
                           <div className="!space-y-1">
-                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
                               <Check className="!w-4 !h-4" /> Dashboard empresarial
                             </div>
-                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
                               <Check className="!w-4 !h-4" /> Reportes avanzados
                             </div>
-                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
                               <Check className="!w-4 !h-4" /> Múltiples usuarios
                             </div>
                           </div>
                         </div>
-                        <ArrowRight className="!w-5 !h-5 !text-emerald-400 group-hover:!translate-x-1 !transition-transform" />
+                        <ArrowRight className="!w-5 !h-5 !text-brand-700 group-hover:!translate-x-1 !transition-transform" />
                       </div>
                     </button>
 
@@ -443,28 +426,28 @@ const Register: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleSelectAccountType('b2c')}
-                      className="!w-full !p-6 !bg-emerald-800/50 !border !border-emerald-700 !rounded-2xl !text-left hover:!bg-emerald-800/70 !transition-all !group"
+                      className="!w-full !p-6 !bg-white !border-[1.5px] !border-brand-900/15 !rounded-2xl !text-left hover:!bg-[#F9FBFA] hover:!border-brand-500 !transition-all !group"
                     >
                       <div className="!flex !items-start !gap-4">
-                        <div className="!w-12 !h-12 !bg-emerald-500/20 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
-                          <User className="!w-6 !h-6 !text-emerald-400" />
+                        <div className="!w-12 !h-12 !bg-brand-50 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
+                          <User className="!w-6 !h-6 !text-brand-700" />
                         </div>
                         <div className="!flex-1">
-                          <h3 className="!text-lg !font-bold !text-white !mb-1">Cuenta Personal</h3>
-                          <p className="!text-emerald-200/70 !text-sm !mb-3">Para viajeros individuales que quieren compensar sus emisiones personales.</p>
+                          <h3 className="!text-lg !font-bold !text-brand-900 !mb-1">Cuenta Personal</h3>
+                          <p className="!text-brand-900/70 !text-sm !mb-3">Para viajeros individuales que quieren compensar sus emisiones personales.</p>
                           <div className="!space-y-1">
-                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
                               <Check className="!w-4 !h-4" /> Registro rápido con Google
                             </div>
-                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
                               <Check className="!w-4 !h-4" /> Calculadora personal
                             </div>
-                            <div className="!flex !items-center !gap-2 !text-emerald-300 !text-sm">
+                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
                               <Check className="!w-4 !h-4" /> Badges y certificados
                             </div>
                           </div>
                         </div>
-                        <ArrowRight className="!w-5 !h-5 !text-emerald-400 group-hover:!translate-x-1 !transition-transform" />
+                        <ArrowRight className="!w-5 !h-5 !text-brand-700 group-hover:!translate-x-1 !transition-transform" />
                       </div>
                     </button>
                   </div>
@@ -477,29 +460,29 @@ const Register: React.FC = () => {
                       type="button"
                       onClick={handleGoogleRegister}
                       disabled={googleLoading}
-                      className="!w-full !py-4 !px-6 !bg-white !text-gray-800 !font-semibold !rounded-full !shadow-lg hover:!shadow-xl !transition-all !flex !items-center !justify-center !gap-3 disabled:!opacity-50 disabled:!cursor-not-allowed"
+                      className="!w-full !py-4 !px-6 !bg-white !border-[1.5px] !border-brand-900/15 !text-brand-900 !font-semibold !rounded-xl hover:!bg-[#EDF4F1] !transition-all !flex !items-center !justify-center !gap-3 disabled:!opacity-50 disabled:!cursor-not-allowed"
                     >
                       {googleLoading ? (
-                        <Loader2 className="!w-6 !h-6 !animate-spin !text-emerald-600" />
+                        <Loader2 className="!w-6 !h-6 !animate-spin !text-brand-700" />
                       ) : (
-                        <BsGoogle className="!w-5 !h-5 !text-red-500" />
+                        <BsGoogle className="!w-5 !h-5" />
                       )}
                       {googleLoading ? 'Conectando...' : 'Continuar con Google'}
                     </button>
 
                     <div className="!space-y-4">
-                      <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !rounded-xl">
-                        <Check className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
+                      <div className="!flex !items-start !gap-3 !p-4 !bg-[#EDF4F1] !rounded-xl">
+                        <Check className="!w-5 !h-5 !text-brand-700 !flex-shrink-0 !mt-0.5" />
                         <div>
-                          <p className="!font-medium !text-white">Calcula tu huella de carbono</p>
-                          <p className="!text-sm !text-emerald-200/70">Mide el impacto de tus viajes</p>
+                          <p className="!font-medium !text-brand-900">Calcula tu huella de carbono</p>
+                          <p className="!text-sm !text-brand-900/70">Mide el impacto de tus viajes</p>
                         </div>
                       </div>
-                      <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !rounded-xl">
-                        <Check className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
+                      <div className="!flex !items-start !gap-3 !p-4 !bg-[#EDF4F1] !rounded-xl">
+                        <Check className="!w-5 !h-5 !text-brand-700 !flex-shrink-0 !mt-0.5" />
                         <div>
-                          <p className="!font-medium !text-white">Compensa tus emisiones</p>
-                          <p className="!text-sm !text-emerald-200/70">Proyectos verificados</p>
+                          <p className="!font-medium !text-brand-900">Compensa tus emisiones</p>
+                          <p className="!text-sm !text-brand-900/70">Proyectos verificados</p>
                         </div>
                       </div>
                     </div>
@@ -513,7 +496,7 @@ const Register: React.FC = () => {
                     {renderInput('Correo Electrónico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
                     
                     <div className="!space-y-2 !col-span-2">
-                      <label htmlFor="register-password" className="!text-sm !font-medium !text-emerald-100 !ml-1">Contraseña</label>
+                      <label htmlFor="register-password" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Contraseña</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
@@ -524,18 +507,18 @@ const Register: React.FC = () => {
                           placeholder="••••••••"
                           aria-invalid={!!validationErrors.password}
                           aria-describedby={validationErrors.password ? 'register-password-error' : undefined}
-                          className={`!w-full !px-6 !py-4 !pl-12 !pr-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.password ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+                          className={`!w-full !px-4 !py-3.5 !pl-12 !pr-12 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors.password ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none`}
                         />
-                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-emerald-400 hover:!text-white">
+                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-brand-700"><Lock className="!w-5 !h-5" /></div>
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-brand-900/50 hover:!text-brand-900">
                           {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
                         </button>
                       </div>
-                      {validationErrors.password && <span id="register-password-error" role="alert" className="!text-xs !text-red-300 !ml-2">{validationErrors.password}</span>}
+                      {validationErrors.password && <span id="register-password-error" role="alert" className="!text-xs !text-[#991B1B] !ml-2">{validationErrors.password}</span>}
                     </div>
 
                     <div className="!space-y-2 !col-span-2">
-                      <label htmlFor="register-confirm-password" className="!text-sm !font-medium !text-emerald-100 !ml-1">Confirmar Contraseña</label>
+                      <label htmlFor="register-confirm-password" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Confirmar Contraseña</label>
                       <div className="!relative !group">
                         <input
                           type={showPassword ? 'text' : 'password'}
@@ -546,11 +529,11 @@ const Register: React.FC = () => {
                           placeholder="••••••••"
                           aria-invalid={!!validationErrors.confirmPassword}
                           aria-describedby={validationErrors.confirmPassword ? 'register-confirm-password-error' : undefined}
-                          className={`!w-full !px-6 !py-4 !pl-12 !rounded-full !bg-emerald-800/50 !border ${validationErrors.confirmPassword ? '!border-red-400' : '!border-emerald-700'} !text-white !placeholder-emerald-200/50 focus:!ring-2 focus:!ring-emerald-400 focus:!border-transparent !transition-all !outline-none group-hover:!bg-emerald-800/70`}
+                          className={`!w-full !px-4 !py-3.5 !pl-12 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors.confirmPassword ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none`}
                         />
-                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-emerald-400"><Lock className="!w-5 !h-5" /></div>
+                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-brand-700"><Lock className="!w-5 !h-5" /></div>
                       </div>
-                      {validationErrors.confirmPassword && <span id="register-confirm-password-error" role="alert" className="!text-xs !text-red-300 !ml-2">{validationErrors.confirmPassword}</span>}
+                      {validationErrors.confirmPassword && <span id="register-confirm-password-error" role="alert" className="!text-xs !text-[#991B1B] !ml-2">{validationErrors.confirmPassword}</span>}
                     </div>
 
                     <div className="!col-span-2 !mt-2">
@@ -561,15 +544,15 @@ const Register: React.FC = () => {
                             name="acceptTerms"
                             checked={formData.acceptTerms}
                             onChange={handleChange}
-                            className="!peer !appearance-none !w-5 !h-5 !border-2 !border-emerald-600 !rounded !bg-transparent checked:!bg-emerald-500 checked:!border-emerald-500 !transition-all"
+                            className="!peer !appearance-none !w-5 !h-5 !border-2 !border-brand-900/30 !rounded !bg-white checked:!bg-brand-900 checked:!border-brand-900 !transition-all"
                           />
                           <Check className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
                         </div>
-                        <span className="!text-emerald-200 group-hover:!text-white !transition-colors !text-sm">
-                          Acepto los <Link to="/terminos" target="_blank" className="!text-emerald-400 hover:!underline">términos y condiciones</Link> y la <Link to="/privacidad" target="_blank" className="!text-emerald-400 hover:!underline">política de privacidad</Link>
+                        <span className="!text-brand-900/70 group-hover:!text-brand-900 !transition-colors !text-sm">
+                          Acepto los <Link to="/terminos" target="_blank" className="!text-brand-700 !underline !font-semibold">términos y condiciones</Link> y la <Link to="/privacidad" target="_blank" className="!text-brand-700 !underline !font-semibold">política de privacidad</Link>
                         </span>
                       </label>
-                      {validationErrors.acceptTerms && <span className="!text-xs !text-red-300 !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}
+                      {validationErrors.acceptTerms && <span className="!text-xs !text-[#991B1B] !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}
                     </div>
                   </>
                 )}
@@ -577,19 +560,19 @@ const Register: React.FC = () => {
                 {currentStep === 2 && (
                   <div className="!col-span-2 !space-y-4">
                     <div>
-                      <p className="!text-sm !text-emerald-200/80 !mb-1">
+                      <p className="!text-sm !text-brand-900/70 !mb-1">
                         Sube un documento con los datos de tu empresa (RUT, escritura, representante).
-                        <strong className="!text-emerald-300"> Este paso es opcional</strong> — puedes
+                        <strong className="!text-brand-700"> Este paso es opcional</strong> — puedes
                         continuar sin él y adjuntarlo más adelante desde tu panel.
                       </p>
-                      <p className="!text-xs !text-emerald-400/70">PDF · JPG · PNG · DOCX — máx. 15 MB</p>
+                      <p className="!text-xs !text-brand-900/60">PDF · JPG · PNG · DOCX — máx. 15 MB</p>
                     </div>
 
                     {/* Dropzone */}
                     <div
                       className={`!border-2 !border-dashed !rounded-2xl !p-8 !text-center !transition-all
-                        ${isDragging ? '!border-emerald-300 !bg-emerald-700/30' : '!border-emerald-600 !bg-emerald-800/30'}
-                        ${docFile ? '!border-solid !border-emerald-400 !bg-emerald-800/50 !cursor-default' : '!cursor-pointer hover:!border-emerald-400 hover:!bg-emerald-800/40'}`}
+                        ${isDragging ? '!border-brand-500 !bg-brand-50' : '!border-brand-900/20 !bg-[#F9FBFA]'}
+                        ${docFile ? '!border-solid !border-brand-500 !bg-white !cursor-default' : '!cursor-pointer hover:!border-brand-500 hover:!bg-white'}`}
                       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                       onDragLeave={() => setIsDragging(false)}
                       onDrop={(e) => {
@@ -600,26 +583,26 @@ const Register: React.FC = () => {
                     >
                       {docFile ? (
                         <div className="!flex !items-center !justify-center !gap-4">
-                          <FileText className="!w-8 !h-8 !text-emerald-400 !flex-shrink-0" />
+                          <FileText className="!w-8 !h-8 !text-brand-700 !flex-shrink-0" />
                           <div className="!text-left">
-                            <p className="!font-semibold !text-emerald-300">{docFile.name}</p>
-                            <p className="!text-xs !text-emerald-500">{(docFile.size / 1024).toFixed(1)} KB</p>
+                            <p className="!font-semibold !text-brand-700">{docFile.name}</p>
+                            <p className="!text-xs !text-brand-900/60">{(docFile.size / 1024).toFixed(1)} KB</p>
                           </div>
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setDocFile(null); }}
-                            className="!ml-auto !text-red-400 hover:!text-red-300 !text-sm !bg-red-900/30 !px-3 !py-1 !rounded-full !transition-colors"
+                            className="!ml-auto !text-red-400 hover:!text-[#991B1B] !text-sm !bg-[#FEE2E2] !px-3 !py-1 !rounded-full !transition-colors"
                           >
                             Quitar
                           </button>
                         </div>
                       ) : (
                         <div className="!space-y-2">
-                          <div className="!w-12 !h-12 !mx-auto !bg-emerald-700/50 !rounded-full !flex !items-center !justify-center">
-                            <Briefcase className="!w-6 !h-6 !text-emerald-400" />
+                          <div className="!w-12 !h-12 !mx-auto !bg-brand-50 !rounded-full !flex !items-center !justify-center">
+                            <Briefcase className="!w-6 !h-6 !text-brand-700" />
                           </div>
-                          <p className="!font-semibold !text-white">Arrastra tu documento aquí</p>
-                          <p className="!text-sm !text-emerald-400">
+                          <p className="!font-semibold !text-brand-900">Arrastra tu documento aquí</p>
+                          <p className="!text-sm !text-brand-700">
                             o <span className="!underline">haz clic para seleccionar</span>
                           </p>
                         </div>
@@ -637,12 +620,12 @@ const Register: React.FC = () => {
                     </div>
 
                     {apiError && (
-                      <p className="!text-xs !text-red-300">{apiError}</p>
+                      <p className="!text-xs !text-[#991B1B]">{apiError}</p>
                     )}
 
-                    <div className="!flex !items-start !gap-3 !p-4 !bg-emerald-800/30 !border !border-emerald-700/50 !rounded-xl">
-                      <AlertCircle className="!w-5 !h-5 !text-emerald-400 !flex-shrink-0 !mt-0.5" />
-                      <p className="!text-sm !text-emerald-200/80">
+                    <div className="!flex !items-start !gap-3 !p-4 !bg-[#EDF4F1] !border !border-brand-900/10 !rounded-xl">
+                      <AlertCircle className="!w-5 !h-5 !text-brand-700 !flex-shrink-0 !mt-0.5" />
+                      <p className="!text-sm !text-brand-900/70">
                         Nuestro equipo revisará tu solicitud en 1–2 días hábiles y te notificará
                         por correo al activar tu cuenta.
                       </p>
@@ -658,7 +641,7 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={handlePrevious}
-                    className="!flex-1 !py-4 !px-6 !bg-emerald-800 !text-emerald-200 !font-bold !rounded-full hover:!bg-emerald-700 !transition-all"
+                    className="!flex-1 !py-4 !px-6 !bg-white !border-[1.5px] !border-brand-900/15 !text-brand-900 !font-bold !rounded-xl hover:!bg-[#EDF4F1] !transition-all"
                   >
                     Atrás
                   </button>
@@ -668,7 +651,7 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="!flex-1 !py-4 !px-6 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !rounded-full !transition-all !flex !items-center !justify-center !gap-2"
+                    className="!flex-1 !py-4 !px-6 !bg-brand-900 !text-white hover:!bg-[#044443] !font-bold !rounded-xl !shadow-[0_4px_14px_rgba(7,61,61,0.22)] !transition-all !flex !items-center !justify-center !gap-2"
                   >
                     Siguiente <ArrowRight className="!w-5 !h-5" />
                   </button>
@@ -676,7 +659,7 @@ const Register: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="!flex-1 !py-4 !px-6 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !rounded-full !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
+                    className="!flex-1 !py-4 !px-6 !bg-brand-900 !text-white hover:!bg-[#044443] !font-bold !rounded-xl !shadow-[0_4px_14px_rgba(7,61,61,0.22)] !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
                   >
                     {isLoading ? <Loader2 className="!w-5 !h-5 !animate-spin" /> : 'Crear Cuenta'}
                   </button>
@@ -686,8 +669,8 @@ const Register: React.FC = () => {
           </form>
 
           <div className="!mt-8 !text-center">
-            <span className="!text-emerald-200/80">¿Ya tienes cuenta? </span>
-            <Link to="/login" className="!text-white !font-bold hover:!text-emerald-300 !underline !decoration-2 !underline-offset-4 !transition-colors">
+            <span className="!text-brand-900/70">¿Ya tienes cuenta? </span>
+            <Link to="/login" className="!text-brand-900 !font-bold hover:!text-brand-700 !underline !decoration-2 !underline-offset-4 !transition-colors">
               Iniciar sesión
             </Link>
           </div>

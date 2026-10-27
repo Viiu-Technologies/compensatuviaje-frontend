@@ -123,22 +123,8 @@
   text-align: left;
 }
 
-/* overflow: hidden es lo que hace posible la animacion de reveal (la linea
-   entra desde abajo y el contenedor la enmascara). El padding lateral de
-   0.02em era demasiado justo: recortaba el trazo inclinado de la ultima
-   cursiva aunque el <em> reservase su propio espacio. Se amplia a 0.12em y se
-   compensa con el margin, asi que el bloque ocupa lo mismo que antes. */
-.hero-line {
-  display: block;
-  overflow: hidden;
-  padding: 0.08em 0.12em;
-  margin: -0.08em -0.12em;
-}
-
-.hero-line__inner {
-  display: inline-block;
-  will-change: transform;
-}
+/* .hero-line y .hero-line__inner viven en landing/tokens.css: los usan los
+   títulos de todas las secciones, no solo este hero. */
 
 /* El trazo de una cursiva sobresale por la derecha del ancho de avance que
    calcula el navegador. background-clip: text recorta el degradado justo a esa
