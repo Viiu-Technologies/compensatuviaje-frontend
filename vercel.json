@@ -29,6 +29,10 @@
       "destination": "https://compensatuviaje-backend-production.up.railway.app/api/news/page/:slug"
     },
     {
+      "source": "/:page(calculadora|contacto|aliados|pagos|terminos|privacidad|reembolsos|cookies)",
+      "destination": "/:page/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

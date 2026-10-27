@@ -1,0 +1,17 @@
+/* Espacio reservado de una sección diferida: alto parecido al real por ancho,
+   para que la página no salte cuando la sección se monta. */
+.ctv-deferred {
+  min-height: var(--deferred-h-mobile);
+}
+
+@media (min-width: 640px) {
+  .ctv-deferred {
+    min-height: var(--deferred-h-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ctv-deferred {
+    min-height: var(--deferred-h-desktop);
+  }
+}

@@ -7,7 +7,9 @@
   background: var(--ctv-canvas-2);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  padding: var(--ctv-section-y) 0;
+  /* Abajo menos aire: el portafolio sigue con el mismo fondo y sus rellenos
+     se sumaban (~200 px vacíos entre ambas). */
+  padding: var(--ctv-section-y) 0 clamp(3rem, 6vw, 4.5rem);
   position: relative;
   overflow: hidden;
 }
@@ -222,8 +224,9 @@
   outline: none;
   background: transparent;
   color: var(--ctv-ink);
-  font-family: var(--ctv-font-body);
-  font-size: 0.95rem;
+  /* Recibe códigos de certificado e IDs: tipografía de dato. */
+  font-family: var(--ctv-font-mono);
+  font-size: 0.9rem;
   padding: 0.85rem 0;
   min-width: 0;
 }

@@ -1,6 +1,7 @@
 // ==========================================================================
-// Header.tsx — Liquid Glass Unified Surface Header (Estilo Wren)
-// Compacto, limpio, horizontal, sin footer ni exceso de descripciones.
+// Header.tsx — Barra superior clara, plana y de ancho completo.
+// Se oculta al bajar y reaparece al subir o al acercar el mouse al borde
+// superior. Sobre secciones oscuras (escena final del hero) pasa a texto claro.
 // ==========================================================================
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -27,6 +28,8 @@ import {
   HiSupport
 } from 'react-icons/hi';
 import { prefetchRoute, PrefetchKey } from '../../../shared/utils/routePrefetch';
+import { scrollToSection } from './DeferredSection';
+import { useHeaderTheme } from '../hooks/useHeaderTheme';
 import './Header.css';
 
 interface DropdownItem {
@@ -34,7 +37,6 @@ interface DropdownItem {
   href: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  iconTheme?: 'green' | 'orange' | 'teal' | 'purple' | 'blue' | 'pink';
   prefetchKey?: PrefetchKey;
 }
 
@@ -54,7 +56,6 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/calculadora',
         description: 'Calcula y neutraliza tu huella de vuelo.',
         icon: HiCalculator,
-        iconTheme: 'green',
         prefetchKey: 'calculator',
       },
       {
@@ -62,14 +63,12 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/#proyectos',
         description: 'Conservación en Patagonia y Amazonía.',
         icon: FaTree,
-        iconTheme: 'teal',
       },
       {
         label: 'Empresas & B2B',
         href: '/#empresas',
         description: 'Gestión Scope 3 y API corporativa.',
         icon: HiOfficeBuilding,
-        iconTheme: 'orange',
       },
     ],
   },
@@ -82,14 +81,12 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/#verificar',
         description: 'Certificados NFT trazables en Polygon.',
         icon: FaCube,
-        iconTheme: 'purple',
       },
       {
         label: 'Metodología & Estándares',
         href: '/calculadora#metodologia',
         description: 'Factores oficiales DEFRA y GHG Protocol.',
         icon: FaShieldAlt,
-        iconTheme: 'teal',
         prefetchKey: 'calculator',
       },
       {
@@ -97,7 +94,6 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/pagos',
         description: 'Webpay Plus, Visa y Mastercard seguros.',
         icon: HiCreditCard,
-        iconTheme: 'green',
         prefetchKey: 'payments',
       },
     ],
@@ -111,7 +107,6 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/blog',
         description: 'Guías de ecología y viajes conscientes.',
         icon: FaNewspaper,
-        iconTheme: 'pink',
         prefetchKey: 'blog',
       },
       {
@@ -119,7 +114,6 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/aliados',
         description: 'Programa para agencias, aerolíneas y hoteles.',
         icon: FaHandshake,
-        iconTheme: 'orange',
         prefetchKey: 'partners',
       },
       {
@@ -127,11 +121,19 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/contacto',
         description: 'Centro oficial de ayuda y consultas.',
         icon: HiSupport,
-        iconTheme: 'blue',
         prefetchKey: 'contact',
       },
     ],
   },
+];
+
+// En escritorio: dos menús desplegables y dos enlaces directos. "Recursos" va
+// como fila secundaria al pie de cada menú; en móvil el cajón tiene los tres.
+const DESKTOP_GROUPS = NAV_GROUPS.filter((g) => g.id !== 'recursos');
+const RESOURCE_ITEMS = NAV_GROUPS.find((g) => g.id === 'recursos')?.items ?? [];
+const DIRECT_LINKS = [
+  { label: 'Proyectos', href: '/#proyectos' },
+  { label: 'Empresas', href: '/#empresas' },
 ];
 
 // Física de resorte orgánica, rápida y precisa
@@ -147,16 +149,30 @@ const LIQUID_SPRING: Transition = {
 const HIDE_AFTER_PX = 120;
 const SCROLL_DELTA_PX = 8;
 
+// Con el header oculto, acercar el mouse a menos de REVEAL_ZONE_PX del borde
+// superior lo muestra; sigue visible mientras el mouse no baje de KEEP_ZONE_PX
+// (el alto del header más un margen para alcanzar los menús).
+const REVEAL_ZONE_PX = 56;
+const KEEP_ZONE_PX = 110;
+
 const prefetchGroup = (groupId: string) => {
   NAV_GROUPS.find((g) => g.id === groupId)?.items.forEach((item) => {
     if (item.prefetchKey) prefetchRoute(item.prefetchKey);
   });
 };
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  /** Sin fondo mientras la página está arriba del todo (la landing, cuyo hero
+   *  ya es claro). En el resto de páginas el header siempre tiene fondo. */
+  transparentAtTop?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ transparentAtTop = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [peek, setPeek] = useState(false);
+  const theme = useHeaderTheme();
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [mobileExpandedGroup, setMobileExpandedGroup] = useState<string | null>('soluciones');
 
@@ -216,6 +232,27 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  /* ── Mouse cerca del borde superior: mostrar el header aunque esté oculto ──
+     Solo con mouse (en táctil no hay "acercarse"). */
+  useEffect(() => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    let frame = 0;
+    let y = Infinity;
+    const update = () => {
+      frame = 0;
+      setPeek((was) => y <= REVEAL_ZONE_PX || (was && y <= KEEP_ZONE_PX));
+    };
+    const onMove = (e: MouseEvent) => {
+      y = e.clientY;
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
   /* ── Scroll a anclas (#proyectos, #metodologia…) tras navegar ──
      Se difiere con setTimeout para correr después de los scrollTo(0, 0) que
      hacen algunas páginas al montar, y reintenta porque varias secciones del
@@ -228,7 +265,8 @@ const Header: React.FC = () => {
     const tryScroll = () => {
       const el = document.getElementById(id);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+        // Monta las secciones diferidas del landing y reajusta al terminar de cargar.
+        scrollToSection(id);
       } else if (++tries < 20) {
         timer = setTimeout(tryScroll, 100);
       }
@@ -375,7 +413,29 @@ const Header: React.FC = () => {
     }, 240);
   };
 
-  const isHidden = hidden && !isExpanded && !isMenuOpen;
+  const isHidden = hidden && !peek && !isExpanded && !isMenuOpen;
+  const isTransparent = transparentAtTop && !scrolled && !isExpanded;
+  const onLanding = location.pathname === '/';
+
+  // En la landing la calculadora está en el hero: se baja hasta ella. En el
+  // resto de páginas se va a /calculadora.
+  const handleCalculatorCta = (e: React.MouseEvent) => {
+    setActiveGroup(null);
+    if (!onLanding) return;
+    e.preventDefault();
+    scrollToSection('calculadora');
+  };
+
+  const surfaceClass = [
+    'ctv-liquid-surface',
+    scrolled && 'ctv-liquid-surface--scrolled',
+    isExpanded && 'ctv-liquid-surface--expanded',
+    isHidden && 'ctv-liquid-surface--hidden',
+    isTransparent && 'ctv-liquid-surface--transparent',
+    theme === 'dark' && !isExpanded && 'ctv-liquid-surface--dark',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   // reducedMotion="user": las animaciones de Motion (panel, chevrons, cards)
   // respetan "reducir movimiento" del sistema, como ya lo hacía el CSS.
@@ -391,7 +451,7 @@ const Header: React.FC = () => {
           animar con fisica (el panel desplegable, mas abajo). */}
       <header
         ref={headerRef}
-        className={`ctv-liquid-surface${scrolled ? ' ctv-liquid-surface--scrolled' : ''}${isExpanded ? ' ctv-liquid-surface--expanded' : ''}${isHidden ? ' ctv-liquid-surface--hidden' : ''}`}
+        className={surfaceClass}
         onMouseLeave={handleMouseLeaveHeader}
         onFocus={() => setHidden(false)}
       >
@@ -401,19 +461,16 @@ const Header: React.FC = () => {
         {/* ── Barra Superior (Siempre visible y anclada al cuerpo del cristal) ── */}
         <div className="ctv-liquid-bar">
           {/* Logo */}
+          {/* El logo blanco se usa como máscara y toma el color del texto: el
+              mismo archivo (56 KB) sirve sobre fondo claro y oscuro. La versión
+              oscura pesa 181 KB. */}
           <Link to="/" onClick={closeMenu} className="ctv-liquid-logo" aria-label="Compensatuviaje - Inicio">
-            <img
-              src="/images/brand/logo-horizontal-white.svg"
-              alt="Compensatuviaje"
-              className="ctv-liquid-logo__img"
-              width="168"
-              height="36"
-            />
+            <span className="ctv-liquid-logo__mark" aria-hidden="true" />
           </Link>
 
           {/* Navegación Desktop: Disparadores con sombra sutil y sin bordes pesados */}
           <nav className="ctv-liquid-nav" aria-label="Navegación principal">
-            {NAV_GROUPS.map((group) => {
+            {DESKTOP_GROUPS.map((group) => {
               const isCurrentActive = activeGroup === group.id;
               const hasActiveChild = group.items.some(
                 (item) => !item.href.startsWith('/#') && location.pathname === item.href
@@ -442,67 +499,59 @@ const Header: React.FC = () => {
               );
             })}
 
-            {/* Direct Quick Link: Calculadora estilo Wren ("For business [New]") */}
-            <Link 
-              to="/calculadora" 
-              className="ctv-liquid-nav__trigger ctv-liquid-nav__trigger--link"
-              onClick={() => setActiveGroup(null)}
-              onMouseEnter={() => prefetchRoute('calculator')}
-            >
-              <span>Calculadora</span>
-            </Link>
+            {DIRECT_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="ctv-liquid-nav__trigger ctv-liquid-nav__trigger--link"
+                onClick={() => setActiveGroup(null)}
+              >
+                <span>{link.label}</span>
+              </Link>
+            ))}
           </nav>
 
           {/* Botones de Acción (Paleta Oficial de Marca) */}
           <div className="ctv-liquid-actions">
             {isAuthenticated ? (
               <>
-                <Link to={dashboardPath} className="ctv-btn-liquid ctv-btn-liquid--ghost">
+                <Link to={dashboardPath} className="ctv-btn-liquid ctv-btn-liquid--ghost ctv-liquid-actions__desk">
                   <FaChartBar />
                   <span>Dashboard</span>
                 </Link>
 
-                <div className="ctv-liquid-user">
+                <div className="ctv-liquid-user ctv-liquid-actions__desk">
                   <div className="ctv-liquid-user__avatar">
                     <FaUser />
                   </div>
                   <span className="ctv-liquid-user__name">
-                    {user?.firstName || user?.name}
+                    {user?.name}
                   </span>
                 </div>
 
-                <button onClick={handleLogout} className="ctv-btn-liquid ctv-btn-liquid--ghost">
+                <button onClick={handleLogout} className="ctv-btn-liquid ctv-btn-liquid--ghost ctv-liquid-actions__desk">
                   Salir
                 </button>
               </>
             ) : (
-              <>
-                <Link 
-                  to="/login" 
-                  className="ctv-btn-liquid ctv-btn-liquid--ghost"
-                  onMouseEnter={() => prefetchRoute('login')}
-                  onClick={() => setActiveGroup(null)}
-                >
-                  Entrar
-                </Link>
-                <Link
-                  to="/register"
-                  className="ctv-btn-liquid ctv-btn-liquid--outline ctv-liquid-actions__register"
-                  onClick={() => setActiveGroup(null)}
-                >
-                  Registrarse
-                </Link>
-                <Link 
-                  to="/calculadora" 
-                  className="ctv-btn-liquid ctv-btn-liquid--glow"
-                  onMouseEnter={() => prefetchRoute('calculator')}
-                  onClick={() => setActiveGroup(null)}
-                >
-                  <span>Compensar Vuelo</span>
-                  <HiArrowRight className="ctv-btn-liquid__arrow" />
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="ctv-btn-liquid ctv-btn-liquid--ghost ctv-liquid-actions__desk"
+                onMouseEnter={() => prefetchRoute('login')}
+                onClick={() => setActiveGroup(null)}
+              >
+                Entrar
+              </Link>
             )}
+            {/* Visible desde el primer cuadro, también en móvil. */}
+            <Link
+              to={onLanding ? '/#calculadora' : '/calculadora'}
+              className="ctv-btn-liquid ctv-btn-liquid--cta"
+              onMouseEnter={() => !onLanding && prefetchRoute('calculator')}
+              onClick={handleCalculatorCta}
+            >
+              Calcula tu huella
+            </Link>
           </div>
 
           {/* Botón Móvil */}
@@ -565,7 +614,7 @@ const Header: React.FC = () => {
                       }}
                       onMouseEnter={() => item.prefetchKey && prefetchRoute(item.prefetchKey)}
                     >
-                      <div className={`ctv-liquid-card__icon-wrap ctv-liquid-card__icon-wrap--${item.iconTheme || 'green'}`}>
+                      <div className="ctv-liquid-card__icon-wrap">
                         <Icon className="ctv-liquid-card__icon" />
                       </div>
 
@@ -587,6 +636,22 @@ const Header: React.FC = () => {
                     </Link>
                   );
                 })}
+              </div>
+
+              {/* Recursos: fila secundaria al pie de cada menú */}
+              <div className="ctv-liquid-more">
+                <span className="ctv-liquid-more__label">Recursos</span>
+                {RESOURCE_ITEMS.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className="ctv-liquid-more__link"
+                    onClick={closeMenu}
+                    onMouseEnter={() => item.prefetchKey && prefetchRoute(item.prefetchKey)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
               </motion.div>
               </AnimatePresence>
@@ -651,7 +716,7 @@ const Header: React.FC = () => {
 
                         const inner = (
                           <>
-                            <div className={`ctv-liquid-drawer__item-icon ctv-liquid-card__icon-wrap--${item.iconTheme || 'green'}`}>
+                            <div className="ctv-liquid-drawer__item-icon">
                               <Icon />
                             </div>
                             <div className="ctv-liquid-drawer__item-text">
@@ -699,10 +764,10 @@ const Header: React.FC = () => {
                   </div>
                   <div>
                     <p className="ctv-liquid-drawer__user-name">
-                      {user?.firstName || user?.name}
+                      {user?.name}
                     </p>
                     <p className="ctv-liquid-drawer__user-role">
-                      {user?.roles?.[0] || 'Usuario'}
+                      Usuario
                     </p>
                   </div>
                 </div>
@@ -724,11 +789,14 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Link
-                  to="/calculadora"
-                  onClick={closeMenu}
+                  to={onLanding ? '/#calculadora' : '/calculadora'}
+                  onClick={(e) => {
+                    closeMenu();
+                    handleCalculatorCta(e);
+                  }}
                   className="ctv-btn-liquid ctv-btn-liquid--glow ctv-btn-liquid--full"
                 >
-                  <span>Compensar Vuelo Ahora</span>
+                  <span>Calcula tu huella</span>
                   <HiArrowRight />
                 </Link>
                 <div className="ctv-liquid-drawer__auth-row">

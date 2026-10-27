@@ -1,0 +1,98 @@
+# Cómo trabajar en el frontend
+
+Guía para levantar el proyecto y para contribuir sin pisarnos. Si algo de aquí
+no funciona, corrígelo en un PR: esta guía es de todos.
+
+## Levantar el proyecto en local
+
+### Requisitos
+
+- **Node 22**
+- **pnpm 11.** El proyecto fija la versión en `package.json`; con
+  `corepack enable` se usa la correcta sola. No uses `npm install`: el lockfile
+  del proyecto es `pnpm-lock.yaml`.
+- **El backend corriendo** en `http://localhost:3002` (ver el `CONTRIBUTING.md`
+  del repo del backend).
+
+### Pasos
+
+```bash
+corepack enable
+pnpm install
+
+cp .env.example .env     # ya apunta al backend local
+
+pnpm dev                 # http://localhost:3000
+```
+
+En `/login` aparece el recuadro **"Entorno local de pruebas"** (solo en
+desarrollo) con acceso a cada perfil:
+
+- **Persona (B2C):** botón "Entrar como persona de prueba", sin Google.
+- **Empresa y partner:** botones que rellenan `empresa@example.com` y
+  `partner@example.com` (contraseña `Prueba1234!`).
+- **Superadmin:** `superadmin@compensatuviaje.com` / `ChangeMeInProduction!`.
+
+Las cuentas las crea el seed del backend. Cómo probar pagos, archivos y el resto
+de los flujos está en `backend/docs/entorno-local.md`, en el repo del backend.
+
+### Comandos útiles
+
+| Comando | Para qué |
+|---|---|
+| `pnpm dev` | Servidor de desarrollo en el puerto 3000 |
+| `pnpm build` | Compilar como en producción (lo mismo que corre el CI) |
+| `pnpm typecheck` | Revisar tipos de TypeScript |
+| `pnpm preview` | Ver el build de producción en local |
+
+## Cómo contribuir
+
+### Ramas
+
+- **`develop` junta el trabajo de todos.** Las ramas salen de `develop` y vuelven
+  a `develop` por Pull Request. Nadie hace push directo a `develop` ni a `main`.
+- **`main` es producción.** Solo recibe las salidas a producción desde
+  `develop`, y solo las hacen los líderes.
+- **Una rama por tarea del backlog**, con su ID de Notion:
+  `feat/CTV-23-ingresos-separados`, `fix/CTV-41-refresh-token`.
+- **Las ramas viven máximo 2 días.** Si la tarea es más grande, divídela en
+  varios PRs.
+- **Actualiza tu rama con `develop` todos los días:**
+
+  ```bash
+  git fetch origin
+  git rebase origin/develop
+  ```
+
+### Pull Requests
+
+- **Chicos: menos de ~400 líneas.** Un PR enorme generado con IA parece
+  correcto y nadie lo revisa de verdad.
+- **El CI tiene que estar en verde.** Compila en cada PR. Por ahora no bloquea
+  el merge automáticamente: el acuerdo es no hacer merge en rojo.
+- **Nadie aprueba su propio PR.** Revisa el líder del área (ver
+  `.github/CODEOWNERS`). Si el PR toca dos áreas, revisan los dos.
+- Si cambia la interfaz, adjunta una captura y revísalo también en celular.
+- **Nunca muestres datos inventados como si fueran reales.** Si el backend no
+  devuelve datos o falla, se muestra un estado vacío o un error con
+  "Reintentar", no cifras de ejemplo.
+
+### Archivos calientes
+
+Los toca todo el mundo y ahí nacen casi todos los conflictos:
+
+- `src/App.tsx` (rutas)
+- `src/shared/services/` (clientes de la API)
+- `package.json` y `pnpm-lock.yaml`
+
+Reglas:
+
+- Avisa en el chat antes de tocarlos.
+- Van en un **PR propio y chico**, separado de la funcionalidad.
+- En un conflicto de `pnpm-lock.yaml`, no lo edites a mano: acepta la versión de
+  `develop` y corre `pnpm install`.
+
+### Variables de entorno
+
+Si agregas una variable `VITE_`, documéntala en `.env.example` en el mismo PR.
+Recuerda que todas son públicas: lo secreto va en el backend.

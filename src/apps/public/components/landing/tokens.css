@@ -42,8 +42,12 @@
   /* texto principal                    */
   --ctv-ink-soft: #40605C;
   /* texto secundario                   */
-  --ctv-ink-mute: #7E9491;
-  /* labels, captions, meta             */
+  --ctv-ink-mute: #4E716F;
+  /* labels, captions, meta. Antes #7E9491: 2,9–3,2:1 sobre los fondos claros,
+     por debajo del 4,5:1 que pide WCAG AA para texto chico (Lighthouse lo
+     marcaba en las etiquetas de la calculadora). #4E716F es el mismo gris
+     teal oscurecido hacia la tinta: 4,7:1 o más sobre blanco, canvas,
+     canvas-2 y brand-soft. */
   --ctv-rule: rgba(7, 61, 61, 0.10);
   --ctv-rule-strong: rgba(7, 61, 61, 0.22);
 
@@ -142,9 +146,10 @@
   /* ── Tipografía ──
      Las familias declaradas aquí DEBEN estar en el <link> de Google Fonts
      de index.html. Outfit es la display del branding vigente (commit 0ac5043). */
-  --ctv-font-display: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-  --ctv-font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --ctv-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ctv-font-display: 'Outfit', 'Outfit Fallback', 'Inter', system-ui, -apple-system, sans-serif;
+  --ctv-font-body: 'Inter', 'Inter Fallback', system-ui, -apple-system, sans-serif;
+  /* Cifras, códigos IATA, hashes y factores. Usar con font-variant-numeric: tabular-nums. */
+  --ctv-font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ctv-display-weight: 600;
   --ctv-display-tracking: -0.005em;
 
@@ -171,17 +176,29 @@
   --ctv-gutter: clamp(1rem, 4vw, 2.5rem);
 }
 
-/* Estado inicial para reveals GSAP (evita flash antes del mount) */
-.ctv-reveal {
-  opacity: 0;
+/* .ctv-reveal marca lo que anima al entrar, pero ya no lo oculta: el
+   contenido es visible por defecto. GSAP lo esconde recién al montar la
+   sección (antes de pintar, sin parpadeo) y solo si está bajo el pliegue.
+   Antes este opacity: 0 dejaba bloques vacíos si el JS llegaba tarde. */
+
+/* ── Títulos partidos en líneas ──
+   Las secciones parten sus títulos en <span class="hero-line"> (una línea por
+   span). Estas reglas vivían en Hero.css y, al dejar de cargarse ese hero, los
+   títulos quedaban en una sola línea con las palabras pegadas. */
+/* overflow: hidden es lo que hace posible la animacion de reveal (la linea
+   entra desde abajo y el contenedor la enmascara). El padding lateral de
+   0.02em era demasiado justo: recortaba el trazo inclinado de la ultima
+   cursiva aunque el <em> reservase su propio espacio. Se amplia a 0.12em y se
+   compensa con el margin, asi que el bloque ocupa lo mismo que antes. */
+.hero-line {
+  display: block;
+  overflow: hidden;
+  padding: 0.08em 0.12em;
+  margin: -0.08em -0.12em;
 }
 
-.ctv-reveal--ready {
-  opacity: 1;
+.hero-line__inner {
+  display: inline-block;
+  will-change: transform;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ctv-reveal {
-    opacity: 1 !important;
-  }
-}

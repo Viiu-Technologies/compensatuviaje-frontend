@@ -1,0 +1,35 @@
+# Quién revisa qué en el frontend.
+#
+# REEMPLAZAR antes de usar: @LIDER_A, @LIDER_B y @NILTON por los usuarios de
+# GitHub reales (o por equipos de la organización, como @techviiu/equipo-a).
+#
+# En repositorios privados, GitHub solo aplica este archivo con un plan pago
+# (Team o Pro). Sin ese plan, sirve como acuerdo escrito: el PR lo revisa y
+# aprueba el dueño del área que toca. Si toca dos áreas, revisan los dos.
+#
+# La última regla que coincide gana: lo general va arriba, lo específico abajo.
+
+# Por defecto, plataforma.
+*                         @NILTON
+
+# Equipo A — B2C, landing y certificados
+/src/apps/b2c/            @LIDER_A
+/src/apps/public/         @LIDER_A
+/src/shared/components/blockchain/  @LIDER_A
+
+# Equipo B — B2B, partner y admin
+/src/apps/b2b/            @LIDER_B
+/src/apps/partner/        @LIDER_B
+/src/apps/admin/          @LIDER_B
+
+# Archivos calientes: los toca todo el mundo y ahí nacen los conflictos.
+# Siempre en un PR propio, revisado por plataforma y por ambos líderes.
+/src/App.tsx              @NILTON @LIDER_A @LIDER_B
+/src/shared/services/     @NILTON @LIDER_A @LIDER_B
+/package.json             @NILTON @LIDER_A @LIDER_B
+/pnpm-lock.yaml           @NILTON
+/vite.config.ts           @NILTON
+
+# Plataforma: CI y autenticación compartida.
+/.github/                 @NILTON
+/src/apps/auth/           @NILTON

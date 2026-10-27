@@ -248,8 +248,12 @@
 }
 
 .es-m-val {
+  /* Tipografía de dato: cifras en mono con ancho fijo por dígito. */
+  font-family: var(--ctv-font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: var(--ctv-brand-deep);
   line-height: 1.1;
 }
@@ -300,7 +304,7 @@
   flex-shrink: 0;
 }
 
-.es-f-text h4 {
+.es-f-text h3 {
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--ctv-brand-deep);

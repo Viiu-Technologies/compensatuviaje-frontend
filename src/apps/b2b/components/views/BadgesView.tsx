@@ -27,7 +27,7 @@ interface Badge {
   id: string;
   name: string;
   description: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   category: 'impact' | 'milestone' | 'special' | 'community';
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   progress: number;

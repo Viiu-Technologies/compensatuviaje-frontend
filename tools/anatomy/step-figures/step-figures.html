@@ -1,0 +1,1769 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Figuras de Cómo funciona</title><style>/* src/shared/iso/iso.css */
+.iso {
+  --anatomy-page:#0b0b0b;
+  --anatomy-card:#131313;
+  --anatomy-text:#a3a3a3;
+  --anatomy-strong:#e6e6e6;
+  --anatomy-muted:#6e6e6e;
+  --anatomy-paper:#131313;
+  --anatomy-face:#1b1b1b;
+  --anatomy-top:#1c1c1c;
+  --anatomy-shade-0:#0f0f0f;
+  --anatomy-shade-1:#121212;
+  --anatomy-shade-2:#151515;
+  --anatomy-shade-3:#181818;
+  --anatomy-lit-top:#262626;
+  --anatomy-lit-shade:#1d1d1d;
+  --anatomy-hi:#d4d4d4;
+  --anatomy-mid:#6a6a6a;
+  --anatomy-lo:#3e3e3e;
+  --anatomy-faint:#2a2a2a;
+  --anatomy-lit:#ffffff;
+  --anatomy-halo:#050505;
+  --anatomy-halo-opacity:.9;
+  --anatomy-dot:#e6e6e6;
+  --anatomy-red:#ff6b6b;
+  --anatomy-green:#6be0a0;
+  --anatomy-blue:#6b9bff;
+  --anatomy-weight:.6px;
+  --anatomy-ease:cubic-bezier(.32,.72,0,1);
+  --anatomy-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff0a,inset 0 0 0 1px #ffffff06,0 0 0 1px #00000026,0 1px 1px -.5px #00000014,0 3px 3px -1.5px #00000014,0 6px 6px -3px #00000014,0 12px 12px -6px #00000014;
+}
+.iso[data-theme=light] {
+  --anatomy-page:#f2f2ef;
+  --anatomy-card:#fbfbfa;
+  --anatomy-text:#57575a;
+  --anatomy-strong:#18181a;
+  --anatomy-muted:#8c8c90;
+  --anatomy-paper:#fbfbfa;
+  --anatomy-face:#ffffff;
+  --anatomy-top:#ffffff;
+  --anatomy-shade-0:#dcdcd9;
+  --anatomy-shade-1:#e5e5e2;
+  --anatomy-shade-2:#ededea;
+  --anatomy-shade-3:#f4f4f1;
+  --anatomy-lit-top:#ffffff;
+  --anatomy-lit-shade:#eeeeeb;
+  --anatomy-hi:#26262a;
+  --anatomy-mid:#8a8a8f;
+  --anatomy-lo:#b4b4b8;
+  --anatomy-faint:#d4d4d6;
+  --anatomy-lit:#000000;
+  --anatomy-halo:#8a8a80;
+  --anatomy-halo-opacity:.32;
+  --anatomy-dot:#3a3a3e;
+  --anatomy-red:#e5484d;
+  --anatomy-green:#30a46c;
+  --anatomy-blue:#3e63dd;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.iso-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.iso-svg path,
+.iso-svg circle {
+  vector-effect: non-scaling-stroke;
+}
+.iso-fill {
+  fill: var(--anatomy-paper);
+  stroke: none;
+}
+.iso-solid[data-lit] > .iso-fill {
+  fill: var(--anatomy-face);
+}
+.iso-shade,
+.iso-top {
+  stroke: none;
+}
+.iso-shade[data-shade="0"] {
+  fill: var(--anatomy-shade-0);
+}
+.iso-shade[data-shade="1"] {
+  fill: var(--anatomy-shade-1);
+}
+.iso-shade[data-shade="2"] {
+  fill: var(--anatomy-shade-2);
+}
+.iso-shade[data-shade="3"] {
+  fill: var(--anatomy-shade-3);
+}
+.iso-top {
+  fill: var(--anatomy-top);
+}
+.iso-solid[data-lit] > .iso-top {
+  fill: var(--anatomy-lit-top);
+}
+.iso-solid[data-lit] > .iso-shade {
+  fill: var(--anatomy-lit-shade);
+}
+.iso-solid[data-seamless] > .iso-shade,
+.iso-solid[data-seamless] > .iso-top {
+  stroke-width: .4;
+  stroke-linejoin: round;
+}
+.iso-solid[data-seamless] > .iso-shade[data-shade="0"] {
+  stroke: var(--anatomy-shade-0);
+}
+.iso-solid[data-seamless] > .iso-shade[data-shade="1"] {
+  stroke: var(--anatomy-shade-1);
+}
+.iso-solid[data-seamless] > .iso-shade[data-shade="2"] {
+  stroke: var(--anatomy-shade-2);
+}
+.iso-solid[data-seamless] > .iso-shade[data-shade="3"] {
+  stroke: var(--anatomy-shade-3);
+}
+.iso-solid[data-seamless] > .iso-top {
+  stroke: var(--anatomy-top);
+}
+.iso-solid[data-seamless][data-lit] > .iso-top {
+  stroke: var(--anatomy-lit-top);
+}
+.iso-solid[data-seamless][data-lit] > .iso-shade {
+  stroke: var(--anatomy-lit-shade);
+}
+.iso-solid[data-lit] > .iso-edge {
+  stroke: var(--anatomy-lit);
+}
+.iso-halo {
+  fill: var(--anatomy-halo);
+  stroke: none;
+  filter: blur(9px);
+  opacity: var(--anatomy-halo-opacity);
+  transform: translateY(3px);
+}
+.iso-line {
+  fill: none;
+  stroke: var(--anatomy-lo);
+  stroke-width: var(--anatomy-weight);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.iso-line[data-tone=hi] {
+  stroke: var(--anatomy-hi);
+}
+.iso-line[data-tone=mid] {
+  stroke: var(--anatomy-mid);
+}
+.iso-line[data-tone=lo] {
+  stroke: var(--anatomy-lo);
+}
+.iso-line[data-tone=faint] {
+  stroke: var(--anatomy-faint);
+}
+.iso-line[data-tone=lit] {
+  stroke: var(--anatomy-lit);
+}
+.iso-line[data-tone=red] {
+  stroke: var(--anatomy-red);
+}
+.iso-line[data-tone=green] {
+  stroke: var(--anatomy-green);
+}
+.iso-line[data-tone=blue] {
+  stroke: var(--anatomy-blue);
+}
+.iso-line[data-dotted] {
+  stroke-dasharray: .01 3.5;
+  stroke-width: 1;
+}
+.iso-line[data-dashed] {
+  stroke-dasharray: 3 3;
+}
+.iso-line[data-flow] {
+  stroke-dasharray: 2 6;
+}
+.iso-wire-end {
+  fill: var(--anatomy-paper);
+  stroke: var(--anatomy-lo);
+  stroke-width: var(--anatomy-weight);
+}
+.iso-wire[data-tone=hi] .iso-wire-end {
+  stroke: var(--anatomy-hi);
+}
+.iso-wire[data-tone=mid] .iso-wire-end {
+  stroke: var(--anatomy-mid);
+}
+.iso-wire[data-tone=faint] .iso-wire-end {
+  stroke: var(--anatomy-faint);
+}
+.iso-wire[data-tone=lit] .iso-wire-end {
+  stroke: var(--anatomy-lit);
+}
+.iso-dots circle {
+  fill: var(--anatomy-dot);
+  stroke: none;
+  opacity: .32;
+}
+.iso-dots[data-tone=hi] circle {
+  opacity: .85;
+}
+.iso-dots[data-tone=mid] circle {
+  opacity: .45;
+}
+.iso-dots[data-tone=lo] circle {
+  opacity: .22;
+}
+.iso-dots[data-tone=faint] circle {
+  opacity: .12;
+}
+.iso-face-text {
+  fill: var(--anatomy-mid);
+  font-family: var(--anatomy-mono);
+  letter-spacing: .04em;
+}
+.iso-face-text[data-tone=hi] {
+  fill: var(--anatomy-hi);
+}
+.iso-face-text[data-tone=lo] {
+  fill: var(--anatomy-lo);
+}
+.iso-face-text[data-tone=faint] {
+  fill: var(--anatomy-faint);
+}
+.tb-body {
+  fill: var(--anatomy-shade-2);
+  stroke: none;
+}
+.tb-shine {
+  fill: var(--anatomy-top);
+  stroke: none;
+}
+.tb-shade {
+  fill: var(--anatomy-shade-0);
+  stroke: none;
+}
+.tb-ring {
+  fill: none;
+  stroke: var(--anatomy-lo);
+  stroke-width: .45;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+}
+.tb-ring[data-tone=mid] {
+  stroke: var(--anatomy-mid);
+}
+.tb-ring[data-tone=faint] {
+  stroke: var(--anatomy-faint);
+}
+.tb-ring[data-tone=hi] {
+  stroke: var(--anatomy-hi);
+}
+@keyframes iso-flow {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+@keyframes iso-pulse {
+  0%, 100% {
+    opacity: .18;
+  }
+  12% {
+    opacity: 1;
+  }
+  40% {
+    opacity: .18;
+  }
+}
+.iso-line[data-flow] {
+  animation: iso-flow 1600ms linear infinite;
+}
+.iso-dots circle[data-pulse] {
+  animation: iso-pulse 1600ms steps(1, end) infinite;
+  animation-delay: var(--pulse-at,0ms);
+}
+.iso-figure {
+  margin: 32px 0 36px;
+}
+.iso-plate {
+  position: relative;
+  padding: 52px 24px;
+  border-radius: 0;
+  background: var(--anatomy-card);
+  box-shadow: 0 0 0 1px var(--anatomy-mid);
+  --anatomy-paper:var(--anatomy-card);
+}
+.iso-plate-corners {
+  position: absolute;
+  inset: 18px 20px;
+  pointer-events: none;
+}
+.iso-plate-corner {
+  position: absolute;
+  color: var(--anatomy-muted);
+  font-family: var(--anatomy-mono);
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.iso-plate-corner[data-corner=fig] {
+  top: 0;
+  left: 0;
+  color: var(--anatomy-text);
+}
+.iso-plate-corner[data-corner=title] {
+  top: 0;
+  right: 0;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.iso-plate-corner[data-corner=hint] {
+  bottom: 0;
+  left: 0;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.iso-plate-corner[data-corner=readout] {
+  right: 0;
+  bottom: 0;
+  color: var(--anatomy-text);
+  font-variant-numeric: tabular-nums;
+}
+.iso-plate .iso-svg {
+  margin: 0 auto;
+}
+.iso-legend {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--anatomy-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.iso-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+.iso-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.iso-swatch {
+  width: 16px;
+  height: 10px;
+  flex: none;
+  overflow: visible;
+}
+.iso-swatch path {
+  fill: none;
+  stroke: var(--anatomy-hi);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.iso-swatch[data-mark=raised] path,
+.iso-swatch[data-mark=flat] path {
+  stroke: var(--anatomy-mid);
+}
+.iso-swatch[data-mark=lit] path {
+  stroke: var(--anatomy-lit);
+}
+.iso-swatch[data-mark=dim] path {
+  stroke: var(--anatomy-lo);
+}
+.iso-swatch[data-mark=dotted] path {
+  stroke-dasharray: .01 3;
+  stroke-width: 1.4;
+}
+.iso-swatch[data-mark=dashed] path {
+  stroke-dasharray: 3 2.5;
+}
+.iso-swatch[data-mark=red] path {
+  stroke: var(--anatomy-red);
+}
+.iso-swatch[data-mark=green] path {
+  stroke: var(--anatomy-green);
+}
+.iso-swatch[data-mark=blue] path {
+  stroke: var(--anatomy-blue);
+}
+.iso-swatch-crease {
+  stroke: var(--anatomy-lo) !important;
+}
+@media (max-width: 560px) {
+  .iso-plate {
+    padding: 48px 12px 70px;
+  }
+  .iso-plate-corner[data-corner=hint] {
+    bottom: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iso-line[data-flow],
+  .iso-dots circle[data-pulse] {
+    animation: none;
+  }
+}
+
+body{margin:0;background:#eef4f2;font:14px system-ui}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;padding:24px;max-width:1200px;margin:0 auto}
+.card{background:#fbfbfa;border-radius:16px;padding:8px 8px 12px;box-shadow:0 1px 3px #0001}
+.card svg{width:100%;height:auto;display:block}
+.card p{margin:6px 8px 0;font:12px ui-monospace,Consolas,monospace;color:#57575a}
+</style></head><body class="iso" data-theme="light"><main></main><script type="module">// src/shared/iso/iso-kit.ts
+var AZIMUTH = 45;
+var ELEVATION = 30;
+var SHADES = 4;
+var RADIANS = Math.PI / 180;
+var UNIT = Math.sqrt(1.6);
+function cameraOf({ scale, azimuth = AZIMUTH, elevation = ELEVATION }) {
+  const a = azimuth * RADIANS;
+  const e = elevation * RADIANS;
+  return { sinA: Math.sin(a), cosA: Math.cos(a), sinE: Math.sin(e), cosE: Math.cos(e), k: scale * UNIT };
+}
+function iso([x, y, z], projection) {
+  const { origin } = projection;
+  const { sinA, cosA, sinE, cosE, k } = cameraOf(projection);
+  return [origin[0] + (x * sinA - y * cosA) * k, origin[1] + ((x * cosA + y * sinA) * sinE - z * cosE) * k];
+}
+function towardViewer(projection) {
+  const { sinA, cosA } = cameraOf(projection);
+  return [cosA, sinA];
+}
+function depthOf([x, y, z], projection) {
+  const { sinA, cosA, sinE, cosE } = cameraOf(projection);
+  return (x * cosA + y * sinA) * cosE + z * sinE;
+}
+var tenth = (value) => {
+  const text = (Math.round(value * 10) / 10).toFixed(1).replace(/\.0$/, "");
+  return text === "-0" ? "0" : text;
+};
+function pathOf(points, closed = false) {
+  if (!points.length) return "";
+  return points.map(([x, y], at4) => `${at4 ? "L" : "M"}${tenth(x)} ${tenth(y)}`).join("") + (closed ? "Z" : "");
+}
+function roundedPlan({ x, y, w, d, r }, steps = 8) {
+  const radius = Math.max(0, Math.min(r, w / 2, d / 2));
+  const corners2 = [
+    [x + w - radius, y + radius, -90],
+    [x + w - radius, y + d - radius, 0],
+    [x + radius, y + d - radius, 90],
+    [x + radius, y + radius, 180]
+  ];
+  const out = [];
+  for (const [cx, cy, start] of corners2) {
+    const count = radius > 0 ? steps : 0;
+    for (let step = 0; step <= count; step++) {
+      const angle = (start + (count ? 90 * step / count : 45)) * RADIANS;
+      out.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
+    }
+  }
+  return out;
+}
+function signedArea(points) {
+  let area = 0;
+  for (let index = 0; index < points.length; index++) {
+    const [ax, ay] = points[index];
+    const [bx, by] = points[(index + 1) % points.length];
+    area += ax * by - bx * ay;
+  }
+  return area / 2;
+}
+var oriented = (points) => signedArea(points) < 0 ? [...points].reverse() : points;
+function convexHull(points) {
+  const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (sorted.length < 3) return sorted;
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = [];
+  for (const point of sorted) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) lower.pop();
+    lower.push(point);
+  }
+  const upper = [];
+  for (let index = sorted.length - 1; index >= 0; index--) {
+    const point = sorted[index];
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) upper.pop();
+    upper.push(point);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+function runsOf(flags, want) {
+  const count = flags.length;
+  const runs = [];
+  const start = flags.findIndex((flag, index) => flag !== flags[(index + count - 1) % count]);
+  if (start < 0) return flags[0] === want ? [Array.from({ length: count + 1 }, (_, index) => index % count)] : [];
+  let run = null;
+  for (let step = 0; step < count; step++) {
+    const index = (start + step) % count;
+    if (flags[index] === want) {
+      if (!run) run = [index];
+      run.push((index + 1) % count);
+    } else if (run) {
+      runs.push(run);
+      run = null;
+    }
+  }
+  if (run) runs.push(run);
+  return runs;
+}
+function extrude(ring2, z, height, projection, options = {}) {
+  const convex = options.convex ?? true;
+  const count = ring2.length;
+  const counter = signedArea(ring2) > 0;
+  const [vx, vy] = towardViewer(projection);
+  const { sinA, cosA } = cameraOf(projection);
+  const normals = ring2.map(([ax, ay], index) => {
+    const [bx, by] = ring2[(index + 1) % count];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const length = Math.hypot(dx, dy) || 1;
+    return counter ? [dy / length, -dx / length] : [-dy / length, dx / length];
+  });
+  const facing = normals.map(([nx, ny]) => nx * vx + ny * vy > 1e-9);
+  const top = ring2.map(([x, y]) => iso([x, y, z + height], projection));
+  const bottom = ring2.map(([x, y]) => iso([x, y, z], projection));
+  const outline = [];
+  const crease = [];
+  for (const run of runsOf(facing, false)) outline.push(pathOf(run.map((index) => top[index])));
+  for (const run of runsOf(facing, true)) {
+    crease.push(pathOf(run.map((index) => top[index])));
+    if (height > 0) outline.push(pathOf(run.map((index) => bottom[index])));
+  }
+  if (height > 0) {
+    for (let index = 0; index < count; index++) {
+      if (facing[(index + count - 1) % count] !== facing[index]) outline.push(pathOf([top[index], bottom[index]]));
+    }
+  }
+  let fill;
+  if (convex) {
+    fill = pathOf(convexHull([...top, ...bottom]), true);
+  } else {
+    const parts = [pathOf(oriented(top), true), pathOf(oriented(bottom), true)];
+    for (let index = 0; index < count; index++) {
+      if (!facing[index]) continue;
+      const next = (index + 1) % count;
+      parts.push(pathOf(oriented([top[index], top[next], bottom[next], bottom[index]]), true));
+    }
+    fill = parts.join("");
+  }
+  const buckets = Array.from({ length: SHADES }, () => []);
+  if (height > 0) {
+    const [lx, ly] = [-sinA, cosA];
+    for (let index = 0; index < count; index++) {
+      if (!facing[index]) continue;
+      const [nx, ny] = normals[index];
+      const lit = (nx * lx + ny * ly + 1) / 2;
+      const shade = Math.min(SHADES - 1, Math.max(0, Math.floor(lit * SHADES)));
+      const next = (index + 1) % count;
+      buckets[shade].push(pathOf(oriented([top[index], top[next], bottom[next], bottom[index]]), true));
+    }
+  }
+  let bevel;
+  if (options.bevel && options.bevel > 0) {
+    const by = options.bevel;
+    const inset = ring2.map(([x, y], index) => {
+      const [ax, ay] = normals[(index + count - 1) % count];
+      const [bx, by2] = normals[index];
+      const mx = ax + bx;
+      const my = ay + by2;
+      const length = Math.hypot(mx, my) || 1;
+      return [x - mx / length * by, y - my / length * by];
+    });
+    const insetTop = inset.map(([x, y]) => iso([x, y, z + height], projection));
+    bevel = runsOf(facing, true).map((run) => pathOf([top[run[0]], ...run.slice(1, -1).map((index) => insetTop[index]), top[run[run.length - 1]]])).join("");
+  }
+  return {
+    fill,
+    outline: outline.join(""),
+    crease: crease.join(""),
+    top: pathOf(oriented(top), true),
+    shades: buckets.map((paths) => paths.join("")),
+    bevel
+  };
+}
+var ringOf = (plan, steps = 8) => roundedPlan(plan, steps);
+function slabOf(plan, z, height, projection, steps = 8, bevel = 0) {
+  return extrude(ringOf(plan, steps), z, height, projection, { convex: true, bevel });
+}
+function circleRing(cx, cy, radius, steps = 40) {
+  return Array.from({ length: steps }, (_, step) => {
+    const angle = step / steps * Math.PI * 2;
+    return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
+  });
+}
+function cylinder(cx, cy, radius, z, height, projection, steps = 32, bevel = 0) {
+  return extrude(circleRing(cx, cy, radius, steps), z, height, projection, { convex: true, bevel });
+}
+var insetPlan = ({ x, y, w, d, r }, by) => ({ x: x + by, y: y + by, w: w - by * 2, d: d - by * 2, r: Math.max(0, r - by) });
+function onTop(points, z, projection, closed = false) {
+  return pathOf(
+    points.map(([x, y]) => iso([x, y, z], projection)),
+    closed
+  );
+}
+var planOutline = (plan, z, projection, steps = 8) => onTop(ringOf(plan, steps), z, projection, true);
+var lineOnTop = (from, to, z, projection) => onTop([from, to], z, projection);
+var segment = (from, to, projection) => pathOf([iso(from, projection), iso(to, projection)]);
+var ring = (cx, cy, radius, z, projection, steps = 40) => onTop(circleRing(cx, cy, radius, steps), z, projection, true);
+function corners({ x, y, w, d }, inset = 0) {
+  return [
+    [x + inset, y + inset],
+    [x + w - inset, y + inset],
+    [x + inset, y + d - inset],
+    [x + w - inset, y + d - inset]
+  ];
+}
+function boxCorners({ x, y, w, d }, z0, z1) {
+  const out = [];
+  for (const px of [x, x + w]) for (const py of [y, y + d]) for (const z of [z0, z1]) out.push([px, py, z]);
+  return out;
+}
+function knurl(cx, cy, radius, z0, z1, count, projection, inset = 0.4) {
+  const [vx, vy] = towardViewer(projection);
+  const lines = [];
+  for (let index = 0; index < count; index++) {
+    const angle = index / count * Math.PI * 2;
+    const nx = Math.cos(angle);
+    const ny = Math.sin(angle);
+    if (nx * vx + ny * vy < 0.15) continue;
+    lines.push(segment([cx + radius * nx, cy + radius * ny, z0 + inset], [cx + radius * nx, cy + radius * ny, z1 - inset], projection));
+  }
+  return lines.join("");
+}
+function sideArc(cx, cy, radius, z, projection, steps = 24) {
+  const [vx, vy] = towardViewer(projection);
+  const facing = Math.atan2(vy, vx);
+  const points = [];
+  for (let step = 0; step <= steps; step++) {
+    const angle = facing - Math.PI / 2 + step / steps * Math.PI;
+    points.push(iso([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle), z], projection));
+  }
+  return pathOf(points);
+}
+function ringSeam(ring2, z, projection) {
+  const count = ring2.length;
+  const counter = signedArea(ring2) > 0;
+  const [vx, vy] = towardViewer(projection);
+  const facing = ring2.map(([ax, ay], index) => {
+    const [bx, by] = ring2[(index + 1) % count];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const [nx, ny] = counter ? [dy, -dx] : [-dy, dx];
+    return nx * vx + ny * vy > 1e-9;
+  });
+  return runsOf(facing, true).map((run) => pathOf(run.map((index) => iso([ring2[index][0], ring2[index][1], z], projection)))).join("");
+}
+var sideSeam = (plan, z, projection, steps = 8) => ringSeam(ringOf(plan, steps), z, projection);
+function radialTicks(cx, cy, radius, count, every, z, lengths, projection, from = 0, span = Math.PI * 2) {
+  const minor = [];
+  const major = [];
+  const closed = Math.abs(span - Math.PI * 2) < 1e-9;
+  const steps = closed ? count : count + 1;
+  for (let index = 0; index < steps; index++) {
+    const angle = from + index / count * span;
+    const big = index % every === 0;
+    const inner = radius - (big ? lengths[1] : lengths[0]);
+    const sx = Math.sin(angle);
+    const sy = -Math.cos(angle);
+    (big ? major : minor).push(lineOnTop([cx + sx * inner, cy + sy * inner], [cx + sx * radius, cy + sy * radius], z, projection));
+  }
+  return { minor: minor.join(""), major: major.join("") };
+}
+var haloOf = (plan, z, height, projection) => slabOf(plan, z, height, projection).fill;
+function axisVector(projection, [dx, dy, dz]) {
+  const origin = iso([0, 0, 0], projection);
+  const moved = iso([dx, dy, dz], projection);
+  return [moved[0] - origin[0], moved[1] - origin[1]];
+}
+var fine = (value) => Math.round(value * 100) / 100;
+function translateAlong(projection, by) {
+  const [x, y] = axisVector(projection, by);
+  return `translate(${fine(x)} ${fine(y)})`;
+}
+var thousandth = (value) => Math.round(value * 1e3) / 1e3;
+function axesAt(at4, z, projection) {
+  const origin = iso([at4[0], at4[1], z], projection);
+  const along = (point) => {
+    const [px, py] = iso(point, projection);
+    return [px - origin[0], py - origin[1]];
+  };
+  return { origin, x: along([at4[0] + 1, at4[1], z]), y: along([at4[0], at4[1] + 1, z]), z: along([at4[0], at4[1], z + 1]) };
+}
+var matrixOf = (u, v, origin) => `matrix(${thousandth(u[0])} ${thousandth(u[1])} ${thousandth(v[0])} ${thousandth(v[1])} ${thousandth(origin[0])} ${thousandth(origin[1])})`;
+function topMatrix(at4, z, projection, along = "x") {
+  const { origin, x, y } = axesAt(at4, z, projection);
+  return along === "x" ? matrixOf(x, y, origin) : matrixOf([-y[0], -y[1]], x, origin);
+}
+function fitProjection(points, width, height, { pad = 24, headroom = 0, azimuth = AZIMUTH, elevation = ELEVATION } = {}) {
+  const unit = { origin: [0, 0], scale: 1, azimuth, elevation };
+  const flat = points.map((point) => iso(point, unit));
+  const xs = flat.map(([x]) => x);
+  const ys = flat.map(([, y]) => y);
+  const left = Math.min(...xs);
+  const right = Math.max(...xs);
+  const up = Math.min(...ys);
+  const down = Math.max(...ys);
+  const scale = Math.min((width - pad * 2) / (right - left), (height - pad * 2 - headroom) / (down - up));
+  return {
+    origin: [width / 2 - (left + right) / 2 * scale, headroom + (height - headroom) / 2 - (up + down) / 2 * scale],
+    scale,
+    azimuth,
+    elevation
+  };
+}
+var escape = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+var attrs = (pairs) => Object.entries(pairs).filter(([, value]) => value !== void 0 && value !== false).map(([key, value]) => ` ${key}="${escape(String(value))}"`).join("");
+function solidSvg(paths, { tone = "hi", crease = "faint", halo: halo4 = false, lit = false, flat = false, className, inner = "" } = {}) {
+  const parts = [];
+  if (halo4) parts.push(`<path class="iso-halo" d="${paths.fill}"/>`);
+  parts.push(`<path class="iso-fill" d="${paths.fill}"/>`);
+  if (!flat) {
+    paths.shades.forEach((d, shade) => {
+      if (d) parts.push(`<path class="iso-shade" data-shade="${shade}" d="${d}"/>`);
+    });
+    parts.push(`<path class="iso-top" d="${paths.top}"/>`);
+  }
+  if (crease !== "none" && paths.crease) parts.push(`<path class="iso-line iso-crease" data-tone="${crease}" d="${paths.crease}"/>`);
+  if (crease !== "none" && paths.bevel) parts.push(`<path class="iso-line iso-bevel" data-tone="${crease}" d="${paths.bevel}"/>`);
+  if (inner) parts.push(inner);
+  parts.push(`<path class="iso-line iso-edge" data-tone="${tone}" d="${paths.outline}"/>`);
+  return `<g${attrs({ class: className ? `iso-solid ${className}` : "iso-solid", "data-lit": lit ? "" : void 0, "data-seamless": paths.seamless ? "" : void 0 })}>${parts.join("")}</g>`;
+}
+function lineSvg(d, { tone = "lo", dotted = false, dashed = false, flow = false, className, free } = {}) {
+  if (!d) return "";
+  return `<path${attrs({
+    class: className ? `iso-line ${className}` : "iso-line",
+    "data-tone": tone,
+    "data-free": free === true ? "" : free || void 0,
+    "data-dotted": dotted ? "" : void 0,
+    "data-dashed": dashed ? "" : void 0,
+    "data-flow": flow ? "" : void 0,
+    d
+  })}/>`;
+}
+function dotsSvg(points, { size = 0.5, tone = "mid", pulse = false } = {}) {
+  const dots = points.map(([x, y, alpha], index) => `<circle cx="${tenth(x)}" cy="${tenth(y)}" r="${size}"${alpha !== void 0 && alpha < 1 ? ` fill-opacity="${Math.max(0, alpha).toFixed(2)}"` : ""}${pulse ? ` data-pulse="" style="--pulse-at:${index * 137 % 1600}ms"` : ""}/>`).join("");
+  return `<g class="iso-dots" data-tone="${tone}">${dots}</g>`;
+}
+function wireSvg(from, to, { via = [], tone = "lo", dotted = false, dashed = false, flow = false, ends = "both", size = 1.2 } = {}) {
+  const d = pathOf([from, ...via, to]);
+  const end = ([x, y]) => `<circle class="iso-wire-end" cx="${tenth(x)}" cy="${tenth(y)}" r="${size}"/>`;
+  return `<g class="iso-wire" data-tone="${tone}">${lineSvg(d, { tone, dotted, dashed, flow })}${ends === "both" || ends === "from" ? end(from) : ""}${ends === "both" || ends === "to" ? end(to) : ""}</g>`;
+}
+function faceTextSvg(transform, text, { size = 3, tone = "mid", anchor = "start" } = {}) {
+  return `<text class="iso-face-text" data-tone="${tone}" transform="${transform}" font-size="${size}" text-anchor="${anchor}">${escape(text)}</text>`;
+}
+function figureSvg({ width, height, label, body, standalone = false, className }) {
+  const style = standalone ? `<style>${ISO_CSS}</style>` : "";
+  return `<svg${attrs({
+    xmlns: "http://www.w3.org/2000/svg",
+    class: `iso-svg${standalone ? " iso" : ""}${className ? ` ${className}` : ""}`,
+    "data-theme": standalone || void 0,
+    viewBox: `0 0 ${width} ${height}`,
+    role: "img",
+    "aria-label": label
+  })}>${style}${Array.isArray(body) ? body.join("") : body}</svg>`;
+}
+var ISO_CSS = `
+.iso{
+  --anatomy-page:#0b0b0b;--anatomy-card:#131313;--anatomy-text:#a3a3a3;--anatomy-strong:#e6e6e6;--anatomy-muted:#6e6e6e;
+  --anatomy-paper:#131313;--anatomy-face:#1b1b1b;--anatomy-top:#1c1c1c;
+  --anatomy-shade-0:#0f0f0f;--anatomy-shade-1:#121212;--anatomy-shade-2:#151515;--anatomy-shade-3:#181818;
+  --anatomy-lit-top:#262626;--anatomy-lit-shade:#1d1d1d;
+  --anatomy-hi:#d4d4d4;--anatomy-mid:#6a6a6a;--anatomy-lo:#3e3e3e;--anatomy-faint:#2a2a2a;--anatomy-lit:#ffffff;
+  --anatomy-halo:#050505;--anatomy-halo-opacity:.9;--anatomy-dot:#e6e6e6;
+  --anatomy-red:#ff6b6b;--anatomy-green:#6be0a0;--anatomy-blue:#6b9bff;
+  --anatomy-weight:.6px;--anatomy-ease:cubic-bezier(.32,.72,0,1);
+  --anatomy-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff0a,inset 0 0 0 1px #ffffff06,0 0 0 1px #00000026,0 1px 1px -.5px #00000014,0 3px 3px -1.5px #00000014,0 6px 6px -3px #00000014,0 12px 12px -6px #00000014;
+}
+.iso[data-theme="light"]{
+  --anatomy-page:#f2f2ef;--anatomy-card:#fbfbfa;--anatomy-text:#57575a;--anatomy-strong:#18181a;--anatomy-muted:#8c8c90;
+  --anatomy-paper:#fbfbfa;--anatomy-face:#ffffff;--anatomy-top:#ffffff;
+  --anatomy-shade-0:#dcdcd9;--anatomy-shade-1:#e5e5e2;--anatomy-shade-2:#ededea;--anatomy-shade-3:#f4f4f1;
+  --anatomy-lit-top:#ffffff;--anatomy-lit-shade:#eeeeeb;
+  --anatomy-hi:#26262a;--anatomy-mid:#8a8a8f;--anatomy-lo:#b4b4b8;--anatomy-faint:#d4d4d6;--anatomy-lit:#000000;
+  --anatomy-halo:#8a8a80;--anatomy-halo-opacity:.32;--anatomy-dot:#3a3a3e;
+  --anatomy-red:#e5484d;--anatomy-green:#30a46c;--anatomy-blue:#3e63dd;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.iso-svg{display:block;width:100%;height:auto;overflow:visible}
+.iso-svg path,.iso-svg circle{vector-effect:non-scaling-stroke}
+.iso-fill{fill:var(--anatomy-paper);stroke:none}
+.iso-solid[data-lit]>.iso-fill{fill:var(--anatomy-face)}
+.iso-shade,.iso-top{stroke:none}
+.iso-shade[data-shade="0"]{fill:var(--anatomy-shade-0)}
+.iso-shade[data-shade="1"]{fill:var(--anatomy-shade-1)}
+.iso-shade[data-shade="2"]{fill:var(--anatomy-shade-2)}
+.iso-shade[data-shade="3"]{fill:var(--anatomy-shade-3)}
+.iso-top{fill:var(--anatomy-top)}
+.iso-solid[data-lit]>.iso-top{fill:var(--anatomy-lit-top)}
+.iso-solid[data-lit]>.iso-shade{fill:var(--anatomy-lit-shade)}
+.iso-solid[data-seamless]>.iso-shade,.iso-solid[data-seamless]>.iso-top{stroke-width:.4;stroke-linejoin:round}
+.iso-solid[data-seamless]>.iso-shade[data-shade="0"]{stroke:var(--anatomy-shade-0)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="1"]{stroke:var(--anatomy-shade-1)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="2"]{stroke:var(--anatomy-shade-2)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="3"]{stroke:var(--anatomy-shade-3)}
+.iso-solid[data-seamless]>.iso-top{stroke:var(--anatomy-top)}
+.iso-solid[data-seamless][data-lit]>.iso-top{stroke:var(--anatomy-lit-top)}
+.iso-solid[data-seamless][data-lit]>.iso-shade{stroke:var(--anatomy-lit-shade)}
+.iso-solid[data-lit]>.iso-edge{stroke:var(--anatomy-lit)}
+.iso-halo{fill:var(--anatomy-halo);stroke:none;filter:blur(9px);opacity:var(--anatomy-halo-opacity);transform:translateY(3px)}
+.iso-line{fill:none;stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight);stroke-linecap:round;stroke-linejoin:round}
+.iso-line[data-tone="hi"]{stroke:var(--anatomy-hi)}
+.iso-line[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.iso-line[data-tone="lo"]{stroke:var(--anatomy-lo)}
+.iso-line[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.iso-line[data-tone="lit"]{stroke:var(--anatomy-lit)}
+.iso-line[data-tone="red"]{stroke:var(--anatomy-red)}
+.iso-line[data-tone="green"]{stroke:var(--anatomy-green)}
+.iso-line[data-tone="blue"]{stroke:var(--anatomy-blue)}
+.iso-line[data-dotted]{stroke-dasharray:.01 3.5;stroke-width:1}
+.iso-line[data-dashed]{stroke-dasharray:3 3}
+.iso-line[data-flow]{stroke-dasharray:2 6}
+.iso-wire-end{fill:var(--anatomy-paper);stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight)}
+.iso-wire[data-tone="hi"] .iso-wire-end{stroke:var(--anatomy-hi)}
+.iso-wire[data-tone="mid"] .iso-wire-end{stroke:var(--anatomy-mid)}
+.iso-wire[data-tone="faint"] .iso-wire-end{stroke:var(--anatomy-faint)}
+.iso-wire[data-tone="lit"] .iso-wire-end{stroke:var(--anatomy-lit)}
+.iso-dots circle{fill:var(--anatomy-dot);stroke:none;opacity:.32}
+.iso-dots[data-tone="hi"] circle{opacity:.85}
+.iso-dots[data-tone="mid"] circle{opacity:.45}
+.iso-dots[data-tone="lo"] circle{opacity:.22}
+.iso-dots[data-tone="faint"] circle{opacity:.12}
+.iso-face-text{fill:var(--anatomy-mid);font-family:var(--anatomy-mono);letter-spacing:.04em}
+.iso-face-text[data-tone="hi"]{fill:var(--anatomy-hi)}
+.iso-face-text[data-tone="lo"]{fill:var(--anatomy-lo)}
+.iso-face-text[data-tone="faint"]{fill:var(--anatomy-faint)}
+.tb-body{fill:var(--anatomy-shade-2);stroke:none}
+.tb-shine{fill:var(--anatomy-top);stroke:none}
+.tb-shade{fill:var(--anatomy-shade-0);stroke:none}
+.tb-ring{fill:none;stroke:var(--anatomy-lo);stroke-width:.45;stroke-linecap:butt;stroke-linejoin:round}
+.tb-ring[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.tb-ring[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.tb-ring[data-tone="hi"]{stroke:var(--anatomy-hi)}
+@keyframes iso-flow{to{stroke-dashoffset:-32}}
+@keyframes iso-pulse{0%,100%{opacity:.18}12%{opacity:1}40%{opacity:.18}}
+.iso-line[data-flow]{animation:iso-flow 1600ms linear infinite}
+.iso-dots circle[data-pulse]{animation:iso-pulse 1600ms steps(1,end) infinite;animation-delay:var(--pulse-at,0ms)}
+.iso-figure{margin:32px 0 36px}
+.iso-plate{position:relative;padding:52px 24px;border-radius:0;background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-mid);--anatomy-paper:var(--anatomy-card)}
+.iso-plate-corners{position:absolute;inset:18px 20px;pointer-events:none}
+.iso-plate-corner{position:absolute;color:var(--anatomy-muted);font-family:var(--anatomy-mono);font-size:10.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.iso-plate-corner[data-corner="fig"]{top:0;left:0;color:var(--anatomy-text)}
+.iso-plate-corner[data-corner="title"]{top:0;right:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="hint"]{bottom:0;left:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="readout"]{right:0;bottom:0;color:var(--anatomy-text);font-variant-numeric:tabular-nums}
+.iso-plate .iso-svg{margin:0 auto}
+.iso-legend{display:grid;gap:8px;margin-top:12px;color:var(--anatomy-muted);font-size:13px;line-height:1.55}
+.iso-keys{display:flex;flex-wrap:wrap;gap:6px 18px}
+.iso-key{display:inline-flex;align-items:center;gap:7px}
+.iso-swatch{width:16px;height:10px;flex:none;overflow:visible}
+.iso-swatch path{fill:none;stroke:var(--anatomy-hi);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.iso-swatch[data-mark="raised"] path,.iso-swatch[data-mark="flat"] path{stroke:var(--anatomy-mid)}
+.iso-swatch[data-mark="lit"] path{stroke:var(--anatomy-lit)}
+.iso-swatch[data-mark="dim"] path{stroke:var(--anatomy-lo)}
+.iso-swatch[data-mark="dotted"] path{stroke-dasharray:.01 3;stroke-width:1.4}
+.iso-swatch[data-mark="dashed"] path{stroke-dasharray:3 2.5}
+.iso-swatch[data-mark="red"] path{stroke:var(--anatomy-red)}
+.iso-swatch[data-mark="green"] path{stroke:var(--anatomy-green)}
+.iso-swatch[data-mark="blue"] path{stroke:var(--anatomy-blue)}
+.iso-swatch-crease{stroke:var(--anatomy-lo)!important}
+@media (max-width:560px){.iso-plate{padding:48px 12px 70px}.iso-plate-corner[data-corner="hint"]{bottom:18px}}
+@media (prefers-reduced-motion:reduce){.iso-line[data-flow],.iso-dots circle[data-pulse]{animation:none}}
+`;
+
+// src/apps/public/components/stepFigures/common.ts
+function kitFor(P4) {
+  const at4 = (point) => iso(point, P4);
+  const S4 = (paths, style) => solidSvg(paths, style);
+  const L4 = (d, style) => lineSvg(d, style);
+  const D4 = (points, style) => dotsSvg(points, style);
+  const depth = ([x, y]) => depthOf([x, y, 0], P4);
+  const byDepth4 = (items) => [...items].sort((a, b) => depth(a.at) - depth(b.at));
+  const halo4 = (plan, z, blur = 3) => `<path class="iso-halo" d="${haloOf(insetPlan(plan, 1.5), z, 0.1, P4)}" style="filter:blur(${blur}px)"/>`;
+  const screws4 = (plan, z, inset = 2.2, size = 0.42) => D4(corners(plan, inset).map(([x, y]) => at4([x, y, z])), { size });
+  const part4 = (name, svg, by = [0, 0, 0], extra = "") => `<g data-part="${name}" transform="${translateAlong(P4, by)}"${extra}>${svg}</g>`;
+  function bench4(plate, plateH, footH) {
+    const out = [`<path class="iso-halo" d="${haloOf(plate, -plateH - footH, plateH, P4)}"/>`];
+    for (const [x, y] of corners(plate, 16).sort((a, b) => depth(a) - depth(b))) {
+      out.push(S4(cylinder(x, y, 6, -plateH - footH, 1.4, P4, 28), { tone: "lo" }));
+      out.push(S4(cylinder(x, y, 4.6, -plateH - footH + 1.4, footH - 1.4, P4, 28), { tone: "mid" }));
+    }
+    out.push(S4(slabOf(plate, -plateH, plateH, P4, 8, 1.4), { tone: "mid" }));
+    out.push(L4(planOutline(insetPlan(plate, 4), 0, P4), { tone: "lo" }));
+    const corners2 = corners(plate, 8);
+    out.push(L4(corners2.map(([x, y]) => ring(x, y, 1.9, 0, P4, 16)).join(""), { tone: "lo" }));
+    out.push(D4(corners2.map(([x, y]) => at4([x, y, 0])), { size: 0.45 }));
+    return out.join("");
+  }
+  function nameplate(plan) {
+    const out = [S4(slabOf(plan, 0, 0.8, P4, 4), { tone: "lo", crease: "none" })];
+    out.push(L4(planOutline(insetPlan(plan, 1.2), 0.8, P4, 3), { tone: "faint" }));
+    const rows = [[0.55, 0], [0.4, 1], [0.48, 2]];
+    const gap = (plan.d - 4.4) / 2;
+    for (const [share, row] of rows) {
+      const y = plan.y + 2.2 + row * gap;
+      out.push(L4(lineOnTop([plan.x + 4.4, y], [plan.x + 4.4 + (plan.w - 8.8) * share, y], 0.8, P4), { tone: "lo", free: true }));
+    }
+    out.push(D4([at4([plan.x + 2.2, plan.y + plan.d / 2, 0.8]), at4([plan.x + plan.w - 2.2, plan.y + plan.d / 2, 0.8])], { size: 0.4 }));
+    return out.join("");
+  }
+  return { at: at4, S: S4, L: L4, D: D4, depth, byDepth: byDepth4, halo: halo4, screws: screws4, part: part4, bench: bench4, nameplate };
+}
+
+// src/apps/public/components/factorBench/model.ts
+var EMISSION_FACTORS = {
+  Domestic: { economy: 0.22928, premium_economy: 0.22928, business: 0.22928, first: 0.22928 },
+  "Short-haul": { economy: 0.12576, premium_economy: 0.18863, business: 0.18863, first: 0.18863 },
+  "Long-haul": { economy: 0.11704, premium_economy: 0.18726, business: 0.3394, first: 0.46814 }
+};
+var DISTANCE_THRESHOLDS = { DOMESTIC_MAX: 500, SHORT_HAUL_MAX: 3700 };
+function haulOf(km) {
+  if (km < DISTANCE_THRESHOLDS.DOMESTIC_MAX) return "Domestic";
+  if (km < DISTANCE_THRESHOLDS.SHORT_HAUL_MAX) return "Short-haul";
+  return "Long-haul";
+}
+var factorOf = (km, cabin) => EMISSION_FACTORS[haulOf(km)][cabin];
+var HAULS = ["Domestic", "Short-haul", "Long-haul"];
+var KM_MIN = 100;
+var KM_MAX = 16e3;
+var SPAN = Math.log10(KM_MAX / KM_MIN);
+var AIRPORTS = {
+  SCL: [-33.393, -70.7858],
+  CCP: [-36.7727, -73.0631],
+  EZE: [-34.8222, -58.5358],
+  LIM: [-12.0219, -77.1143],
+  MIA: [25.7959, -80.287],
+  MAD: [40.4936, -3.5668]
+};
+function haversine([lat1, lon1], [lat2, lon2]) {
+  const rad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * rad;
+  const dLon = (lon2 - lon1) * rad;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+var ROUTES = ["CCP", "EZE", "LIM", "MIA", "MAD"].map((code) => ({
+  code: `SCL\u2192${code}`,
+  km: haversine(AIRPORTS.SCL, AIRPORTS[code])
+}));
+var routeKm = (code) => ROUTES.find((route) => route.code === `SCL\u2192${code}`).km;
+var TOUR = [
+  [routeKm("CCP"), 3],
+  [routeKm("EZE"), 3],
+  [routeKm("MAD"), 3],
+  [routeKm("MAD"), 2],
+  [routeKm("MAD"), 1],
+  [routeKm("MAD"), 0],
+  [routeKm("LIM"), 1]
+];
+
+// src/apps/public/components/stepFigures/model.ts
+var AIRPORTS2 = {
+  SCL: [-33.393, -70.7858],
+  CCP: [-36.7727, -73.0631],
+  EZE: [-34.8222, -58.5358],
+  LIM: [-12.0219, -77.1143]
+};
+var PROJECTS = ["reforestaci\xF3n", "energ\xEDa solar", "bosque nativo"];
+var leg = (code, pax, project) => {
+  const km = ROUTES.find((route) => route.code === `SCL\u2192${code}`).km;
+  const cabin = "economy";
+  const factor = factorOf(km, cabin);
+  return { code, km, cabin, pax, haul: haulOf(km), factor, kg: km * factor * pax, project };
+};
+var TOUR2 = [leg("CCP", 1, 0), leg("EZE", 2, 1), leg("LIM", 1, 2)];
+var haulIndex = (haul) => HAULS.indexOf(haul);
+var PERIOD = 6.4;
+var STILL_T = 5.4;
+function clockAt(seconds, still2) {
+  if (still2) return { leg: TOUR2[2], prev: TOUR2[2], t: STILL_T };
+  const turn = Math.floor(seconds / PERIOD);
+  const i = (turn % TOUR2.length + TOUR2.length) % TOUR2.length;
+  return { leg: TOUR2[i], prev: TOUR2[(i + TOUR2.length - 1) % TOUR2.length], t: seconds - turn * PERIOD };
+}
+var clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+var smooth = (u) => u * u * (3 - 2 * u);
+var ramp = (t, a, b) => smooth(clamp((t - a) / (b - a), 0, 1));
+var lerp = (a, b, u) => a + (b - a) * u;
+var spring = (from, to, age) => age <= 0 ? from : to + (from - to) * Math.exp(-6 * age) * (Math.cos(11 * age) + 6 / 11 * Math.sin(11 * age));
+var number = (value, digits = 0) => value.toLocaleString("es-CL", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+var kmText = (l) => `${number(l.km)} km`;
+var kgText = (l) => `${number(l.kg)} kg CO\u2082e`;
+var factorText = (l) => number(l.factor, 3);
+var paxText = (l) => `${l.pax} ${l.pax === 1 ? "pasajero" : "pasajeros"}`;
+
+// src/apps/public/components/stepFigures/route.ts
+var WIDTH = 360;
+var HEIGHT = 228;
+var PLATE = { x: -80, y: -50, w: 152, d: 100, r: 6 };
+var PLATE_H = 8;
+var FOOT_H = 4;
+var MAP = { x: -74, y: -44, w: 84, d: 82, r: 2 };
+var MAP_TOP = 0.8;
+var LAND_TOP = MAP_TOP + 1;
+var LON = [-86, -30];
+var LAT = [-4.5, -56.5];
+var mapXY = (lat, lon) => [
+  MAP.x + (lon - LON[0]) / (LON[1] - LON[0]) * MAP.w,
+  MAP.y + (LAT[0] - lat) / (LAT[0] - LAT[1]) * MAP.d
+];
+var airport = (code) => mapXY(AIRPORTS2[code][0], AIRPORTS2[code][1]);
+var PACIFIC = [
+  [-81.1, -4.5],
+  [-79.6, -7.5],
+  [-78.2, -10],
+  [-77.4, -12.1],
+  [-76.1, -14],
+  [-74.2, -16],
+  [-71.4, -17.6],
+  [-70.3, -18.5],
+  [-70.1, -21.5],
+  [-70.5, -24.5],
+  [-70.9, -27.5],
+  [-71.5, -30],
+  [-71.6, -33],
+  [-72.2, -35.2],
+  [-73.2, -37.3],
+  [-73.5, -40],
+  [-73.9, -42],
+  [-74.6, -45.5],
+  [-75.5, -48],
+  [-75.3, -50.5],
+  [-74.5, -52.5],
+  [-71.5, -54],
+  [-68.5, -55.3],
+  [-67.3, -55.9]
+];
+var ATLANTIC = [
+  [-65.3, -54.7],
+  [-68.3, -52.4],
+  [-69, -51.6],
+  [-68.9, -50.3],
+  [-67.7, -49],
+  [-65.9, -47.8],
+  [-67.5, -46.2],
+  [-65.7, -45],
+  [-64.4, -42.5],
+  [-65.1, -42.1],
+  [-65, -40.8],
+  [-62.3, -40.6],
+  [-62.2, -38.9],
+  [-58.5, -38.6],
+  [-56.8, -37.3],
+  [-57.2, -35.8],
+  [-58.4, -34.2],
+  [-56.9, -34.6],
+  [-54.9, -34.9],
+  [-53.4, -33.7],
+  [-52.1, -32.2],
+  [-50.6, -30.6],
+  [-48.6, -28.2],
+  [-48.5, -26],
+  [-46.3, -24],
+  [-44.7, -23.2],
+  [-42, -22.9],
+  [-41, -21.7],
+  [-39.7, -19.5],
+  [-39.1, -17.6],
+  [-38.9, -13.5],
+  [-37.2, -11],
+  [-35.3, -9],
+  [-34.9, -7.2],
+  [-35.3, -5.5],
+  [-36.6, -4.5]
+];
+var LAND = [...PACIFIC, ...ATLANTIC].map(([lon, lat]) => mapXY(lat, lon));
+var PIN_HEAD_Z = 12;
+var PIN_HEAD_H = 3;
+var THREAD_Z = PIN_HEAD_Z + 1.4;
+var PIN_LIFT = 7;
+var STRIP = { x: MAP.x, y: 40.5, w: MAP.w, d: 5.4, r: 1 };
+var STRIP_TOP = 0.7;
+var KM_MAX2 = 3e3;
+var KM_X0 = STRIP.x + 4;
+var KM_X1 = STRIP.x + STRIP.w - 4;
+var kmX = (km) => KM_X0 + km / KM_MAX2 * (KM_X1 - KM_X0);
+var CURSOR = { x: -2.2, y: STRIP.y - 1.2, w: 4.4, d: STRIP.d + 2.4, r: 0.8 };
+var CURSOR_TOP = STRIP_TOP + 1.8;
+var CONSOLE = { x: 18, y: -42, w: 48, d: 86, r: 3 };
+var CONSOLE_TOP = 6;
+var KNOB_AT = [42, -17];
+var DIAL_R = 11;
+var KNOB_R = 6.4;
+var KNOB_H = 5;
+var DETENTS = 4;
+var DETENT_FROM = -Math.PI * 0.55;
+var DETENT_SPAN = Math.PI * 1.1;
+var PEG_AT = [42, 22];
+var PEG_TOP = CONSOLE_TOP + 16;
+var TOKEN_R = 4.6;
+var TOKEN_H = 2.6;
+var TOKENS = 3;
+var TOKEN_DROP = 9;
+var fitPoints = [
+  ...boxCorners(PLATE, -PLATE_H - FOOT_H, 0),
+  [PEG_AT[0], PEG_AT[1], PEG_TOP + 2],
+  [KNOB_AT[0], KNOB_AT[1], CONSOLE_TOP + 1 + KNOB_H + 1],
+  [airport("LIM")[0], airport("LIM")[1], PIN_HEAD_Z + PIN_HEAD_H + PIN_LIFT]
+];
+var P = fitProjection(fitPoints, WIDTH, HEIGHT, { pad: 10, azimuth: 50, elevation: 38 });
+var { at, S, L, D, byDepth, halo, screws, part, bench } = kitFor(P);
+function map() {
+  const out = [S(slabOf(MAP, 0, MAP_TOP, P, 4), { tone: "lo", crease: "none" })];
+  const grid = [];
+  for (const lon of [-80, -70, -60, -50]) grid.push(lineOnTop(mapXY(LAT[0], lon), mapXY(LAT[1], lon), MAP_TOP, P));
+  for (const lat of [-10, -20, -30, -40]) grid.push(lineOnTop(mapXY(lat, LON[0]), mapXY(lat, LON[1]), MAP_TOP, P));
+  out.push(L(grid.join(""), { tone: "faint" }));
+  const water = [];
+  const inner = insetPlan(MAP, 1.2);
+  for (let c = -inner.d; c < inner.w; c += 3.2) {
+    const x0 = Math.max(inner.x, inner.x + c);
+    const x1 = Math.min(inner.x + inner.w, inner.x + c + inner.d);
+    if (x1 - x0 < 1) continue;
+    water.push(lineOnTop([x0, inner.y + (x0 - inner.x - c)], [x1, inner.y + (x1 - inner.x - c)], MAP_TOP, P));
+  }
+  out.push(L(water.join(""), { tone: "faint" }));
+  const [rx, ry] = mapXY(-46, -82);
+  const roseTop = MAP_TOP + 0.3;
+  out.push(S(cylinder(rx, ry, 4.8, MAP_TOP, 0.3, P, 32), { tone: "lo", crease: "none" }));
+  out.push(L(ring(rx, ry, 3, roseTop, P, 24), { tone: "lo" }));
+  out.push(L(onTop([[rx - 1.2, ry], [rx, ry - 4.8], [rx + 1.2, ry], [rx, ry + 4.8]], roseTop, P, true), { tone: "mid" }));
+  out.push(L(lineOnTop([rx - 4.8, ry], [rx + 4.8, ry], roseTop, P), { tone: "lo" }));
+  out.push(D([at([rx, ry - 6.2, MAP_TOP])], { size: 0.42, tone: "mid" }));
+  out.push(S(extrude(LAND, MAP_TOP, LAND_TOP - MAP_TOP, P, { convex: false }), { tone: "mid", crease: "lo" }));
+  const holes = Object.keys(AIRPORTS2).map(airport);
+  out.push(L(holes.map(([x, y]) => ring(x, y, 1.5, LAND_TOP, P, 16)).join(""), { tone: "lo" }));
+  out.push(D(holes.map(([x, y]) => at([x, y, LAND_TOP])), { size: 0.38, tone: "lo" }));
+  return out.join("");
+}
+function ruler() {
+  const out = [S(slabOf(STRIP, 0, STRIP_TOP, P, 3), { tone: "lo", crease: "none" })];
+  const minor = [];
+  const mid = [];
+  const major = [];
+  for (let km = 0; km <= KM_MAX2; km += 100) {
+    const x = kmX(km);
+    const list = km % 1e3 === 0 ? major : km % 500 === 0 ? mid : minor;
+    const length = km % 1e3 === 0 ? 3.4 : km % 500 === 0 ? 2.4 : 1.4;
+    list.push(lineOnTop([x, STRIP.y], [x, STRIP.y + length], STRIP_TOP, P));
+  }
+  out.push(L(minor.join(""), { tone: "faint" }), L(mid.join(""), { tone: "lo" }), L(major.join(""), { tone: "mid" }));
+  const pips = [];
+  for (let n = 1; n <= 3; n++) for (let i = 0; i < n; i++) pips.push(at([kmX(n * 1e3) + (i - (n - 1) / 2) * 1.5, STRIP.y + 4.4, STRIP_TOP]));
+  out.push(D(pips, { size: 0.36, tone: "mid" }));
+  return out.join("");
+}
+function cursor() {
+  const out = [S(slabOf(CURSOR, 0, CURSOR_TOP, P, 2, 0.3), { tone: "mid" })];
+  const window = { x: CURSOR.x + 0.9, y: CURSOR.y + 1, w: CURSOR.w - 1.8, d: CURSOR.d - 2, r: 0.4 };
+  out.push(L(planOutline(window, CURSOR_TOP, P, 2), { tone: "lo" }));
+  out.push(L(lineOnTop([0, window.y + 0.6], [0, window.y + window.d - 0.6], CURSOR_TOP, P), { tone: "hi" }));
+  return out.join("");
+}
+function pinPost() {
+  return [
+    S(cylinder(0, 0, 2.2, LAND_TOP, 0.9, P, 20), { tone: "mid" }),
+    S(cylinder(0, 0, 0.8, LAND_TOP + 0.9, PIN_HEAD_Z - LAND_TOP - 0.9, P, 12), { tone: "mid", crease: "none" })
+  ].join("");
+}
+function pinHead(lit) {
+  return [
+    S(cylinder(0, 0, 2.5, PIN_HEAD_Z, PIN_HEAD_H, P, 28, 0.4), { tone: lit ? "hi" : "mid", crease: lit ? "lo" : "faint", lit }),
+    L(knurl(0, 0, 2.5, PIN_HEAD_Z, PIN_HEAD_Z + PIN_HEAD_H, 18, P, 0.5), { tone: lit ? "mid" : "lo" }),
+    D([at([0, 0, PIN_HEAD_Z + PIN_HEAD_H])], { size: 0.4, tone: lit ? "hi" : "mid" })
+  ].join("");
+}
+var threadPath = (to) => {
+  const [sx, sy] = airport("SCL");
+  return segment([sx, sy, THREAD_Z], [to[0], to[1], to[2] + THREAD_Z], P);
+};
+function consoleBlock() {
+  const out = [halo(CONSOLE, 0)];
+  out.push(S(slabOf(CONSOLE, 0, CONSOLE_TOP, P, 4, 0.6), { tone: "mid", inner: L(sideSeam(CONSOLE, 2, P, 4), { tone: "faint" }) }));
+  out.push(screws(CONSOLE, CONSOLE_TOP, 2.4));
+  out.push(L(lineOnTop([CONSOLE.x, 3], [CONSOLE.x + CONSOLE.w, 3], CONSOLE_TOP, P), { tone: "lo" }));
+  return out.join("");
+}
+var pointerPath = (detent) => {
+  const angle = DETENT_FROM + detent / (DETENTS - 1) * DETENT_SPAN;
+  const [cx, cy] = KNOB_AT;
+  const z = CONSOLE_TOP + 1 + KNOB_H + 0.6;
+  return lineOnTop([cx, cy], [cx + Math.sin(angle) * (KNOB_R - 1.6), cy - Math.cos(angle) * (KNOB_R - 1.6)], z, P);
+};
+function knob() {
+  const [cx, cy] = KNOB_AT;
+  const base = CONSOLE_TOP;
+  const out = [S(cylinder(cx, cy, DIAL_R, base, 1, P, 48, 0.3), { tone: "lo" })];
+  const ticks = radialTicks(cx, cy, DIAL_R - 0.8, (DETENTS - 1) * 4, 4, base + 1, [0.9, 2], P, DETENT_FROM, DETENT_SPAN);
+  out.push(L(ticks.minor, { tone: "faint" }), L(ticks.major, { tone: "mid" }));
+  const pips = [];
+  for (let n = 0; n < DETENTS; n++) {
+    const angle = DETENT_FROM + n / (DETENTS - 1) * DETENT_SPAN;
+    for (let i = 0; i <= n; i++) {
+      const spread = (i - n / 2) * 0.13;
+      pips.push(at([cx + Math.sin(angle + spread) * (DIAL_R + 2.2), cy - Math.cos(angle + spread) * (DIAL_R + 2.2), base]));
+    }
+  }
+  out.push(D(pips, { size: 0.36, tone: "mid" }));
+  out.push(S(cylinder(cx, cy, KNOB_R, base + 1, KNOB_H, P, 40, 0.5), { tone: "mid" }));
+  out.push(L(knurl(cx, cy, KNOB_R, base + 1, base + KNOB_H, 34, P, 0.5), { tone: "lo" }));
+  out.push(S(cylinder(cx, cy, KNOB_R - 1.3, base + 1 + KNOB_H, 0.6, P, 32), { tone: "mid", crease: "none" }));
+  out.push(L(pointerPath(0), { tone: "hi", free: "start" }));
+  return out.join("");
+}
+function pegBase() {
+  const [cx, cy] = PEG_AT;
+  return [
+    S(cylinder(cx, cy, 7, CONSOLE_TOP, 1, P, 36, 0.3), { tone: "lo" }),
+    L(ring(cx, cy, 5.6, CONSOLE_TOP + 1, P, 32), { tone: "faint" }),
+    S(cylinder(cx, cy, 1, CONSOLE_TOP + 1, PEG_TOP - CONSOLE_TOP - 1, P, 14), { tone: "mid", crease: "none" }),
+    S(cylinder(cx, cy, 1.5, PEG_TOP, 0.8, P, 14), { tone: "mid" })
+  ].join("");
+}
+function token(index) {
+  const [cx, cy] = PEG_AT;
+  const z = CONSOLE_TOP + 1 + index * TOKEN_H;
+  return [
+    S(cylinder(cx, cy, TOKEN_R, z, TOKEN_H - 0.2, P, 36, 0.4), { tone: "mid" }),
+    L(ring(cx, cy, TOKEN_R - 1.4, z + TOKEN_H - 0.2, P, 28), { tone: "lo" }),
+    L(ring(cx, cy, 1.3, z + TOKEN_H - 0.2, P, 12), { tone: "mid" })
+  ].join("");
+}
+function poseAt({ leg: leg2, prev, t }) {
+  const travel = ramp(t, 0.45, 1.1);
+  const lift = (ramp(t, 0.2, 0.45) - ramp(t, 1.1, 1.35)) * PIN_LIFT;
+  const [x0, y0] = airport(prev.code);
+  const [x1, y1] = airport(leg2.code);
+  const settle = ramp(t, 1.35, 1.75);
+  const tokens = Array.from({ length: TOKENS }, (_, i) => {
+    const v = lerp(i < prev.pax ? 1 : 0, i < leg2.pax ? 1 : 0, settle);
+    return { dz: (1 - v) * TOKEN_DROP, opacity: v };
+  });
+  return { pin: [lerp(x0, x1, travel), lerp(y0, y1, travel), lift], km: lerp(prev.km, leg2.km, travel), tokens };
+}
+var readoutAt = ({ leg: leg2, prev, t }) => {
+  const l = t < 0.45 ? prev : leg2;
+  return `SCL\u2192${l.code} \xB7 ${kmText(l)} \xB7 econ\xF3mica \xB7 ${paxText(l)}`;
+};
+var LABEL = "Un trazador de rutas sobre un banco: un mapa grabado de Sudam\xE9rica con un alfiler fijo en Santiago y otro en el destino, unidos por un hilo; una regla de kil\xF3metros con su cursor; un selector de cabina en econ\xF3mica y una clavija con una ficha por pasajero.";
+function figure(pose = poseAt(clockAt(0, true))) {
+  const scl = airport("SCL");
+  const fixed = (svg) => `<g transform="${translateAlong(P, [scl[0], scl[1], 0])}">${svg}</g>`;
+  const moving = [pose.pin[0], pose.pin[1]];
+  const posts = byDepth([
+    { at: scl, svg: fixed(pinPost()) },
+    { at: moving, svg: part("pin-post", pinPost(), pose.pin) }
+  ]);
+  const heads = byDepth([
+    { at: scl, svg: fixed(pinHead(false)) },
+    { at: moving, svg: part("pin-head", pinHead(true), pose.pin) }
+  ]);
+  return figureSvg({
+    width: WIDTH,
+    height: HEIGHT,
+    label: LABEL,
+    body: [
+      bench(PLATE, PLATE_H, FOOT_H),
+      map(),
+      ruler(),
+      part("cursor", cursor(), [kmX(pose.km), 0, 0]),
+      consoleBlock(),
+      knob(),
+      pegBase(),
+      ...pose.tokens.map((tk, i) => part(`token-${i}`, token(i), [0, 0, tk.dz], ` opacity="${tk.opacity.toFixed(2)}"`)),
+      ...posts.map((p) => p.svg),
+      `<path data-part="thread" class="iso-line" data-tone="mid" d="${threadPath(pose.pin)}" style="stroke-width:0.8"/>`,
+      ...heads.map((p) => p.svg)
+    ]
+  });
+}
+function apply(svg, clock) {
+  const pose = poseAt(clock);
+  const q = (name) => svg.querySelector(`[data-part="${name}"]`);
+  const pin = translateAlong(P, pose.pin);
+  q("pin-post").setAttribute("transform", pin);
+  q("pin-head").setAttribute("transform", pin);
+  q("thread").setAttribute("d", threadPath(pose.pin));
+  q("cursor").setAttribute("transform", translateAlong(P, [kmX(pose.km), 0, 0]));
+  pose.tokens.forEach((tk, i) => {
+    const el = q(`token-${i}`);
+    el.setAttribute("transform", translateAlong(P, [0, 0, tk.dz]));
+    el.setAttribute("opacity", tk.opacity.toFixed(2));
+  });
+  return readoutAt(clock);
+}
+
+// src/apps/public/components/stepFigures/weigh.ts
+var WIDTH2 = 360;
+var HEIGHT2 = 228;
+var PLATE2 = { x: -72, y: -48, w: 144, d: 96, r: 6 };
+var PLATE_H2 = 8;
+var FOOT_H2 = 4;
+var HOUSING = { x: -62, y: -22, w: 62, d: 58, r: 4 };
+var HOUSING_TOP = 7;
+var PAN = { x: -58, y: -18, w: 54, d: 44, r: 3 };
+var PAN_Z = HOUSING_TOP + 0.4;
+var PAN_TOP = PAN_Z + 1.8;
+var CENTER = [PAN.x + PAN.w / 2, PAN.y + PAN.d / 2];
+var DIP = 0.6;
+var PARCEL_LIFT = 18;
+var PALLET = { x: -13, y: -11, w: 26, d: 22, r: 1.5 };
+var PALLET_H = 3;
+var BOX = { x: -10, y: -8, w: 20, d: 16, r: 1 };
+var BOX_H = 14;
+var COLUMN_AT = [CENTER[0], -36];
+var COLUMN_BASE = { x: COLUMN_AT[0] - 9, y: COLUMN_AT[1] - 8, w: 18, d: 16, r: 2.5 };
+var COLUMN_TOP = 44;
+var DIAL_R2 = 12;
+var DIAL_Z = COLUMN_TOP + 3;
+var DIAL_H = 4.4;
+var DIAL_TOP = DIAL_Z + DIAL_H;
+var KG_PER_TURN = 400;
+var RACK = { x: 10, y: -34, w: 52, d: 64, r: 3 };
+var RACK_TOP = 5;
+var WEIGHT_R = 5.6;
+var WEIGHT_X = [21, 36, 51];
+var WEIGHT_Y = -8;
+var HEIGHT_PER_FACTOR = 96;
+var weightH = (i) => EMISSION_FACTORS[HAULS[i]].economy * HEIGHT_PER_FACTOR;
+var WEIGHT_LIFT = 3.5;
+var PLATE_LABEL = { x: RACK.x + 5, y: 16, w: RACK.w - 10, d: 9, r: 1 };
+var fitPoints2 = [
+  ...boxCorners(PLATE2, -PLATE_H2 - FOOT_H2, 0),
+  [COLUMN_AT[0], COLUMN_AT[1] - DIAL_R2, DIAL_TOP],
+  [COLUMN_AT[0], COLUMN_AT[1] + DIAL_R2, DIAL_TOP],
+  [CENTER[0], CENTER[1], PAN_TOP + PALLET_H + BOX_H + PARCEL_LIFT]
+];
+var P2 = fitProjection(fitPoints2, WIDTH2, HEIGHT2, { pad: 10, azimuth: 50, elevation: 34 });
+var { at: at2, S: S2, L: L2, D: D2, byDepth: byDepth2, halo: halo2, screws: screws2, part: part2, bench: bench2 } = kitFor(P2);
+var needlePath = (kg) => {
+  const angle = kg / KG_PER_TURN * Math.PI * 2;
+  const [cx, cy] = COLUMN_AT;
+  const s = Math.sin(angle);
+  const c = Math.cos(angle);
+  return lineOnTop([cx - s * 2.4, cy + c * 2.4], [cx + s * (DIAL_R2 - 2.6), cy - c * (DIAL_R2 - 2.6)], DIAL_TOP + 0.2, P2);
+};
+function column() {
+  const [cx, cy] = COLUMN_AT;
+  const out = [halo2(COLUMN_BASE, 0)];
+  out.push(S2(slabOf(COLUMN_BASE, 0, 4, P2, 4, 0.6), { tone: "mid", inner: L2(sideSeam(COLUMN_BASE, 1.4, P2, 4), { tone: "faint" }) }));
+  out.push(screws2(COLUMN_BASE, 4, 2));
+  out.push(S2(cylinder(cx, cy, 4.6, 4, 2.2, P2, 28), { tone: "mid" }));
+  out.push(S2(cylinder(cx, cy, 2.6, 6.2, COLUMN_TOP - 6.2, P2, 20), {
+    tone: "mid",
+    crease: "none",
+    inner: L2(sideArc(cx, cy, 2.6, 18, P2, 16) + sideArc(cx, cy, 2.6, 32, P2, 16), { tone: "faint" })
+  }));
+  out.push(S2(cylinder(cx, cy, 4.4, COLUMN_TOP, DIAL_Z - COLUMN_TOP, P2, 28), { tone: "mid" }));
+  const thumb = { x: cx + 3.6, y: cy - 1.2, w: 4.4, d: 2.4, r: 0.6 };
+  out.push(S2(slabOf(thumb, COLUMN_TOP + 0.6, 1.8, P2, 2), { tone: "mid" }));
+  out.push(S2(cylinder(thumb.x + thumb.w + 1.4, cy, 1.8, COLUMN_TOP, 3, P2, 16), { tone: "mid" }));
+  out.push(L2(knurl(thumb.x + thumb.w + 1.4, cy, 1.8, COLUMN_TOP, COLUMN_TOP + 3, 14, P2, 0.3), { tone: "lo" }));
+  out.push(S2(cylinder(cx, cy, DIAL_R2, DIAL_Z, DIAL_H, P2, 64, 0.6), { tone: "hi", crease: "lo" }));
+  out.push(L2(knurl(cx, cy, DIAL_R2, DIAL_TOP - 2.2, DIAL_TOP, 72, P2, 0.25), { tone: "lo" }));
+  out.push(L2(sideArc(cx, cy, DIAL_R2, DIAL_TOP - 2.2, P2, 40), { tone: "faint" }));
+  out.push(L2(ring(cx, cy, DIAL_R2 - 1.4, DIAL_TOP, P2, 64), { tone: "lo" }));
+  const ticks = radialTicks(cx, cy, DIAL_R2 - 1.4, 40, 5, DIAL_TOP, [0.9, 1.9], P2);
+  out.push(L2(ticks.minor, { tone: "lo" }), L2(ticks.major, { tone: "mid" }));
+  out.push(L2(lineOnTop([cx, cy - (DIAL_R2 - 1.4)], [cx, cy - (DIAL_R2 - 4)], DIAL_TOP, P2), { tone: "hi" }));
+  out.push(`<path data-part="needle" class="iso-line" data-tone="hi" data-free="start" d="${needlePath(0)}" style="stroke-width:1"/>`);
+  out.push(L2(ring(cx, cy, 1, DIAL_TOP + 0.2, P2, 12), { tone: "mid" }));
+  return out.join("");
+}
+function cable() {
+  const from = at2([CENTER[0] + 8, HOUSING.y, 3.2]);
+  const to = at2([COLUMN_AT[0] + 6, COLUMN_BASE.y + COLUMN_BASE.d, 2]);
+  const via = [at2([CENTER[0] + 8, HOUSING.y - 3, 0.6]), at2([COLUMN_AT[0] + 6, COLUMN_BASE.y + COLUMN_BASE.d + 2.4, 0.6])];
+  return wireSvg(from, to, { via, tone: "mid", size: 0.9 });
+}
+function housing() {
+  const out = [halo2(HOUSING, 0)];
+  out.push(S2(slabOf(HOUSING, 0, HOUSING_TOP, P2, 6, 0.8), { tone: "mid", inner: L2(sideSeam(HOUSING, 2.2, P2, 6), { tone: "faint" }) }));
+  out.push(screws2(HOUSING, HOUSING_TOP, 2.2));
+  const frontY = PAN.y + PAN.d + (HOUSING.y + HOUSING.d - PAN.y - PAN.d) / 2;
+  out.push(L2(ring(-11, frontY, 2.4, HOUSING_TOP, P2, 24) + ring(-11, frontY, 1.2, HOUSING_TOP, P2, 16), { tone: "lo" }));
+  out.push(D2([at2([-11.4, frontY - 0.3, HOUSING_TOP])], { size: 0.5, tone: "mid" }));
+  for (const x of [-52, -46]) {
+    out.push(S2(cylinder(x, frontY, 1.6, HOUSING_TOP, 0.9, P2, 20, 0.3), { tone: "mid" }));
+  }
+  out.push(L2(planOutline({ x: -40, y: frontY - 1.4, w: 14, d: 2.8, r: 0.6 }, HOUSING_TOP, P2, 2), { tone: "lo" }));
+  out.push(L2(planOutline(insetPlan(PAN, -0.7), HOUSING_TOP, P2, 6), { tone: "faint" }));
+  return out.join("");
+}
+function pan() {
+  return [
+    S2(slabOf(PAN, PAN_Z, PAN_TOP - PAN_Z, P2, 6, 0.4), { tone: "mid" }),
+    L2(planOutline(insetPlan(PAN, 3.5), PAN_TOP, P2, 4), { tone: "lo" }),
+    L2(planOutline(insetPlan(PAN, 5), PAN_TOP, P2, 4), { tone: "faint" })
+  ].join("");
+}
+function parcel() {
+  const z0 = PAN_TOP;
+  const top = z0 + PALLET_H + BOX_H;
+  const out = [halo2(PALLET, z0, 2)];
+  out.push(S2(slabOf(PALLET, z0, PALLET_H, P2, 3, 0.4), { tone: "mid", inner: L2(sideSeam(PALLET, z0 + 1.5, P2, 3), { tone: "faint" }) }));
+  out.push(screws2(PALLET, z0 + PALLET_H, 1.4, 0.38));
+  const strap = segment([0, BOX.y + BOX.d, z0 + PALLET_H], [0, BOX.y + BOX.d, top], P2);
+  out.push(S2(slabOf(BOX, z0 + PALLET_H, BOX_H, P2, 2, 0.5), { tone: "hi", crease: "lo", lit: true, inner: L2(strap, { tone: "lo" }) }));
+  out.push(L2(lineOnTop([0, BOX.y], [0, BOX.y + BOX.d], top, P2), { tone: "lo" }));
+  const label = { x: 2.6, y: -5.6, w: 6.4, d: 5.6, r: 0.5 };
+  out.push(S2(slabOf(label, top, 0.4, P2, 2), { tone: "mid", crease: "none" }));
+  [[4.2, 0], [3, 1.6], [3.6, 3.2]].forEach(([length, dy]) => {
+    out.push(L2(lineOnTop([label.x + 1, label.y + 1.2 + dy], [label.x + 1 + length, label.y + 1.2 + dy], top + 0.4, P2), { tone: "lo", free: true }));
+  });
+  return out.join("");
+}
+function rack() {
+  const out = [halo2(RACK, 0)];
+  out.push(S2(slabOf(RACK, 0, RACK_TOP, P2, 4, 0.6), { tone: "mid", inner: L2(sideSeam(RACK, 1.8, P2, 4), { tone: "faint" }) }));
+  out.push(screws2(RACK, RACK_TOP, 2.2));
+  WEIGHT_X.forEach((x, i) => {
+    out.push(L2(ring(x, WEIGHT_Y, WEIGHT_R + 1, RACK_TOP, P2, 32), { tone: "lo" }));
+    const pips = [];
+    for (let n = 0; n <= i; n++) pips.push(at2([x + (n - i / 2) * 1.6, WEIGHT_Y + WEIGHT_R + 4, RACK_TOP]));
+    out.push(D2(pips, { size: 0.38, tone: "mid" }));
+  });
+  out.push(S2(slabOf({ ...PLATE_LABEL, x: PLATE_LABEL.x, y: PLATE_LABEL.y }, RACK_TOP, 0.6, P2, 3), { tone: "lo", crease: "none" }));
+  out.push(L2(planOutline(insetPlan(PLATE_LABEL, 1), RACK_TOP + 0.6, P2, 3), { tone: "faint" }));
+  out.push(faceTextSvg(topMatrix([PLATE_LABEL.x + PLATE_LABEL.w / 2, PLATE_LABEL.y + PLATE_LABEL.d / 2 + 1.1], RACK_TOP + 0.6, P2, "x"), "DEFRA 2025", { size: 3.2, tone: "mid", anchor: "middle" }));
+  out.push(D2([at2([PLATE_LABEL.x + 2.4, PLATE_LABEL.y + PLATE_LABEL.d / 2, RACK_TOP + 0.6]), at2([PLATE_LABEL.x + PLATE_LABEL.w - 2.4, PLATE_LABEL.y + PLATE_LABEL.d / 2, RACK_TOP + 0.6])], { size: 0.4 }));
+  return out.join("");
+}
+function weight(i) {
+  const x = WEIGHT_X[i];
+  const h = weightH(i);
+  const z = RACK_TOP;
+  return [
+    S2(cylinder(x, WEIGHT_Y, WEIGHT_R, z, h, P2, 40, 0.6), {
+      tone: "mid",
+      inner: L2(sideArc(x, WEIGHT_Y, WEIGHT_R, z + 1.6, P2, 24), { tone: "faint" })
+    }),
+    L2(ring(x, WEIGHT_Y, WEIGHT_R - 1.6, z + h, P2, 32), { tone: "lo" }),
+    S2(cylinder(x, WEIGHT_Y, 1.8, z + h, 1.6, P2, 16), { tone: "mid", crease: "none" }),
+    S2(cylinder(x, WEIGHT_Y, 3.2, z + h + 1.6, 2, P2, 28, 0.4), { tone: "mid" }),
+    L2(knurl(x, WEIGHT_Y, 3.2, z + h + 1.6, z + h + 3.6, 20, P2, 0.4), { tone: "lo" })
+  ].join("");
+}
+var NEEDLE_ZERO_AT = 1.6;
+var NEEDLE_LOAD_AT = 2.5;
+function poseAt2({ leg: leg2, prev, t }) {
+  const lift = (ramp(t, 1.5, 1.85) - ramp(t, 2.15, NEEDLE_LOAD_AT)) * PARCEL_LIFT;
+  const dip = DIP * (1 - clamp(lift / 0.6, 0, 1));
+  const atLanding = spring(prev.kg, 0, NEEDLE_LOAD_AT - NEEDLE_ZERO_AT);
+  const kg = t < NEEDLE_ZERO_AT ? prev.kg : t < NEEDLE_LOAD_AT ? spring(prev.kg, 0, t - NEEDLE_ZERO_AT) : spring(atLanding, leg2.kg, t - NEEDLE_LOAD_AT);
+  const weights = HAULS.map((_, i) => {
+    const old = i === haulIndex(prev.haul) ? 1 - ramp(t, 1.5, 1.8) : 0;
+    const now = i === haulIndex(leg2.haul) ? ramp(t, NEEDLE_LOAD_AT, 2.8) : 0;
+    return Math.max(old, now) * WEIGHT_LIFT;
+  });
+  return { lift, dip, kg, weights };
+}
+var sum = (l) => `${kmText(l)} \xD7 ${factorText(l)}${l.pax > 1 ? ` \xD7 ${l.pax}` : ""} = ${kgText(l)}`;
+var readoutAt2 = ({ leg: leg2, prev, t }) => sum(t < NEEDLE_LOAD_AT ? prev : leg2);
+var LABEL2 = "Una b\xE1scula de plataforma con el paquete de tu vuelo sobre el plato y un reloj en columna que marca sus kilos de CO\u2082e. Al lado, un portapesas con tres pesas patr\xF3n grabado DEFRA 2025: una por tipo de tramo, con la altura proporcional a su factor de emisi\xF3n.";
+function figure2(pose = poseAt2(clockAt(0, true))) {
+  const right = byDepth2([
+    { at: [RACK.x + RACK.w / 2, RACK.y + RACK.d / 2], svg: rack() }
+  ]);
+  const weights = byDepth2(WEIGHT_X.map((x, i) => ({ at: [x, WEIGHT_Y], svg: part2(`weight-${i}`, weight(i), [0, 0, pose.weights[i]]) })));
+  return figureSvg({
+    width: WIDTH2,
+    height: HEIGHT2,
+    label: LABEL2,
+    body: [
+      bench2(PLATE2, PLATE_H2, FOOT_H2),
+      column().replace(`d="${needlePath(0)}"`, `d="${needlePath(pose.kg)}"`),
+      cable(),
+      housing(),
+      part2("pan", pan(), [0, 0, -pose.dip]),
+      part2("parcel", parcel(), [CENTER[0], CENTER[1], pose.lift - pose.dip]),
+      ...right.map((r) => r.svg),
+      ...weights.map((w) => w.svg)
+    ]
+  });
+}
+function apply2(svg, clock) {
+  const pose = poseAt2(clock);
+  const q = (name) => svg.querySelector(`[data-part="${name}"]`);
+  q("needle").setAttribute("d", needlePath(pose.kg));
+  q("pan").setAttribute("transform", translateAlong(P2, [0, 0, -pose.dip]));
+  q("parcel").setAttribute("transform", translateAlong(P2, [CENTER[0], CENTER[1], pose.lift - pose.dip]));
+  pose.weights.forEach((dz, i) => q(`weight-${i}`).setAttribute("transform", translateAlong(P2, [0, 0, dz])));
+  return readoutAt2(clock);
+}
+
+// src/apps/public/components/stepFigures/seal.ts
+var WIDTH3 = 360;
+var HEIGHT3 = 228;
+var PLATE3 = { x: -72, y: -48, w: 144, d: 96, r: 6 };
+var PLATE_H3 = 8;
+var FOOT_H3 = 4;
+var TRAY = { x: -68, y: -42, w: 54, d: 32, r: 2.5 };
+var TRAY_TOP = 3;
+var TILE_X = [-58.5, -41, -23.5];
+var TILE_Y = -31;
+var TILE_W = 15;
+var TILE_D = 14;
+var TILE_TOP = TRAY_TOP + 2;
+var TILE_LIFT = 1.4;
+var SLIDE_Y = -16;
+var CARRIAGE = { x: -3.5, y: SLIDE_Y - 2.2, w: 7, d: 4.4, r: 1 };
+var CARRIAGE_TOP = TRAY_TOP + 2.4;
+var PRESS_X = 34;
+var DIE_Y = 6;
+var PRESS_BASE = { x: PRESS_X - 14, y: -42, w: 28, d: 18, r: 2.5 };
+var PRESS_BASE_TOP = 9;
+var COLUMN = { x: PRESS_X - 6, y: -38, w: 12, d: 10, r: 2 };
+var ARM_Z = 42;
+var ARM_TOP = 50;
+var ARM = { x: PRESS_X - 8, y: -38, w: 16, d: 50, r: 2.5 };
+var HOUSING_R = 6;
+var HOUSING_Z = 32;
+var RAM_R = 3;
+var DIE_R = 5.6;
+var DIE_H = 3;
+var DIE_REST = 21;
+var BED = { x: PRESS_X - 16, y: DIE_Y - 14, w: 32, d: 28, r: 2 };
+var BED_TOP = 6;
+var CARD = { x: PRESS_X - 11, y: DIE_Y - 8, w: 22, d: 16, r: 1 };
+var CARD_TOP = BED_TOP + 0.8;
+var STROKE = DIE_REST - (CARD_TOP + 0.3);
+var RAM_LEN = HOUSING_Z - DIE_REST - DIE_H + 2;
+var LEDGER = { x: -54, y: 28, w: 52, d: 6, r: 1 };
+var LEDGER_TOP = 3;
+var CUBE = 5;
+var PITCH = 8;
+var BLOCK_X = [-46, -38, -30, -22];
+var NEW_X = -14;
+var DISPENSER = { x: -6, y: 25, w: 13, d: 12, r: 2 };
+var DISPENSER_TOP = 14;
+var NEW_FROM = DISPENSER.x + DISPENSER.w / 2;
+var fitPoints3 = [
+  ...boxCorners(PLATE3, -PLATE_H3 - FOOT_H3, 0),
+  [PRESS_X, ARM.y, ARM_TOP],
+  [PRESS_X, ARM.y + ARM.d, ARM_TOP]
+];
+var P3 = fitProjection(fitPoints3, WIDTH3, HEIGHT3, { pad: 10, azimuth: 50, elevation: 34 });
+var { at: at3, S: S3, L: L3, D: D3, byDepth: byDepth3, halo: halo3, screws: screws3, part: part3, bench: bench3 } = kitFor(P3);
+function tray() {
+  const out = [halo3(TRAY, 0)];
+  out.push(S3(slabOf(TRAY, 0, TRAY_TOP, P3, 4, 0.5), { tone: "mid", inner: L3(sideSeam(TRAY, 1.2, P3, 4), { tone: "faint" }) }));
+  out.push(screws3(TRAY, TRAY_TOP, 2));
+  out.push(L3(planOutline({ x: TRAY.x + 4, y: SLIDE_Y - 0.6, w: TRAY.w - 8, d: 1.2, r: 0.6 }, TRAY_TOP, P3, 2), { tone: "lo" }));
+  out.push(L3(TILE_X.map((x) => lineOnTop([x, SLIDE_Y + 1.4], [x, SLIDE_Y + 3.4], TRAY_TOP, P3)).join(""), { tone: "mid" }));
+  out.push(L3(TILE_X.map((x) => planOutline({ x: x - TILE_W / 2 - 0.8, y: TILE_Y - TILE_D / 2 - 0.8, w: TILE_W + 1.6, d: TILE_D + 1.6, r: 1.4 }, TRAY_TOP, P3, 3)).join(""), { tone: "faint" }));
+  return out.join("");
+}
+function tree(x, y, z, size) {
+  const out = [S3(cylinder(x, y, 0.45 * size, z, 1.4 * size, P3, 10), { tone: "mid", crease: "none" })];
+  let zz = z + 1.4 * size;
+  for (const r of [2.6, 2.1, 1.6, 1.1, 0.6]) {
+    out.push(S3(cylinder(x, y, r * size, zz, 1.1 * size, P3, 18), { tone: "mid", crease: "none" }));
+    zz += 1.1 * size;
+  }
+  out.push(D3([at3([x, y, zz])], { size: 0.3 * size, tone: "mid" }));
+  return out.join("");
+}
+function tile(i) {
+  const x = TILE_X[i];
+  const plan = { x: x - TILE_W / 2, y: TILE_Y - TILE_D / 2, w: TILE_W, d: TILE_D, r: 1.2 };
+  const out = [S3(slabOf(plan, TRAY_TOP, TILE_TOP - TRAY_TOP, P3, 3, 0.3), { tone: "mid" })];
+  if (i === 0) {
+    const spots = [[x - 3.8, TILE_Y - 2.6], [x + 3.6, TILE_Y - 2.4], [x, TILE_Y + 2.8]];
+    for (const [tx, ty] of spots.sort((a, b) => depthOf([a[0], a[1], 0], P3) - depthOf([b[0], b[1], 0], P3))) out.push(tree(tx, ty, TILE_TOP, 1));
+  } else if (i === 1) {
+    const panel = { x: x - 5.5, y: TILE_Y - 4.2, w: 11, d: 8.4, r: 0.6 };
+    for (const px of [x - 3.4, x + 3.4]) out.push(S3(cylinder(px, TILE_Y, 0.5, TILE_TOP, 2.4, P3, 10), { tone: "mid", crease: "none" }));
+    out.push(S3(slabOf(panel, TILE_TOP + 2.4, 0.8, P3, 2), { tone: "mid" }));
+    const cells = [];
+    for (let c = 1; c < 4; c++) cells.push(lineOnTop([panel.x + c * panel.w / 4, panel.y + 0.6], [panel.x + c * panel.w / 4, panel.y + panel.d - 0.6], TILE_TOP + 3.2, P3));
+    cells.push(lineOnTop([panel.x + 0.6, panel.y + panel.d / 2], [panel.x + panel.w - 0.6, panel.y + panel.d / 2], TILE_TOP + 3.2, P3));
+    out.push(L3(cells.join(""), { tone: "lo" }));
+  } else {
+    out.push(tree(x - 2, TILE_Y - 1.2, TILE_TOP, 1.45), tree(x + 4.4, TILE_Y + 3, TILE_TOP, 0.8));
+  }
+  return out.join("");
+}
+function carriage() {
+  const out = [S3(slabOf(CARRIAGE, TRAY_TOP, CARRIAGE_TOP - TRAY_TOP, P3, 2, 0.4), { tone: "mid" })];
+  out.push(L3(lineOnTop([0, CARRIAGE.y + 0.8], [0, CARRIAGE.y + CARRIAGE.d - 0.8], CARRIAGE_TOP, P3), { tone: "lo" }));
+  out.push(S3(cylinder(0, CARRIAGE.y + 1, 0.9, CARRIAGE_TOP, 0.7, P3, 14), { tone: "hi", crease: "none" }));
+  return out.join("");
+}
+function pressBack() {
+  const out = [halo3(PRESS_BASE, 0)];
+  out.push(S3(slabOf(PRESS_BASE, 0, PRESS_BASE_TOP, P3, 4, 0.6), { tone: "mid", inner: L3(sideSeam(PRESS_BASE, 2.4, P3, 4), { tone: "faint" }) }));
+  out.push(screws3(PRESS_BASE, PRESS_BASE_TOP, 2.2));
+  out.push(S3(slabOf(COLUMN, PRESS_BASE_TOP, ARM_Z - PRESS_BASE_TOP, P3, 3, 0.5), {
+    tone: "mid",
+    inner: L3(sideSeam(COLUMN, PRESS_BASE_TOP + 6, P3, 3) + sideSeam(COLUMN, ARM_Z - 8, P3, 3), { tone: "faint" })
+  }));
+  return out.join("");
+}
+function cable2() {
+  const from = at3([PRESS_BASE.x, PRESS_BASE.y + 6, 4]);
+  const to = at3([DISPENSER.x + 3, DISPENSER.y, 6]);
+  const via = [at3([PRESS_BASE.x - 3, PRESS_BASE.y + 6, 0.6]), at3([PRESS_BASE.x - 3, DISPENSER.y - 4, 0.6]), at3([DISPENSER.x + 3, DISPENSER.y - 4, 0.6])];
+  return wireSvg(from, to, { via, tone: "mid", size: 0.9 });
+}
+function bed() {
+  const out = [halo3(BED, 0)];
+  out.push(S3(slabOf(BED, 0, BED_TOP, P3, 4, 0.6), { tone: "mid", inner: L3(sideSeam(BED, 2, P3, 4), { tone: "faint" }) }));
+  out.push(screws3(BED, BED_TOP, 2));
+  for (const [x, y] of [[CARD.x - 1.2, CARD.y + 2], [CARD.x + 2, CARD.y - 1.2]]) {
+    out.push(S3(cylinder(x, y, 0.8, BED_TOP, 1.4, P3, 12), { tone: "mid" }));
+  }
+  return out.join("");
+}
+function card() {
+  const out = [S3(slabOf(CARD, BED_TOP, CARD_TOP - BED_TOP, P3, 3), { tone: "hi", crease: "lo", lit: true })];
+  out.push(L3(planOutline(insetPlan(CARD, 1.2), CARD_TOP, P3, 3), { tone: "faint" }));
+  const rows = [[CARD.x + 3, CARD.y + 2.6, 9], [CARD.x + 3, CARD.y + 4, 6], [CARD.x + 3, CARD.y + CARD.d - 2.6, 7]];
+  for (const [x, y, w] of rows) out.push(L3(lineOnTop([x, y], [x + w, y], CARD_TOP, P3), { tone: "lo", free: true }));
+  out.push(L3(ring(PRESS_X, DIE_Y + 1, 3.6, CARD_TOP, P3, 28), { tone: "faint" }));
+  return out.join("");
+}
+function seal() {
+  const [x, y] = [PRESS_X, DIE_Y + 1];
+  return [
+    S3(cylinder(x, y, 3.2, CARD_TOP, 0.4, P3, 28), { tone: "hi", crease: "lo" }),
+    L3(ring(x, y, 2.1, CARD_TOP + 0.4, P3, 24), { tone: "mid" }),
+    L3(onTop([[x - 1.1, y], [x - 0.2, y + 0.9], [x + 1.3, y - 0.9]], CARD_TOP + 0.4, P3), { tone: "hi", free: true })
+  ].join("");
+}
+function ram() {
+  return [
+    S3(cylinder(PRESS_X, DIE_Y, RAM_R, DIE_REST + DIE_H, RAM_LEN, P3, 24), { tone: "mid", crease: "none" }),
+    S3(cylinder(PRESS_X, DIE_Y, DIE_R, DIE_REST, DIE_H, P3, 32, 0.4), { tone: "mid", inner: L3(sideArc(PRESS_X, DIE_Y, DIE_R, DIE_REST + 1, P3, 20), { tone: "faint" }) })
+  ].join("");
+}
+function pressFront() {
+  const out = [S3(cylinder(PRESS_X, DIE_Y, HOUSING_R, HOUSING_Z, ARM_Z - HOUSING_Z, P3, 36), {
+    tone: "mid",
+    inner: L3(sideArc(PRESS_X, DIE_Y, HOUSING_R, HOUSING_Z + 2, P3, 24) + sideArc(PRESS_X, DIE_Y, HOUSING_R, ARM_Z - 3, P3, 24), { tone: "faint" })
+  })];
+  out.push(S3(slabOf(ARM, ARM_Z, ARM_TOP - ARM_Z, P3, 4, 0.6), { tone: "mid", inner: L3(sideSeam(ARM, ARM_Z + 3, P3, 4), { tone: "faint" }) }));
+  out.push(screws3(ARM, ARM_TOP, 2.6, 0.45));
+  out.push(L3(planOutline({ x: PRESS_X - 1, y: ARM.y + 8, w: 2, d: ARM.d - 20, r: 1 }, ARM_TOP, P3, 3), { tone: "lo" }));
+  return out.join("");
+}
+function cube(x, tone) {
+  const y = LEDGER.y + LEDGER.d / 2;
+  const plan = { x: x - CUBE / 2, y: y - CUBE / 2, w: CUBE, d: CUBE, r: 0.6 };
+  return [
+    S3(slabOf(plan, LEDGER_TOP, CUBE, P3, 2, 0.3), { tone, crease: tone === "hi" ? "lo" : "faint" }),
+    L3(planOutline(insetPlan(plan, 1), LEDGER_TOP + CUBE, P3, 2), { tone: "faint" })
+  ].join("");
+}
+function link(x0, x1) {
+  const y = LEDGER.y + LEDGER.d / 2;
+  const plan = { x: x0, y: y - 0.8, w: x1 - x0, d: 1.6, r: 0.7 };
+  return [
+    S3(slabOf(plan, LEDGER_TOP + CUBE, 0.6, P3, 2), { tone: "lo", crease: "none" }),
+    D3([at3([x0 + 0.8, y, LEDGER_TOP + CUBE + 0.6]), at3([x1 - 0.8, y, LEDGER_TOP + CUBE + 0.6])], { size: 0.38, tone: "mid" })
+  ].join("");
+}
+function ledgerBase() {
+  const y = LEDGER.y + LEDGER.d / 2;
+  const out = [S3(slabOf(LEDGER, 0, LEDGER_TOP, P3, 3, 0.4), { tone: "mid" })];
+  const stop = { x: LEDGER.x, y: LEDGER.y - 1, w: 3, d: LEDGER.d + 2, r: 0.8 };
+  out.push(S3(slabOf(stop, 0, LEDGER_TOP + 4, P3, 2), { tone: "mid" }));
+  out.push(D3([at3([stop.x + 1.5, y - 2, LEDGER_TOP + 4]), at3([stop.x + 1.5, y + 2, LEDGER_TOP + 4])], { size: 0.4 }));
+  return out.join("");
+}
+function chain(pose) {
+  const first = `<g data-part="first" opacity="${(1 - pose.shift).toFixed(2)}">${cube(BLOCK_X[0], "mid")}</g>`;
+  const rest = BLOCK_X.slice(1).map((x, i) => cube(x, "mid") + link(BLOCK_X[i], x)).join("");
+  const fresh = part3("block", cube(NEW_X, "hi") + link(BLOCK_X[BLOCK_X.length - 1], NEW_X), [pose.block, 0, 0]);
+  return part3("chain", first + rest + fresh, [-PITCH * pose.shift, 0, 0]);
+}
+function dispenser() {
+  const out = [halo3(DISPENSER, 0)];
+  out.push(S3(slabOf(DISPENSER, 0, DISPENSER_TOP, P3, 4, 0.6), { tone: "mid", inner: L3(sideSeam(DISPENSER, DISPENSER_TOP - 3, P3, 4), { tone: "faint" }) }));
+  out.push(screws3(DISPENSER, DISPENSER_TOP, 2));
+  out.push(L3(planOutline(insetPlan(DISPENSER, 3), DISPENSER_TOP, P3, 3), { tone: "lo" }));
+  return out.join("");
+}
+var SEAL_AT = 3.9;
+function poseAt3({ leg: leg2, prev, t }) {
+  const choose = ramp(t, 2.9, 3.4);
+  const tiles = TILE_X.map((_, i) => lerp(i === prev.project ? 1 : 0, i === leg2.project ? 1 : 0, choose) * TILE_LIFT);
+  return {
+    carriage: lerp(TILE_X[prev.project], TILE_X[leg2.project], choose),
+    tiles,
+    stroke: (ramp(t, 3.6, SEAL_AT) - ramp(t, 4.05, 4.5)) * STROKE,
+    seal: ramp(t, SEAL_AT - 0.04, SEAL_AT + 0.04) * (1 - ramp(t, 5.9, 6.3)),
+    block: (1 - ramp(t, 4.3, 4.9)) * (NEW_FROM - NEW_X),
+    shift: ramp(t, 5.8, 6.35)
+  };
+}
+var line = (l) => `${kgText(l)} \xB7 ${PROJECTS[l.project]} \xB7 certificado sellado`;
+var readoutAt3 = ({ leg: leg2, prev, t }) => line(t < SEAL_AT ? prev : leg2);
+var LABEL3 = "Una prensa de sellado junto a una bandeja con tres proyectos: reforestaci\xF3n, energ\xEDa solar y bosque nativo. Un carro elige el proyecto, la prensa sella el certificado y un bloque nuevo sale del dispensador y se encadena en el riel, como el registro en Polygon.";
+function figure3(pose = poseAt3(clockAt(0, true))) {
+  const tiles = byDepth3(TILE_X.map((x, i) => ({ at: [x, TILE_Y], svg: part3(`tile-${i}`, tile(i), [0, 0, pose.tiles[i]]) })));
+  return figureSvg({
+    width: WIDTH3,
+    height: HEIGHT3,
+    label: LABEL3,
+    body: [
+      bench3(PLATE3, PLATE_H3, FOOT_H3),
+      tray(),
+      ...tiles.map((t) => t.svg),
+      part3("carriage", carriage(), [pose.carriage, 0, 0]),
+      pressBack(),
+      cable2(),
+      bed(),
+      card(),
+      part3("seal", seal(), [0, 0, 0], ` opacity="${pose.seal.toFixed(2)}"`),
+      part3("ram", ram(), [0, 0, -pose.stroke]),
+      pressFront(),
+      ledgerBase(),
+      chain(pose),
+      dispenser()
+    ]
+  });
+}
+function apply3(svg, clock) {
+  const pose = poseAt3(clock);
+  const q = (name) => svg.querySelector(`[data-part="${name}"]`);
+  pose.tiles.forEach((dz, i) => q(`tile-${i}`).setAttribute("transform", translateAlong(P3, [0, 0, dz])));
+  q("carriage").setAttribute("transform", translateAlong(P3, [pose.carriage, 0, 0]));
+  q("seal").setAttribute("opacity", pose.seal.toFixed(2));
+  q("ram").setAttribute("transform", translateAlong(P3, [0, 0, -pose.stroke]));
+  q("block").setAttribute("transform", translateAlong(P3, [pose.block, 0, 0]));
+  q("chain").setAttribute("transform", translateAlong(P3, [-PITCH * pose.shift, 0, 0]));
+  q("first").setAttribute("opacity", (1 - pose.shift).toFixed(2));
+  return readoutAt3(clock);
+}
+
+// src/apps/public/components/stepFigures/figures.ts
+var FIGURES = {
+  route: { figure: () => figure(), apply },
+  weigh: { figure: () => figure2(), apply: apply2 },
+  seal: { figure: () => figure3(), apply: apply3 }
+};
+
+// tools/anatomy/step-figures/entry.ts
+var params = new URLSearchParams(location.search);
+var frozen = params.has("t") ? Number(params.get("t")) : null;
+var still = params.has("still");
+var only = params.get("only");
+var main = document.querySelector("main");
+var kinds = Object.keys(FIGURES).filter((kind) => !only || kind === only);
+var cards = kinds.map((kind) => {
+  const card2 = document.createElement("div");
+  card2.className = "card";
+  card2.dataset.kind = kind;
+  card2.innerHTML = `${FIGURES[kind].figure()}<p></p>`;
+  main.appendChild(card2);
+  return { kind, svg: card2.querySelector("svg"), readout: card2.querySelector("p") };
+});
+function frame(now) {
+  const clock = clockAt(frozen ?? now / 1e3, still);
+  for (const card2 of cards) card2.readout.textContent = FIGURES[card2.kind].apply(card2.svg, clock);
+  if (frozen === null && !still) requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

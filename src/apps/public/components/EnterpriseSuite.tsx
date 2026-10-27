@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { HiArrowRight, HiOutlineDocumentReport, HiOutlineCloudUpload, HiOutlineCode, HiCheck } from 'react-icons/hi';
 import { FaShieldAlt } from 'react-icons/fa';
+import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import './EnterpriseSuite.css';
 
 const B2B_BENEFITS = [
@@ -11,8 +12,16 @@ const B2B_BENEFITS = [
 ];
 
 export const EnterpriseSuite: React.FC = () => {
+  const scopeRef = useGsapReveal<HTMLElement>((root) => {
+    sectionTimeline(root)
+      .from('.es-eyebrow', { y: 10, autoAlpha: 0 }, 0)
+      .add(reveal(root, '.es-title'), 0.05)
+      .add(reveal(root, '.es-lede', 'text'), 0.15)
+      .from('.es-benefit-item', { y: 10, autoAlpha: 0, stagger: 0.05 }, 0.2);
+  }, []);
+
   return (
-    <section className="es-section" id="empresas" aria-label="Soluciones corporativas de compensación para empresas">
+    <section ref={scopeRef} className="es-section" id="empresas" aria-label="Soluciones corporativas de compensación para empresas">
       <div className="es-container">
         <div className="es-grid">
           {/* Columna Izquierda: Propuesta de Valor B2B */}
@@ -49,14 +58,14 @@ export const EnterpriseSuite: React.FC = () => {
                 to="/contacto?asunto=b2b#contacto"
                 className="es-btn es-btn--primary"
               >
-                <span>Agendar reunión corporativa</span>
+                <span>Agendar reunión</span>
                 <HiArrowRight aria-hidden="true" />
               </Link>
               <Link
                 to="/#calculadora"
                 className="es-btn es-btn--ghost"
               >
-                <span>Probar calculadora primero</span>
+                <span>Calcula tu huella</span>
               </Link>
             </div>
           </div>
@@ -104,7 +113,7 @@ export const EnterpriseSuite: React.FC = () => {
                       <HiOutlineCloudUpload aria-hidden="true" />
                     </div>
                     <div className="es-f-text">
-                      <h4>Carga masiva de itinerarios en segundos</h4>
+                      <h3>Carga masiva de itinerarios en segundos</h3>
                       <p>Sube archivos Excel o CSV de tu agencia de viajes y obtén el cálculo consolidado al instante.</p>
                     </div>
                   </div>
@@ -114,7 +123,7 @@ export const EnterpriseSuite: React.FC = () => {
                       <HiOutlineDocumentReport aria-hidden="true" />
                     </div>
                     <div className="es-f-text">
-                      <h4>Resumen mensual para tus reportes CMF y CSRD</h4>
+                      <h3>Resumen mensual para tus reportes CMF y CSRD</h3>
                       <p>Consulta en tu panel las emisiones de cada mes, calculadas con factores DEFRA documentados.</p>
                     </div>
                   </div>
@@ -124,7 +133,7 @@ export const EnterpriseSuite: React.FC = () => {
                       <HiOutlineCode aria-hidden="true" />
                     </div>
                     <div className="es-f-text">
-                      <h4>Integraciones a medida</h4>
+                      <h3>Integraciones a medida</h3>
                       <p>¿Necesitas conectar tu sistema de reservas? Conversemos y evaluamos la integración contigo.</p>
                     </div>
                   </div>

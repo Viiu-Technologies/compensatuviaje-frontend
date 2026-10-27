@@ -39,10 +39,6 @@
   color: var(--ctv-canvas);
   margin: 0;
 }
-.ft-display .hero-line__inner em {
-  font-style: italic;
-  color: var(--ctv-brand);
-}
 
 .ft-display-cta {
   display: inline-flex;
@@ -96,6 +92,8 @@
   color: rgba(247, 250, 248, 0.7);
 }
 .ft-newsletter__legal a {
+  /* Subrayado: dentro de un párrafo, el color solo no basta para distinguirlo (WCAG 1.4.1). */
+  text-decoration: underline;
   color: rgba(247, 250, 248, 0.75);
   text-underline-offset: 2px;
 }

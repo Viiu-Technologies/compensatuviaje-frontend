@@ -1,0 +1,429 @@
+/* ==========================================================================
+   FactorRings.css — simulador de vuelo sobre los anillos de distancia.
+   Neutros para el contexto; el verde marca el anillo, el asiento y la estela.
+   ========================================================================== */
+@import '../landing/tokens.css';
+
+.fr {
+  margin: var(--ctv-space-6) 0;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  background: #F3F7F5;
+  border: 1px solid rgba(14, 59, 54, 0.08);
+  border-radius: var(--ctv-radius-xl);
+}
+
+.fr__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Anillos ── */
+.fr-ring {
+  fill: none;
+  stroke: rgba(14, 59, 54, 0.18);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 5;
+}
+
+.fr-ring--0 { fill: rgba(31, 138, 76, 0.05); }
+.fr-ring--1 { fill: rgba(31, 138, 76, 0.035); }
+.fr-ring--2 { fill: rgba(31, 138, 76, 0.02); }
+
+.fr-origin {
+  fill: #0E3B36;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.fr-origin__label,
+.fr-col__label,
+.fr-band-label__km {
+  font-family: var(--ctv-font-mono);
+  fill: #0E3B36;
+}
+
+.fr-origin__label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Columnas con su asiento ── */
+.fr-col__front { fill: #B9D3C7; }
+.fr-col__side { fill: #9DBFB1; }
+.fr-col__top { fill: #D4E5DD; }
+.fr-col__seat { fill: #6F978A; }
+
+.fr-col__front,
+.fr-col__side,
+.fr-col__top,
+.fr-col__seat {
+  transition: fill 0.25s ease;
+}
+
+.fr-col__label {
+  font-size: 10px;
+  fill: var(--ctv-ink-mute);
+}
+
+.fr-band-label__km {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.fr-band-label__name {
+  font-family: var(--ctv-font-body);
+  font-size: 11px;
+  fill: var(--ctv-ink-soft);
+}
+
+/* Anillos que no son el de la ruta: más tenues. */
+.fr-band {
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.fr-band--on {
+  opacity: 1;
+}
+
+.fr-band--on .fr-col__front { fill: #7FB49A; }
+.fr-band--on .fr-col__side { fill: #5E9C7F; }
+.fr-band--on .fr-col__top { fill: #A9D0BB; }
+.fr-band--on .fr-col__seat { fill: #0E3B36; }
+
+/* El asiento elegido, en el anillo elegido. */
+.fr-pick .fr-col__front { fill: #1F8A4C; }
+.fr-pick .fr-col__side { fill: #17713E; }
+.fr-pick .fr-col__top { fill: #3FA36A; }
+.fr-pick .fr-col__seat { fill: #0E3B36; }
+
+.fr-plane {
+  fill: #0E3B36;
+}
+
+/* ── Simulador (enfocable: ahí se capturan las flechas) ── */
+.fr__stage {
+  position: relative;
+  border-radius: var(--ctv-radius-lg, 14px);
+  outline: none;
+  cursor: default;
+}
+
+.fr__stage:focus-visible {
+  box-shadow: 0 0 0 2px #1F8A4C;
+}
+
+.fr__hint {
+  margin: 0.25rem 0 0;
+  font-family: var(--ctv-font-mono);
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--ctv-ink-mute);
+  opacity: 0.7;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.fr__stage:focus-visible + .fr__hint {
+  opacity: 1;
+  color: #1F8A4C;
+}
+
+/* Táctil: el teclado no aplica. */
+@media (hover: none) and (pointer: coarse) {
+  .fr__hint {
+    display: none;
+  }
+}
+
+/* Angosto: el dibujo conserva un tamaño legible y el escenario se desliza
+   siguiendo al avión (ver paint). */
+@media (max-width: 640px) {
+  .fr__stage {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .fr__stage::-webkit-scrollbar {
+    display: none;
+  }
+
+  .fr__stage .fr__svg {
+    width: 600px;
+    max-width: none;
+  }
+}
+
+/* ── Línea de vuelo, estela y destello ── */
+.fr-line {
+  stroke: rgba(14, 59, 54, 0.2);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.fr-trail {
+  fill: url(#fr-trail);
+}
+
+.fr-flash {
+  fill: none;
+  stroke: #3FCF7A;
+  stroke-width: 2;
+}
+
+.fr-sparks circle {
+  fill: #3FCF7A;
+}
+
+/* ── Paradas ── */
+.fr-stop {
+  cursor: pointer;
+}
+
+.fr-stop circle {
+  fill: #ffffff;
+  stroke: #0E3B36;
+  stroke-width: 1.5;
+  transition: fill 0.2s ease;
+}
+
+.fr-stop:hover circle,
+.fr-stop--on circle {
+  fill: #1F8A4C;
+  stroke: #1F8A4C;
+}
+
+.fr-stop__name {
+  font-family: var(--ctv-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  fill: #0E3B36;
+}
+
+.fr-stop__code {
+  font-family: var(--ctv-font-mono);
+  font-size: 9px;
+  fill: var(--ctv-ink-mute);
+}
+
+.fr-stop--own .fr-stop__code {
+  fill: #1F8A4C;
+}
+
+/* ── Misiones ── */
+.fr__missions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ctv-space-2) var(--ctv-space-3);
+  margin-bottom: var(--ctv-space-3);
+  padding: 0.6rem 0.8rem;
+  background: #ffffff;
+  border: 1px solid rgba(14, 59, 54, 0.08);
+  border-radius: var(--ctv-radius-md);
+}
+
+.fr__mission-steps {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.fr__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--ctv-font-mono);
+  font-size: 0.7rem;
+  color: var(--ctv-ink-mute);
+  border: 1px solid rgba(14, 59, 54, 0.18);
+  border-radius: 50%;
+}
+
+.fr__step--now {
+  color: #0E3B36;
+  border-color: #0E3B36;
+}
+
+.fr__step--done {
+  color: #ffffff;
+  background: #1F8A4C;
+  border-color: #1F8A4C;
+}
+
+.fr__mission-text {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ctv-ink-soft);
+}
+
+.fr__mission-text strong {
+  color: #0E3B36;
+}
+
+.fr__mission-actions {
+  display: inline-flex;
+  gap: var(--ctv-space-3);
+}
+
+.fr__link {
+  padding: 0;
+  font-family: var(--ctv-font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1F8A4C;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Mando: ◀ ▶ y aterrizar ── */
+.fr__pad {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.fr__pad-btn,
+.fr__land {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  color: #0E3B36;
+  background: #ffffff;
+  border: 1px solid rgba(14, 59, 54, 0.14);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.fr__pad-btn {
+  width: 34px;
+  padding: 0;
+  font-size: 1.1rem;
+  border-radius: 50%;
+}
+
+.fr__pad-btn:active {
+  color: #ffffff;
+  background: #1F8A4C;
+  border-color: #1F8A4C;
+}
+
+.fr__land {
+  padding: 0 0.9rem;
+  font-family: var(--ctv-font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #0E3B36;
+  border-color: #0E3B36;
+  border-radius: var(--ctv-radius-pill);
+}
+
+.fr__land:hover {
+  background: #1F8A4C;
+  border-color: #1F8A4C;
+}
+
+.fr__pad-btn:focus-visible,
+.fr__land:focus-visible,
+.fr__link:focus-visible {
+  outline: 2px solid #1F8A4C;
+  outline-offset: 2px;
+}
+
+/* ── Controles ── */
+.fr__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ctv-space-3) var(--ctv-space-6);
+  margin-top: var(--ctv-space-3);
+}
+
+.fr__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.fr__chip {
+  padding: 0.35rem 0.75rem;
+  font-family: var(--ctv-font-mono);
+  font-size: 0.75rem;
+  color: #0E3B36;
+  background: #ffffff;
+  border: 1px solid rgba(14, 59, 54, 0.14);
+  border-radius: var(--ctv-radius-pill);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.fr__chip:hover {
+  border-color: #1F8A4C;
+}
+
+.fr__chip[aria-checked='true'] {
+  color: #ffffff;
+  background: #0E3B36;
+  border-color: #0E3B36;
+}
+
+.fr__chip:focus-visible {
+  outline: 2px solid #1F8A4C;
+  outline-offset: 2px;
+}
+
+/* ── Lectura ── */
+.fr__readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: var(--ctv-space-4);
+  text-align: center;
+}
+
+.fr__formula {
+  font-family: var(--ctv-font-mono);
+  font-size: 1rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #0E3B36;
+}
+
+.fr__per {
+  font-family: var(--ctv-font-mono);
+  font-size: 0.72rem;
+  color: var(--ctv-ink-mute);
+}
+
+.fr__note {
+  max-width: 46ch;
+  margin-top: var(--ctv-space-1);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ctv-ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fr-band,
+  .fr-col__front,
+  .fr-col__side,
+  .fr-col__top,
+  .fr-col__seat,
+  .fr__chip,
+  .fr-stop circle,
+  .fr__hint {
+    transition: none;
+  }
+}

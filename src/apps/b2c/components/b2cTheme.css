@@ -1,0 +1,29 @@
+/* Área B2C con los neutros de la marca.
+ *
+ * Las pantallas B2C usan la escala gray de Tailwind para fondos, bordes y
+ * texto secundario (ver ui/components.tsx), y eso las hacía ver como un panel
+ * de administración genérico al lado del landing. Tailwind v4 genera esas
+ * utilidades con variables (.bg-gray-50 { background-color: var(--color-gray-50) }),
+ * así que aquí se redefine la escala solo dentro de .ctv-b2c: misma
+ * luminosidad que cada paso de Tailwind (el contraste no cambia: gray-500 queda
+ * en 4,78:1 sobre blanco) con el tono teal de la marca. gray-900 es la tinta del
+ * logotipo (#073D3D) y gray-950 el teal-950 de los tokens del landing.
+ */
+.ctv-b2c {
+  --color-gray-50: #f7fbfb;
+  --color-gray-100: #f0f5f5;
+  --color-gray-200: #e0e9e9;
+  --color-gray-300: #ccd8d7;
+  --color-gray-400: #94a4a3;
+  --color-gray-500: #647675;
+  --color-gray-600: #455957;
+  --color-gray-700: #304544;
+  --color-gray-800: #1e4745;
+  --color-gray-900: #073d3d;
+  --color-gray-950: #012120;
+}
+
+/* Títulos de página en la tipografía display de la marca (Outfit), como el landing. */
+.ctv-b2c main h1 {
+  font-family: var(--font-display);
+}

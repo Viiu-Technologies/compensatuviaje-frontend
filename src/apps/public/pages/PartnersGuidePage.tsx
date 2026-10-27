@@ -15,7 +15,7 @@ import {
 import { FaSun, FaTree, FaSeedling } from 'react-icons/fa';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { gsap, useGsapReveal, sectionTimeline } from '../hooks/useGsapReveal';
+import { gsap, useGsapReveal, sectionTimeline, reveal } from '../hooks/useGsapReveal';
 import { BlobField, CertificateArt } from '../components/landing/EcoArt';
 import {
   HeroPartnersNetworkArt,
@@ -28,6 +28,7 @@ import {
 } from './PartnersGuideArt';
 import './PartnersGuidePage.css';
 import { useSeo } from '../../../shared/utils/useSeo';
+import { PUBLIC_SEO } from '../../../shared/config/publicSeo';
 
 type Step = {
   num: string;
@@ -112,7 +113,7 @@ const CERTIFIED_SHOWCASE = [
     category: 'Energía Renovable',
     standard: 'Veritas AI · Revisión humana',
     metric: '45.000 t CO₂/año evitadas',
-    image: '/images/atacama_solar_park.jpg',
+    image: '/images/atacama_solar_park.webp',
     Icon: FaSun,
   },
   {
@@ -121,7 +122,7 @@ const CERTIFIED_SHOWCASE = [
     category: 'Conservación y Biodiversidad',
     standard: 'Veritas AI · Revisión humana',
     metric: '18.200 t CO₂ capturadas',
-    image: '/images/realistic_forest_canopy.png',
+    image: '/images/realistic_forest_canopy.webp',
     Icon: FaTree,
   },
   {
@@ -130,7 +131,7 @@ const CERTIFIED_SHOWCASE = [
     category: 'Reforestación Nativa',
     standard: 'Polygon Blockchain ERC-721',
     metric: '12.000 árboles plantados',
-    image: '/images/realistic_eco_seedling.png',
+    image: '/images/realistic_eco_seedling.webp',
     Icon: FaSeedling,
   },
 ];
@@ -155,18 +156,14 @@ const FAQS = [
 ];
 
 const PartnersGuidePage = () => {
-  useSeo({
-    title: 'Sé un Aliado: publica tu proyecto ambiental',
-    description: 'Publica tu proyecto de reforestación, energía o conservación y recibe financiamiento de viajeros y empresas que compensan su huella.',
-    path: '/aliados',
-  });
+  useSeo(PUBLIC_SEO['/aliados']);
 
   const heroRef = useGsapReveal<HTMLElement>((root) => {
     gsap.set('.ctv-reveal', { autoAlpha: 1 });
     const tl = sectionTimeline(root, { scrollTrigger: undefined, delay: 0.1 });
     tl.from('.pg-hero__eyebrow', { y: 14, autoAlpha: 0 }, 0)
-      .from('.pg-hero__title .hero-line__inner', { yPercent: 110, stagger: 0.08, duration: 0.9 }, 0.08)
-      .from('.pg-hero__lead', { y: 16, autoAlpha: 0 }, 0.35)
+      .add(reveal(root, '.pg-hero__title'), 0.08)
+      .add(reveal(root, '.pg-hero__lead', 'text'), 0.35)
       .from('.pg-hero__actions', { y: 16, autoAlpha: 0 }, 0.45)
       .from('.pg-hero__art', { scale: 0.85, autoAlpha: 0, duration: 0.9, ease: 'back.out(1.6)' }, 0.3);
 
@@ -178,8 +175,8 @@ const PartnersGuidePage = () => {
 
     const tl = sectionTimeline(root);
     tl.from('.pg-timeline__eyebrow', { y: 14, autoAlpha: 0 }, 0)
-      .from('.pg-timeline__title .hero-line__inner', { yPercent: 110, stagger: 0.08, duration: 0.9 }, 0.08)
-      .from('.pg-timeline__lead', { y: 16, autoAlpha: 0 }, 0.35);
+      .add(reveal(root, '.pg-timeline__title'), 0.08)
+      .add(reveal(root, '.pg-timeline__lead', 'text'), 0.35);
 
     const items = gsap.utils.toArray<HTMLElement>('.pg-step', root);
     items.forEach((item, i) => {
@@ -244,7 +241,7 @@ const PartnersGuidePage = () => {
     gsap.set('.ctv-reveal', { autoAlpha: 1 });
     const tl = sectionTimeline(root);
     tl.from('.pg-faq__eyebrow', { y: 14, autoAlpha: 0 }, 0)
-      .from('.pg-faq__title .hero-line__inner', { yPercent: 110, stagger: 0.08, duration: 0.9 }, 0.08)
+      .add(reveal(root, '.pg-faq__title'), 0.08)
       .from('.pg-faq-item', { y: 24, autoAlpha: 0, stagger: 0.1 }, 0.3);
   }, []);
 

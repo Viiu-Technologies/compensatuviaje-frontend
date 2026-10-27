@@ -88,6 +88,33 @@ export const POPULAR_AIRPORTS: AirportOption[] = [
   { code: 'PUQ', name: 'Presidente Carlos Ibáñez', city: 'Punta Arenas', country: 'Chile', lat: -53.003, lon: -70.855 },
 ];
 
+/** Cuántos resultados muestra el buscador de aeropuertos. */
+const AIRPORT_SEARCH_LIMIT = 8;
+
+/**
+ * Public endpoint: GET /api/public/airports/search?q=
+ * Busca por código IATA, ciudad o país y tolera errores de tipeo.
+ */
+export async function searchAirports(query: string, signal?: AbortSignal): Promise<AirportOption[]> {
+  const base = cleanBaseUrl.endsWith('/api') ? `${cleanBaseUrl}/public` : `${cleanBaseUrl}/api/public`;
+  const params = new URLSearchParams({ q: query.trim(), limit: String(AIRPORT_SEARCH_LIMIT) });
+
+  const res = await fetch(`${base}/airports/search?${params}`, { signal });
+  if (!res.ok) {
+    throw new Error('No pudimos buscar aeropuertos. Inténtalo de nuevo.');
+  }
+
+  const body = await res.json();
+  return (body.data ?? []).slice(0, AIRPORT_SEARCH_LIMIT).map((a: AirportOption) => ({
+    code: a.code,
+    name: a.name,
+    city: a.city,
+    country: a.country,
+    lat: Number(a.lat),
+    lon: Number(a.lon),
+  }));
+}
+
 /**
  * Public endpoint: POST /api/public/calculator/estimate
  */

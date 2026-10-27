@@ -1,171 +1,164 @@
 /* ==========================================================================
-   Header.css — Liquid Glass Unified Surface Header (Estilo Wren Compacto)
-   Superficie fluida continua con ítems horizontales y triggers sin bordes pesados
+   Header.css — Barra superior clara, plana y de ancho completo.
+   · Transparente arriba de la landing (sobre el cielo del hero); con fondo
+     claro translúcido al bajar y en el resto de páginas.
+   · --dark: sobre secciones oscuras (escena final del hero), texto claro.
+   · --hidden: se oculta al bajar; vuelve al subir o al acercar el mouse arriba.
+   El cajón móvil (más abajo) sigue siendo oscuro.
    ========================================================================== */
 @import './landing/tokens.css';
 
 /* --------------------------------------------------------------------------
-   Tokens locales vinculados al Design System
+   Tokens del cajón móvil (oscuro) y medidas compartidas
    -------------------------------------------------------------------------- */
 :root {
-  --lq-bg: rgba(5, 27, 25, 0.90);
-  --lq-bg-scrolled: rgba(4, 22, 20, 0.96);
-  --lq-bg-expanded: rgba(4, 22, 20, 0.97);
-  --lq-border: rgba(62, 211, 43, 0.24);
-  --lq-border-expanded: rgba(62, 211, 43, 0.38);
-  --lq-neon: var(--ctv-brand-bright);
-  --lq-neon-glow: rgba(62, 211, 43, 0.35);
-  --lq-text: var(--ctv-canvas);
-  --lq-text-muted: #94a3b8;
-  --lq-text-sub: #cbd5e1;
+  --lq-neon: #9FDDAE;
+  --lq-text-muted: #9DB4B0;
+  --lq-text-sub: #D2DFDC;
+  --lq-icon-bg: rgba(255, 255, 255, 0.05);
+  --lq-icon-border: rgba(255, 255, 255, 0.09);
   --lq-header-h: 68px;
   --lq-radius-pill: var(--ctv-radius-pill);
   --lq-transition: 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* --------------------------------------------------------------------------
-   Superficie Única Continua: Header Flotante Liquid Glass
+   Superficie
    -------------------------------------------------------------------------- */
 .ctv-liquid-surface {
+  --hd-fg: #0E3B36;
+  --hd-fg-soft: #40605C;
+  --hd-bg: rgba(247, 250, 248, 0.86);
+  --hd-border: rgba(14, 59, 54, 0.08);
+  --hd-hover: rgba(14, 59, 54, 0.06);
+  --hd-cta-bg: #0E3B36;
+  --hd-cta-fg: #ffffff;
+  --hd-cta-hover: #155049;
+  --hd-focus: #0E3B36;
+
   position: fixed;
-  top: 14px;
+  top: 0;
   left: 0;
   right: 0;
-  margin: 0 auto;
-  width: calc(100% - 32px);
-  max-width: 1240px;
-  min-height: var(--lq-header-h);
   z-index: 1000;
-  background: var(--lq-bg);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid var(--lq-border);
-  /* Mitad de --lq-header-h: igual de redondo que 9999px, pero la transición a
-     24px al expandir es continua (desde 9999px el valor quedaba clavado en el
-     máximo casi toda la transición y saltaba al final). */
-  border-radius: calc(var(--lq-header-h) / 2);
-  box-shadow:
-    0 16px 40px -8px rgba(0, 0, 0, 0.55),
-    0 0 20px -2px rgba(62, 211, 43, 0.08),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 rgba(62, 211, 43, 0.12);
-  overflow: hidden;
-  will-change: transform;
-  /* fill-mode "backwards" (no "both"): con "both" la animación retenía
-     transform: translateY(0) para siempre y anulaba el de --hidden. */
-  animation: liquidHeaderSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  /* border-radius y box-shadow se movieron aqui desde el animate={} de Framer
-     Motion en Header.tsx: Motion interpolaba ambos valores en el hilo principal en
-     cada frame via su bucle de rAF/JS; una transicion CSS deja que el navegador
-     maneje la interpolacion internamente sin ese overhead de JS por frame. */
+  min-height: var(--lq-header-h);
+  color: var(--hd-fg);
+  background: var(--hd-bg);
+  /* El desenfoque se recalcula en cada cuadro de scroll: 14 px basta. */
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border-bottom: 1px solid var(--hd-border);
   transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
-              top var(--lq-transition),
               background-color var(--lq-transition),
               border-color var(--lq-transition),
-              border-radius var(--lq-transition),
+              color var(--lq-transition),
               box-shadow var(--lq-transition);
 }
 
-/* Auto-ocultado al hacer scroll hacia abajo: sube su propio alto más el
-   offset superior y el halo de la sombra, para no dejar rastro visible. */
 .ctv-liquid-surface--hidden {
-  transform: translateY(calc(-100% - 48px));
-}
-
-@keyframes liquidHeaderSlideIn {
-  from {
-    transform: translateY(-40px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  transform: translateY(-100%);
 }
 
 .ctv-liquid-surface--scrolled {
-  top: 10px;
-  background: var(--lq-bg-scrolled);
-  border-color: rgba(62, 211, 43, 0.32);
-  box-shadow:
-    0 20px 48px -10px rgba(0, 0, 0, 0.7),
-    0 0 25px rgba(62, 211, 43, 0.16),
-    inset 0 1px 1px rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 28px -18px rgba(14, 59, 54, 0.3);
 }
 
+/* Arriba de la landing: sin fondo, el header flota sobre el cielo del hero. */
+.ctv-liquid-surface--transparent {
+  background: transparent;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Sobre fondo oscuro */
+.ctv-liquid-surface--dark {
+  --hd-fg: #F5F8F4;
+  --hd-fg-soft: rgba(245, 248, 244, 0.78);
+  --hd-bg: rgba(11, 47, 43, 0.72);
+  --hd-border: rgba(245, 248, 244, 0.08);
+  --hd-hover: rgba(245, 248, 244, 0.1);
+  --hd-cta-bg: #F5F8F4;
+  --hd-cta-fg: #0E3B36;
+  --hd-cta-hover: #ffffff;
+  --hd-focus: #F5F8F4;
+}
+
+.ctv-liquid-surface--dark.ctv-liquid-surface--scrolled {
+  box-shadow: none;
+}
+
+/* Con un menú abierto la superficie es sólida y clara, sobre cualquier fondo. */
 .ctv-liquid-surface--expanded {
-  background: var(--lq-bg-expanded);
-  border-color: var(--lq-border-expanded);
-  border-radius: 24px;
-  box-shadow:
-    0 24px 60px -12px rgba(0, 0, 0, 0.7),
-    0 0 30px rgba(62, 211, 43, 0.18),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.22);
+  background: #F7FAF8;
+  box-shadow: 0 24px 48px -24px rgba(14, 59, 54, 0.3);
 }
 
-/* Refracción óptica decorativa en el borde superior del cristal */
+/* La capa de refracción era del cristal oscuro; se conserva el nodo. */
 .ctv-liquid-refraction {
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background: radial-gradient(ellipse at center, rgba(62, 211, 43, 0.45) 0%, transparent 75%);
-  pointer-events: none;
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-.ctv-liquid-surface--expanded .ctv-liquid-refraction {
-  opacity: 0.9;
-  left: 5%;
-  right: 5%;
-  height: 2.5px;
-  background: radial-gradient(ellipse at center, rgba(62, 211, 43, 0.65) 0%, transparent 70%);
+  display: none;
 }
 
 /* --------------------------------------------------------------------------
-   Barra Superior Integrada (Constante a 68px de alto)
+   Barra: logo · navegación centrada · acciones
    -------------------------------------------------------------------------- */
 .ctv-liquid-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--lq-header-h);
-  padding: 0 1.25rem;
-  gap: 1rem;
   position: relative;
   z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--ctv-space-4);
+  max-width: 1440px;
+  height: var(--lq-header-h);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 2.5vw, 2rem);
 }
 
-/* ── Logo Liquid ── */
+@media (max-width: 1023.98px) {
+  .ctv-liquid-bar {
+    grid-template-columns: 1fr auto auto;
+    gap: var(--ctv-space-2);
+  }
+}
+
 .ctv-liquid-logo {
+  justify-self: start;
   display: flex;
   align-items: center;
-  flex-shrink: 0;
-  text-decoration: none;
   padding: 0.25rem 0;
-  transition: transform var(--lq-transition), opacity var(--lq-transition);
+  color: var(--hd-fg);
+  text-decoration: none;
+  transition: opacity var(--lq-transition);
 }
 
 .ctv-liquid-logo:hover {
-  transform: scale(1.02);
-  opacity: 0.94;
+  opacity: 0.8;
 }
 
-.ctv-liquid-logo__img {
-  height: 34px;
-  width: auto;
+/* El logo blanco como máscara: toma el color del texto del header. */
+.ctv-liquid-logo__mark {
   display: block;
+  width: 140px;
+  height: 30px;
+  background-color: currentColor;
+  -webkit-mask: url('/images/brand/logo-horizontal-white.svg') left center / contain no-repeat;
+  mask: url('/images/brand/logo-horizontal-white.svg') left center / contain no-repeat;
+}
+
+/* Compatibilidad: el video de lanzamiento (video/) aún usa la imagen. */
+.ctv-liquid-logo__img {
+  display: block;
+  width: auto;
+  height: 34px;
   object-fit: contain;
 }
 
-/* ── Navegación Desktop: Disparadores Limpios sin Bordes Pesados ── */
 .ctv-liquid-nav {
   display: none;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0 auto;
+  gap: 0.25rem;
 }
 
 @media (min-width: 1024px) {
@@ -180,38 +173,30 @@
   align-items: center;
 }
 
-/* Trigger minimalista estilo Wren: sin bordes ni pastillas pesadas, solo una pequeña sombra para identificar que se puede clicar */
 .ctv-liquid-nav__trigger {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.75rem;
-  background: transparent;
-  border: none;
-  border-radius: var(--lq-radius-pill);
+  gap: 0.3rem;
+  padding: 0.45rem 0.8rem;
   font-family: inherit;
-  font-size: 0.90rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  color: var(--lq-text);
-  cursor: pointer;
+  color: var(--hd-fg);
   text-decoration: none;
-  transition: 
-    color var(--lq-transition),
-    box-shadow var(--lq-transition),
-    transform var(--lq-transition);
   white-space: nowrap;
+  background: transparent;
+  border: 0;
+  border-radius: var(--lq-radius-pill);
+  cursor: pointer;
+  transition: background-color var(--lq-transition), color var(--lq-transition);
 }
 
 .ctv-liquid-nav__trigger:hover,
 .ctv-liquid-nav__trigger--expanded {
-  background: transparent;
-  color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+  background: var(--hd-hover);
 }
 
 .ctv-liquid-nav__trigger--active {
-  color: #ffffff;
   font-weight: 600;
 }
 
@@ -222,234 +207,158 @@
 }
 
 .ctv-liquid-nav__chevron {
-  font-size: 0.92rem;
-  color: var(--lq-text-muted);
-  transition: color var(--lq-transition);
-}
-
-.ctv-liquid-nav__trigger:hover .ctv-liquid-nav__chevron,
-.ctv-liquid-nav__trigger--expanded .ctv-liquid-nav__chevron {
-  color: #ffffff;
+  font-size: 0.9rem;
+  color: var(--hd-fg-soft);
 }
 
 /* --------------------------------------------------------------------------
-   Extensión Líquida Compacta Estilo Wren (Sin footer, poco espacio, conciso)
+   Panel desplegable (siempre claro)
    -------------------------------------------------------------------------- */
 .ctv-liquid-body {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0.25rem clamp(1rem, 2.5vw, 2rem) 1rem;
   overflow: hidden;
-  padding: 0.15rem 0.6rem 0.85rem;
 }
 
 .ctv-liquid-section-title {
-  font-size: 0.92rem;
+  padding: 0.5rem 0.75rem 0.6rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #ffffff;
-  padding: 0.2rem 1rem 0.55rem;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-mute);
 }
 
 .ctv-liquid-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.45rem;
-  padding: 0 0.65rem;
+  gap: 0.4rem;
 }
 
 @media (min-width: 1024px) {
   .ctv-liquid-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.65rem;
-    padding: 0 0.85rem;
+    gap: 0.6rem;
   }
 }
 
 .ctv-liquid-card__link {
-  text-decoration: none;
   display: block;
+  text-decoration: none;
+  border-radius: var(--ctv-radius-md);
   outline: none;
 }
 
-/* Fila horizontal compacta estilo Wren */
 .ctv-liquid-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 10px;
-  background: transparent;
-  border: none;
-  transition: 
-    background 0.16s ease, 
-    box-shadow 0.16s ease,
-    transform 0.14s ease;
+  gap: 0.8rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--ctv-radius-md);
   cursor: pointer;
+  transition: background-color 0.16s ease;
 }
 
 .ctv-liquid-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+  background: rgba(14, 59, 54, 0.05);
 }
 
 .ctv-liquid-card__icon-wrap {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 9px;
-  font-size: 1.15rem;
-  flex-shrink: 0;
-  transition: transform 0.16s ease;
-}
-
-/* Variantes temáticas pastel de Wren para íconos */
-.ctv-liquid-card__icon-wrap--green {
-  background: rgba(62, 211, 43, 0.14);
-  border: 1px solid rgba(62, 211, 43, 0.28);
-  color: #4ade80;
-}
-
-.ctv-liquid-card__icon-wrap--orange {
-  background: rgba(245, 158, 11, 0.14);
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  color: #fbbf24;
-}
-
-.ctv-liquid-card__icon-wrap--teal {
-  background: rgba(45, 212, 191, 0.14);
-  border: 1px solid rgba(45, 212, 191, 0.28);
-  color: #2dd4bf;
-}
-
-.ctv-liquid-card__icon-wrap--purple {
-  background: rgba(168, 85, 247, 0.14);
-  border: 1px solid rgba(168, 85, 247, 0.28);
-  color: #c084fc;
-}
-
-.ctv-liquid-card__icon-wrap--blue {
-  background: rgba(56, 189, 248, 0.14);
-  border: 1px solid rgba(56, 189, 248, 0.28);
-  color: #38bdf8;
-}
-
-.ctv-liquid-card__icon-wrap--pink {
-  background: rgba(244, 63, 94, 0.14);
-  border: 1px solid rgba(244, 63, 94, 0.28);
-  color: #fb7185;
+  font-size: 1.1rem;
+  color: #1F8A4C;
+  background: #ffffff;
+  border: 1px solid rgba(14, 59, 54, 0.1);
+  border-radius: 10px;
+  transition: border-color 0.16s ease;
 }
 
 .ctv-liquid-card:hover .ctv-liquid-card__icon-wrap {
-  transform: scale(1.05);
+  border-color: rgba(31, 138, 76, 0.4);
 }
 
 .ctv-liquid-card__text {
-  flex: 1;
-  min-width: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 0.1rem;
+  min-width: 0;
 }
 
 .ctv-liquid-card__title {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #ffffff;
   line-height: 1.25;
-  transition: color 0.15s ease;
-}
-
-.ctv-liquid-card:hover .ctv-liquid-card__title {
-  color: #ffffff;
+  color: #0E3B36;
 }
 
 .ctv-liquid-card__desc {
-  font-size: 0.77rem;
-  color: var(--lq-text-muted);
-  line-height: 1.35;
   margin: 0;
-  white-space: nowrap;
   overflow: hidden;
+  font-size: 0.77rem;
+  line-height: 1.35;
+  color: var(--ctv-ink-mute);
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-/* --------------------------------------------------------------------------
-   Badges Liquid vinculados a los tokens de marca
-   -------------------------------------------------------------------------- */
-.ctv-badge {
-  font-size: 0.62rem;
-  font-weight: 700;
+/* Fila "Recursos" al pie de cada menú */
+.ctv-liquid-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.1rem;
+  margin: 0.75rem 0.75rem 0;
+  padding-top: 0.75rem;
+  font-size: 0.8rem;
+  border-top: 1px solid rgba(14, 59, 54, 0.08);
+}
+
+.ctv-liquid-more__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 2px 7px;
-  border-radius: var(--lq-radius-pill);
-  line-height: 1.2;
-  white-space: nowrap;
+  color: var(--ctv-ink-mute);
 }
 
-.ctv-badge--primary {
-  background: rgba(62, 211, 43, 0.16);
-  color: var(--lq-neon);
-  border: 1px solid rgba(62, 211, 43, 0.35);
+.ctv-liquid-more__link {
+  padding: 0.2rem 0;
+  font-weight: 500;
+  color: #0E3B36;
+  text-decoration: none;
 }
 
-.ctv-badge--polygon {
-  background: rgba(130, 71, 229, 0.2);
-  color: #c084fc;
-  border: 1px solid rgba(168, 85, 247, 0.4);
-}
-
-.ctv-badge--secure {
-  background: rgba(8, 174, 6, 0.16);
-  color: var(--ctv-brand-bright);
-  border: 1px solid rgba(62, 211, 43, 0.35);
-}
-
-.ctv-badge--pulse {
-  background: rgba(8, 174, 6, 0.22);
-  color: var(--ctv-brand-bright);
-  border: 1px solid var(--ctv-brand-bright);
-  animation: badgePulse 2s infinite ease-in-out;
-}
-
-@keyframes badgePulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(62, 211, 43, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 4px rgba(62, 211, 43, 0);
-  }
+.ctv-liquid-more__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* --------------------------------------------------------------------------
-   Desktop Actions (Botones con Paleta Oficial)
+   Acciones
    -------------------------------------------------------------------------- */
 .ctv-liquid-actions {
-  display: none;
-  align-items: center;
-  gap: 0.6rem;
+  justify-self: end;
+  display: flex;
   flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-@media (min-width: 1024px) {
-  .ctv-liquid-actions {
-    display: flex;
-  }
-}
-
-/* Entre 1024 y 1199px no cabe un tercer botón junto a la navegación; ahí
-   "Registrarse" queda en el menú móvil y en la página de login. */
-.ctv-liquid-actions__register {
-  display: none !important;
-}
-
-@media (min-width: 1200px) {
-  .ctv-liquid-actions__register {
-    display: inline-flex !important;
+/* En móvil solo queda "Calcula tu huella"; el resto vive en el cajón. */
+@media (max-width: 1023.98px) {
+  .ctv-liquid-actions .ctv-liquid-actions__desk {
+    display: none;
   }
 }
 
@@ -458,80 +367,90 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.5rem 1.1rem;
-  border-radius: var(--lq-radius-pill);
-  font-size: 0.84rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   text-decoration: none;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all var(--lq-transition);
   white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--lq-radius-pill);
+  cursor: pointer;
+  transition: background-color var(--lq-transition),
+              color var(--lq-transition),
+              border-color var(--lq-transition),
+              transform 0.14s ease;
 }
 
 .ctv-btn-liquid:active {
   transform: scale(0.97);
 }
 
-/* Ghost */
+/* Ghost: en la barra toma el color del header; en el cajón, el gris claro. */
 .ctv-btn-liquid--ghost {
+  color: var(--hd-fg, var(--lq-text-sub));
   background: transparent;
-  color: var(--lq-text-sub);
 }
 
 .ctv-btn-liquid--ghost:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: var(--hd-fg, #ffffff);
+  background: var(--hd-hover, rgba(255, 255, 255, 0.08));
 }
 
-/* Outline */
+/* "Calcula tu huella" */
+.ctv-btn-liquid--cta {
+  color: var(--hd-cta-fg);
+  background: var(--hd-cta-bg);
+}
+
+.ctv-btn-liquid--cta:hover {
+  background: var(--hd-cta-hover);
+}
+
+@media (max-width: 479.98px) {
+  .ctv-btn-liquid--cta {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Variantes del cajón móvil (fondo oscuro) */
 .ctv-btn-liquid--outline {
-  background: transparent;
   color: #ffffff;
+  background: transparent;
   border-color: rgba(255, 255, 255, 0.22);
 }
 
 .ctv-btn-liquid--outline:hover {
-  border-color: var(--lq-neon);
-  color: var(--lq-neon);
-  background: rgba(62, 211, 43, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-/* Primary */
 .ctv-btn-liquid--primary {
-  background: var(--ctv-brand-deep);
   color: #ffffff;
-  border-color: rgba(62, 211, 43, 0.4);
+  background: var(--ctv-brand-deep);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .ctv-btn-liquid--primary:hover {
   background: var(--ctv-teal-800);
-  border-color: var(--ctv-brand-bright);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Glow CTA (Compensar Vuelo) — Oficialmente vinculado a tokens de marca */
+/* Verde de marca sólido: #087A06 da 5,4:1 con el texto blanco. */
 .ctv-btn-liquid--glow {
-  background: var(--ctv-gradient-brand-accessible);
   color: #ffffff;
-  border: 1px solid rgba(62, 211, 43, 0.45);
-  box-shadow: 0 4px 18px rgba(8, 174, 6, 0.35);
+  background: #087A06;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
 .ctv-btn-liquid--glow:hover {
-  background: var(--ctv-gradient-brand);
-  border-color: var(--ctv-brand-bright);
-  box-shadow: 0 6px 24px rgba(62, 211, 43, 0.45), 0 0 12px rgba(8, 174, 6, 0.3);
-  transform: translateY(-1px);
+  background: #06690A;
 }
 
 .ctv-btn-liquid__arrow {
   font-size: 0.95rem;
-  transition: transform 0.2s ease;
-}
-
-.ctv-btn-liquid--glow:hover .ctv-btn-liquid__arrow {
-  transform: translateX(2px);
 }
 
 .ctv-btn-liquid--full {
@@ -542,27 +461,27 @@
   flex: 1;
 }
 
-/* User chip inside header */
+/* Usuario con sesión */
 .ctv-liquid-user {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.3rem 0.8rem 0.3rem 0.35rem;
+  background: var(--hd-hover);
+  border: 1px solid var(--hd-border);
   border-radius: var(--lq-radius-pill);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .ctv-liquid-user__avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--lq-neon);
-  color: #041f1e;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
   font-size: 12px;
+  color: #ffffff;
+  background: #1F8A4C;
+  border-radius: 50%;
 }
 
 .ctv-liquid-user__avatar--lg {
@@ -574,32 +493,26 @@
 .ctv-liquid-user__name {
   font-size: 0.84rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--hd-fg);
 }
 
 /* --------------------------------------------------------------------------
-   Mobile Hamburger
+   Botón del menú móvil
    -------------------------------------------------------------------------- */
 .ctv-liquid-hamburger {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: var(--lq-radius-pill);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--lq-border);
-  color: #ffffff;
   font-size: 22px;
+  color: var(--hd-fg);
+  background: var(--hd-hover);
+  border: 1px solid var(--hd-border);
+  border-radius: var(--lq-radius-pill);
   cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.ctv-liquid-hamburger:hover {
-  background: rgba(62, 211, 43, 0.15);
-  border-color: var(--lq-neon);
-  color: var(--lq-neon);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @media (min-width: 1024px) {
@@ -639,15 +552,14 @@
 }
 
 .ctv-liquid-drawer__panel {
+  /* Sin backdrop-filter: con el fondo casi opaco no se veía y costaba en cada cuadro. */
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   width: min(88vw, 360px);
   background: rgba(4, 24, 22, 0.98);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border-left: 1px solid rgba(62, 211, 43, 0.28);
+  border-left: 1px solid rgba(255, 255, 255, 0.10);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -689,9 +601,9 @@
 }
 
 .ctv-liquid-drawer__close:hover {
-  background: rgba(62, 211, 43, 0.2);
-  color: var(--lq-neon);
-  border-color: var(--lq-neon);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .ctv-liquid-drawer__nav {
@@ -760,8 +672,8 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(62, 211, 43, 0.15);
-  border: 1px solid rgba(62, 211, 43, 0.3);
+  background: var(--lq-icon-bg);
+  border: 1px solid var(--lq-icon-border);
   color: var(--lq-neon);
   display: flex;
   align-items: center;
@@ -801,8 +713,8 @@
   justify-content: space-between;
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  background: rgba(62, 211, 43, 0.12);
-  border: 1px solid rgba(62, 211, 43, 0.3);
+  background: rgba(8, 174, 6, 0.16);
+  border: 1px solid rgba(159, 221, 174, 0.22);
   color: #ffffff;
   text-decoration: none;
   font-size: 0.88rem;
@@ -857,7 +769,11 @@
    Accesibilidad: foco visible con teclado (antes no había ninguno y el de las
    cards del panel estaba anulado con outline: none)
    -------------------------------------------------------------------------- */
-.ctv-liquid-surface :focus-visible,
+.ctv-liquid-surface :focus-visible {
+  outline: 2px solid var(--hd-focus);
+  outline-offset: 2px;
+}
+
 .ctv-liquid-drawer :focus-visible {
   outline: 2px solid var(--lq-neon);
   outline-offset: 2px;
@@ -868,8 +784,8 @@
 }
 
 .ctv-liquid-card__link:focus-visible .ctv-liquid-card {
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 2px var(--lq-neon);
+  background: rgba(14, 59, 54, 0.05);
+  box-shadow: 0 0 0 2px #0E3B36;
 }
 
 /* --------------------------------------------------------------------------

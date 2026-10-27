@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiArrowRight, HiSwitchHorizontal, HiSparkles, HiInformationCircle, HiChevronDown } from 'react-icons/hi';
 import { FaPlane, FaUsers, FaLeaf, FaTree } from 'react-icons/fa';
@@ -10,6 +10,8 @@ import {
 import { useAuth } from '../../auth/context/AuthContext';
 import './QuickFlightCalculator.css';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import AirportPicker from './AirportPicker';
+import type { AirportOption } from '../services/publicApi';
 
 const QUICK_ROUTES = [
   { origin: 'SCL', destination: 'LIM', label: 'Santiago → Lima' },
@@ -41,17 +43,35 @@ const EcoWatermarkLeaf: React.FC<{ className?: string }> = ({ className = '' }) 
   </svg>
 );
 
+export type CabinCode = 'economy' | 'premium_economy' | 'business' | 'first';
+
 export interface QuickFlightCalculatorProps {
   onCompensationSelect?: (data: EstimateResponse) => void;
+  /** Avisa cada cálculo exitoso. La página /calculadora lo usa para mostrar
+   *  la versión de la metodología que devolvió el backend; el hero, para que
+   *  "Cómo funciona" cuente el mismo vuelo. `cabinCode` va aparte porque la
+   *  respuesta no lo incluye. */
+  onEstimate?: (data: EstimateResponse, request: { cabinCode: CabinCode }) => void;
+  /** `compact`: card angosta para ir junto a un titular (escena final del hero
+   *  de la landing). Misma lógica y estado; cambia la cabecera y el resultado. */
+  variant?: 'default' | 'compact';
 }
 
-export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ onCompensationSelect }) => {
+export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
+  onCompensationSelect,
+  onEstimate,
+  variant = 'default',
+}) => {
+  const compact = variant === 'compact';
   const { user } = useAuth();
   const navigate = useNavigate();
+  // En una ref para no recrear `calculate` cada vez que el padre re-renderiza.
+  const onEstimateRef = useRef(onEstimate);
+  onEstimateRef.current = onEstimate;
 
   const [origin, setOrigin] = useState('SCL');
   const [destination, setDestination] = useState('LIM');
-  const [cabinCode, setCabinCode] = useState<'economy' | 'premium_economy' | 'business' | 'first'>('economy');
+  const [cabinCode, setCabinCode] = useState<CabinCode>('economy');
   const [passengers, setPassengers] = useState(1);
   const [roundTrip, setRoundTrip] = useState(false);
 
@@ -59,14 +79,25 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Aeropuertos elegidos en el buscador que no están entre los populares: se
+  // guardan para mostrar su ciudad y nombre en la tarjeta.
+  const [searchedAirports, setSearchedAirports] = useState<AirportOption[]>([]);
+  const knownAirports = useMemo(() => [...POPULAR_AIRPORTS, ...searchedAirports], [searchedAirports]);
+
   const originAirport = useMemo(
-    () => POPULAR_AIRPORTS.find((a) => a.code === origin) || POPULAR_AIRPORTS[0],
-    [origin]
+    () => knownAirports.find((a) => a.code === origin) || POPULAR_AIRPORTS[0],
+    [origin, knownAirports]
   );
   const destAirport = useMemo(
-    () => POPULAR_AIRPORTS.find((a) => a.code === destination) || POPULAR_AIRPORTS[1],
-    [destination]
+    () => knownAirports.find((a) => a.code === destination) || POPULAR_AIRPORTS[1],
+    [destination, knownAirports]
   );
+
+  const rememberAirport = (airport: AirportOption) => {
+    if (!knownAirports.some((a) => a.code === airport.code)) {
+      setSearchedAirports((prev) => [...prev, airport]);
+    }
+  };
 
   const calculate = useCallback(
     async (orig: string, dest: string, cabin: typeof cabinCode, pax: number, isRound: boolean) => {
@@ -89,6 +120,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
 
         if (res.status === 'success') {
           setEstimate(res);
+          onEstimateRef.current?.(res, { cabinCode: cabin });
         } else {
           setError(getErrorMessage(res, 'No pudimos calcular las emisiones de este vuelo. Prueba con otra ruta.'));
         }
@@ -178,21 +210,32 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
   };
 
   return (
-    <div className="qfc-card" aria-label="Calculadora espaciosa de emisiones en vuelos">
+    <div
+      className={`qfc-card${compact ? ' qfc-card--compact' : ''}`}
+      aria-label="Calculadora de emisiones de vuelos"
+    >
       {/* Fondo ambiental sutil con marcas de agua orgánicas no invasivas */}
-      <div className="qfc-ambient-bg" aria-hidden="true">
-        <EcoWatermarkLeaf className="qfc-watermark-leaf--top" />
-        <EcoWatermarkLeaf className="qfc-watermark-leaf--bottom" />
-      </div>
+      {!compact && (
+        <div className="qfc-ambient-bg" aria-hidden="true">
+          <EcoWatermarkLeaf className="qfc-watermark-leaf--top" />
+          <EcoWatermarkLeaf className="qfc-watermark-leaf--bottom" />
+        </div>
+      )}
 
       {/* ── Cabecera Espaciosa ── */}
       <div className="qfc-header">
-        <div className="qfc-header-info">
-          <span className="qfc-indicator-dot" aria-hidden="true" />
-          <span className="qfc-header-title">Calculadora de huella aérea</span>
-          <span className="qfc-header-sep">·</span>
-          <span className="qfc-header-meta">{emissions?.methodology ?? 'DEFRA'} & GHG Protocol</span>
-        </div>
+        {compact ? (
+          <div className="qfc-header-info">
+            <span className="qfc-header-title">Huella de tu vuelo</span>
+          </div>
+        ) : (
+          <div className="qfc-header-info">
+            <span className="qfc-indicator-dot" aria-hidden="true" />
+            <span className="qfc-header-title">Calculadora de huella aérea</span>
+            <span className="qfc-header-sep">·</span>
+            <span className="qfc-header-meta">{emissions?.methodology ?? 'DEFRA'} & GHG Protocol</span>
+          </div>
+        )}
 
         <div className="qfc-trip-toggle" role="radiogroup" aria-label="Tipo de trayecto">
           <button
@@ -219,39 +262,17 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
       {/* ── Selector de Ruta: Tarjetas Amplias de Origen y Destino ── */}
       <div className="qfc-route-section">
         {/* Tarjeta Origen */}
-        <div className="qfc-airport-card">
-          <div className="qfc-card-top">
-            <span className="qfc-card-tag">
-              <FaPlane className="qfc-tag-icon qfc-tag-icon--depart" aria-hidden="true" />
-              Origen
-            </span>
-            <HiChevronDown className="qfc-chevron" aria-hidden="true" />
-          </div>
-          <div className="qfc-airport-visual">
-            <span className="qfc-airport-code">{originAirport.code}</span>
-            <div className="qfc-airport-meta">
-              <span className="qfc-airport-city">{originAirport.city}, {originAirport.country}</span>
-              <span className="qfc-airport-name">{originAirport.name}</span>
-            </div>
-          </div>
-          <select
-            id="qfc-origin-select"
-            className="qfc-hidden-select"
-            value={origin}
-            onChange={(e) => {
-              const val = e.target.value;
-              setOrigin(val);
-              calculate(val, destination, cabinCode, passengers, roundTrip);
-            }}
-            aria-label="Aeropuerto de origen"
-          >
-            {POPULAR_AIRPORTS.map((a) => (
-              <option key={a.code} value={a.code} disabled={a.code === destination}>
-                {a.code} - {a.city}, {a.country} ({a.name})
-              </option>
-            ))}
-          </select>
-        </div>
+        <AirportPicker
+          label="Origen"
+          icon={<FaPlane className="qfc-tag-icon qfc-tag-icon--depart" aria-hidden="true" />}
+          value={originAirport}
+          excludeCode={destination}
+          onSelect={(airport) => {
+            rememberAirport(airport);
+            setOrigin(airport.code);
+            calculate(airport.code, destination, cabinCode, passengers, roundTrip);
+          }}
+        />
 
         {/* Botón de Intercambio Central */}
         <div className="qfc-swap-container">
@@ -267,46 +288,24 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
         </div>
 
         {/* Tarjeta Destino */}
-        <div className="qfc-airport-card">
-          <div className="qfc-card-top">
-            <span className="qfc-card-tag">
-              <FaPlane className="qfc-tag-icon qfc-tag-icon--arrive" aria-hidden="true" />
-              Destino
-            </span>
-            <HiChevronDown className="qfc-chevron" aria-hidden="true" />
-          </div>
-          <div className="qfc-airport-visual">
-            <span className="qfc-airport-code">{destAirport.code}</span>
-            <div className="qfc-airport-meta">
-              <span className="qfc-airport-city">{destAirport.city}, {destAirport.country}</span>
-              <span className="qfc-airport-name">{destAirport.name}</span>
-            </div>
-          </div>
-          <select
-            id="qfc-destination-select"
-            className="qfc-hidden-select"
-            value={destination}
-            onChange={(e) => {
-              const val = e.target.value;
-              setDestination(val);
-              calculate(origin, val, cabinCode, passengers, roundTrip);
-            }}
-            aria-label="Aeropuerto de destino"
-          >
-            {POPULAR_AIRPORTS.map((a) => (
-              <option key={a.code} value={a.code} disabled={a.code === origin}>
-                {a.code} - {a.city}, {a.country} ({a.name})
-              </option>
-            ))}
-          </select>
-        </div>
+        <AirportPicker
+          label="Destino"
+          icon={<FaPlane className="qfc-tag-icon qfc-tag-icon--arrive" aria-hidden="true" />}
+          value={destAirport}
+          excludeCode={origin}
+          onSelect={(airport) => {
+            rememberAirport(airport);
+            setDestination(airport.code);
+            calculate(origin, airport.code, cabinCode, passengers, roundTrip);
+          }}
+        />
       </div>
 
       {/* ── Parámetros de Vuelo: Cabina & Pasajeros con Espacio Holgado ── */}
       <div className="qfc-config-row">
         <div className="qfc-config-block qfc-config-block--cabin">
           <label htmlFor="qfc-cabin-select" className="qfc-config-label">
-            Clase de cabina
+            {compact ? 'Cabina' : 'Clase de cabina'}
           </label>
           <div className="qfc-select-wrapper">
             <select
@@ -326,8 +325,8 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
 
         <div className="qfc-config-block qfc-config-block--pax">
           <label className="qfc-config-label">
-            <FaUsers aria-hidden="true" />
-            Número de pasajeros
+            {!compact && <FaUsers aria-hidden="true" />}
+            {compact ? 'Pasajeros' : 'Número de pasajeros'}
           </label>
           <div className="qfc-stepper">
             <button
@@ -356,6 +355,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
       </div>
 
       {/* ── Rutas Frecuentes / Sugeridas (Barra limpia y espaciosa) ── */}
+      {!compact && (
       <div className="qfc-quick-routes-bar">
         <span className="qfc-routes-label">Rutas frecuentes:</span>
         <div className="qfc-routes-list">
@@ -374,6 +374,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           })}
         </div>
       </div>
+      )}
 
       {/* Mensaje de Error si aplica */}
       {error && (
@@ -383,7 +384,48 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
         </div>
       )}
 
-      {/* ── Panel de Resultados e Impacto (Espacioso, Limpio y Contundente) ── */}
+      {compact ? (
+        <>
+          {/* ── Resultado compacto: huella y aporte en una fila, botón debajo ── */}
+          <div className={`qfc-compact-result${loading ? ' qfc-impact-panel--loading' : ''}`}>
+            <div className="qfc-compact-metric">
+              <span className="qfc-compact-caption">Huella calculada</span>
+              <div className="qfc-metric-value-row">
+                <span className="qfc-metric-number">
+                  {emissions ? emissions.kgCO2e.toLocaleString('es-CL') : '—'}
+                </span>
+                <span className="qfc-metric-unit">kg CO₂e</span>
+              </div>
+              <span className="qfc-compact-sub">
+                {emissions
+                  ? `${emissions.tonCO2e.toLocaleString('es-CL', { maximumFractionDigits: 2 })} t`
+                  : roundTrip ? 'Ida y vuelta' : 'Solo ida'}
+                {estimate?.meta?.distanceKmTotal
+                  ? ` · ${Math.round(estimate.meta.distanceKmTotal).toLocaleString('es-CL')} km`
+                  : ''}
+              </span>
+            </div>
+            {pricing && (
+              <div className="qfc-compact-price">
+                <span className="qfc-compact-caption">Aporte</span>
+                <div className="qfc-price-row">
+                  <span className="qfc-price-amount">{fmtCLP(pricing.fromTotalCLP)}</span>
+                  <span className="qfc-price-currency">CLP</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button type="button" className="qfc-compensate-btn" onClick={handleCompensateClick}>
+            <span>Compensar huella</span>
+            <HiArrowRight aria-hidden="true" />
+          </button>
+
+          <p className="qfc-compact-note">
+            Certificado verificable en Polygon · factor {emissions?.methodology ?? 'DEFRA'}
+          </p>
+        </>
+      ) : (
       <div className={`qfc-impact-panel ${loading ? 'qfc-impact-panel--loading' : ''}`}>
         {/* Columna 1: Métrica Principal */}
         <div className="qfc-impact-metric">
@@ -458,6 +500,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({ on
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 };

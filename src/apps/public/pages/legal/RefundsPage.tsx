@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LegalLayout, { type LegalSection } from '../../components/legal/LegalLayout';
 import { LEGAL, LEGAL_ROUTES } from '../../../../shared/config/legal';
+import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 
 const sections: LegalSection[] = [
   {
@@ -88,8 +89,8 @@ const sections: LegalSection[] = [
 
 const RefundsPage: React.FC = () => (
   <LegalLayout
-    title="Reembolsos y Derecho de Retracto"
-    description={`Política de reembolsos de ${LEGAL.brand}: cuándo procede una devolución y por qué las compensaciones no admiten retracto.`}
+    title={PUBLIC_SEO[LEGAL_ROUTES.refunds].title}
+    description={PUBLIC_SEO[LEGAL_ROUTES.refunds].description}
     path={LEGAL_ROUTES.refunds}
     intro={
       <p>

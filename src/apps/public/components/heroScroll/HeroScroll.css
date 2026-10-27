@@ -1,0 +1,485 @@
+/* ==========================================================================
+   HeroScroll.css — hero de la landing con scroll pinneado.
+
+   Tres estados:
+   · base (sin JS, o antes de que corra): página normal. El cielo con el
+     wordmark ocupa una pantalla y debajo va la escena 4 (titular +
+     calculadora) sobre fondo oscuro. Nunca hay bloques vacíos.
+   · .hs--motion: la animación con pin. En escritorio la escena 4 se apila
+     sobre el cielo; en móvil sigue debajo y el cielo oscurece para empalmar.
+   · .hs--reduced (prefers-reduced-motion): solo la escena 4, con el cielo de
+     noche y las montañas de fondo.
+
+   Solo se animan transform y opacity (y atributos SVG de la bruma y la ruta).
+   ========================================================================== */
+@import '../landing/tokens.css';
+
+.hs {
+  --hs-ink: #0E3B36;
+  --hs-ink-soft: #40605C;
+  --hs-on-dark: #F5F8F4;
+  --hs-on-dark-soft: rgba(245, 248, 244, 0.78);
+  --hs-route: #1F8A4C;
+  --hs-accent-dark: #5EE08A;
+  --hs-mono: 'Geist Mono', var(--ctv-font-mono);
+  --hs-header: 68px;
+
+  position: relative;
+  color: var(--hs-ink);
+  font-family: var(--ctv-font-body);
+}
+
+/* ── Escenario (cielo, montañas, wordmark y ruta) ───────────────────────── */
+.hs-stage {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hs-sky,
+.hs-night {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hs-sky {
+  background: linear-gradient(180deg, #F5F8F4 0%, #E7EFEA 52%, #D6E4DD 100%);
+}
+
+.hs-night {
+  background: linear-gradient(180deg, #0B2F2B 0%, #0E3B36 100%);
+  opacity: 0;
+}
+
+/* ── Montañas ── */
+.hs-mountains {
+  position: absolute;
+  inset: auto 0 0;
+  height: 46vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hs-mtn {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Las dos mitades de cada capa se abren hacia los lados con el scroll. Sin
+   recorte: la cresta sigue más allá del viewBox y así nunca asoma un borde. */
+.hs-mtn__half {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hs-mtn__night {
+  opacity: 0;
+}
+
+/* ── Wordmark ── */
+.hs-wordmark {
+  position: absolute;
+  top: 26vh;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 var(--ctv-space-4);
+  text-align: center;
+}
+
+.hs-eyebrow {
+  margin: 0 0 var(--ctv-space-5);
+  font-family: var(--hs-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--hs-ink-soft);
+}
+
+.hs-wm {
+  position: relative;
+  display: inline-block;
+}
+
+.hs-wm__title {
+  position: relative;
+  margin: 0;
+  font-family: var(--ctv-font-display);
+  font-size: clamp(3.4rem, 9.2vw, 8.25rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: var(--hs-ink);
+}
+
+.hs-wm__line {
+  display: inline;
+}
+
+/* La bruma desborda el wordmark por arriba y por abajo. */
+.hs-mist {
+  position: absolute;
+  top: -55%;
+  left: -10%;
+  width: 120%;
+  height: 210%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.hs-sub {
+  max-width: 34rem;
+  margin: var(--ctv-space-6) auto 0;
+  font-size: var(--ctv-text-body);
+  line-height: 1.55;
+  color: var(--hs-ink-soft);
+}
+
+/* ── Ruta, avión y lecturas (solo con JS: sin geometría no tienen sentido) ── */
+.hs-flight {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.hs-arc {
+  stroke: var(--hs-route);
+}
+
+.hs-dot__core {
+  fill: var(--hs-route);
+}
+
+.hs-land-arc {
+  stroke: rgba(94, 224, 138, 0.55);
+}
+
+.hs-land-dot {
+  fill: var(--hs-accent-dark);
+}
+
+.hs-plane {
+  fill: var(--hs-ink);
+}
+
+.hs-label,
+.hs-readout {
+  display: none;
+}
+
+.hs-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  font-family: var(--hs-mono);
+  text-align: left;
+  white-space: nowrap;
+  color: var(--hs-ink);
+}
+
+.hs-label strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.hs-label--to {
+  text-align: right;
+}
+
+.hs-label span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--hs-ink-soft);
+}
+
+.hs-readout {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  text-align: center;
+}
+
+.hs-readout p {
+  margin: 0;
+}
+
+.hs-readout__caption,
+.hs-readout__meta {
+  font-family: var(--hs-mono);
+  color: var(--hs-ink-soft);
+}
+
+.hs-readout__caption {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.hs-readout .hs-readout__value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0.35rem 0 0.5rem;
+}
+
+.hs-readout__number {
+  font-family: var(--hs-mono);
+  font-size: clamp(3.2rem, 7.2vw, 6.5rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hs-ink);
+}
+
+.hs-readout__unit {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  font-weight: 500;
+  color: var(--hs-ink-soft);
+}
+
+.hs-readout__meta {
+  font-size: 0.78rem;
+}
+
+/* ── Escena 4: titular + calculadora ─────────────────────────────────────── */
+.hs-land {
+  position: relative;
+  z-index: 5;
+  padding: clamp(4rem, 9vh, 6rem) 0;
+  /* Arranca con el color de la montaña cercana de noche: en móvil el cielo
+     oscuro del pin empalma con esta sección sin un corte visible. */
+  background: linear-gradient(180deg, #0A2A26 0%, #0B2F2B 100%);
+  color: var(--hs-on-dark);
+}
+
+.hs-land__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: center;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+.hs-land__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ctv-space-5);
+}
+
+.hs-land__copy > * {
+  margin: 0;
+}
+
+.hs-land__eyebrow {
+  font-family: var(--hs-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hs-on-dark-soft);
+}
+
+.hs-land__title {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--hs-on-dark);
+  text-wrap: balance;
+}
+
+.hs-land__title em {
+  font-style: italic;
+  color: var(--hs-accent-dark);
+}
+
+.hs-land__lede {
+  max-width: 30rem;
+  font-size: var(--ctv-text-body);
+  line-height: 1.6;
+  color: var(--hs-on-dark-soft);
+}
+
+.hs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ctv-space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.hs-chips li {
+  padding: 0.35rem 0.75rem;
+  font-family: var(--hs-mono);
+  font-size: 0.7rem;
+  color: rgba(245, 248, 244, 0.86);
+  border: 1px solid rgba(245, 248, 244, 0.22);
+  border-radius: var(--ctv-radius-pill);
+}
+
+.hs-card {
+  width: 100%;
+  scroll-margin-top: calc(var(--hs-header) + 16px);
+}
+
+/* ── Con animación ───────────────────────────────────────────────────────── */
+.hs--motion .hs-flight,
+.hs--motion .hs-label,
+.hs--motion .hs-readout {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  /* En escritorio la escena 4 ocurre dentro del pin, encima del cielo. */
+  .hs--motion .hs-land {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: var(--hs-header) 0 0;
+    background: none;
+    pointer-events: none;
+  }
+
+  .hs--motion.hs--landed .hs-land {
+    pointer-events: auto;
+  }
+}
+
+/* ── prefers-reduced-motion: directo a la escena 4 ───────────────────────── */
+.hs--reduced .hs-stage {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  min-height: 0;
+}
+
+.hs--reduced .hs-night,
+.hs--reduced .hs-mtn__night {
+  opacity: 1;
+}
+
+.hs--reduced .hs-flight {
+  display: block;
+}
+
+.hs--reduced .hs-mtn__snow,
+.hs--reduced .hs-eyebrow,
+.hs--reduced .hs-sub,
+.hs--reduced .hs-mist,
+.hs--reduced .hs-plane,
+.hs--reduced .hs-trail,
+.hs--reduced .hs-arc,
+.hs--reduced .hs-arc-halo,
+.hs--reduced .hs-dot {
+  display: none;
+}
+
+/* El h1 sigue en el documento para buscadores y lectores de pantalla. */
+.hs--reduced .hs-wordmark {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.hs--reduced .hs-land {
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: calc(var(--hs-header) + 3rem) 0 clamp(8rem, 24vh, 13rem);
+  background: none;
+}
+
+/* ── Móvil ───────────────────────────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+  .hs-wordmark {
+    top: 22vh;
+  }
+
+  .hs-eyebrow {
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+  }
+
+  .hs-wm__line {
+    display: block;
+  }
+
+  .hs-wm__title {
+    font-size: clamp(3.2rem, 15.5vw, 4.75rem);
+    line-height: 0.92;
+  }
+
+  .hs-sub {
+    font-size: 0.95rem;
+  }
+
+  /* Dos capas de montañas en vez de cuatro, y menos bruma. */
+  .hs-mtn--1,
+  .hs-mtn--2,
+  .hs-mist__e--desktop {
+    display: none;
+  }
+
+  .hs-readout {
+    top: 50%;
+  }
+
+  .hs-readout__caption {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  .hs-readout__number {
+    font-size: 2.6rem;
+  }
+
+  .hs-readout__meta {
+    font-size: 0.66rem;
+  }
+
+  .hs-land__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .hs-land__title {
+    font-size: clamp(2rem, 8.5vw, 2.6rem);
+  }
+}

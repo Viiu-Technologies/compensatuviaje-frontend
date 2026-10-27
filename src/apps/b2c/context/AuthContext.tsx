@@ -7,6 +7,8 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   login: () => Promise<void>;
+  /** Entorno local: entra como persona de prueba, sin Google. */
+  loginAsTestUser: (email?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -40,6 +42,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const location              = useLocation();
   // Track whether Supabase has been initialized to avoid duplicate subscriptions
   const initializedRef        = useRef(false);
+  // La suscripción a Supabase vive más que un render: lee la persona actual
+  // desde aquí y no desde el closure.
+  const userRef               = useRef<B2CUser | null>(null);
+  userRef.current             = user;
 
   useEffect(() => {
     const onB2C = isB2CPath(location.pathname);
@@ -78,9 +84,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Subscribe to Supabase auth events (handles token refresh automatically)
     const { data } = authService.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      if (event === 'SIGNED_IN' && session)           await loadUser(session);
-      else if (event === 'SIGNED_OUT')                setUser(null);
-      else if (event === 'TOKEN_REFRESHED' && session) await loadUser(session);
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+      } else if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        // Supabase emite estos eventos también al renovar el token (cada hora)
+        // y al volver a la pestaña. Antes se recargaba la persona con spinner
+        // y, si el backend tardaba más de 5 s o fallaba, getCurrentUser
+        // devolvía null y la sesión se cerraba sola. Si ya hay alguien
+        // cargado, sus datos se actualizan en silencio y se conservan si la
+        // consulta falla.
+        if (userRef.current) {
+          const freshUser = await authService.getCurrentUser(session);
+          if (mounted && freshUser) setUser(freshUser);
+        } else {
+          await loadUser(session);
+        }
+      }
     });
 
     return () => {
@@ -107,6 +126,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login       = useCallback(async () => { await authService.loginWithGoogle(); }, []);
+  const loginAsTestUser = useCallback(async (email?: string) => {
+    const testUser = await authService.loginAsTestUser(email);
+    if (!testUser) throw new Error('El backend no reconoció la sesión de prueba');
+    setUser(testUser);
+  }, []);
   const logout      = useCallback(async () => { await authService.logout(); setUser(null); }, []);
   const refreshUser = useCallback(async () => { await loadUser(); }, []);
 
@@ -119,10 +143,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       loading,
       isAuthenticated: user !== null,
       login,
+      loginAsTestUser,
       logout,
       refreshUser,
     }),
-    [user, loading, login, logout, refreshUser]
+    [user, loading, login, loginAsTestUser, logout, refreshUser]
   );
 
   return (

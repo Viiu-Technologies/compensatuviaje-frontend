@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
 import {
   FaSearch, FaShieldAlt, FaCheckCircle, FaTimesCircle,
   FaExternalLinkAlt,
 } from 'react-icons/fa';
 import { searchCertificateByNumber, publicVerifyCertificate } from '../../../shared/services/blockchainApi';
 import type { PublicVerification } from '../../../types/blockchain.types';
-import { useGsapReveal } from '../hooks/useGsapReveal';
+import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import { Button, Input } from '../../../shared/components/ui';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
-import { BlockchainESGSVG } from './BlockchainESGSVG';
+import VerificationFlow, { type FlowData } from './verificationFlow/VerificationFlow';
 import './CertificateSearch.css';
 
 const TRUST = [
@@ -28,17 +27,13 @@ const CertificateSearch: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
-    gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
-    tl.from('.cs-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0);
-    tl.from('.cs-title .hero-line__inner', {
-      yPercent: 110, stagger: 0.1, duration: 0.9,
-    }, 0.1);
-    tl.from('.cs-sub', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.4);
-    tl.from('.cs-form', { y: 20, autoAlpha: 0, duration: 0.7 }, 0.55);
-    tl.from('.cs-trust > *', { y: 10, autoAlpha: 0, stagger: 0.08, duration: 0.5 }, 0.7);
-    tl.from('.cs-visual', { x: 24, autoAlpha: 0, duration: 0.85 }, 0.5);
+    const tl = sectionTimeline(root);
+    tl.from('.cs-eyebrow', { y: 10, autoAlpha: 0 }, 0);
+    tl.add(reveal(root, '.cs-title'), 0.05);
+    tl.add(reveal(root, '.cs-sub', 'text'), 0.15);
+    tl.from('.cs-form', { y: 14, autoAlpha: 0 }, 0.2);
+    tl.from('.cs-trust > *', { y: 8, autoAlpha: 0, stagger: 0.05, duration: 0.4 }, 0.28);
+    tl.from('.cs-visual', { x: 16, autoAlpha: 0, duration: 0.6 }, 0.2);
   }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -63,24 +58,20 @@ const CertificateSearch: React.FC = () => {
     }
   };
 
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    // Antes 12° más escala 1.03: demasiado movimiento para una tarjeta decorativa.
-    const rotateX = ((y - centerY) / centerY) * -4;
-    const rotateY = ((x - centerX) / centerX) * 4;
-
-    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
-  };
-
-  const handleCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = e.currentTarget;
-    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
-  };
+  // La ilustración cuenta el resultado: esquema de ejemplo, certificado
+  // verificado (con sus datos reales) o no encontrado.
+  const flow: FlowData =
+    result?.valid && result.certificate
+      ? {
+          status: 'valid',
+          kg: result.certificate.co2AmountKg,
+          tokenId: result.certificate.tokenId,
+          network: result.blockchain?.network ?? 'Polygon',
+          txHash: result.blockchain?.txHash ?? result.certificate.txHash,
+        }
+      : searched && !loading && (error || (result && !result.valid))
+        ? { status: 'invalid' }
+        : { status: 'demo' };
 
   return (
     <section ref={scopeRef} className="cs-section" id="verificar">
@@ -213,23 +204,9 @@ const CertificateSearch: React.FC = () => {
             </ul>
           </div>
 
-          {/* Columna derecha: Tarjeta Holográfica 3D */}
+          {/* Columna derecha: cómo se verifica (certificado → huella → cadena → registro) */}
           <div className="cs-visual ctv-reveal">
-            <div
-              className="cs-card-wrapper cs-card-wrapper--holographic"
-              onMouseMove={handleCardMouseMove}
-              onMouseLeave={handleCardMouseLeave}
-            >
-              <div className="cs-hologram-sheen" aria-hidden="true" />
-              <BlockchainESGSVG className="cs-certificate-img" style={{ width: '100%', maxWidth: '300px', height: 'auto' }} />
-              <div className="cs-card-meta">
-                <span className="cs-card-meta__network">REGISTRO VERIFICABLE EN POLYGON</span>
-              </div>
-              <div className="cs-card-badge">
-                <FaShieldAlt className="cs-card-badge__icon" aria-hidden="true" />
-                <span>Verificable públicamente</span>
-              </div>
-            </div>
+            <VerificationFlow data={flow} />
           </div>
         </div>
       </div>
