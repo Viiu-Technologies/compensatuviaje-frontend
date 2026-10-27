@@ -1,55 +1,36 @@
-import { gsap, useGsapReveal, sectionTimeline } from '../hooks/useGsapReveal';
-import { StepTripInputSVG, StepCalculationSVG, StepCompensationSVG } from './Illustrations';
+import { useGsapReveal, sectionTimeline, reveal } from '../hooks/useGsapReveal';
+import HowItWorksFigure, { type FigureKind } from './howItWorks/HowItWorksFigure';
 import { BlobField } from './landing/EcoArt';
 import './Features.css';
 
-const STEPS = [
+const STEPS: Array<{ num: string; title: string; body: string; figure: FigureKind }> = [
   {
     num: '01',
     title: 'Ingresa tu viaje',
     body: 'Selecciona tu ruta, clase de cabina y pasajeros en tres clics, sin formularios largos ni registros previos.',
-    Illustration: StepTripInputSVG,
+    figure: 'route',
   },
   {
     num: '02',
     title: 'Calcula con datos oficiales',
     body: 'Aplicamos los factores oficiales de DEFRA 2025 según el GHG Protocol. Cálculo transparente y trazable.',
-    Illustration: StepCalculationSVG,
+    figure: 'funnel',
   },
   {
     num: '03',
     title: 'Compensa con proyectos verificados',
     body: 'Elige un proyecto evaluado por Veritas AI y recibe un certificado digital, que puedes registrar en blockchain.',
-    Illustration: StepCompensationSVG,
+    figure: 'certificate',
   },
 ];
 
 const Features = () => {
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
-    gsap.set('.ctv-reveal', { autoAlpha: 1 });
-
     const tl = sectionTimeline(root);
-    tl.from('.ft-eyebrow', { y: 14, autoAlpha: 0, duration: 0.6 }, 0)
-      .from('.ft-title .hero-line__inner', { yPercent: 110, stagger: 0.1, duration: 0.9 }, 0.1)
-      .from('.ft-lede', { y: 16, autoAlpha: 0, duration: 0.7 }, 0.4)
-      .from('.ft-step', { y: 36, autoAlpha: 0, stagger: 0.14, duration: 0.7 }, 0.45)
-      .from('.ft-step__art > svg', {
-        scale: 0.85,
-        autoAlpha: 0,
-        stagger: 0.14,
-        duration: 0.7,
-        ease: 'back.out(1.5)',
-      }, 0.6);
-
-    // Micro-animación suave en las tarjetas
-    gsap.to('.ft-step__art', {
-      y: -6,
-      duration: 3.2,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-      stagger: 0.45,
-    });
+    tl.from('.ft-eyebrow', { y: 10, autoAlpha: 0 }, 0)
+      .add(reveal(root, '.ft-title'), 0.05)
+      .add(reveal(root, '.ft-lede', 'text'), 0.15)
+      .from('.ft-step', { y: 20, autoAlpha: 0, stagger: 0.06 }, 0.2);
   }, []);
 
   return (
@@ -78,11 +59,10 @@ const Features = () => {
         {/* Pasos 01 / 02 / 03: tarjetas con ilustraciones vectoriales grandes (1/3 del card) */}
         <ol className="ft-steps" id="como-funciona-content">
           {STEPS.map((step) => {
-            const { Illustration } = step;
             return (
               <li key={step.num} className="ft-step">
-                <div className="ft-step__art" aria-hidden="true">
-                  <Illustration />
+                <div className="ft-step__art">
+                  <HowItWorksFigure kind={step.figure} />
                 </div>
                 <span className="ft-step__num">{step.num}</span>
                 <h3 className="ft-step__title">{step.title}</h3>

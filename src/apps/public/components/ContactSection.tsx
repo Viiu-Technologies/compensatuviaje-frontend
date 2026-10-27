@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import gsap from 'gsap';
 import { HiArrowRight, HiCheck, HiExclamation, HiMail, HiOutlineClock, HiShieldCheck } from 'react-icons/hi';
-import { useGsapReveal } from '../hooks/useGsapReveal';
+import { useGsapReveal, reveal } from '../hooks/useGsapReveal';
 import { sendContactMessage } from '../services/publicApi';
 import './ContactSection.css';
 
@@ -38,18 +38,12 @@ export const ContactSection: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
-    gsap.set(root.querySelectorAll('.ctv-reveal'), { autoAlpha: 1 });
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
-    tl.from('.contact-eyebrow', { y: 12, autoAlpha: 0, duration: 0.6 }, 0);
-    tl.from('.contact-title .hero-line__inner', {
-      yPercent: 110,
-      stagger: 0.1,
-      duration: 0.9,
-    }, 0.1);
-    tl.from('.contact-lede', { y: 14, autoAlpha: 0, duration: 0.6 }, 0.4);
-    tl.from('.contact-form', { y: 24, autoAlpha: 0, duration: 0.8 }, 0.5);
-    tl.from('.contact-visual', { x: 24, autoAlpha: 0, duration: 0.85 }, 0.4);
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out', duration: 0.5 } });
+    tl.from('.contact-eyebrow', { y: 10, autoAlpha: 0 }, 0);
+    tl.add(reveal(root, '.contact-title'), 0.05);
+    tl.add(reveal(root, '.contact-lede', 'text'), 0.15);
+    tl.from('.contact-form', { y: 16, autoAlpha: 0 }, 0.2);
+    tl.from('.contact-visual', { x: 16, autoAlpha: 0, duration: 0.6 }, 0.15);
   }, []);
 
   const handleChange = (

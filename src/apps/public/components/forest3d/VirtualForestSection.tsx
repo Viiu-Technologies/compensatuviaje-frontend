@@ -1,12 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { HiSparkles, HiShieldCheck, HiSun, HiGlobeAlt, HiArrowRight } from 'react-icons/hi';
 import { FaTree, FaLeaf } from 'react-icons/fa';
-import ForestCanvas, { TimeOfDay, TreeSpecies } from './ForestCanvas';
+import type { TimeOfDay, TreeSpecies } from './ForestCanvas';
+import { scrollToSection } from '../DeferredSection';
+import { useGsapReveal, reveal, sectionTimeline } from '../../hooks/useGsapReveal';
+import { useDarkHeaderOver } from '../../hooks/useHeaderTheme';
 import './VirtualForestSection.css';
 
+// La escena (three.js + ez-tree + texturas) se descarga solo cuando la sección
+// se acerca a la pantalla. Antes se importaba directo y three.js bajaba con la
+// carga inicial del landing aunque el bosque estuviera varias pantallas abajo.
+const ForestCanvas = lazy(() => import('./ForestCanvas'));
+
 export const VirtualForestSection: React.FC = () => {
-  const containerRef = useRef<HTMLElement>(null);
+  // Misma entrada que las demás secciones: eyebrow, título letra por letra y
+  // bajada palabra por palabra cuando la sección llega a la pantalla.
+  const containerRef = useGsapReveal<HTMLElement>((root) => {
+    sectionTimeline(root)
+      .from('.vfs-eyebrow', { y: 10, autoAlpha: 0 }, 0)
+      .add(reveal(root, '.vfs-title'), 0.05)
+      .add(reveal(root, '.vfs-lede', 'text'), 0.15);
+  }, []);
+  // Sección oscura: el header pasa a texto claro mientras está encima.
+  useDarkHeaderOver(containerRef);
+
   const [isVisible, setIsVisible] = useState(false);
+  // Una vez que estuvo cerca, la escena queda montada (solo se pausa al salir).
+  const [wasNear, setWasNear] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning');
   const [species, setSpecies] = useState<TreeSpecies>('roble');
 
@@ -18,6 +38,7 @@ export const VirtualForestSection: React.FC = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
+        if (entry.isIntersecting) setWasNear(true);
       },
       { rootMargin: '200px 0px 200px 0px', threshold: 0.05 }
     );
@@ -26,9 +47,7 @@ export const VirtualForestSection: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Monta antes las secciones diferidas: si no, el destino podría moverse.
 
   return (
     <section
@@ -45,9 +64,7 @@ export const VirtualForestSection: React.FC = () => {
             <span>Visualización 3D · Bosque nativo</span>
           </div>
 
-          <h2 className="vfs-title">
-            Tu huella convertida en <em>bosque vivo</em>
-          </h2>
+          <h2 className="vfs-title">Tu huella convertida en bosque vivo</h2>
 
           {/* Antes decía "gemelo digital en tiempo real": la escena es una
               recreación procedural, no está conectada a datos de campo. */}
@@ -61,11 +78,15 @@ export const VirtualForestSection: React.FC = () => {
         {/* Visor 3D Interactivo con HUD Flotante */}
         <div className="vfs-stage">
           {/* Canvas 3D */}
-          <ForestCanvas
-            isVisible={isVisible}
-            timeOfDay={timeOfDay}
-            species={species}
-          />
+          {wasNear && (
+            <Suspense fallback={null}>
+              <ForestCanvas
+                isVisible={isVisible}
+                timeOfDay={timeOfDay}
+                species={species}
+              />
+            </Suspense>
+          )}
 
           {/* HUD Superior: Controles de Especie y Atmósfera */}
           <div className="vfs-hud-controls">

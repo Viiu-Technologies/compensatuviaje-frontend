@@ -6,7 +6,8 @@
 .pb-section {
   position: relative;
   background: var(--ctv-canvas-2);
-  padding: var(--ctv-section-y) 0;
+  /* Arriba poco aire: viene después de "Verificar", con el mismo fondo. */
+  padding: clamp(1.5rem, 3vw, 2.5rem) 0 var(--ctv-section-y);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
 }
@@ -141,6 +142,7 @@
 }
 
 .pb-badge {
+  /* Sin backdrop-filter: con el fondo casi opaco no se veía y costaba en cada cuadro. */
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -149,8 +151,6 @@
   font-weight: 700;
   padding: 0.35rem 0.75rem;
   border-radius: var(--ctv-radius-pill);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .pb-badge--standard {

@@ -5,10 +5,9 @@
 @import './landing/tokens.css';
 
 .qfc-card {
+  /* Sin backdrop-filter: con el fondo casi opaco no se veía y costaba en cada cuadro. */
   position: relative;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(7, 61, 61, 0.12);
   border-radius: var(--ctv-radius-xl);
   padding: clamp(2rem, 3.8vw, 3rem);
@@ -488,11 +487,13 @@
 }
 
 /* ── Mensaje de Error ── */
+/* flex-start: en móvil el mensaje ocupa varias líneas y el ícono quedaba
+   centrado verticalmente en vez de acompañar a la primera. */
 .qfc-error {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.6rem;
   padding: 0.85rem 1.25rem;
   background: #FEE2E2;
@@ -502,6 +503,11 @@
   font-size: 0.88rem;
   font-weight: 500;
   margin-bottom: var(--ctv-space-6);
+}
+
+.qfc-error svg {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
 }
 
 /* ── Panel de Resultados e Impacto (Generoso, Limpio y Contundente) ── */
@@ -764,5 +770,268 @@
 
   .qfc-impact-panel {
     padding: 1.35rem 1.25rem;
+  }
+}
+
+/* ==========================================================================
+   Variante compacta — escena final del hero de la landing (HeroScroll).
+   Card angosta junto al titular: mismas piezas, menos aire y cifras en mono.
+   ========================================================================== */
+.qfc-card--compact {
+  --qfc-mono: 'Geist Mono', var(--ctv-font-mono);
+  padding: 1.25rem;
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(14, 59, 54, 0.08);
+  border-radius: var(--ctv-radius-xl);
+  box-shadow: 0 30px 80px -32px rgba(0, 0, 0, 0.5);
+}
+
+.qfc-card--compact:hover {
+  border-color: rgba(14, 59, 54, 0.08);
+  box-shadow: 0 30px 80px -32px rgba(0, 0, 0, 0.5);
+}
+
+.qfc-card--compact .qfc-header {
+  flex-wrap: nowrap;
+  gap: var(--ctv-space-3);
+  margin-bottom: var(--ctv-space-4);
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.qfc-card--compact .qfc-header-title {
+  font-size: 0.9rem;
+}
+
+.qfc-card--compact .qfc-trip-toggle {
+  padding: 3px;
+  border-radius: var(--ctv-radius-pill);
+}
+
+.qfc-card--compact .qfc-toggle-btn {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+  border-radius: var(--ctv-radius-pill);
+}
+
+/* Origen y destino lado a lado, sin el botón de invertir */
+.qfc-card--compact .qfc-route-section {
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ctv-space-2);
+  margin-bottom: var(--ctv-space-2);
+}
+
+.qfc-card--compact .qfc-swap-container,
+.qfc-card--compact .qfc-tag-icon,
+.qfc-card--compact .qfc-chevron,
+.qfc-card--compact .qfc-airport-name {
+  display: none;
+}
+
+.qfc-card--compact .qfc-airport-card {
+  padding: 0.7rem 0.85rem;
+  background: #ffffff;
+  border-width: 1px;
+  border-radius: var(--ctv-radius-md);
+  box-shadow: none;
+}
+
+.qfc-card--compact .qfc-airport-card:hover,
+.qfc-card--compact .qfc-airport-card:focus-within {
+  transform: none;
+  border-color: #1F8A4C;
+  box-shadow: 0 0 0 3px rgba(31, 138, 76, 0.14);
+}
+
+.qfc-card--compact .qfc-card-top {
+  margin-bottom: 0.2rem;
+}
+
+.qfc-card--compact .qfc-card-tag {
+  font-family: var(--qfc-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+
+.qfc-card--compact .qfc-airport-visual {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.qfc-card--compact .qfc-airport-code {
+  font-family: var(--qfc-mono);
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.qfc-card--compact .qfc-airport-city {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
+}
+
+/* Cabina y pasajeros como filas "etiqueta · valor" */
+.qfc-card--compact .qfc-config-row {
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ctv-space-2);
+  margin-bottom: var(--ctv-space-3);
+}
+
+.qfc-card--compact .qfc-config-block {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ctv-space-2);
+  padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+  background: #ffffff;
+  border-radius: var(--ctv-radius-md);
+}
+
+.qfc-card--compact .qfc-config-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ctv-ink);
+  white-space: nowrap;
+}
+
+.qfc-card--compact .qfc-select-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.qfc-card--compact .qfc-custom-select {
+  padding: 0.35rem 1.3rem 0.35rem 0.25rem;
+  font-size: 0.78rem;
+  text-align: right;
+  text-align-last: right;
+  background: transparent;
+  border: 0;
+}
+
+.qfc-card--compact .qfc-select-icon {
+  right: 0;
+  font-size: 0.9rem;
+}
+
+.qfc-card--compact .qfc-stepper {
+  gap: 0.1rem;
+  padding: 0;
+  border: 0;
+}
+
+.qfc-card--compact .qfc-stepper-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+}
+
+/* Solo el número; la palabra "pasajero(s)" sigue en el árbol de accesibilidad. */
+.qfc-card--compact .qfc-stepper-display {
+  padding: 0 0.3rem;
+  font-size: 0;
+}
+
+.qfc-card--compact .qfc-stepper-display strong {
+  font-family: var(--qfc-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Resultado: huella a la izquierda, aporte a la derecha */
+.qfc-compact-result {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ctv-space-4);
+  margin-bottom: var(--ctv-space-3);
+  padding: 0.85rem 1rem;
+  background: #F3F7F5;
+  border: 1px solid rgba(14, 59, 54, 0.06);
+  border-radius: var(--ctv-radius-lg);
+}
+
+.qfc-compact-metric,
+.qfc-compact-price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.qfc-compact-price {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.qfc-compact-caption {
+  font-family: var(--qfc-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ctv-ink-mute);
+}
+
+.qfc-card--compact .qfc-metric-value-row {
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.qfc-card--compact .qfc-metric-number {
+  font-family: var(--qfc-mono);
+  font-size: 1.85rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #0E3B36;
+}
+
+.qfc-card--compact .qfc-metric-unit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ctv-ink-soft);
+}
+
+.qfc-compact-sub {
+  font-family: var(--qfc-mono);
+  font-size: 0.64rem;
+  color: var(--ctv-ink-mute);
+}
+
+.qfc-card--compact .qfc-price-amount {
+  font-family: var(--qfc-mono);
+  font-size: 1.15rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.qfc-card--compact .qfc-price-currency {
+  font-family: var(--qfc-mono);
+  font-size: 0.62rem;
+}
+
+.qfc-card--compact .qfc-compensate-btn {
+  padding: 0.85rem 1rem;
+  background: #0E3B36;
+  border-radius: var(--ctv-radius-md);
+}
+
+.qfc-compact-note {
+  margin: var(--ctv-space-3) 0 0;
+  font-family: var(--qfc-mono);
+  font-size: 0.62rem;
+  text-align: center;
+  color: var(--ctv-ink-mute);
+}
+
+@media (max-width: 400px) {
+  .qfc-card--compact .qfc-config-row {
+    grid-template-columns: 1fr;
   }
 }
