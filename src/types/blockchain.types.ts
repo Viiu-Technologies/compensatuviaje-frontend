@@ -180,23 +180,13 @@ export interface BlockchainStatsResponse {
 }
 
 // ---- Verification (public) ----
-// Respuesta de GET /blockchain/public/search/:numero y /public/verify/:id.
-// Válido = el certificado existe y está emitido; el NFT es un dato aparte.
 export interface PublicVerification {
   valid: boolean;
-  status: 'issued' | 'revoked' | 'draft' | 'not_found';
-  certificate: {
-    compensationId: string;
-    certificateNumber: string;
-    co2AmountKg: number;
-    projectName: string;
-    issuedAt: string | null;
-    tokenId: string | null;
-    mintedAt: string | null;
-    walletAddress: string | null;
-  } | null;
+  certificate: NFTCertificate | null;
   blockchain: {
-    minted: boolean;
-    txHash: string | null;
+    network: string;
+    contractAddress: string;
+    txHash: string;
+    blockNumber: number;
   } | null;
 }

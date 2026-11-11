@@ -97,6 +97,7 @@ const FAQ = () => {
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     const tl = sectionTimeline(root);
 
+    tl.from('.faq-eyebrow', { y: 10, autoAlpha: 0 }, 0);
     tl.add(reveal(root, '.faq-title'), 0.05);
     tl.from('.faq-tabs', { y: 12, autoAlpha: 0 }, 0.12);
     // Las preguntas suben en una cascada corta
@@ -150,6 +151,11 @@ const FAQ = () => {
     <section ref={scopeRef} className="faq-section" id="faq">
       <div className="faq-container">
         <header className="faq-header">
+          <span className="faq-eyebrow ctv-reveal">
+            <span className="faq-eyebrow__line" />
+            Preguntas frecuentes
+          </span>
+
           <h2 className="faq-title">
             <span className="hero-line"><span className="hero-line__inner">Lo que más preguntan,</span></span>
             <span className="hero-line"><span className="hero-line__inner">respondido.</span></span>
@@ -210,7 +216,7 @@ const FAQ = () => {
 
         <div className="faq-cta">
           <p className="faq-cta__text">¿Te queda otra duda? Estamos a un mensaje.</p>
-          <Link to="/contacto" className="faq-cta__link" data-magnetic>
+          <Link to="/contacto" className="faq-cta__link">
             Contáctanos
             <HiArrowRight aria-hidden="true" />
           </Link>

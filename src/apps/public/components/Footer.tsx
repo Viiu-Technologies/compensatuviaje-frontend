@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HiArrowRight } from 'react-icons/hi';
-import { gsap, useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
+import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import { LEGAL, LEGAL_ROUTES, ownerLine } from '../../../shared/config/legal';
 import { subscribeToNewsletter } from '../services/newsService';
 import './Footer.css';
@@ -49,16 +49,7 @@ const SECTIONS = [
   },
 ];
 
-interface FooterProps {
-  /**
-   * Telón: la sección anterior termina en un borde redondeado y, al subir, deja
-   * ver el pie, que llega desde atrás. Solo donde la sección anterior tiene el
-   * fondo claro de la página (la landing).
-   */
-  curtain?: boolean;
-}
-
-const Footer = ({ curtain = false }: FooterProps) => {
+const Footer = () => {
   const year = new Date().getFullYear();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
@@ -82,21 +73,10 @@ const Footer = ({ curtain = false }: FooterProps) => {
     tl.from('.ft-newsletter', { y: 12, autoAlpha: 0 }, 0.15);
     tl.from('.ft-col', { y: 10, autoAlpha: 0, stagger: 0.05 }, 0.2);
     tl.from('.ft-bottom > *', { y: 8, autoAlpha: 0, stagger: 0.05, duration: 0.4 }, 0.3);
-
-    // Telón: el contenido sube más lento que la página mientras el pie entra,
-    // como si la sección anterior se levantara y lo dejara al descubierto.
-    if (curtain) {
-      gsap.fromTo(
-        '.ft-footer-container',
-        { y: -140 },
-        { y: 0, ease: 'none', scrollTrigger: { trigger: root, start: 'top bottom', end: 'top 15%', scrub: true } },
-      );
-    }
-  }, [curtain]);
+  }, []);
 
   return (
-    <footer ref={scopeRef} className={`ft-footer ${curtain ? 'ft-footer--curtain' : ''}`}>
-      {curtain && <div className="ft-curtain" aria-hidden="true" />}
+    <footer ref={scopeRef} className="ft-footer">
       <div className="ft-footer-container">
 
         {/* ── Display block ── */}
@@ -106,7 +86,7 @@ const Footer = ({ curtain = false }: FooterProps) => {
             <span className="hero-line"><span className="hero-line__inner">es posible.</span></span>
           </h2>
 
-          <Link to="/calculadora" className="ft-display-cta" data-magnetic>
+          <Link to="/calculadora" className="ft-display-cta">
             Calcula tu huella
             <HiArrowRight aria-hidden="true" />
           </Link>

@@ -481,7 +481,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
         <div className="qfc-impact-action">
           {pricing && (
             <div className="qfc-action-price">
-              <span className="qfc-price-caption">Tu aporte, desde</span>
+              <span className="qfc-price-caption">Aporte para neutralizar, desde</span>
               <div className="qfc-price-row">
                 <span className="qfc-price-amount">{fmtCLP(pricing.fromTotalCLP)}</span>
                 <span className="qfc-price-currency">CLP</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { HiArrowDown, HiArrowLeft, HiInformationCircle } from 'react-icons/hi';
+import { HiArrowLeft, HiInformationCircle } from 'react-icons/hi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import QuickFlightCalculator, { type CabinCode } from '../components/QuickFlightCalculator';
@@ -50,58 +50,32 @@ const CalculatorPage: React.FC = () => {
       <Header />
 
       <main className="calcp-main">
-        {/* Titular y calculadora lado a lado en escritorio: la herramienta y su
-            resultado quedan a la vista sin bajar. En pantallas angostas, uno
-            debajo del otro. */}
         <section className="calcp-hero">
-          <div className="calcp-container calcp-top">
-            <div className="calcp-intro">
-              <Link to="/" className="calcp-back-link">
-                <HiArrowLeft aria-hidden="true" /> Volver al inicio
-              </Link>
+          <div className="calcp-container">
+            <Link to="/" className="calcp-back-link">
+              <HiArrowLeft aria-hidden="true" /> Volver al inicio
+            </Link>
 
-              <div className="calcp-eyebrow">
-                <span className="calcp-eyebrow__line" aria-hidden="true" />
-                <span>Calculadora de huella de carbono</span>
-              </div>
-
-              <h1 className="calcp-title">
-                Calcula con precisión la huella de tu viaje.
-              </h1>
-
-              <p className="calcp-lead">
-                Utilizamos los factores de emisión oficiales de {methodology} para vuelos, aplicados según el GHG Protocol, para ofrecerte un cálculo transparente y auditable.
-              </p>
-
-              {/* Lo mismo que detalla la metodología de abajo, en tres líneas. */}
-              <ul className="calcp-facts">
-                <li>
-                  <span className="calcp-facts__code">{methodology}</span>
-                  Factores por tramo y clase de cabina
-                </li>
-                <li>
-                  <span className="calcp-facts__code">GHG Protocol</span>
-                  Estándar corporativo de Alcance 3
-                </li>
-                <li>
-                  <span className="calcp-facts__code">Veritas AI</span>
-                  Compensable en proyectos evaluados
-                </li>
-              </ul>
-
-              <a href="#metodologia" className="calcp-method-link">
-                Ver metodología y fuentes <HiArrowDown aria-hidden="true" />
-              </a>
+            <div className="calcp-eyebrow">
+              <span className="calcp-eyebrow__line" aria-hidden="true" />
+              <span>Calculadora de huella de carbono</span>
             </div>
 
-            <div className="calcp-calculator">
-              <QuickFlightCalculator onEstimate={handleEstimate} />
-            </div>
+            <h1 className="calcp-title">
+              Calcula con precisión la huella de tu viaje.
+            </h1>
+
+            <p className="calcp-lead">
+              Utilizamos los factores de emisión oficiales de {methodology} para vuelos, aplicados según el GHG Protocol, para ofrecerte un cálculo transparente y auditable.
+            </p>
           </div>
         </section>
 
         <section className="calcp-calc-section">
           <div className="calcp-container">
+            <div className="calcp-calculator">
+              <QuickFlightCalculator onEstimate={handleEstimate} />
+            </div>
 
             {/* Metodología y fuentes */}
             <div className="calcp-method-box" id="metodologia">

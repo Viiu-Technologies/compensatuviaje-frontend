@@ -582,7 +582,7 @@ const PublicImpactProfile: React.FC = () => {
               fontWeight: 400,
             }}
           >
-            contribuye a la acción climática por su huella de vuelo
+            ha neutralizado su huella de carbono
           </motion.p>
 
           {/* CO₂ big number */}

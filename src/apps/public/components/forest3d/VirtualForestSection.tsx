@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { HiSparkles, HiShieldCheck, HiSun, HiGlobeAlt, HiArrowRight } from 'react-icons/hi';
 import { FaTree, FaLeaf } from 'react-icons/fa';
 import type { TimeOfDay, TreeSpecies } from './ForestCanvas';
 import { scrollToSection } from '../DeferredSection';
-import { useGsapReveal, reveal, sectionTimeline, ScrollTrigger } from '../../hooks/useGsapReveal';
+import { useGsapReveal, reveal, sectionTimeline } from '../../hooks/useGsapReveal';
 import { useDarkHeaderOver } from '../../hooks/useHeaderTheme';
 import './VirtualForestSection.css';
 
@@ -15,25 +15,11 @@ const ForestCanvas = lazy(() => import('./ForestCanvas'));
 export const VirtualForestSection: React.FC = () => {
   // Misma entrada que las demás secciones: eyebrow, título letra por letra y
   // bajada palabra por palabra cuando la sección llega a la pantalla.
-  // El bosque crece con el scroll: 0 (brotes) cuando el visor entra en pantalla,
-  // 1 (adulto) cuando quedó centrado. Parte en 1 para que, sin animaciones
-  // (prefers-reduced-motion), se vea adulto.
-  const growth = useRef(1);
   const containerRef = useGsapReveal<HTMLElement>((root) => {
     sectionTimeline(root)
       .from('.vfs-eyebrow', { y: 10, autoAlpha: 0 }, 0)
       .add(reveal(root, '.vfs-title'), 0.05)
       .add(reveal(root, '.vfs-lede', 'text'), 0.15);
-
-    const grow = (self: ScrollTrigger) => { growth.current = self.progress; };
-    ScrollTrigger.create({
-      trigger: root.querySelector('.vfs-stage'),
-      // Empieza con el visor ya a la vista: si no, crecería sin que nadie lo vea.
-      start: 'top 75%',
-      end: 'center 50%',
-      onUpdate: grow,
-      onRefresh: grow,
-    });
   }, []);
   // Sección oscura: el header pasa a texto claro mientras está encima.
   useDarkHeaderOver(containerRef);
@@ -98,7 +84,6 @@ export const VirtualForestSection: React.FC = () => {
                 isVisible={isVisible}
                 timeOfDay={timeOfDay}
                 species={species}
-                growth={growth}
               />
             </Suspense>
           )}

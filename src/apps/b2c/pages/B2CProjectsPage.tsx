@@ -220,13 +220,8 @@ const B2CProjectsPage: React.FC = () => {
                       <FaLeaf className="text-4xl" aria-hidden="true" />
                     </div>
                   )}
-                  <span className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
-                    <Badge tone="neutral" className="bg-white/95 shadow-2xs">{projectTypeLabel(project.projectType)}</Badge>
-                    {project.veritasAI?.level && (
-                      <Badge tone="success" icon={FaShieldAlt} className="bg-white/95 shadow-2xs">
-                        Veritas AI{project.veritasAI.finalScore !== null ? ` · ${project.veritasAI.finalScore}` : ''}
-                      </Badge>
-                    )}
+                  <span className="absolute top-3 left-3">
+                    <Badge tone="neutral" className="bg-white/95">{projectTypeLabel(project.projectType)}</Badge>
                   </span>
                   {soldOut && (
                     <span className="absolute top-3 right-3"><Badge tone="neutral" className="bg-white/95">Agotado este mes</Badge></span>

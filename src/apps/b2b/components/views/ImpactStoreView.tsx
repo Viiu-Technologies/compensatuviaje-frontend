@@ -80,7 +80,7 @@ const ImpactStoreView: React.FC = () => {
     {
       id: '3',
       name: 'Compensación 1 Tonelada CO₂',
-      description: 'Contribuye a proyectos ambientales por 1 tonelada de CO₂.',
+      description: 'Neutraliza 1 tonelada de emisiones de carbono.',
       category: 'carbon',
       price: 15990,
       impactValue: '1',

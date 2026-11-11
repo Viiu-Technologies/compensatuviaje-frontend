@@ -19,10 +19,10 @@ export const cx = (...c: Array<string | false | null | undefined>) => c.filter(B
 
 /* Botones: clases para usar en <button> o <Link>. */
 const btnBase =
-  'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold no-underline transition-all duration-200 border cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700';
+  'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold no-underline transition-colors border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700';
 export const btn = {
-  primary: `${btnBase} bg-brand-900 border-brand-900 text-white hover:bg-[#044443] hover:border-[#044443] shadow-[0_4px_14px_rgba(7,61,61,0.22)] hover:shadow-[0_8px_22px_rgba(7,61,61,0.28)] px-5 py-2.5`,
-  secondary: `${btnBase} bg-white border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 px-5 py-2.5`,
+  primary: `${btnBase} bg-brand-900 border-brand-900 text-white hover:bg-[#044443] hover:border-[#044443] shadow-[0_4px_14px_rgba(7,61,61,0.22)] px-5 py-2.5`,
+  secondary: `${btnBase} bg-white border-gray-300 text-gray-800 hover:bg-gray-50 px-5 py-2.5`,
   ghost: `${btnBase} bg-transparent border-transparent text-brand-700 hover:bg-brand-50 px-3 py-2`,
   danger: `${btnBase} bg-white border-rose-200 text-rose-700 hover:bg-rose-50 px-5 py-2.5`,
   icon: `${btnBase} bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-9 h-9 p-0`,
@@ -33,7 +33,7 @@ export const Card: React.FC<{ className?: string; children: React.ReactNode; as?
   className,
   children,
   as: Tag = 'section',
-}) => <Tag className={cx('ctv-b2c-surface bg-white rounded-2xl border border-gray-200/90', className ?? 'p-6')}>{children}</Tag>;
+}) => <Tag className={cx('bg-white rounded-2xl border border-gray-200', className ?? 'p-6')}>{children}</Tag>;
 
 export const CardHeader: React.FC<{
   title: string;
@@ -45,12 +45,12 @@ export const CardHeader: React.FC<{
   <div className={cx('flex items-start justify-between gap-4 flex-wrap', className ?? 'mb-5')}>
     <div className="flex items-start gap-3 min-w-0">
       {Icon && (
-        <span className="w-9 h-9 rounded-xl bg-brand-50 border border-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0">
+        <span className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0">
           <Icon className="text-sm [&.lucide]:w-4 [&.lucide]:h-4" aria-hidden="true" />
         </span>
       )}
       <div className="min-w-0">
-        <h2 className="text-base font-bold text-gray-900 m-0 leading-snug font-display">{title}</h2>
+        <h2 className="text-base font-semibold text-gray-900 m-0 leading-snug">{title}</h2>
         {subtitle && <p className="text-sm text-gray-500 m-0 mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -68,18 +68,18 @@ export const Stat: React.FC<{
   tone?: 'default' | 'good' | 'warning';
 }> = ({ label, value, unit, hint, icon: Icon, tone = 'default' }) => (
   <div className="min-w-0">
-    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-      {Icon && <Icon className="text-brand-700/70 [&.lucide]:w-4 [&.lucide]:h-4" aria-hidden="true" />}
+    <div className="flex items-center gap-2 text-sm text-gray-500">
+      {Icon && <Icon className="text-gray-400 [&.lucide]:w-4 [&.lucide]:h-4" aria-hidden="true" />}
       <span>{label}</span>
     </div>
     <div
       className={cx(
-        'mt-2 text-3xl font-extrabold leading-none tabular-nums font-display tracking-tight',
+        'mt-1.5 text-3xl font-bold leading-none tabular-nums',
         tone === 'good' ? 'text-brand-700' : tone === 'warning' ? 'text-amber-700' : 'text-gray-900',
       )}
     >
       {value}
-      {unit && <span className="ml-1.5 text-xs font-mono font-semibold text-gray-500">{unit}</span>}
+      {unit && <span className="ml-1 text-sm font-semibold text-gray-500">{unit}</span>}
     </div>
     {hint && <div className="mt-2 text-xs text-gray-500">{hint}</div>}
   </div>

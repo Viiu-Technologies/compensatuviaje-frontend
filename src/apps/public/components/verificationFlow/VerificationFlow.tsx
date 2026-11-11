@@ -148,8 +148,7 @@ const VerificationFlow: React.FC<{ data: FlowData }> = ({ data }) => {
 
   return (
     <figure className={`vf vf--${data.status}`}>
-      {/* Las tarjetas del dibujo son blancas aunque la sección sea oscura. */}
-      <svg ref={root} className="vf__svg" viewBox="0 0 690 580" data-tone="light" aria-hidden="true" focusable="false">
+      <svg ref={root} className="vf__svg" viewBox="0 0 690 580" aria-hidden="true" focusable="false">
         <defs>
           <filter id="vf-shadow" x="-20%" y="-20%" width="140%" height="160%">
             <feDropShadow dx="0" dy="14" stdDeviation="14" floodColor="#0E3B36" floodOpacity="0.12" />
