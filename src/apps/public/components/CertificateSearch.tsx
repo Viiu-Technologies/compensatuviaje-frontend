@@ -13,9 +13,9 @@ import VerificationFlow, { type FlowData } from './verificationFlow/Verification
 import './CertificateSearch.css';
 
 const TRUST = [
-  'Polygon Blockchain',
-  'Registro inmutable en blockchain',
-  'Trazabilidad Pública',
+  'Verificación pública',
+  'Registro de CompensaTuViaje',
+  'Respaldo en Polygon si está acuñado',
 ];
 
 const CertificateSearch: React.FC = () => {
@@ -58,16 +58,20 @@ const CertificateSearch: React.FC = () => {
     }
   };
 
+  // Un certificado es válido si está emitido, tenga o no NFT. La ilustración
+  // de la cadena de bloques solo usa datos reales cuando el NFT existe.
+  const minted = Boolean(result?.blockchain?.minted && result.blockchain.txHash && result.certificate?.tokenId);
+
   // La ilustración cuenta el resultado: esquema de ejemplo, certificado
-  // verificado (con sus datos reales) o no encontrado.
+  // registrado en blockchain (con sus datos reales) o no encontrado.
   const flow: FlowData =
-    result?.valid && result.certificate
+    result?.valid && result.certificate && minted
       ? {
           status: 'valid',
           kg: result.certificate.co2AmountKg,
-          tokenId: result.certificate.tokenId,
-          network: result.blockchain?.network ?? 'Polygon',
-          txHash: result.blockchain?.txHash ?? result.certificate.txHash,
+          tokenId: result.certificate.tokenId!,
+          network: 'Polygon',
+          txHash: result.blockchain!.txHash!,
         }
       : searched && !loading && (error || (result && !result.valid))
         ? { status: 'invalid' }
@@ -82,17 +86,17 @@ const CertificateSearch: React.FC = () => {
             <header className="cs-header">
               <span className="cs-eyebrow ctv-reveal">
                 <span className="cs-eyebrow__line" />
-                Verificación blockchain
+                Verificación pública
               </span>
 
               <h2 className="cs-title">
                 <span className="hero-line"><span className="hero-line__inner">Verifica tu certificado</span></span>
-                <span className="hero-line"><span className="hero-line__inner">en blockchain.</span></span>
+                <span className="hero-line"><span className="hero-line__inner">en segundos.</span></span>
               </h2>
 
               <p className="cs-sub ctv-reveal">
-                Busca por número de certificado o ID de compensación. Todo registrado en
-                blockchain pública, auditable por cualquiera.
+                Busca por número de certificado o ID de compensación. Si el certificado también
+                está registrado en blockchain, verás su transacción en Polygon.
               </p>
             </header>
 
@@ -127,20 +131,22 @@ const CertificateSearch: React.FC = () => {
                     <div className="cs-result__head">
                       <FaCheckCircle className="cs-result__icon" aria-hidden="true" />
                       <div>
-                        <p className="cs-result__title">Certificado auténtico</p>
+                        <p className="cs-result__title">Certificado válido</p>
                         <p className="cs-result__sub">
-                          Existe en la blockchain y los datos coinciden con el registro.
+                          {minted
+                            ? 'Emitido por CompensaTuViaje y registrado en la blockchain de Polygon.'
+                            : 'Emitido por CompensaTuViaje y vigente en nuestro registro.'}
                         </p>
                       </div>
                     </div>
 
                     <dl className="cs-stats">
                       <div className="cs-stat">
-                        <dt>ID de certificado</dt>
-                        <dd>#{result.certificate.tokenId}</dd>
+                        <dt>N.º de certificado</dt>
+                        <dd>{result.certificate.certificateNumber}</dd>
                       </div>
                       <div className="cs-stat">
-                        <dt>CO₂ compensado</dt>
+                        <dt>CO₂ de la contribución</dt>
                         <dd>{result.certificate.co2AmountKg.toFixed(2)} kg</dd>
                       </div>
                       <div className="cs-stat">
@@ -149,13 +155,14 @@ const CertificateSearch: React.FC = () => {
                       </div>
                     </dl>
 
+                    {minted && (
                     <div className="cs-result-actions">
                       <button
                         className="cs-action"
                         onClick={() => navigate(`/verify/${result.certificate!.compensationId}`)}
                       >
                         <FaShieldAlt aria-hidden="true" />
-                        Ver detalles
+                        Ver registro en blockchain
                       </button>
                       {result.blockchain?.txHash && (
                         <a
@@ -169,6 +176,7 @@ const CertificateSearch: React.FC = () => {
                         </a>
                       )}
                     </div>
+                    )}
                   </div>
                 )}
 
@@ -176,8 +184,19 @@ const CertificateSearch: React.FC = () => {
                   <div className="cs-result cs-result--err" role="status">
                     <FaTimesCircle className="cs-result__icon" aria-hidden="true" />
                     <div>
-                      <p className="cs-result__title">Certificado no encontrado</p>
-                      <p className="cs-result__sub">Verifica el número e intenta de nuevo.</p>
+                      {result?.status === 'revoked' ? (
+                        <>
+                          <p className="cs-result__title">Certificado revocado</p>
+                          <p className="cs-result__sub">
+                            Este certificado fue anulado y ya no es válido. Si tienes dudas, escríbenos.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="cs-result__title">Certificado no encontrado</p>
+                          <p className="cs-result__sub">Verifica el número e intenta de nuevo.</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

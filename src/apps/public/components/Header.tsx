@@ -54,7 +54,7 @@ const NAV_GROUPS: NavGroup[] = [
       {
         label: 'Calculadora de Vuelos',
         href: '/calculadora',
-        description: 'Calcula y neutraliza tu huella de vuelo.',
+        description: 'Calcula tu huella de vuelo y contribuye a compensarla.',
         icon: HiCalculator,
         prefetchKey: 'calculator',
       },
