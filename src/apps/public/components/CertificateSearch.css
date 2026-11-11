@@ -1,24 +1,91 @@
 /* ==========================================================================
-   CertificateSearch.css — verificación blockchain, tema canvas
+   CertificateSearch.css — verificación blockchain, sección oscura
+   (data-tone="dark": los tokens de texto y líneas vienen invertidos)
    ========================================================================== */
 @import './landing/tokens.css';
 
 .cs-section {
+  /* El fondo de las secciones vecinas: es lo que se ve alrededor de la placa
+     mientras todavía no se abrió del todo. */
   background: var(--ctv-canvas-2);
-  color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
-  /* Abajo menos aire: el portafolio sigue con el mismo fondo y sus rellenos
-     se sumaban (~200 px vacíos entre ambas). */
-  padding: var(--ctv-section-y) 0 clamp(3rem, 6vw, 4.5rem);
+  padding: var(--ctv-section-y) 0;
   position: relative;
   overflow: hidden;
 }
 
 .cs-container {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: var(--ctv-page-max);
   margin: 0 auto;
   padding: 0 var(--ctv-gutter);
+}
+
+/* ── Placa de fondo ──────────────────────────────────────
+   Sin animación (prefers-reduced-motion) queda a sangre: el recorte lo pone
+   GSAP y lo abre con el scroll. */
+.cs-plate {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--ctv-teal-950) 0%, #02292A 100%);
+  will-change: clip-path;
+}
+
+/* Retícula del registro: se desvanece hacia los bordes. */
+.cs-plate__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, transparent 100%);
+}
+
+.cs-plate__glow {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  width: min(760px, 90vw);
+  aspect-ratio: 1;
+  margin-left: calc(min(760px, 90vw) / -2);
+  background: radial-gradient(circle, rgba(62, 211, 43, 0.2) 0%, rgba(8, 174, 6, 0.07) 40%, transparent 68%);
+  will-change: transform;
+}
+
+.cs-plate__topo {
+  position: absolute;
+  /* Más alta que la placa: el desplazamiento no deja ver sus bordes. */
+  inset: -80px 0;
+  width: 100%;
+  height: calc(100% + 160px);
+  will-change: transform;
+}
+
+.cs-plate__topo path {
+  fill: none;
+  stroke: rgba(180, 230, 200, 0.11);
+  stroke-width: 1;
+}
+
+/* En móvil estas capas no se mueven (ver CertificateSearch.tsx): sin capa de
+   composición propia, y el buscador sin desenfoque, que ahí no tiene nada en
+   movimiento detrás y cuesta en cada cuadro de scroll. */
+@media (max-width: 767px) {
+  .cs-plate__glow,
+  .cs-plate__topo {
+    will-change: auto;
+  }
+
+  .cs-section .cs-form {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* ── Grid Layout ─────────────────────────────────────── */
@@ -164,10 +231,13 @@
   font-size: var(--ctv-text-h1);
   line-height: 1.08;
   letter-spacing: var(--ctv-display-tracking);
-  color: var(--ctv-brand-deep);
+  color: var(--ctv-ink);
   margin: 0 0 1.25rem;
 }
 
+.cs-title__accent {
+  color: var(--ctv-brand-bright);
+}
 
 .cs-sub {
   font-size: clamp(1rem, 1.2vw, 1.1rem);
@@ -182,25 +252,67 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--ctv-space-3);
-  margin: 0 0 2.5rem;
-  background: var(--ctv-canvas);
-  border: 1px solid var(--ctv-rule);
+  margin: 0 0 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--ctv-rule-strong);
   border-radius: var(--ctv-radius-pill);
   padding: 0.5rem 0.5rem 0.5rem 1.25rem;
   align-items: center;
-  box-shadow: 0 1px 0 rgba(7, 61, 61, 0.04),
-    0 30px 60px -50px rgba(7, 61, 61, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 30px 60px -40px rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   transition: border-color 0.2s var(--ctv-ease-out),
-    box-shadow 0.2s var(--ctv-ease-out);
+    box-shadow 0.2s var(--ctv-ease-out),
+    background 0.2s var(--ctv-ease-out);
+}
+
+/* En móvil el botón baja a una segunda fila: la píldora pasa a tarjeta. */
+@media (max-width: 639px) {
+  .cs-form {
+    border-radius: var(--ctv-radius-xl);
+    padding: 0.5rem 0.75rem 0.75rem 1rem;
+  }
+
+  .cs-form .ctvb {
+    width: 100%;
+  }
+}
+
+/* El campo y el botón compartidos están pensados para fondo claro. */
+.cs-form .ctvi__input {
+  font-family: var(--ctv-font-mono);
+  font-size: 0.9rem;
+}
+
+.cs-form .ctvi__input::placeholder {
+  color: var(--ctv-ink-mute);
+}
+
+/* Teal-950 sobre el verde luminoso = 9:1 */
+.cs-form .ctvb--secondary {
+  background-color: var(--ctv-brand-bright);
+  border-color: var(--ctv-brand-bright);
+  color: var(--ctv-teal-950);
+}
+
+.cs-form .ctvb--secondary:hover:not(:disabled) {
+  background-color: #6BE35B;
+  border-color: #6BE35B;
+}
+
+.cs-form .ctvb:focus-visible {
+  outline-color: #ffffff;
 }
 
 /* .cs-input anula su outline y es transparente sin borde propio: sin esto,
    tabular hasta el buscador no producía ninguna señal visible. El foco se
    marca en la píldora contenedora, igual que .ft-newsletter__form. */
 .cs-form:focus-within {
-  border-color: var(--ctv-accent-contrast);
-  box-shadow: 0 0 0 3px rgba(4, 99, 2, 0.18),
-    0 30px 60px -50px rgba(7, 61, 61, 0.25);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: var(--ctv-brand-bright);
+  box-shadow: 0 0 0 3px rgba(62, 211, 43, 0.3),
+    0 30px 60px -40px rgba(0, 0, 0, 0.6);
 }
 
 .cs-input-wrap {
@@ -292,9 +404,10 @@
   border-color: rgba(8, 174, 6, 0.30);
 }
 
+/* Opaco: sobre la placa oscura un rojo translúcido dejaba el texto sin fondo. */
 .cs-result--err {
-  border-color: rgba(220, 75, 75, 0.25);
-  background: rgba(220, 75, 75, 0.04);
+  border-color: rgba(220, 75, 75, 0.4);
+  background: #FCF4F3;
 }
 
 .cs-result__head {
@@ -445,5 +558,21 @@
   width: 5px;
   height: 5px;
   border-radius: var(--ctv-radius-full);
-  background: var(--ctv-brand);
+  background: var(--ctv-brand-bright);
+}
+
+/* ── El recorrido de la verificación sobre fondo oscuro ──
+   Las tarjetas siguen blancas; las conexiones y los rayos, que van sobre la
+   placa, pasan al verde luminoso para no perderse. */
+.cs-section .vf-link,
+.cs-section .vf-external {
+  stroke: #5EE08A;
+}
+
+.cs-section .vf-chain__spoke {
+  stroke: rgba(94, 224, 138, 0.45);
+}
+
+.cs-section .vf-card {
+  stroke: rgba(255, 255, 255, 0.5);
 }

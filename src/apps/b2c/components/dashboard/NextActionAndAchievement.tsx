@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaLeaf, FaTrophy, FaChevronRight } from 'react-icons/fa';
+import { FaShieldAlt, FaTrophy, FaChevronRight, FaCubes } from 'react-icons/fa';
 import { NextAchievementItem } from '../../services/b2cApi';
-import { fmtNum, btn } from '../../ui';
+import { SproutSvg, GlobeSvg, TreeSvg } from '../badges/BadgeSvgs';
+import { fmtNum, fmtKgAuto } from '../../ui';
 
 interface NextActionAndAchievementProps {
   pendingTons: number;
@@ -10,120 +11,121 @@ interface NextActionAndAchievementProps {
   nextAchievement: NextAchievementItem | null;
 }
 
+function resolveAchievementSvg(title: string) {
+  if (title.toLowerCase().includes('viajero')) return GlobeSvg;
+  if (title.toLowerCase().includes('guardi')) return TreeSvg;
+  return SproutSvg;
+}
+
 export const NextActionAndAchievement: React.FC<NextActionAndAchievementProps> = ({
   pendingTons,
   nextAchievement,
 }) => {
+  const AchievementSvg = nextAchievement ? resolveAchievementSvg(nextAchievement.title) : SproutSvg;
+
   return (
     <div className="space-y-4">
-      {/* 1. Tu próxima acción Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#ebf8f0] to-[#e0f5e9] dark:from-brand-950/40 dark:to-brand-900/30 border border-brand-200/80 dark:border-brand-800/40 rounded-2xl p-6 shadow-xs">
-        {/* Subtle Decorative Tree SVGs in background corner */}
-        <div className="absolute right-0 bottom-0 pointer-events-none opacity-40 dark:opacity-20 translate-x-2 translate-y-2">
-          <svg width="180" height="110" viewBox="0 0 180 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="140" cy="110" rx="40" ry="30" fill="#a7f3d0" />
-            <path d="M140 10 C140 10 120 50 120 85 C120 96 128 105 140 105 C152 105 160 96 160 85 C160 50 140 10 140 10 Z" fill="#34d399" />
-            <path d="M165 40 C165 40 150 70 150 92 C150 100 156 106 165 106 C174 106 180 100 180 92 C180 70 165 40 165 40 Z" fill="#10b981" />
-            <path d="M115 50 C115 50 102 75 102 95 C102 102 107 107 115 107 C123 107 128 102 128 95 C128 75 115 50 115 50 Z" fill="#059669" />
-          </svg>
-        </div>
-
-        {/* Card Content */}
+      {/* 1. Cápsula de Trazabilidad & Portafolio Regenerativo */}
+      <div className="relative overflow-hidden ctv-b2c-carbon-capsule text-white rounded-2xl p-6">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-brand-200/80 dark:bg-brand-800/60 text-brand-800 dark:text-brand-200 flex items-center justify-center text-xs">
-              <FaLeaf />
-            </div>
-            <span className="text-xs font-bold text-brand-800 dark:text-brand-300">
-              Tu próxima acción
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-mono font-semibold text-brand-200">
+              <FaShieldAlt className="text-brand-300 text-xs" aria-hidden="true" />
+              <span>Veritas AI + Polygon</span>
             </span>
           </div>
 
-          <h3 className="text-lg font-extrabold text-gray-900 dark:text-white m-0 mb-1.5 leading-snug">
+          <h3 className="text-lg font-extrabold text-white m-0 mb-1.5 leading-snug font-display">
             {pendingTons > 0
-              ? `Compensa ${fmtNum(pendingTons)} tCO₂e restantes`
-              : 'No tienes emisiones pendientes'}
+              ? `Retira ${fmtNum(pendingTons)} tCO₂e con trazabilidad total`
+              : 'Portafolio de regeneración verificada'}
           </h3>
 
-          <p className="text-xs text-gray-600 dark:text-slate-300 m-0 mb-4 max-w-[280px] leading-relaxed">
-            Elige uno de nuestros proyectos y contribuye a un futuro más sostenible.
+          <p className="text-xs text-white/85 m-0 mb-5 leading-relaxed">
+            Cada unidad financiada cuenta con auditoría algorítmica de impacto real y respaldo público en blockchain.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/b2c/projects"
-              className={btn.primary}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-brand-900 hover:bg-brand-50 px-4 py-2 text-xs font-bold no-underline transition-all active:scale-[0.98]"
             >
-              <FaLeaf className="text-xs" />
-              <span>Ver proyectos</span>
+              <span>Explorar portafolio</span>
+              <FaChevronRight className="text-[10px]" aria-hidden="true" />
             </Link>
 
             <Link
-              to="/b2c/certificates"
-              className="text-xs font-bold text-brand-700 dark:text-brand-300 hover:text-brand-800 dark:hover:text-brand-200 inline-flex items-center gap-1 no-underline transition-colors"
+              to="/b2c/nft-certificates"
+              className="text-xs font-semibold text-brand-200 hover:text-white inline-flex items-center gap-1.5 no-underline transition-colors"
             >
-              <span>Ver todas las compensaciones</span>
-              <FaChevronRight className="text-xs" />
+              <FaCubes className="text-xs" aria-hidden="true" />
+              <span>Registro on-chain</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 2. Próximo logro Card */}
+      {/* 2. Próximo logro Card con insignia SVG oficial */}
       {nextAchievement && (
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between gap-4">
-        {/* Left info */}
-        <div className="flex-1">
-          <div className="flex items-center gap-1.5 mb-1 text-amber-500 text-xs font-bold uppercase tracking-wider">
-            <FaTrophy />
-            <span>Próximo logro</span>
-          </div>
+        <div className="ctv-b2c-surface bg-white rounded-2xl border border-gray-200/90 p-5 flex items-center justify-between gap-4">
+          {/* Left info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-1 text-brand-700 text-[11px] font-bold uppercase tracking-wider">
+              <FaTrophy className="text-amber-600" aria-hidden="true" />
+              <span>Próxima insignia</span>
+            </div>
 
-          <h4 className="text-base font-bold text-gray-900 dark:text-white m-0 leading-tight">
-            {nextAchievement.title}
-          </h4>
-          <p className="text-xs text-gray-400 dark:text-slate-500 m-0 mt-0.5">
-            {nextAchievement.targetDescription}
-          </p>
+            <h4 className="text-base font-bold text-gray-900 m-0 leading-tight font-display">
+              {nextAchievement.title}
+            </h4>
+            <p className="text-xs text-gray-500 m-0 mt-0.5">
+              {nextAchievement.targetDescription}
+            </p>
 
-          {/* Progress Bar */}
-          <div className="w-full max-w-xs mt-3">
-            <div className="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            {/* Progress Bar */}
+            <div className="w-full max-w-xs mt-3">
               <div
-                className="h-full bg-brand-600 rounded-full transition-all duration-700"
-                style={{ width: `${nextAchievement.progressPercentage}%` }}
-              />
+                className="w-full h-2 bg-gray-100 rounded-full overflow-hidden"
+                role="progressbar"
+                aria-valuenow={Math.round(nextAchievement.progressPercentage)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Progreso hacia ${nextAchievement.title}`}
+              >
+                <div
+                  className="h-full bg-gradient-to-r from-brand-700 to-brand-500 rounded-full transition-all duration-700"
+                  style={{ width: `${nextAchievement.progressPercentage}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500 mt-1.5 tabular-nums">
+                <span>
+                  {nextAchievement.currentKg > 0
+                    ? `Faltan ${fmtKgAuto(nextAchievement.remainingKg)} CO₂e`
+                    : 'Se activa con tu primera compensación'}
+                </span>
+                <span className="font-mono font-bold text-brand-700">
+                  {nextAchievement.progressPercentage}%
+                </span>
+              </div>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-400 dark:text-slate-500 mt-1">
-              <span>
-                {nextAchievement.currentKg > 0
-                  ? `Te faltan ${nextAchievement.remainingKg} kg CO₂e`
-                  : 'Aún no has compensado ningún viaje'}
-              </span>
-              <span className="font-bold text-brand-600 dark:text-brand-300">
-                {nextAchievement.progressPercentage}%
-              </span>
-            </div>
+
+            <Link
+              to="/b2c/achievements"
+              className="text-xs font-bold text-brand-700 hover:text-brand-900 inline-flex items-center gap-1 mt-3 no-underline transition-colors"
+            >
+              <span>Sala de insignias</span>
+              <FaChevronRight className="text-[10px]" aria-hidden="true" />
+            </Link>
           </div>
 
-          <Link
-            to="/b2c/achievements"
-            className="text-xs font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-300 inline-flex items-center gap-1 mt-2.5 no-underline transition-colors"
+          {/* Right Official Animated Badge SVG */}
+          <div
+            className="flex-shrink-0 w-20 h-20 rounded-2xl bg-gray-50 border border-gray-200/80 p-1.5 flex items-center justify-center"
+            aria-hidden="true"
           >
-            <span>Ver todos los logros</span>
-            <FaChevronRight className="text-xs" />
-          </Link>
-        </div>
-
-        {/* Right Gold Ring Badge Graphic */}
-        <div className="flex-shrink-0 relative w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 dark:from-amber-900/40 dark:to-amber-700/40 p-1 flex items-center justify-center shadow-inner">
-          <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center border border-amber-300 dark:border-amber-600">
-            <div className="w-10 h-10 rounded-full bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600 dark:text-brand-300 text-lg shadow-xs">
-              🌱
-            </div>
+            <AchievementSvg className="w-full h-full" />
           </div>
         </div>
-      </div>
       )}
     </div>
   );
