@@ -45,7 +45,7 @@ const HeroScroll: React.FC = () => {
     const el = countRef.current;
     if (!el) return;
     const kg = kgRef.current;
-    el.textContent = kg === null ? '—' : fmtKg(kg * countProgressRef.current);
+    el.textContent = kg === null ? '0,00' : fmtKg(kg * countProgressRef.current);
   }, []);
 
   const handleEstimate = useCallback(
@@ -158,7 +158,7 @@ const HeroScroll: React.FC = () => {
         <div className="hs-readout" aria-hidden="true">
           <p className="hs-readout__caption">Huella de tu vuelo · {tripLabel}</p>
           <p className="hs-readout__value">
-            <span ref={countRef} className="hs-readout__number">—</span>
+            <span ref={countRef} className="hs-readout__number">0,00</span>
             <span className="hs-readout__unit">kg CO₂e</span>
           </p>
           <p className="hs-readout__meta">
