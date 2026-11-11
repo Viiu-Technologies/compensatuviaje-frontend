@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import { HiArrowRight, HiShieldCheck, HiLocationMarker } from 'react-icons/hi';
 import { FaTree, FaCheck } from 'react-icons/fa';
 import { getPublicProjects, type B2CProject } from '../../b2c/services/b2cApi';
 import { formatCLPPerTon } from '../../../utils/currency';
-import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
+import { gsap, useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
+import { horizontalRail } from '../hooks/motion';
+import { scrollToY } from '../hooks/smoothScroll';
 import './ProjectsBento.css';
 
 export interface ProjectData {
@@ -55,7 +57,7 @@ const REFERENCE_PROJECTS: ProjectData[] = [
     description: 'Restauración ecológica con especies nativas (lenga, coihue y ñirre) en cuencas degradadas, protegiendo biodiversidad y capturando carbono de largo plazo.',
     imageUrl: '/images/projects/ref-patagonia.webp',
     href: '/calculadora',
-    ctaLabel: 'Calcula tu huella',
+    ctaLabel: 'Simular impacto',
   },
   {
     id: 'ref-atacama',
@@ -70,7 +72,7 @@ const REFERENCE_PROJECTS: ProjectData[] = [
     description: 'Generación solar de alta radiación que reemplaza generación térmica a carbón en la red eléctrica.',
     imageUrl: '/images/projects/ref-atacama.webp',
     href: '/calculadora',
-    ctaLabel: 'Calcular',
+    ctaLabel: 'Simular impacto',
   },
   {
     // Antes "Turberas de Magallanes" con una foto de una higuera tropical:
@@ -87,7 +89,7 @@ const REFERENCE_PROJECTS: ProjectData[] = [
     description: 'Protección de bosque nativo frente a la tala y los incendios, manteniendo el carbono almacenado y el hábitat de especies endémicas.',
     imageUrl: '/images/projects/ref-bosque-nativo.webp',
     href: '/calculadora',
-    ctaLabel: 'Calcular',
+    ctaLabel: 'Simular impacto',
   },
 ];
 
@@ -156,7 +158,7 @@ const ProjectImage: React.FC<{ src: string | null; alt: string; className: strin
 type CardProps = { project: ProjectData; isReference: boolean };
 
 const FeaturedCard: React.FC<CardProps> = ({ project, isReference }) => (
-  <article className="pb-card pb-card--featured">
+  <article className="pb-card pb-card--featured" data-spotlight="card">
     <div className="pb-card-media">
       <ProjectImage src={project.imageUrl} alt={project.title} className="pb-card-img" />
       <div className="pb-card-overlay" />
@@ -217,7 +219,7 @@ const FeaturedCard: React.FC<CardProps> = ({ project, isReference }) => (
 );
 
 const SideCard: React.FC<CardProps> = ({ project, isReference }) => (
-  <article className="pb-card pb-card--side">
+  <article className="pb-card pb-card--side" data-spotlight="card">
     <div className="pb-side-media">
       <ProjectImage src={project.imageUrl} alt={project.title} className="pb-side-img" />
       <div className="pb-side-badges">
@@ -250,7 +252,7 @@ const SideCard: React.FC<CardProps> = ({ project, isReference }) => (
         <div className="pb-side-price">
           <span className="pb-side-price-tag">{project.priceLabel}</span>
           <Link to={project.href} className="pb-side-link">
-            <span>{isReference ? 'Calcula tu huella' : 'Elegir'}</span>
+            <span>{isReference ? 'Simular impacto' : 'Elegir proyecto'}</span>
             <HiArrowRight aria-hidden="true" />
           </Link>
         </div>
@@ -258,6 +260,23 @@ const SideCard: React.FC<CardProps> = ({ project, isReference }) => (
     </div>
   </article>
 );
+
+/**
+ * Cuándo el portafolio se recorre de lado: pantallas anchas y con alto para que
+ * una tarjeta entera quepa fija en pantalla. En móvil, pantallas bajas o con
+ * prefers-reduced-motion queda el bento normal.
+ */
+const RAIL_QUERY = '(min-width: 1024px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)';
+
+const subscribeRail = (notify: () => void) => {
+  const mq = window.matchMedia(RAIL_QUERY);
+  mq.addEventListener('change', notify);
+  return () => mq.removeEventListener('change', notify);
+};
+const useRailLayout = () =>
+  useSyncExternalStore(subscribeRail, () => window.matchMedia(RAIL_QUERY).matches, () => false);
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
 
 export const ProjectsBento: React.FC = () => {
   // null = cargando
@@ -289,7 +308,6 @@ export const ProjectsBento: React.FC = () => {
   // Solo la cabecera: las tarjetas llegan después, cuando responde la API.
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
     sectionTimeline(root)
-      .from('.pb-eyebrow', { y: 10, autoAlpha: 0 }, 0)
       .add(reveal(root, '.pb-title'), 0.05)
       .add(reveal(root, '.pb-lede', 'text'), 0.15);
   }, []);
@@ -298,35 +316,134 @@ export const ProjectsBento: React.FC = () => {
   const sideProjects = projects?.slice(1) ?? [];
   const count = projects?.length ?? 0;
 
+  // Con una sola tarjeta no hay nada que recorrer.
+  const rail = useRailLayout() && (projects === null || count >= 2);
+  const railRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const counterRef = useRef<HTMLSpanElement>(null);
+  const fillRef = useRef<HTMLSpanElement>(null);
+  const railCount = projects?.length ?? 3;
+
+  // El scroll vertical desliza las tarjetas de lado y mueve el indicador.
+  useLayoutEffect(() => {
+    const section = scopeRef.current;
+    const railEl = railRef.current;
+    const track = trackRef.current;
+    if (!rail || !section || !railEl || !track) return;
+    return horizontalRail(
+      section,
+      railEl,
+      track,
+      (progress) => {
+        if (fillRef.current) fillRef.current.style.transform = `scaleX(${progress})`;
+        if (counterRef.current) counterRef.current.textContent = pad2(Math.round(progress * (railCount - 1)) + 1);
+      },
+      // La foto de cada tarjeta se descubre de izquierda a derecha mientras la
+      // tarjeta entra por el borde de la pantalla. Se recorta el marco de la
+      // foto y no la imagen, que ya tiene su zoom al pasar el mouse.
+      (containerAnimation) => {
+        const frames = [...track.querySelectorAll<HTMLElement>('.pb-card-media')];
+        const wipes = frames.map((frame) =>
+          gsap.fromTo(
+            frame,
+            { clipPath: 'inset(0% 100% 0% 0%)' },
+            {
+              clipPath: 'inset(0% 0% 0% 0%)',
+              ease: 'none',
+              scrollTrigger: { containerAnimation, trigger: frame, start: 'left 100%', end: 'left 82%', scrub: true },
+            },
+          ),
+        );
+        return () => {
+          wipes.forEach((wipe) => {
+            wipe.scrollTrigger?.kill();
+            wipe.kill();
+          });
+          gsap.set(frames, { clearProps: 'clipPath' });
+        };
+      },
+    );
+    // `projects`: al llegar de la API, las tarjetas reemplazan a los esqueletos.
+  }, [rail, railCount, projects, scopeRef]);
+
+  // Con el teclado, el foco puede caer en una tarjeta que aún no pasó: se lleva
+  // el scroll hasta el punto del recorrido donde esa tarjeta queda a la vista.
+  const revealFocused = (e: React.FocusEvent<HTMLDivElement>) => {
+    const section = scopeRef.current;
+    const railEl = railRef.current;
+    const track = trackRef.current;
+    const card = (e.target as HTMLElement).closest<HTMLElement>('.pb-card');
+    if (!section || !railEl || !track || !card) return;
+    // El navegador intenta mostrarla desplazando la ventana recortada.
+    railEl.scrollLeft = 0;
+    const travel = Math.max(1, track.offsetWidth - railEl.clientWidth);
+    const offset = Math.min(travel, Math.max(0, card.offsetLeft - 40));
+    const shown = -Number(gsap.getProperty(track, 'x'));
+    if (Math.abs(offset - shown) < 8) return;
+    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+    scrollToY(sectionTop + offset);
+  };
+
+  const header = (
+    <header className="pb-header">
+      <div className="pb-title-row">
+        <h2 className="pb-title">
+          Proyectos concretos, evaluados antes de recibir tu compensación.
+        </h2>
+        {/* La nota va fuera del párrafo: la animación divide el párrafo en
+            palabras, y React no puede insertar después un hijo dentro de él. */}
+        <div>
+          <p className="pb-lede">
+            Cada proyecto pasa por Veritas AI, nuestra certificación agéntica que evalúa su
+            evidencia documental, y por una revisión humana antes de poder recibir compensaciones.
+          </p>
+          {isReference && (
+            <p className="pb-reference-note">
+              Los proyectos de abajo son ejemplos de referencia del tipo de iniciativa que evaluamos.
+            </p>
+          )}
+        </div>
+      </div>
+      {rail && (
+        <div className="pb-rail-progress" aria-hidden="true">
+          <span ref={counterRef}>01</span>
+          <span className="pb-rail-progress__bar">
+            <span ref={fillRef} className="pb-rail-progress__fill" />
+          </span>
+          <span>{pad2(railCount)}</span>
+        </div>
+      )}
+    </header>
+  );
+
+  if (rail) {
+    return (
+      <section ref={scopeRef} className="pb-section pb-section--rail" id="proyectos" aria-label="Portafolio de proyectos de compensación">
+        <div className="pb-pin">
+          <div className="pb-rail-layout">
+            {header}
+            <div ref={railRef} className="pb-rail">
+              <div
+                ref={trackRef}
+                className="pb-track"
+                onFocus={revealFocused}
+                aria-busy={projects ? undefined : true}
+              >
+                {projects
+                  ? projects.map((proj) => <FeaturedCard key={proj.id} project={proj} isReference={isReference} />)
+                  : [0, 1, 2].map((i) => <div key={i} className="pb-skeleton pb-skeleton--featured" />)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section ref={scopeRef} className="pb-section" id="proyectos" aria-label="Portafolio de proyectos de compensación">
       <div className="pb-container">
-        {/* Encabezado Editorial de Sección */}
-        <header className="pb-header">
-          <div className="pb-eyebrow">
-            <span className="pb-eyebrow-line" />
-            <span>Portafolio de proyectos</span>
-          </div>
-
-          <div className="pb-title-row">
-            <h2 className="pb-title">
-              Proyectos concretos, evaluados antes de recibir tu compensación.
-            </h2>
-            {/* La nota va fuera del párrafo: la animación divide el párrafo en
-                palabras, y React no puede insertar después un hijo dentro de él. */}
-            <div>
-              <p className="pb-lede">
-                Cada proyecto pasa por Veritas AI, nuestra certificación agéntica que evalúa su
-                evidencia documental, y por una revisión humana antes de poder recibir compensaciones.
-              </p>
-              {isReference && (
-                <p className="pb-reference-note">
-                  Los proyectos de abajo son ejemplos de referencia del tipo de iniciativa que evaluamos.
-                </p>
-              )}
-            </div>
-          </div>
-        </header>
+        {header}
 
         {!featured ? (
           <div className="pb-grid pb-grid--loading" aria-busy="true" aria-label="Cargando proyectos">
