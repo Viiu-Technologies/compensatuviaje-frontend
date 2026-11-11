@@ -36,7 +36,7 @@ export const EnterpriseSuite: React.FC = () => {
             </h2>
 
             <p className="es-lede">
-              Gestiona, mide y neutraliza las emisiones de viajes de negocios de toda tu organización.
+              Gestiona y mide las emisiones de los viajes de negocios de toda tu organización y contribuye a proyectos ambientales verificados.
               Genera reportes ejecutivos para comités de sustentabilidad, memorias anuales y procesos de auditoría.
             </p>
 
@@ -100,9 +100,9 @@ export const EnterpriseSuite: React.FC = () => {
                     <span className="es-m-sub">Scope 3 · DEFRA 2025</span>
                   </div>
                   <div className="es-m-card es-m-card--accent">
-                    <span className="es-m-label">Neutralizado</span>
+                    <span className="es-m-label">Contribución</span>
                     <span className="es-m-val">100%</span>
-                    <span className="es-m-sub">Polygon Blockchain</span>
+                    <span className="es-m-sub">Certificado verificable</span>
                   </div>
                 </div>
 
