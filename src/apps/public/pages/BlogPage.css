@@ -40,18 +40,14 @@
 }
 
 .blog-hero__title {
-  /* Líneas parejas: evita una última línea con una sola palabra. */
-  text-wrap: balance;
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  /* Escala de título de página: a 4,5rem y 14ch el titular ocupaba cinco
-     líneas y media pantalla. */
-  font-size: var(--ctv-text-h1);
-  line-height: 1.1;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1.03;
   letter-spacing: -0.02em;
   color: var(--ctv-brand-deep);
   margin: 0;
-  max-width: 26ch;
+  max-width: 14ch;
 }
 
 .blog-hero__title em {
@@ -60,11 +56,11 @@
 }
 
 .blog-hero__lead {
-  margin: 1.25rem 0 0;
-  max-width: 60ch;
+  margin: 1.75rem 0 0;
+  max-width: 54ch;
   color: var(--ctv-ink-soft);
   font-size: 1.05rem;
-  line-height: 1.65;
+  line-height: 1.8;
 }
 
 .blog-hero__actions {
@@ -281,7 +277,7 @@
   }
 
   .blog-hero__title {
-    font-size: clamp(1.9rem, 7vw, 2.4rem);
+    font-size: clamp(2.2rem, 7vw, 3rem);
   }
 }
 

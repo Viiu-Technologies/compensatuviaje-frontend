@@ -21,27 +21,28 @@
 .st-ribbon-intro {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--ctv-space-3);
   margin-bottom: var(--ctv-space-4);
   flex-wrap: wrap;
 }
 
-.st-ribbon-spec {
-  font-family: var(--ctv-font-mono);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--ctv-accent-contrast);
-  background: rgba(8, 174, 6, 0.08);
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--ctv-radius-sm);
-  border: 1px solid rgba(8, 174, 6, 0.2);
+.st-ribbon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ctv-brand-deep);
+  background: rgba(7, 61, 61, 0.06);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--ctv-radius-pill);
+  border: 1px solid rgba(7, 61, 61, 0.1);
 }
 
 .st-ribbon-text {
-  font-size: 0.82rem;
-  font-weight: 500;
+  font-size: 0.8rem;
   color: var(--ctv-ink-soft);
   margin: 0;
 }
@@ -85,7 +86,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ctv-space-3);
   margin-bottom: var(--ctv-space-1);
 }
 
@@ -96,22 +96,9 @@
   font-family: var(--ctv-font-display);
 }
 
-.st-item-code {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-family: var(--ctv-font-mono);
-  font-size: 0.68rem;
-  color: var(--ctv-brand-deep);
-  background: rgba(7, 61, 61, 0.05);
-  border: 1px solid rgba(7, 61, 61, 0.1);
-  border-radius: 4px;
-  padding: 0.12rem 0.4rem;
-}
-
 .st-item-check {
   color: var(--ctv-accent-contrast);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .st-item-category {

@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import b2cApi from '../services/b2cApi';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
-import { firstName, fmtNum, fmtPercent, fmtInt } from '../ui';
+import { Progress, firstName, fmtNum, fmtPercent, fmtInt } from '../ui';
 import './b2cTheme.css';
 
 interface B2CLayoutProps {
@@ -106,13 +106,11 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, header
   const name = firstName(user?.nombre, user?.email);
 
   const renderNavLinks = () => (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {navGroups.map((group, gIdx) => (
-        <div key={gIdx} className="space-y-1">
+        <div key={gIdx} className="space-y-0.5">
           {group.groupLabel && (
-            <div className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              {group.groupLabel}
-            </div>
+            <div className="px-3 pb-1 text-xs font-semibold text-gray-400">{group.groupLabel}</div>
           )}
           {group.items.map((item) => {
             const active = isActive(item.path);
@@ -123,24 +121,13 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, header
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 aria-current={active ? 'page' : undefined}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm no-underline transition-all duration-150 ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm no-underline transition-colors ${
                   active
-                    ? 'bg-brand-50 text-brand-900 font-semibold shadow-[inset_0_0_0_1px_rgba(4,99,2,0.15)]'
-                    : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900 font-medium'
+                    ? 'bg-brand-50 text-brand-800 font-semibold'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium'
                 }`}
               >
-                {active && (
-                  <span
-                    className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-brand-700"
-                    aria-hidden="true"
-                  />
-                )}
-                <Icon
-                  className={`text-sm flex-shrink-0 transition-colors ${
-                    active ? 'text-brand-700' : 'text-gray-400'
-                  }`}
-                  aria-hidden="true"
-                />
+                <Icon className={`text-sm flex-shrink-0 ${active ? 'text-brand-700' : 'text-gray-400'}`} aria-hidden="true" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -150,49 +137,17 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, header
     </div>
   );
 
-  const clampedRate = Math.max(0, Math.min(100, sidebarStats.compensationRate || 0));
-
   const impactWidget = (
-    <div className="mx-3 mb-3 p-4 rounded-2xl ctv-b2c-carbon-capsule text-white">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-brand-200">
-          Balance climático
-        </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2 py-0.5 text-[11px] font-mono font-semibold text-white">
-          <FaLeaf className="text-[10px] text-brand-300" aria-hidden="true" />
-          {fmtPercent(sidebarStats.compensationRate)}
-        </span>
-      </div>
-      <div className="mt-2 text-2xl font-extrabold text-white tabular-nums font-display leading-none">
+    <div className="mx-3 mb-3 p-4 rounded-xl bg-gray-50 border border-gray-200">
+      <div className="text-xs font-semibold text-gray-500">Tu impacto</div>
+      <div className="mt-1 text-xl font-bold text-gray-900 tabular-nums">
         {fmtNum(sidebarStats.totalCompensatedTons)}{' '}
-        <span className="text-xs font-mono font-semibold text-brand-200">tCO₂e</span>
+        <span className="text-xs font-semibold text-gray-500">t CO₂e compensadas</span>
       </div>
-      <div className="mt-1 text-xs text-white/80">Huella histórica compensada</div>
-      <div
-        className="mt-3 h-1.5 rounded-full bg-white/15 overflow-hidden"
-        role="progressbar"
-        aria-valuenow={Math.round(clampedRate)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Porcentaje de tu huella compensado"
-      >
-        <div
-          className="h-full rounded-full bg-brand-300 transition-all duration-500"
-          style={{ width: `${clampedRate}%` }}
-        />
-      </div>
-      <div className="mt-2.5 flex items-center justify-between text-xs text-white/85">
-        <span>
-          {fmtInt(sidebarStats.certificatesCount)}{' '}
-          {sidebarStats.certificatesCount === 1 ? 'certificado' : 'certificados'}
-        </span>
-        <Link
-          to="/b2c/calculator"
-          onClick={() => setSidebarOpen(false)}
-          className="font-semibold text-brand-200 hover:text-white no-underline transition-colors"
-        >
-          + Calcular
-        </Link>
+      <Progress value={sidebarStats.compensationRate} label="Porcentaje de tu huella compensado" className="mt-3 h-1.5" />
+      <div className="mt-2 text-xs text-gray-500">
+        <span className="font-semibold text-brand-700">{fmtPercent(sidebarStats.compensationRate)}</span> de tu huella ·{' '}
+        {fmtInt(sidebarStats.certificatesCount)} {sidebarStats.certificatesCount === 1 ? 'certificado' : 'certificados'}
       </div>
     </div>
   );

@@ -7,7 +7,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'sonner';
 import './App.css';
 import { scheduleIdlePrefetch } from './shared/utils/routePrefetch';
-import PageTransitions from './shared/components/PageTransitions';
 
 // Context
 import { AuthProvider } from './apps/auth/context/AuthContext';
@@ -67,9 +66,7 @@ const PartnerRoutes = lazy(() => import('./apps/partner').then(m => ({ default: 
 
 // Loading fallback minimalista
 const PageLoader = () => (
-  // data-route-loading: PageTransitions espera a que desaparezca antes de
-  // mostrar la página nueva.
-  <div data-route-loading className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+  <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
     <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
@@ -107,7 +104,6 @@ function App() {
                 },
               }}
             />
-            <PageTransitions />
             <Suspense fallback={<PageLoader />}>
             <Routes>
             {/* ===================== */}

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { HiArrowRight, HiOutlineDocumentReport, HiOutlineCloudUpload, HiOutlineCode, HiCheck } from 'react-icons/hi';
 import { FaShieldAlt } from 'react-icons/fa';
 import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
-import { enterFrom } from '../hooks/motion';
 import './EnterpriseSuite.css';
 
 const B2B_BENEFITS = [
@@ -14,20 +13,11 @@ const B2B_BENEFITS = [
 
 export const EnterpriseSuite: React.FC = () => {
   const scopeRef = useGsapReveal<HTMLElement>((root) => {
-    // El texto entra por la izquierda; el panel se arma pieza por pieza: sube
-    // la tarjeta, baja la barra de ventana, y métricas y capacidades llegan
-    // desde los lados.
     sectionTimeline(root)
       .from('.es-eyebrow', { y: 10, autoAlpha: 0 }, 0)
       .add(reveal(root, '.es-title'), 0.05)
-      .add(enterFrom('.es-lede', 'left', { x: -24, duration: 0.5 }), 0.15)
-      .add(enterFrom('.es-benefit-item', 'left', { x: -24, duration: 0.5, stagger: 0.06 }), 0.2)
-      .add(enterFrom('.es-actions', 'left', { x: -24, duration: 0.5 }), 0.38)
-      .from('.es-mockup-card', { y: 28, autoAlpha: 0, duration: 0.6 }, 0.1)
-      .from('.es-mockup-bar', { yPercent: -100, duration: 0.5 }, 0.3)
-      .from('.es-m-card', { x: (i: number) => [-36, 0, 36][i] ?? 0, y: (i: number) => (i === 1 ? 24 : 0), autoAlpha: 0, duration: 0.55, stagger: 0.07 }, 0.5)
-      .add(enterFrom('.es-feature-item', 'right', { x: 32, duration: 0.5, stagger: 0.07 }), 0.7)
-      .from('.es-mockup-footer', { autoAlpha: 0, duration: 0.4 }, 0.95);
+      .add(reveal(root, '.es-lede', 'text'), 0.15)
+      .from('.es-benefit-item', { y: 10, autoAlpha: 0, stagger: 0.05 }, 0.2);
   }, []);
 
   return (
@@ -46,7 +36,7 @@ export const EnterpriseSuite: React.FC = () => {
             </h2>
 
             <p className="es-lede">
-              Gestiona y mide las emisiones de los viajes de negocios de toda tu organización y contribuye a proyectos ambientales verificados.
+              Gestiona, mide y neutraliza las emisiones de viajes de negocios de toda tu organización.
               Genera reportes ejecutivos para comités de sustentabilidad, memorias anuales y procesos de auditoría.
             </p>
 
@@ -67,7 +57,6 @@ export const EnterpriseSuite: React.FC = () => {
               <Link
                 to="/contacto?asunto=b2b#contacto"
                 className="es-btn es-btn--primary"
-                data-magnetic
               >
                 <span>Agendar reunión</span>
                 <HiArrowRight aria-hidden="true" />
@@ -111,9 +100,9 @@ export const EnterpriseSuite: React.FC = () => {
                     <span className="es-m-sub">Scope 3 · DEFRA 2025</span>
                   </div>
                   <div className="es-m-card es-m-card--accent">
-                    <span className="es-m-label">Contribución</span>
+                    <span className="es-m-label">Neutralizado</span>
                     <span className="es-m-val">100%</span>
-                    <span className="es-m-sub">Certificado verificable</span>
+                    <span className="es-m-sub">Polygon Blockchain</span>
                   </div>
                 </div>
 

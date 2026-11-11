@@ -391,7 +391,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ data, onClo
                     marginBottom: '8px',
                     marginTop: '0'
                   }}>
-                    Certificado de Contribución Climática
+                    Certificado de Neutralización
                   </h1>
                   <p style={{ color: '#4b5563', margin: '0' }}>
                     Este documento certifica que

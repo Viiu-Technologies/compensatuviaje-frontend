@@ -70,8 +70,8 @@ const Hero: React.FC = () => {
             </h1>
 
             <p className="hero-lede ctv-reveal">
-              Calcula las emisiones de tus vuelos con factores oficiales del DEFRA y GHG Protocol y contribuye
-              a proyectos ambientales verificados en Chile.
+              Calcula y neutraliza las emisiones de tus vuelos con factores oficiales del DEFRA y GHG Protocol,
+              respaldado por proyectos verificados y un registro inmutable en blockchain.
             </p>
 
           </div>

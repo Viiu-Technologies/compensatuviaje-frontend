@@ -12,26 +12,6 @@
   overflow: hidden;
 }
 
-/* ── Telón (solo en la landing) ──
-   El borde inferior redondeado de la sección anterior, dibujado sobre el pie:
-   queda quieto con la página mientras el contenido del pie llega desde atrás. */
-.ft-footer--curtain {
-  padding-top: calc(var(--ctv-section-y) + 40px);
-}
-
-.ft-curtain {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  height: 40px;
-  /* El fondo de la sección de preguntas, la última antes del pie. */
-  background: var(--ctv-canvas);
-  border-radius: 0 0 40px 40px;
-  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.45);
-}
-
 .ft-footer-container {
   width: 100%;
   max-width: var(--ctv-page-max);

@@ -6,9 +6,8 @@
 .pb-section {
   position: relative;
   background: var(--ctv-canvas-2);
-  /* "Verificar", la sección anterior, es oscura: el corte de fondo ya separa,
-     pero el título necesita su aire completo debajo de él. */
-  padding: var(--ctv-section-y) 0;
+  /* Arriba poco aire: viene después de "Verificar", con el mismo fondo. */
+  padding: clamp(1.5rem, 3vw, 2.5rem) 0 var(--ctv-section-y);
   color: var(--ctv-ink);
   font-family: var(--ctv-font-body);
 }
@@ -21,14 +20,39 @@
 
 /* ── Encabezado ── */
 .pb-header {
-  max-width: 720px;
-  margin-bottom: clamp(2.25rem, 4.5vw, 3.25rem);
+  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.pb-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ctv-space-3);
+  font-size: var(--ctv-text-caption);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ctv-ink-soft);
+  margin-bottom: var(--ctv-space-4);
+}
+
+.pb-eyebrow-line {
+  width: 28px;
+  height: 2px;
+  background: var(--ctv-brand);
+  display: inline-block;
 }
 
 .pb-title-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ctv-space-4);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ctv-space-6);
+  align-items: end;
+}
+
+@media (min-width: 1024px) {
+  .pb-title-row {
+    grid-template-columns: 1.4fr 1fr;
+  }
 }
 
 .pb-title {
@@ -453,113 +477,4 @@
 .pb-grid--solo {
   max-width: 760px;
   margin-inline: auto;
-}
-
-/* ── Recorrido horizontal ────────────────────────────────
-   En pantallas anchas (RAIL_QUERY en ProjectsBento.tsx) la sección queda fija
-   y el scroll desliza las tarjetas de derecha a izquierda. La sección mide
-   100vh + el recorrido de la fila, que horizontalRail publica en --rail-travel. */
-.pb-section--rail {
-  padding: 0;
-  height: calc(100vh + var(--rail-travel, 900px));
-}
-
-.pb-pin {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  /* El header fijo (68 px) tapa la parte de arriba. */
-  padding-top: 68px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-
-.pb-rail-layout {
-  /* Margen izquierdo del contenedor de la página; a la derecha, la fila sale
-     hasta el borde de la pantalla. */
-  --pb-edge: max(var(--ctv-gutter), calc((100vw - var(--ctv-page-max)) / 2 + var(--ctv-gutter)));
-  width: 100%;
-  display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
-  gap: var(--ctv-space-8);
-  align-items: center;
-  padding-left: var(--pb-edge);
-}
-
-.pb-section--rail .pb-header {
-  max-width: none;
-  margin: 0;
-}
-
-.pb-section--rail .pb-title {
-  font-size: var(--ctv-text-h2);
-}
-
-.pb-section--rail .pb-lede {
-  font-size: var(--ctv-text-body);
-  margin: 0;
-}
-
-/* Indicador: tarjeta actual, avance y total. */
-.pb-rail-progress {
-  display: flex;
-  align-items: center;
-  gap: var(--ctv-space-3);
-  margin-top: var(--ctv-space-8);
-  font-family: var(--ctv-font-mono);
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--ctv-ink-mute);
-}
-
-.pb-rail-progress > span:first-child {
-  color: var(--ctv-brand-deep);
-  font-weight: 600;
-}
-
-.pb-rail-progress__bar {
-  flex: 1;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--ctv-rule-strong);
-  overflow: hidden;
-}
-
-.pb-rail-progress__fill {
-  display: block;
-  height: 100%;
-  background: var(--ctv-brand);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-}
-
-/* Ventana de la fila: las tarjetas se desvanecen al llegar al texto. El relleno
-   vertical deja sitio a las sombras y a la elevación al pasar el mouse. */
-.pb-rail {
-  overflow: hidden;
-  padding: 40px 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 40px);
-  mask-image: linear-gradient(90deg, transparent 0, #000 40px);
-}
-
-.pb-track {
-  display: flex;
-  gap: var(--ctv-space-6);
-  width: max-content;
-  padding-left: 40px;
-  /* Al final, la última tarjeta queda alineada con el margen de la página. */
-  padding-right: var(--pb-edge);
-  will-change: transform;
-}
-
-.pb-track > .pb-card,
-.pb-track > .pb-skeleton {
-  flex: 0 0 clamp(380px, 36vw, 500px);
-  width: clamp(380px, 36vw, 500px);
-}
-
-.pb-track .pb-card--featured .pb-card-media {
-  height: clamp(160px, 26vh, 240px);
-  flex-shrink: 0;
 }

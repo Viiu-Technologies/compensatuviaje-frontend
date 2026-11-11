@@ -176,30 +176,6 @@
   --ctv-gutter: clamp(1rem, 4vw, 2.5rem);
 }
 
-/* ── Tonos de sección ──
-   Una sección oscura se declara con data-tone="dark": los tokens de texto y
-   de líneas se invierten y todo lo que los usa queda legible sin reglas
-   propias. Una superficie clara dentro de ella (una tarjeta blanca, un
-   resultado) vuelve a los valores normales con data-tone="light".
-   Contrastes sobre --ctv-teal-950: ink 15:1 · ink-soft 10:1 · ink-mute 7:1. */
-[data-tone='dark'] {
-  --ctv-ink: #EAF4EF;
-  --ctv-ink-soft: #B4CEC8;
-  --ctv-ink-mute: #8FB0AA;
-  --ctv-rule: rgba(255, 255, 255, 0.12);
-  --ctv-rule-strong: rgba(255, 255, 255, 0.24);
-  color: var(--ctv-ink);
-}
-
-[data-tone='light'] {
-  --ctv-ink: #073D3D;
-  --ctv-ink-soft: #40605C;
-  --ctv-ink-mute: #4E716F;
-  --ctv-rule: rgba(7, 61, 61, 0.10);
-  --ctv-rule-strong: rgba(7, 61, 61, 0.22);
-  color: var(--ctv-ink);
-}
-
 /* .ctv-reveal marca lo que anima al entrar, pero ya no lo oculta: el
    contenido es visible por defecto. GSAP lo esconde recién al montar la
    sección (antes de pintar, sin parpadeo) y solo si está bajo el pliegue.

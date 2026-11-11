@@ -79,8 +79,8 @@ const BadgesView: React.FC = () => {
     },
     {
       id: '3',
-      name: 'Agente de Acción Climática',
-      description: 'Contribuye por tu primera tonelada de CO₂.',
+      name: 'Neutralizador',
+      description: 'Compensa tu primera tonelada de CO₂.',
       icon: Cloud,
       category: 'impact',
       rarity: 'common',
