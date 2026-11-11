@@ -3,11 +3,13 @@ import Header from '../components/Header';
 import HeroScroll from '../components/heroScroll/HeroScroll';
 import StandardsRibbon from '../components/StandardsRibbon';
 import DeferredSection from '../components/DeferredSection';
+import SectionRail from '../components/landing/SectionRail';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useSeo } from '../../../shared/utils/useSeo';
 import { PUBLIC_SEO } from '../../../shared/config/publicSeo';
 import { useSmoothScroll } from '../hooks/useSmoothScroll';
 import { useScrollTriggerAutoRefresh } from '../hooks/useGsapReveal';
+import { usePointerEffects } from '../hooks/usePointerEffects';
 
 // Below-fold sections: lazy loaded for optimal Core Web Vitals (FCP / LCP)
 const Features = lazy(() => import('../components/Features'));
@@ -29,6 +31,8 @@ const LandingPage: React.FC = () => {
   // Las secciones diferidas y las imágenes cambian el alto de la página: los
   // disparos de las entradas se recalculan para no llegar tarde.
   useScrollTriggerAutoRefresh();
+  // Botones magnéticos y foco de luz en tarjetas (solo con mouse).
+  usePointerEffects();
 
   return (
     <>
@@ -46,27 +50,28 @@ const LandingPage: React.FC = () => {
             Orden de la historia: el hero cuenta emisión → medición; siguen cómo
             funciona, la verificación y la regeneración (proyectos y el bosque,
             que la cierra), y al final empresas y preguntas. */}
-        <DeferredSection id="como-funciona" heights={[2002, 932, 995]}>
+        <DeferredSection id="como-funciona" heights={[2202, 2551, 1708]}>
           <Features />
         </DeferredSection>
-        <DeferredSection id="verificar" heights={[1166, 996, 645]}>
+        <DeferredSection id="verificar" heights={[1045, 1090, 625]}>
           <CertificateSearch />
         </DeferredSection>
-        <DeferredSection id="proyectos" heights={[2179, 1721, 1177]}>
+        <DeferredSection id="proyectos" heights={[2123, 1666, 1780]}>
           <ProjectsBento />
         </DeferredSection>
-        <DeferredSection id="entorno-verde" heights={[1025, 940, 1042]}>
+        <DeferredSection id="entorno-verde" heights={[1022, 1024, 1042]}>
           <VirtualForestSection />
         </DeferredSection>
-        <DeferredSection id="empresas" heights={[1739, 1113, 772]}>
+        <DeferredSection id="empresas" heights={[1769, 1113, 772]}>
           <EnterpriseSuite />
         </DeferredSection>
-        <DeferredSection id="faq" heights={[1355, 1251, 1407]}>
+        <DeferredSection id="faq" heights={[1304, 1200, 1356]}>
           <FAQ />
         </DeferredSection>
       </main>
-      <DeferredSection heights={[1875, 1575, 1345]}>
-        <Footer />
+      <SectionRail />
+      <DeferredSection heights={[1915, 1615, 1385]}>
+        <Footer curtain />
       </DeferredSection>
     </>
   );

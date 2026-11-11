@@ -9,7 +9,9 @@
   font-family: var(--ctv-font-body);
   padding: clamp(3rem, 6vw, 4.5rem) 0;
   position: relative;
-  overflow: hidden;
+  /* clip y no hidden: hidden crea un contenedor de scroll y las cartillas
+     apiladas (position: sticky) dejarían de quedar fijas. */
+  overflow: clip;
 }
 
 .ft-container {
@@ -32,8 +34,11 @@
 
 /* ── Header ─────────────────────────────────────────── */
 .ft-header {
-  max-width: 760px;
+  max-width: 680px;
   margin: 0 0 clamp(2rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 /* En móvil el corte fijo entre las dos líneas deja renglones disparejos:
@@ -44,40 +49,6 @@
   .ft-title .hero-line + .hero-line::before { content: ' '; }
 }
 
-/* En escritorio el título y la bajada van lado a lado: el encabezado
-   ocupa la mitad del alto y las tarjetas entran en el primer vistazo. */
-@media (min-width: 1024px) {
-  .ft-header {
-    max-width: none;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    column-gap: clamp(2.5rem, 5vw, 5rem);
-    align-items: end;
-  }
-  .ft-header .ft-eyebrow { grid-column: 1 / -1; justify-self: start; }
-  .ft-header .ft-title { margin: 0; }
-  .ft-header .ft-lede { padding-bottom: 0.35rem; }
-}
-
-.ft-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ctv-space-3);
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ctv-ink-soft);
-  font-weight: 500;
-  margin: 0 0 1rem;
-}
-
-.ft-eyebrow__line {
-  width: 28px;
-  height: 1px;
-  background: var(--ctv-brand);
-  display: inline-block;
-}
-
 .ft-title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
@@ -85,19 +56,18 @@
   line-height: 1.08;
   letter-spacing: var(--ctv-display-tracking);
   color: var(--ctv-brand-deep);
-  margin: 0 0 1rem;
+  margin: 0;
 }
-
 
 .ft-lede {
   font-size: clamp(1rem, 1.25vw, 1.125rem);
   line-height: 1.55;
   color: var(--ctv-ink-soft);
-  max-width: 56ch;
+  max-width: 60ch;
   margin: 0;
 }
 
-/* ── Steps 01 / 02 / 03 — tarjetas modernas con ilustraciones grandes ─────────── */
+/* ── Bento Asimétrico de Pipeline Regen Tech ─────────── */
 .ft-steps {
   list-style: none;
   margin: 0;
@@ -107,18 +77,30 @@
   gap: var(--ctv-space-6);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .ft-steps {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .ft-step:nth-child(1) {
+    grid-column: span 5;
+  }
+  .ft-step:nth-child(2) {
+    grid-column: span 7;
+  }
+  .ft-step--featured {
+    grid-column: span 12;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: stretch;
   }
 }
 
 .ft-step {
   position: relative;
-  padding: 2.25rem 2rem 2.5rem;
+  padding: 2.25rem 2rem 2.25rem;
   border-radius: var(--ctv-radius-xl);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(7, 61, 61, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(7, 61, 61, 0.1);
   box-shadow: var(--ctv-shadow-card);
   transition: transform 0.35s var(--ctv-ease-out),
     box-shadow 0.35s var(--ctv-ease-out),
@@ -128,12 +110,20 @@
   flex-direction: column;
 }
 
+/* Diversidad de superficie en el Bento: la tarjeta de certificación final
+   utiliza un tinte mineral esmeralda suave con borde técnico acentuado */
+.ft-step--featured {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f7f2 100%);
+  border-color: rgba(8, 174, 6, 0.24);
+}
+
+/* Resplandor al pasar el mouse: sigue al cursor (--mx y --my los escribe
+   usePointerEffects). Sin esas variables queda abajo al centro, como antes. */
 .ft-step::after {
   content: '';
   position: absolute;
-  inset: auto -30% -55% -30%;
-  height: 70%;
-  background: radial-gradient(ellipse at center,
+  inset: 0;
+  background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 100%),
       rgba(8, 174, 6, 0.12) 0%,
       transparent 65%);
   opacity: 0;
@@ -142,36 +132,75 @@
 }
 
 .ft-step:hover {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   box-shadow: var(--ctv-shadow-card-hover), var(--ctv-glow-green-soft);
-  border-color: rgba(8, 174, 6, 0.3);
+  border-color: rgba(8, 174, 6, 0.32);
 }
 
 .ft-step:hover::after {
   opacity: 1;
 }
 
-/* Figura del paso: a sangre en la parte superior de la tarjeta. */
+/* Figura del paso: a sangre en la parte superior de la tarjeta (o lateral en featured). */
 .ft-step__art {
   margin: -2.25rem -2rem 1.5rem;
   border-bottom: 1px solid rgba(7, 61, 61, 0.08);
   overflow: hidden;
 }
 
-.ft-step__num {
-  font-family: var(--ctv-font-display);
-  font-style: italic;
-  font-size: 1.75rem;
-  color: var(--ctv-brand);
-  letter-spacing: 0.02em;
-  display: block;
-  margin: 0 0 0.75rem;
+@media (min-width: 900px) {
+  .ft-step--featured .ft-step__art {
+    margin: -2.25rem 0 -2.25rem -2rem;
+    border-bottom: none;
+    border-right: 1px solid rgba(7, 61, 61, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .ft-step--featured .ft-step__content {
+    padding-left: 2.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.ft-step__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.ft-step__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.ft-step__protocol {
+  font-family: var(--ctv-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ctv-accent-contrast);
+  background: rgba(8, 174, 6, 0.1);
+  border: 1px solid rgba(8, 174, 6, 0.22);
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.ft-step__spec {
+  font-family: var(--ctv-font-mono);
+  font-size: 0.7rem;
+  color: var(--ctv-ink-mute);
 }
 
 .ft-step__title {
   font-family: var(--ctv-font-display);
   font-weight: var(--ctv-display-weight);
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   color: var(--ctv-brand-deep);
   line-height: 1.18;
   margin: 0 0 0.65rem;
@@ -183,7 +212,109 @@
   line-height: 1.55;
   color: var(--ctv-ink-soft);
   margin: 0;
-  max-width: 34ch;
+  max-width: 48ch;
+}
+
+/* Número del paso */
+.ft-step__index {
+  font-family: var(--ctv-font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--ctv-brand-deep);
+  margin-bottom: 0.85rem;
+}
+
+.ft-step__index span {
+  color: var(--ctv-ink-mute);
+  font-weight: 400;
+}
+
+/* ── Cartillas apiladas ──────────────────────────────────
+   Cada paso es una tarjeta horizontal que queda fija bajo el header; la
+   siguiente sube y la cubre, dejando ver el borde superior de las anteriores.
+   La misma condición está en STACK_QUERY (Features.tsx), que agrega la
+   profundidad: escala y velo. */
+@media (min-width: 900px) and (min-height: 640px) and (prefers-reduced-motion: no-preference) {
+  .ft-steps {
+    /* Flex y no grid: una celda de grilla encierra al elemento sticky y no lo
+       deja quedar fijo más allá de su propia fila. */
+    display: flex;
+    flex-direction: column;
+    gap: var(--ctv-space-8);
+  }
+
+  .ft-steps > .ft-step {
+    position: sticky;
+    /* Bajo el header (68 px), escalonadas 16 px. */
+    top: calc(96px + var(--ft-i, 0) * 16px);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: stretch;
+    /* Opaca: tapa a la que queda debajo. */
+    background: #ffffff;
+    transform-origin: 50% 0;
+    /* La escala la mueve el scroll: sin transición ni elevación al pasar el mouse. */
+    transition: box-shadow 0.35s var(--ctv-ease-out), border-color 0.35s var(--ctv-ease-out);
+    will-change: transform;
+  }
+
+  .ft-steps > .ft-step--featured {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f7f2 100%);
+  }
+
+  .ft-steps > .ft-step:hover {
+    transform: none;
+  }
+
+  /* Velo sobre las tarjetas cubiertas (--stack-dim va de 0 a 1). */
+  .ft-steps > .ft-step::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--ctv-teal-900);
+    opacity: calc(var(--stack-dim, 0) * 0.14);
+    pointer-events: none;
+  }
+
+  .ft-steps > .ft-step .ft-step__art {
+    margin: -2.25rem 0 -2.25rem -2rem;
+    border-bottom: none;
+    border-right: 1px solid rgba(7, 61, 61, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* El mismo fondo de la figura, para que la columna no deje franjas blancas. */
+    background: #F3F7F5;
+  }
+
+  .ft-steps > .ft-step .ft-step__content {
+    padding-left: 2.25rem;
+    justify-content: center;
+  }
+
+  /* El paso del medio lleva la figura a la derecha: la pila alterna de lado. */
+  .ft-steps > .ft-step:nth-child(even) {
+    grid-template-columns: 1fr 1.1fr;
+  }
+
+  .ft-steps > .ft-step:nth-child(even) .ft-step__art {
+    order: 2;
+    margin: -2.25rem -2rem -2.25rem 0;
+    border-right: none;
+    border-left: 1px solid rgba(7, 61, 61, 0.1);
+  }
+
+  .ft-steps > .ft-step:nth-child(even) .ft-step__content {
+    padding-left: 0;
+    padding-right: 2.25rem;
+  }
+
+  .ft-steps > .ft-step .ft-step__title {
+    font-size: 1.75rem;
+  }
 }
 
 /* Reset clases antiguas que ya no se usan en el JSX */

@@ -1,0 +1,44 @@
+/* ==========================================================================
+   pointerEffects.css — efectos que siguen al cursor (ver usePointerEffects).
+   ========================================================================== */
+
+/* Botón magnético: mientras lo mueve el cursor, su `transform` no lleva
+   transición CSS (si no, persigue al cursor con retraso). La clase va doblada
+   para ganarle a los `transition: all` de cada botón sin usar !important. */
+.is-magnetic.is-magnetic {
+  transition-property: background-color, border-color, color, box-shadow;
+  will-change: transform;
+}
+
+/* Foco de luz: un resplandor verde que sigue al cursor dentro de la tarjeta.
+   --mx y --my los escribe usePointerEffects. Sin cursor (táctil, movimiento
+   reducido) nunca aparece: solo se muestra al pasar el mouse.
+   Estas reglas son para data-spotlight="card". Una tarjeta que ya dibuja su
+   propio resplandor (los pasos de "Cómo funciona") pone el atributo sin valor
+   y usa --mx y --my en su CSS. */
+[data-spotlight='card'] {
+  position: relative;
+}
+
+[data-spotlight='card']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(62, 211, 43, 0.13) 0%,
+    rgba(8, 174, 6, 0.05) 35%,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-spotlight='card']:hover::after {
+    opacity: 1;
+  }
+}
