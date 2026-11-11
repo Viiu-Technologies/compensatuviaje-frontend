@@ -67,6 +67,7 @@ export const EnterpriseSuite: React.FC = () => {
               <Link
                 to="/contacto?asunto=b2b#contacto"
                 className="es-btn es-btn--primary"
+                data-magnetic
               >
                 <span>Agendar reunión</span>
                 <HiArrowRight aria-hidden="true" />

@@ -53,19 +53,19 @@ const LandingPage: React.FC = () => {
         <DeferredSection id="como-funciona" heights={[2202, 2551, 1708]}>
           <Features />
         </DeferredSection>
-        <DeferredSection id="verificar" heights={[1099, 1171, 705]}>
+        <DeferredSection id="verificar" heights={[1045, 1090, 625]}>
           <CertificateSearch />
         </DeferredSection>
-        <DeferredSection id="proyectos" heights={[2179, 1721, 1780]}>
+        <DeferredSection id="proyectos" heights={[2123, 1666, 1780]}>
           <ProjectsBento />
         </DeferredSection>
-        <DeferredSection id="entorno-verde" heights={[1025, 940, 1042]}>
+        <DeferredSection id="entorno-verde" heights={[1022, 1024, 1042]}>
           <VirtualForestSection />
         </DeferredSection>
-        <DeferredSection id="empresas" heights={[1999, 1295, 972]}>
+        <DeferredSection id="empresas" heights={[1769, 1113, 772]}>
           <EnterpriseSuite />
         </DeferredSection>
-        <DeferredSection id="faq" heights={[1355, 1251, 1407]}>
+        <DeferredSection id="faq" heights={[1304, 1200, 1356]}>
           <FAQ />
         </DeferredSection>
       </main>
