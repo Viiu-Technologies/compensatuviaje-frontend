@@ -12,7 +12,18 @@ interface ForestCanvasProps {
   isVisible: boolean;
   timeOfDay: TimeOfDay;
   species: TreeSpecies;
+  /**
+   * Cuánto creció el bosque, de 0 (brotes) a 1 (adulto). Lo escribe el scroll
+   * de la sección; se lee en cada cuadro, sin volver a renderizar. Sin él, el
+   * bosque se muestra adulto.
+   */
+  growth?: React.RefObject<number>;
 }
+
+/** Tamaño de un brote respecto del árbol adulto. */
+const SPROUT = 0.06;
+/** Los árboles no crecen a la vez: cada uno espera su turno (0 a 0,45 del avance). */
+const GROW_SPAN = 0.55;
 
 // Configuración de iluminación y niebla según momento del día
 const ATMOSPHERE = {
@@ -55,14 +66,22 @@ function NativeTree({
   presetName = 'Oak Medium',
   leafType = 'oak',
   castShadow = true,
+  growth,
+  growDelay = 0,
 }: {
   position: [number, number, number];
   scale?: number;
   presetName?: string;
   leafType?: string;
   castShadow?: boolean;
+  growth?: React.RefObject<number>;
+  /** En qué punto del avance empieza a crecer este árbol. */
+  growDelay?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
+  // Tamaño actual (0 a 1 del adulto): persigue al objetivo para que crezca
+  // suave aunque el scroll avance a saltos.
+  const grown = useRef<number | null>(null);
 
   const [leafTexture, barkColor, barkNormal, barkRoughness] = useLoader(THREE.TextureLoader, [
     `/textures/tree/leaves/${leafType}.${LEAF_WEBP.has(leafType) ? 'webp' : 'png'}`,
@@ -97,16 +116,27 @@ function NativeTree({
   }, [presetName, leafType, leafTexture, barkColor, barkNormal, barkRoughness, castShadow]);
 
   // Animación del viento en las hojas provista por el método nativo de EZTree
-  useFrame((state) => {
+  const treeScale = scale * 0.08;
+
+  useFrame((state, delta) => {
     if (treeObject) {
       treeObject.update(state.clock.elapsedTime);
     }
+    // Crecimiento: del brote al adulto según el avance del scroll.
+    const group = groupRef.current;
+    if (!group) return;
+    const local = THREE.MathUtils.clamp(((growth?.current ?? 1) - growDelay) / GROW_SPAN, 0, 1);
+    const target = SPROUT + (1 - SPROUT) * THREE.MathUtils.smoothstep(local, 0, 1);
+    // El primer cuadro arranca ya en su tamaño: no "infla" al montarse.
+    grown.current = grown.current === null ? target : THREE.MathUtils.damp(grown.current, target, 5, delta);
+    group.scale.setScalar(treeScale * grown.current);
   });
 
-  const treeScale = scale * 0.08;
+  // La escala la pone useFrame; aquí solo el tamaño inicial, antes del primer cuadro.
+  const initialScale = treeScale * (growth ? SPROUT : 1);
 
   return (
-    <group ref={groupRef} position={position} scale={[treeScale, treeScale, treeScale]}>
+    <group ref={groupRef} position={position} scale={initialScale}>
       <primitive object={treeObject} />
     </group>
   );
@@ -164,6 +194,7 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
   isVisible,
   timeOfDay,
   species,
+  growth,
 }) => {
   const atmo = ATMOSPHERE[timeOfDay];
 
@@ -230,6 +261,7 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
             presetName={heroPreset}
             leafType={heroLeaf}
             castShadow={true}
+            growth={growth}
           />
 
           {/* Árboles Acompañantes en el Bosque */}
@@ -241,6 +273,9 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
               presetName={t.preset}
               leafType={t.leaf}
               castShadow={false}
+              growth={growth}
+              // El protagonista primero; los demás, uno tras otro.
+              growDelay={0.12 + idx * 0.08}
             />
           ))}
 
