@@ -168,7 +168,7 @@ const OrdersView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNaviga
                           {order.status === 'pending' && (
                             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
                               <p className="m-0 text-sm font-semibold text-amber-900">Transfiere para completar la compra</p>
-                              {bankDetails ? (
+                              {bankDetails && bankDetails.configured !== false && bankDetails.bankName?.trim() && bankDetails.accountNumber?.trim() && bankDetails.rut?.trim() ? (
                                 <>
                                   <dl className="m-0 mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2 text-sm">
                                     {[
@@ -197,7 +197,7 @@ const OrdersView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNaviga
                                   </div>
                                 </>
                               ) : (
-                                <p className="m-0 mt-1 text-sm text-amber-800">No pudimos cargar los datos bancarios. Actualiza la página o escríbenos.</p>
+                                <p className="m-0 mt-1 text-sm text-amber-800">Nuestro equipo te enviará los datos de transferencia definitivos junto con la confirmación de tu orden ({reference}).</p>
                               )}
                             </div>
                           )}

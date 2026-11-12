@@ -11,6 +11,7 @@ import api from '../../../shared/services/api';
 import {
   getCompanyDetail,
   updateCompanyStatus,
+  updateCompanyCreditTerms,
   getCompanyTimeline,
 } from '../services/adminApi';
 import {
@@ -66,6 +67,7 @@ interface CompanyDetail {
   slugPublico?: string;
   publicProfileOptIn?: boolean;
   preferredCalculationMethod?: string;
+  creditTerms?: boolean;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -119,6 +121,7 @@ export default function EmpresaDetailPage() {
   const [newStatus, setNewStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
   const [changingStatus, setChangingStatus] = useState(false);
+  const [togglingCredit, setTogglingCredit] = useState(false);
 
   useEffect(() => {
     if (id) loadData();
@@ -162,6 +165,22 @@ export default function EmpresaDetailPage() {
       toast.error(msg);
     } finally {
       setChangingStatus(false);
+    }
+  };
+
+  const handleToggleCreditTerms = async () => {
+    if (!company || !id) return;
+    const nextValue = !company.creditTerms;
+    setTogglingCredit(true);
+    try {
+      await updateCompanyCreditTerms(id, nextValue);
+      toast.success(nextValue ? 'Crédito a 30 días habilitado' : 'Modalidad cambiada a pago contado');
+      await loadData();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'No se pudieron actualizar las condiciones comerciales.';
+      toast.error(msg);
+    } finally {
+      setTogglingCredit(false);
     }
   };
 
@@ -325,6 +344,37 @@ export default function EmpresaDetailPage() {
               ) : (
                 <p className="adm-cell-mute">No hay transiciones disponibles desde este estado.</p>
               )}
+            </Panel>
+
+            <Panel
+              title="Condiciones comerciales"
+              aside={
+                <StatusBadge tone={company.creditTerms ? 'warning' : 'info'}>
+                  {company.creditTerms ? 'Crédito 30 días' : 'Contado'}
+                </StatusBadge>
+              }
+            >
+              <div className="adm-stack-v">
+                <p className="adm-field__hint" style={{ margin: 0 }}>
+                  {company.creditTerms
+                    ? 'Requiere e-RUT, escritura de constitución y cédula del representante legal para activar la cuenta.'
+                    : 'Modalidad estándar al contado: requiere únicamente e-RUT de la empresa para activar.'}
+                </p>
+                <div className="adm-actions-row">
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn--sm"
+                    onClick={handleToggleCreditTerms}
+                    disabled={togglingCredit}
+                  >
+                    {togglingCredit
+                      ? 'Actualizando…'
+                      : company.creditTerms
+                        ? 'Cambiar a contado'
+                        : 'Habilitar crédito 30 días'}
+                  </button>
+                </div>
+              </div>
             </Panel>
 
             <Panel title="Documentación">
