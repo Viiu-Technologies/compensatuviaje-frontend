@@ -34,3 +34,5 @@ skills/
 package-lock.json
 yarn.lock
 /perf-audit
+# Videos de marketing (Remotion): se trabajan fuera del repo
+video/
