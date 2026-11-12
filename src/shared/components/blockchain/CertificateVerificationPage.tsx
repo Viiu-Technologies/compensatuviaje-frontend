@@ -327,6 +327,10 @@ const CertificateVerificationPage: React.FC = () => {
       <footer className="border-t border-slate-800 mt-12">
         <div className="max-w-5xl mx-auto px-4 py-8">
           <div className="flex items-center justify-center gap-6 text-sm text-slate-400">
+            <Link to="/metodologia" className="hover:text-white transition-colors">
+              Metodología de cálculo (DEFRA 2025)
+            </Link>
+            <span>•</span>
             <span>Verificado en Polygon</span>
             <span>•</span>
             <a 

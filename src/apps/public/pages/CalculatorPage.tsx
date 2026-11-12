@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { HiArrowDown, HiArrowLeft, HiInformationCircle } from 'react-icons/hi';
+import { HiArrowLeft, HiInformationCircle } from 'react-icons/hi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import QuickFlightCalculator, { type CabinCode } from '../components/QuickFlightCalculator';
@@ -89,9 +89,9 @@ const CalculatorPage: React.FC = () => {
                 </li>
               </ul>
 
-              <a href="#metodologia" className="calcp-method-link">
-                Ver metodología y fuentes <HiArrowDown aria-hidden="true" />
-              </a>
+              <Link to="/metodologia" className="calcp-method-link">
+                Ver metodología y tabla oficial DEFRA 2025 →
+              </Link>
             </div>
 
             <div className="calcp-calculator">
@@ -139,6 +139,11 @@ const CalculatorPage: React.FC = () => {
                   <p>Directrices globales para contabilidad de emisiones en viajes de negocios.</p>
                   <span className="calcp-source-link">Ver marco metodológico →</span>
                 </a>
+              </div>
+              <div style={{ marginTop: '1.25rem' }}>
+                <Link to="/metodologia" className="calcp-method-link">
+                  Ver fórmula, tramos, tabla completa (con/sin RF) y descargar ficha PDF →
+                </Link>
               </div>
             </div>
           </div>
