@@ -301,11 +301,11 @@ export const B2CDashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Barra integrada de Balance Net-Zero */}
+              {/* Barra integrada de Balance de contribución */}
               <div className="rounded-xl bg-gray-50 border border-gray-200/80 p-3.5">
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="font-semibold text-gray-700">
-                    Progreso de neutralización del período
+                    Progreso de tu contribución del período
                   </span>
                   <span className="font-mono font-semibold text-gray-700 tabular-nums">
                     {fmtNum(stats.totalCompensatedTons)} / {fmtNum(stats.totalEmissionsTons)} tCO₂e
@@ -317,7 +317,7 @@ export const B2CDashboard: React.FC = () => {
                   aria-valuenow={Math.round(clampedCompRate)}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label="Progreso de neutralización del período"
+                  aria-label="Progreso de tu contribución del período"
                 >
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-brand-700 to-brand-500 transition-all duration-500"
@@ -340,7 +340,7 @@ export const B2CDashboard: React.FC = () => {
                     ) : stats.totalFlights > 0 ? (
                       <>
                         <FaCheckCircle className="text-brand-700" aria-hidden="true" />
-                        <span>Huella del período neutralizada</span>
+                        <span>Contribuiste por toda la huella del período</span>
                       </>
                     ) : (
                       <>

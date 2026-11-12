@@ -422,7 +422,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
           </button>
 
           <p className="qfc-compact-note">
-            Certificado verificable en Polygon · factor {emissions?.methodology ?? 'DEFRA'}
+            Certificado verificable por número · factor {emissions?.methodology ?? 'DEFRA'}
           </p>
         </>
       ) : (
@@ -450,6 +450,11 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
             {roundTrip ? 'Ida y vuelta' : 'Trayecto de ida'}
             {emissions?.methodology ? ` · ${emissions.methodology}` : ''}
           </p>
+          {emissions?.withoutRf && (
+            <p className="qfc-metric-sub">
+              Incluye el efecto de volar en altura (forzamiento radiativo). Sin él: {emissions.withoutRf.kgCO2e.toLocaleString('es-CL')} kg CO₂e.
+            </p>
+          )}
         </div>
 
         {/* Columna 2: Equivalencia Positiva */}
@@ -463,7 +468,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
               <span className="qfc-eco-detail">
                 {trees !== undefined ? (
                   <>
-                    Equivale a <strong>~{trees.toLocaleString('es-CL')} {trees === 1 ? 'árbol' : 'árboles'}</strong>
+                    Lo que absorben <strong>~{trees.toLocaleString('es-CL')} {trees === 1 ? 'árbol urbano' : 'árboles urbanos'}</strong> en un año (US EPA)
                   </>
                 ) : (
                   'Calcula tu vuelo para ver su equivalencia'

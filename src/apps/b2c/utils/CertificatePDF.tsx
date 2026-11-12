@@ -14,7 +14,6 @@ export interface CertificatePDFData {
   projectName: string;
   treesEquiv: number;
   carKmAvoided: number;
-  waterLiters: number;
   nftTxHash?: string | null;
   unitsFinanced?: number | null;
   impactUnit?: string | null;
@@ -44,7 +43,6 @@ export const downloadCertificatePDF = async (data: CertificatePDFData) => {
         co2kg: data.co2Kg,
         co2tons: data.co2Tons,
         equivTrees: data.treesEquiv,
-        equivWater: data.waterLiters,
         equivCar: data.carKmAvoided,
         projectName: data.projectName,
         offsetDate: offsetDateFormatted,

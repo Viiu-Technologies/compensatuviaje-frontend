@@ -44,12 +44,38 @@ export interface UploadBatchResult {
   rowsTotal: number;
   rowsProcessed: number;
   rowsFailed: number;
+  /** Vuelos sin fecha en la planilla: se registraron con la fecha de carga. */
+  rowsWithoutDate?: number;
   totalTonsCO2e: number;
   monthlySummaries: MonthlySummary[];
   errors: string[];
 }
 
 // ─── API Functions ────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/b2b/reports/emissions?desde=&hasta=
+ * Informe Excel con una fila por vuelo (con y sin forzamiento radiativo),
+ * resumen por mes y metodología. Fechas opcionales en formato AAAA-MM-DD.
+ */
+export const downloadEmissionsReport = async (desde?: string, hasta?: string): Promise<Blob> => {
+  try {
+    const blob = (await api.get('/b2b/reports/emissions', {
+      params: { ...(desde && { desde }), ...(hasta && { hasta }) },
+      responseType: 'blob',
+    })) as unknown as Blob;
+    if (!(blob instanceof Blob)) throw new Error('Respuesta inesperada del servidor.');
+    return blob;
+  } catch (err: any) {
+    // Con responseType 'blob', el mensaje de error del servidor también llega como Blob.
+    const data = err?.response?.data;
+    if (data instanceof Blob) {
+      const message = await data.text().then((t) => JSON.parse(t)?.message).catch(() => null);
+      if (message) throw new Error(message);
+    }
+    throw err;
+  }
+};
 
 /**
  * POST /api/b2b/upload-batch

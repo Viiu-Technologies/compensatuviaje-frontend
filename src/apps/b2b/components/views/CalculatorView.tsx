@@ -89,6 +89,11 @@ const CalculatorView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNa
             <div className="rounded-xl border border-gray-200 p-4">
               <dt className="text-sm text-gray-500">CO₂ emitido</dt>
               <dd className="m-0 mt-1 text-3xl font-bold text-gray-900 tabular-nums">{fmtKgAuto(result.emissions.kgCO2e)}</dd>
+              {result.emissions.withoutRf && (
+                <p className="m-0 mt-1 text-xs text-gray-500">
+                  Incluye forzamiento radiativo. Sin él (línea base GHG Protocol): {fmtKgAuto(result.emissions.withoutRf.kgCO2e)}
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-gray-200 p-4">
               <dt className="text-sm text-gray-500">Distancia</dt>
@@ -106,7 +111,7 @@ const CalculatorView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNa
           {result.equivalencies?.trees > 0 && (
             <p className="m-0 mt-4 flex items-center gap-2 text-sm text-gray-600">
               <Leaf className="w-4 h-4 text-brand-700" aria-hidden="true" />
-              Equivale a lo que capturan unos {fmtInt(result.equivalencies.trees)} árboles en un año.
+              Equivale a lo que capturan unos {fmtInt(result.equivalencies.trees)} árboles urbanos en un año (US EPA).
             </p>
           )}
 
