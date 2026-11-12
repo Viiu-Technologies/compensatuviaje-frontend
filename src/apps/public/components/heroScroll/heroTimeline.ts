@@ -3,8 +3,8 @@ import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import { gsap, ScrollTrigger } from '../../hooks/useGsapReveal';
 import { registerSectionScroller, scrollToY, setScrollFeel } from '../../hooks/smoothScroll';
 import { setHeaderTheme } from '../../hooks/useHeaderTheme';
-import { computeGeometry, fractionAtTop, fractionAtX, type Rect } from './heroGeometry';
-import { HEADER_HEIGHT, HERO_SCRIPT, MOUNTAIN_SPREAD, SCRUB, type Span } from './heroScrollConfig';
+import { computeGeometry, fractionAtTop, fractionAtX, lerpPoint, pathFrom, type Rect } from './heroGeometry';
+import { FLIGHT_EASE, HEADER_HEIGHT, HERO_COLORS, HERO_SCRIPT, MOUNTAIN_SPREAD, SCRUB, type Span } from './heroScrollConfig';
 
 gsap.registerPlugin(MotionPathPlugin, DrawSVGPlugin);
 
@@ -13,6 +13,19 @@ gsap.registerPlugin(MotionPathPlugin, DrawSVGPlugin);
  * todo tween, ScrollTrigger y gsap.set creado aquí se revierte solo al
  * desmontar o al cambiar de breakpoint. Lo que no es de GSAP (clases, eventos,
  * registros) se deshace en la función que devuelve.
+ *
+ * La historia es un solo vuelo y una sola línea:
+ *
+ *   1 · El avión espera en el origen.
+ *   2 · Despega y sube; la ruta se dibuja detrás de él, con una estela corta.
+ *       Atraviesa el wordmark, la bruma se abre a su paso y el wordmark sube.
+ *   3 · Baja hacia el destino mientras el número cuenta la huella acumulada.
+ *   4 · Llega. Cae la noche, la ruta se enciende y se acomoda bajo el titular,
+ *       y la calculadora se abre desde el punto de destino.
+ *
+ * Antes eran tres caminos distintos (una estela desde arriba, un arco que
+ * nacía en el origen cuando el avión ya estaba en el centro, y otro arco para
+ * la calculadora): el avión quedaba detenido mientras se cambiaba de uno a otro.
  */
 
 const at = (span: Span) => span[0];
@@ -42,6 +55,8 @@ const q = <T extends Element = HTMLElement>(root: Element, selector: string) => 
   return el;
 };
 
+const all = <T extends Element = HTMLElement>(root: Element, selector: string) => [...root.querySelectorAll<T>(selector)];
+
 const setPathD = (root: Element, selector: string, d: string | null) => {
   root.querySelectorAll(selector).forEach((el) => el.setAttribute('d', d ?? ''));
 };
@@ -51,6 +66,15 @@ type MotionOptions = {
   /** Avance del contador (0-1); el componente lo pinta con el dato real. */
   onCount: (progress: number) => void;
 };
+
+/** El avión se detiene justo antes del punto de destino; el resto es el aterrizaje. */
+const PLANE_END = 0.94;
+/** Largo de la estela que sigue al avión, en fracción de la ruta. */
+const TAIL = 0.14;
+/** La ruta punteada se dibuja un poco detrás del avión: primero estela, después ruta. */
+const ROUTE_LAG = 0.02;
+/** Tamaño desde el que se abre la calculadora, respecto del final. */
+const CARD_FROM = 0.3;
 
 export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOptions) {
   const script = HERO_SCRIPT[mobile ? 'mobile' : 'desktop'];
@@ -65,44 +89,56 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
   const planeBody = q<SVGGElement>(root, '.hs-plane__body');
   const wordmark = q(root, '.hs-wm');
   const title = q(root, '.hs-wm__title');
+  const dotFrom = q<SVGGElement>(root, '.hs-dot--from');
+  const dotTo = q<SVGGElement>(root, '.hs-dot--to');
+  // La ruta: el punteado, su máscara (lo que se "dibuja") y el halo.
+  const routeDrawn = all<SVGPathElement>(root, '.hs-arc-mask, .hs-arc-halo');
+  const routePaths = all<SVGPathElement>(root, '.hs-arc, .hs-arc-mask, .hs-arc-halo');
 
   // ── Geometría con el layout final (con hs--motion ya aplicado) ──
   const stageBox = stage.getBoundingClientRect();
   const size = { w: stageBox.width, h: stageBox.height };
   const titleRect = relRect(title, stageBox);
-  const cardRect = mobile ? null : relRect(q(root, '.hs-card'), stageBox);
+  const card = mobile ? null : q(root, '.hs-card');
+  const cardRect = card ? relRect(card, stageBox) : null;
   const copyRect = mobile ? null : relRect(q(root, '.hs-land__copy'), stageBox);
   const geo = computeGeometry(size, titleRect, cardRect, mobile, copyRect);
 
   flight.setAttribute('viewBox', `0 0 ${size.w} ${size.h}`);
-  setPathD(root, '.hs-trail', geo.crossing);
-  setPathD(root, '.hs-arc, .hs-arc-halo, .hs-arc-mask', geo.arc);
-  setPathD(root, '.hs-land-arc, .hs-land-mask', geo.landing);
+  setPathD(root, '.hs-trail, .hs-arc, .hs-arc-halo, .hs-arc-mask', geo.arc);
   const apexAt = fractionAtTop(arc);
-  const apexPct = `${(apexAt * 100).toFixed(2)}%`;
-  const PLANE_END = 0.94; // el avión se detiene justo antes del punto de LIM
+
+  // En qué momento del guion pasa el avión por la fracción `f` de la ruta.
+  const flightEase = gsap.parseEase(FLIGHT_EASE);
+  const timeAt = (f: number) =>
+    at(script.flight) + len(script.flight) * invertEase(flightEase, Math.min(1, f / PLANE_END));
+  const tApex = timeAt(apexAt);
 
   const k = mobile ? 0.6 : 1; // escala del avión según la pantalla
 
-  // ── Estado inicial (escena 1) ──
-  gsap.set([trail, '.hs-arc-mask', '.hs-arc-halo', '.hs-land-mask'], { drawSVG: '0% 0%' });
-  gsap.set('.hs-dot--from', { x: geo.from.x, y: geo.from.y, scale: 0, transformOrigin: '50% 50%' });
-  gsap.set('.hs-dot--to', { x: geo.to.x, y: geo.to.y, scale: 0, transformOrigin: '50% 50%' });
-  // SCL alineada a la izquierda de su punto y LIM a la derecha: así nunca se
-  // salen de la pantalla, aunque los puntos estén cerca del borde.
+  // ── Estado inicial: el avión, chico, sobre el punto de origen ──
+  gsap.set([...routeDrawn, trail], { drawSVG: '0% 0%' });
+  gsap.set(dotFrom, { x: geo.from.x, y: geo.from.y, scale: 0, transformOrigin: '50% 50%' });
+  gsap.set(dotTo, { x: geo.to.x, y: geo.to.y, scale: 0, transformOrigin: '50% 50%' });
+  // El origen alineado a la izquierda de su punto y el destino a la derecha: así
+  // nunca se salen de la pantalla, aunque los puntos estén cerca del borde.
   const EDGE = 12;
   gsap.set('.hs-label--from', { x: Math.max(EDGE, geo.from.x - 14), y: geo.from.y + 16, autoAlpha: 0 });
   gsap.set('.hs-label--to', { x: Math.min(size.w - EDGE, geo.to.x + 14), y: geo.to.y + 16, xPercent: -100, autoAlpha: 0 });
   gsap.set('.hs-readout', { autoAlpha: 0 });
+  // El arco de aterrizaje aparte ya no se usa con animación: es la misma ruta.
   gsap.set('.hs-land-dot', { autoAlpha: 0 });
-  if (geo.landingFrom) gsap.set('.hs-land-dot', { attr: { cx: geo.landingFrom.x, cy: geo.landingFrom.y } });
+  // El camino va como texto y no como elemento: la ruta cambia de forma al
+  // final y el avión no debe seguir ese cambio.
   gsap.set(plane, {
     transformOrigin: '50% 50%',
-    motionPath: { path: trail, autoRotate: true, start: 0, end: 0 },
+    motionPath: { path: geo.arc, autoRotate: true, start: 0, end: 0 },
   });
-  gsap.set(planeBody, { transformOrigin: '50% 50%', scale: 0.35 * k, opacity: 0.45 });
+  gsap.set(planeBody, { transformOrigin: '50% 50%', scale: 0.32 * k, opacity: 0.55 });
 
   const pinDistance = () => (window.innerHeight * script.pinVh) / 100;
+  // La calculadora recibe clics cuando ya terminó de abrirse.
+  const landedAt = script.lineSettle ? at(script.lineSettle) + len(script.lineSettle) * 0.7 : 2;
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -115,10 +151,7 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
       anticipatePin: 1,
       // Dentro del pin la rueda va más lenta: bajar rápido no se salta la animación.
       onToggle: (self) => setScrollFeel(self.isActive ? 'slow' : 'normal'),
-      onUpdate: (self) => {
-        // La escena 4 (escritorio) recibe clics recién cuando la card ya llegó.
-        if (script.cardIn) root.classList.toggle('hs--landed', self.progress >= script.cardIn[0]);
-      },
+      onUpdate: (self) => root.classList.toggle('hs--landed', self.progress >= landedAt),
     },
   });
   // La línea de tiempo dura exactamente 1: los tramos del guion son fracciones del pin.
@@ -135,38 +168,43 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
     tl.to(layer.querySelector('.hs-mtn__half--r'), { x: spread, ...halves }, at(script.mountainsOpen));
   });
 
-  // ── Escena 1: el avión asoma arriba a la izquierda ──
-  tl.to(planeBody, { scale: 0.55 * k, opacity: 0.9, duration: len(script.approach) }, at(script.approach));
+  // ── 1 · El origen ──
+  tl.to(dotFrom, { scale: 1, duration: 0.03, ease: 'back.out(2)' }, at(script.originIn));
+  tl.to('.hs-label--from', { autoAlpha: 1, duration: len(script.originIn) }, at(script.originIn));
+  tl.to(planeBody, { opacity: 1, duration: len(script.originIn) }, at(script.originIn));
 
-  // ── Escena 2: cruza el wordmark dejando la estela ──
-  const crossEase = 'power1.in';
-  tl.to(
-    plane,
-    { motionPath: { path: trail, autoRotate: true }, ease: crossEase, duration: len(script.crossing) },
-    at(script.crossing),
-  );
-  tl.to(trail, { drawSVG: '0% 100%', ease: crossEase, duration: len(script.crossing) }, at(script.crossing));
-  tl.to(
-    planeBody,
-    { scale: 0.85 * k, opacity: 1, duration: script.crossing[1] - script.approach[1] },
-    script.approach[1],
-  );
+  // ── 2 y 3 · El vuelo: un solo movimiento de origen a destino ──
+  const whole = { ease: FLIGHT_EASE, duration: len(script.flight) };
+  tl.to(plane, { motionPath: { path: geo.arc, autoRotate: true, start: 0, end: PLANE_END }, ...whole }, at(script.flight));
+  // La estela: un tramo corto y difuminado que va pegado al avión.
+  tl.to(trail, { drawSVG: `${(PLANE_END - TAIL) * 100}% ${PLANE_END * 100}%`, ...whole }, at(script.flight));
+  // La ruta se dibuja apenas detrás: lo que fue estela queda como ruta.
+  tl.to(routeDrawn, { drawSVG: `0% ${PLANE_END * 100}%`, ...whole }, at(script.flight) + ROUTE_LAG);
+  // Se acerca al subir y se aleja al bajar: el punto más cercano es la cima.
+  tl.to(planeBody, { scale: 0.9 * k, ease: 'sine.inOut', duration: tApex - at(script.flight) }, at(script.flight));
+  tl.to(planeBody, { scale: 0.62 * k, ease: 'sine.inOut', duration: script.flight[1] - tApex }, tApex);
+
   tl.to(['.hs-eyebrow', '.hs-sub'], { autoAlpha: 0, y: -12, duration: len(script.introOut) }, at(script.introOut));
 
-  // La bruma se abre detrás del avión: cada elipse cuando el avión pasa por su x.
+  // La bruma se abre al paso del avión: cada elipse cuando él cruza su x, y
+  // solo las que tiene delante (las que están más a la izquierda de donde entra
+  // a la bruma se van después, con el wordmark).
   const mistBox = relRect(q(root, '.hs-mist'), stageBox);
-  const easeFn = gsap.parseEase(crossEase);
-  const ellipses = [...root.querySelectorAll<SVGEllipseElement>('.hs-mist__e')].filter(
+  const arcLength = arc.getTotalLength();
+  const ellipses = all<SVGEllipseElement>(root, '.hs-mist__e').filter(
     (el) => !(mobile && el.classList.contains('hs-mist__e--desktop')),
   );
   ellipses.forEach((el, i) => {
     const x = mistBox.x + (Number(el.dataset.cx) / 1000) * mistBox.w;
     if (x > size.w * 0.5) return; // a la derecha del centro: se van al subir el wordmark
-    const t = at(script.crossing) + len(script.crossing) * invertEase(easeFn, fractionAtX(trail, x));
-    tl.to(el, { y: i % 2 ? 80 : -80, opacity: 0.1, duration: 0.09, ease: 'power1.out' }, t);
+    const fraction = fractionAtX(arc, x);
+    const y = arc.getPointAtLength(arcLength * fraction).y;
+    if (y < mistBox.y || y > mistBox.y + mistBox.h) return; // ahí el avión todavía vuela por debajo
+    tl.to(el, { y: i % 2 ? 80 : -80, opacity: 0.1, duration: 0.09, ease: 'power1.out' }, timeAt(fraction));
   });
 
-  // ── Escena 3: el wordmark sube, la estela se vuelve ruta ──
+  // El wordmark sube cuando el avión ya está dentro de él, llegando a la cima.
+  const wordmarkAt = timeAt(apexAt * 0.85);
   const fontSize = parseFloat(getComputedStyle(title).fontSize);
   const targetSize = mobile ? 30 : 44;
   const targetY = size.h * (mobile ? 0.15 : 0.17);
@@ -176,65 +214,76 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
       y: targetY - (titleRect.y + titleRect.h / 2),
       scale: targetSize / fontSize,
       opacity: 0.35,
-      duration: len(script.wordmarkUp),
+      duration: script.wordmarkUp,
       ease: 'power2.inOut',
     },
-    at(script.wordmarkUp),
+    wordmarkAt,
   );
-  tl.to(ellipses, { opacity: 0, duration: len(script.wordmarkUp) * 0.6 }, at(script.wordmarkUp));
+  tl.to(ellipses, { opacity: 0, duration: script.wordmarkUp * 0.6 }, wordmarkAt);
 
-  tl.to(trail, { opacity: 0, duration: len(script.trailToArc) }, at(script.trailToArc));
-  tl.to(['.hs-arc-mask', '.hs-arc-halo'], { drawSVG: `0% ${apexPct}`, duration: len(script.trailToArc) }, at(script.trailToArc));
-  tl.to('.hs-dot--from', { scale: 1, duration: 0.03, ease: 'back.out(2)' }, at(script.trailToArc));
-  tl.to('.hs-label--from', { autoAlpha: 1, duration: 0.04 }, at(script.trailToArc) + 0.02);
-
-  tl.to(
-    plane,
-    { motionPath: { path: arc, autoRotate: true, start: apexAt, end: PLANE_END }, duration: len(script.planeToDest) },
-    at(script.planeToDest),
-  );
-  tl.to(
-    ['.hs-arc-mask', '.hs-arc-halo'],
-    { drawSVG: `0% ${PLANE_END * 100}%`, duration: len(script.planeToDest) },
-    at(script.planeToDest),
-  );
-  tl.to('.hs-dot--to', { scale: 1, duration: 0.03, ease: 'back.out(2)' }, script.planeToDest[1] - 0.03);
-  tl.to('.hs-label--to', { autoAlpha: 1, duration: 0.04 }, script.planeToDest[1] - 0.02);
-
-  tl.fromTo('.hs-readout', { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: len(script.readoutIn) }, at(script.readoutIn));
+  // El número aparece pasada la cima y cuenta con el vuelo entero: muestra la
+  // huella acumulada, así que llega al total justo al aterrizar.
+  tl.fromTo('.hs-readout', { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: script.readoutIn }, tApex);
   const counter = { p: 0 };
-  tl.to(
-    counter,
-    { p: 1, duration: len(script.countUp), ease: 'power2.out', onUpdate: () => onCount(counter.p) },
-    at(script.countUp),
-  );
+  tl.to(counter, { p: 1, ...whole, onUpdate: () => onCount(counter.p) }, at(script.flight));
 
-  // ── Escena 4: cae la noche, se va la ruta y aparece la calculadora ──
-  tl.to(['.hs-night', '.hs-mtn__night'], { opacity: 1, duration: len(script.darken) }, at(script.darken));
+  tl.to(dotTo, { scale: 1, duration: 0.03, ease: 'back.out(2)' }, script.flight[1] - 0.03);
+  tl.to('.hs-label--to', { autoAlpha: 1, duration: 0.04 }, script.flight[1] - 0.02);
+
+  // ── 4 · Llega al destino y desaparece en él ──
+  const landing = len(script.touchdown);
+  tl.to(plane, { motionPath: { path: geo.arc, autoRotate: true, start: PLANE_END, end: 1 }, duration: landing }, at(script.touchdown));
+  tl.to(planeBody, { opacity: 0, scale: 0.3 * k, duration: landing, ease: 'power1.in' }, at(script.touchdown));
+  tl.to(trail, { drawSVG: '100% 100%', duration: landing }, at(script.touchdown));
+  tl.to(routeDrawn, { drawSVG: '0% 100%', duration: landing - ROUTE_LAG }, at(script.touchdown) + ROUTE_LAG);
+
+  // Cae la noche. Mientras el cielo se oscurece, la ruta se enciende: siempre
+  // queda algo nítido que seguir con la vista.
+  const dusk = { duration: len(script.darken), ease: 'power1.inOut' };
+  tl.to(['.hs-night', '.hs-mtn__night'], { opacity: 1, ...dusk }, at(script.darken));
   // Los casquetes asoman fuera de la silueta: de noche se apagan.
-  tl.to('.hs-mtn__snow', { opacity: 0, duration: len(script.darken) }, at(script.darken));
-  tl.to(
-    ['.hs-readout', '.hs-label', wordmark, '.hs-dot', '.hs-arc', '.hs-arc-halo'],
-    { autoAlpha: 0, duration: len(script.routeOut) },
-    at(script.routeOut),
-  );
-  // El avión aterriza en LIM y desaparece.
-  tl.to(
-    plane,
-    { motionPath: { path: arc, autoRotate: true, start: PLANE_END, end: 1 }, duration: len(script.routeOut) },
-    at(script.routeOut),
-  );
-  tl.to(planeBody, { opacity: 0, scale: 0.5 * k, duration: len(script.routeOut) }, at(script.routeOut));
+  tl.to('.hs-mtn__snow', { opacity: 0, ...dusk }, at(script.darken));
+  tl.to('.hs-stars', { opacity: 1, duration: len(script.darken) * 0.6 }, at(script.darken) + len(script.darken) * 0.4);
+  tl.to(['.hs-readout', '.hs-label', wordmark], { autoAlpha: 0, duration: len(script.routeOut) }, at(script.routeOut));
+  // El halo blanco sirve sobre el cielo claro; de noche se veía como un tubo
+  // grueso, así que se apaga y queda solo el punteado.
+  tl.to('.hs-arc-halo', { opacity: 0, duration: len(script.darken) * 0.4 }, at(script.darken));
 
-  if (script.landingArc) {
-    tl.to('.hs-land-mask', { drawSVG: '0% 100%', duration: len(script.landingArc), ease: 'power1.inOut' }, at(script.landingArc));
-    tl.to('.hs-land-dot', { autoAlpha: 1, duration: 0.03 }, at(script.landingArc));
+  if (script.lineSettle && geo.settlePts && card && cardRect) {
+    // Escritorio: la ruta se queda y cambia de color.
+    tl.to(arc, { stroke: HERO_COLORS.routeOnDark, ...dusk }, at(script.darken));
+    tl.to(all(root, '.hs-dot__core'), { fill: HERO_COLORS.routeOnDark, ...dusk }, at(script.darken));
+
+    // La misma línea se acomoda bajo el titular. Se interpola punto a punto
+    // entre el arco del vuelo y su forma de reposo, y los dos puntos (origen y
+    // destino) viajan con sus extremos.
+    const settlePts = geo.settlePts;
+    const settle = { m: 0 };
+    const paintLine = () => {
+      const pts = geo.arcPts.map((p, i) => lerpPoint(p, settlePts[i], settle.m));
+      const d = pathFrom(pts);
+      routePaths.forEach((path) => path.setAttribute('d', d));
+      // La ruta ya está dibujada entera. El guion la midió con su largo de
+      // vuelo; al cambiar de forma cambia de largo y esa medida dejaría un
+      // tramo sin dibujar.
+      if (settle.m > 0) routeDrawn.forEach((path) => { path.style.strokeDasharray = 'none'; });
+      gsap.set(dotFrom, { x: pts[0].x, y: pts[0].y });
+      gsap.set(dotTo, { x: pts[6].x, y: pts[6].y });
+    };
+    const unfold = { duration: len(script.lineSettle), ease: 'power2.inOut' };
+    tl.to(settle, { m: 1, ...unfold, onUpdate: paintLine }, at(script.lineSettle));
+
+    // La calculadora se abre desde el punto de destino, al mismo ritmo con el
+    // que el extremo de la ruta se corre hacia su costado.
+    gsap.set(card, { transformOrigin: `${geo.to.x - cardRect.x}px ${geo.to.y - cardRect.y}px` });
+    tl.fromTo(card, { autoAlpha: 0, scale: CARD_FROM }, { autoAlpha: 1, scale: 1, ...unfold }, at(script.lineSettle));
+  } else {
+    // Móvil: la calculadora va debajo, así que la ruta se va con el cielo.
+    tl.to([...routePaths, dotFrom, dotTo], { autoAlpha: 0, duration: len(script.routeOut) }, at(script.routeOut));
   }
+
   if (script.landingIn) {
     tl.from('.hs-land__copy > *', { autoAlpha: 0, y: 24, stagger: 0.012, duration: len(script.landingIn) - 0.04 }, at(script.landingIn));
-  }
-  if (script.cardIn) {
-    tl.from('.hs-card', { autoAlpha: 0, y: 32, scale: 0.98, duration: len(script.cardIn), ease: 'power2.out' }, at(script.cardIn));
   }
 
   // ── Header sobre la escena oscura ──
@@ -274,7 +323,7 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
     });
   }
 
-  // ── "Calcula tu huella" y el foco por teclado llevan a la escena 4 ──
+  // ── "Calcula tu huella" y el foco por teclado llevan a la escena final ──
   const goToCalculator = (behavior: ScrollBehavior) => {
     if (mobile) scrollToY(land.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT, behavior);
     else scrollToY(main.end, behavior);
@@ -294,13 +343,16 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
     setScrollFeel('normal');
     land.removeEventListener('focusin', onFocusIn);
     root.classList.remove('hs--motion', 'hs--landed');
+    // La forma y el trazo de la ruta se escribieron a mano, fuera de GSAP.
+    setPathD(root, '.hs-trail, .hs-arc, .hs-arc-halo, .hs-arc-mask', null);
+    routeDrawn.forEach((path) => path.style.removeProperty('stroke-dasharray'));
     setHeaderTheme('light');
   };
 }
 
 /**
- * prefers-reduced-motion: sin pin ni scrub. Se muestra directo la escena 4
- * (cielo de noche, montañas y calculadora) con el arco punteado ya trazado.
+ * prefers-reduced-motion: sin pin ni scrub. Se muestra directo la escena final
+ * (cielo de noche, montañas y calculadora) con la ruta ya en su forma de reposo.
  */
 export function setupHeroReduced(root: HTMLElement, { mobile }: { mobile: boolean }) {
   root.classList.add('hs--reduced');

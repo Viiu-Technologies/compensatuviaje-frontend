@@ -16,76 +16,75 @@ export type Span = readonly [start: number, end: number];
 export type HeroScript = {
   /** Scroll que dura el pin, en vh (100 = una pantalla). */
   pinVh: number;
-  /** Escena 1: el avión aparece y se acerca al wordmark. */
-  approach: Span;
+  /** El punto de origen y su etiqueta aparecen; el avión espera en él. */
+  originIn: Span;
   /** Las montañas se abren hacia los lados (despejan el centro para el número
       y, al final, enmarcan la calculadora). */
   mountainsOpen: Span;
-  /** Escena 2: cruza el wordmark, la bruma se abre y deja la estela. */
-  crossing: Span;
+  /**
+   * El vuelo completo, origen → destino, en un solo movimiento: despega, sube
+   * atravesando el wordmark y la bruma, y baja al destino. La ruta se dibuja
+   * detrás del avión. Lo que depende de por dónde va el avión (la bruma que se
+   * abre, el wordmark que sube, el número que aparece) no tiene tramo propio:
+   * la línea de tiempo calcula su momento a partir de este.
+   */
+  flight: Span;
   /** Eyebrow y subtítulo se desvanecen. */
   introOut: Span;
-  /** Escena 3: el wordmark sube y se achica. */
-  wordmarkUp: Span;
-  /** Escena 3: la estela se vuelve la mitad izquierda del arco SCL → LIM. */
-  trailToArc: Span;
-  /** Escena 3: el avión avanza por la mitad derecha hacia LIM. Debe empezar
-      donde termina trailToArc: las dos dibujan el mismo trazo. */
-  planeToDest: Span;
-  /** Escena 3: aparece el número y sube el contador. */
-  readoutIn: Span;
-  countUp: Span;
-  /** Escena 4: el cielo y las montañas pasan a oscuro. */
-  darken: Span;
-  /** Escena 4: se van el número, el arco y el wordmark. */
+  /** Cuánto dura la subida del wordmark; empieza cuando el avión entra en él. */
+  wordmarkUp: number;
+  /** Cuánto tarda en aparecer el número; empieza cuando el avión pasa la cima. */
+  readoutIn: number;
+  /** El avión llega al destino y desaparece en él. */
+  touchdown: Span;
+  /** Se van el número, las etiquetas y el wordmark (en móvil, también la ruta). */
   routeOut: Span;
-  /** Escena 4: arco punteado de fondo que aterriza en la card (solo escritorio). */
-  landingArc: Span | null;
-  /** Escena 4: titular y calculadora (solo escritorio; en móvil van debajo). */
+  /** El cielo y las montañas pasan a la noche; la ruta se enciende. */
+  darken: Span;
+  /** La ruta se acomoda bajo el titular y la calculadora se abre desde el
+      destino (solo escritorio; en móvil la calculadora va debajo). */
+  lineSettle: Span | null;
+  /** Entra el titular de la escena final (solo escritorio). */
   landingIn: Span | null;
-  cardIn: Span | null;
   /** Desde aquí el header pasa a su versión sobre fondo oscuro. */
   darkHeaderAt: number;
 };
 
 export const HERO_SCRIPT: { desktop: HeroScript; mobile: HeroScript } = {
   desktop: {
-    pinVh: 150,
-    approach: [0, 0.1],
-    mountainsOpen: [0.08, 0.8],
-    crossing: [0.06, 0.42],
-    introOut: [0.12, 0.24],
-    wordmarkUp: [0.42, 0.56],
-    trailToArc: [0.42, 0.52],
-    planeToDest: [0.52, 0.72],
-    readoutIn: [0.5, 0.58],
-    countUp: [0.52, 0.7],
-    darken: [0.74, 0.86],
-    routeOut: [0.74, 0.82],
-    landingArc: [0.8, 0.96],
-    landingIn: [0.82, 0.92],
-    cardIn: [0.86, 0.98],
-    darkHeaderAt: 0.8,
+    pinVh: 170,
+    originIn: [0, 0.05],
+    mountainsOpen: [0.06, 0.8],
+    flight: [0.03, 0.66],
+    introOut: [0.1, 0.22],
+    wordmarkUp: 0.13,
+    readoutIn: 0.07,
+    touchdown: [0.66, 0.72],
+    routeOut: [0.67, 0.75],
+    darken: [0.68, 0.86],
+    lineSettle: [0.72, 0.92],
+    landingIn: [0.82, 0.96],
+    darkHeaderAt: 0.78,
   },
   mobile: {
-    pinVh: 100,
-    approach: [0, 0.08],
+    pinVh: 110,
+    originIn: [0, 0.05],
     mountainsOpen: [0.06, 0.84],
-    crossing: [0.05, 0.4],
+    flight: [0.03, 0.74],
     introOut: [0.1, 0.22],
-    wordmarkUp: [0.4, 0.55],
-    trailToArc: [0.4, 0.5],
-    planeToDest: [0.5, 0.74],
-    readoutIn: [0.5, 0.58],
-    countUp: [0.52, 0.74],
-    darken: [0.84, 1],
+    wordmarkUp: 0.14,
+    readoutIn: 0.08,
+    touchdown: [0.74, 0.8],
     routeOut: [0.84, 0.94],
-    landingArc: null,
+    darken: [0.84, 1],
+    lineSettle: null,
     landingIn: null,
-    cardIn: null,
     darkHeaderAt: 0.92,
   },
 };
+
+/** Curva del vuelo: arranca y llega despacio (despegue y aproximación). */
+export const FLIGHT_EASE = 'sine.inOut';
 
 /**
  * Cuánto se abre cada capa de montañas, lejos → cerca, en fracción del ancho
