@@ -58,6 +58,7 @@ export interface BankDetails {
   rut: string;
   email: string;
   message: string;
+  configured?: boolean;
 }
 
 // ============ API FUNCTIONS ============
@@ -100,4 +101,20 @@ export const getEmissionDebt = async (): Promise<EmissionDebt> => {
 export const getBankDetails = async (): Promise<BankDetails> => {
   const response = await api.get('/public/bank-details') as any;
   return response.bankDetails;
+};
+
+export interface PublicLegalStatus {
+  razonSocial: string;
+  rut: string;
+  address: string;
+  giro: string;
+  contactEmail: string;
+  legalComplete: boolean;
+  b2bSalesEnabled: boolean;
+  checkoutAllowed: boolean;
+}
+
+export const getPublicLegalStatus = async (): Promise<PublicLegalStatus> => {
+  const response = await api.get('/public/legal') as any;
+  return response.legal;
 };

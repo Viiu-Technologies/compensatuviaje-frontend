@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -7,6 +7,7 @@ import {
   Plane, Truck, Package, Briefcase, Star, Globe, Check
 } from 'lucide-react';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { validateChileanRut } from '../../../shared/utils/chileanRut';
 
 type CompanyType = 'TRAVEL_AGENCY' | 'TRANSPORT' | 'LOGISTICS' | 'CORPORATE' | 'EVENTS' | 'OTHER';
 
@@ -16,9 +17,10 @@ interface FormData {
   rut: string;
   nombreComercial: string;
   giroSii: string;
-  tamanoEmpresa: 'micro' | 'pequena' | 'mediana' | 'grande' | '';
+  tamanoEmpresa: 'micro' | 'pequeña' | 'mediana' | 'grande' | '';
   direccion: string;
   phone: string;
+  creditTerms: boolean;
   adminName: string;
   adminEmail: string;
   adminPassword: string;
@@ -50,6 +52,7 @@ const B2BRegisterPage: React.FC = () => {
     tamanoEmpresa: '',
     direccion: '',
     phone: '',
+    creditTerms: false,
     adminName: '',
     adminEmail: '',
     adminPassword: '',
@@ -71,6 +74,14 @@ const B2BRegisterPage: React.FC = () => {
 
   const handleStep2 = () => {
     if (!canProceedStep2) { setError('Por favor completa los campos obligatorios (*)'); return; }
+    const rutCheck = validateChileanRut(formData.rut);
+    if (!rutCheck.valid) {
+      const msg = rutCheck.error || 'El RUT ingresado no es válido';
+      setFieldErrors(prev => ({ ...prev, rut: msg }));
+      setError(msg);
+      return;
+    }
+    setFormData(prev => ({ ...prev, rut: rutCheck.formatted }));
     setError('');
     setStep(3);
   };
@@ -80,6 +91,14 @@ const B2BRegisterPage: React.FC = () => {
     setError('');
     if (formData.adminPassword !== formData.confirmPassword) { setError('Las contraseñas no coinciden'); return; }
     if (formData.adminPassword.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return; }
+    const rutCheck = validateChileanRut(formData.rut);
+    if (!rutCheck.valid) {
+      const msg = rutCheck.error || 'El RUT de la empresa no es válido';
+      setFieldErrors(prev => ({ ...prev, rut: msg }));
+      setError(msg);
+      setStep(2);
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/public/companies/register`, {
@@ -87,13 +106,14 @@ const B2BRegisterPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           razonSocial: formData.razonSocial,
-          rut: formData.rut,
+          rut: rutCheck.formatted,
           nombreComercial: formData.nombreComercial,
           giroSii: formData.giroSii,
           tamanoEmpresa: formData.tamanoEmpresa,
           companyType: formData.companyType || undefined,
           direccion: formData.direccion,
           phone: formData.phone,
+          creditTerms: formData.creditTerms,
           adminUser: {
             name: formData.adminName,
             email: formData.adminEmail,
@@ -348,7 +368,7 @@ const B2BRegisterPage: React.FC = () => {
                         <select name="tamanoEmpresa" value={formData.tamanoEmpresa} onChange={handleChange} className={selectCls}>
                           <option value="" className="!bg-emerald-900">Seleccionar...</option>
                           <option value="micro" className="!bg-emerald-900">Microempresa (1–9)</option>
-                          <option value="pequena" className="!bg-emerald-900">Pequeña (10–49)</option>
+                          <option value="pequeña" className="!bg-emerald-900">Pequeña (10–49)</option>
                           <option value="mediana" className="!bg-emerald-900">Mediana (50–199)</option>
                           <option value="grande" className="!bg-emerald-900">Grande (200+)</option>
                         </select>
@@ -373,6 +393,18 @@ const B2BRegisterPage: React.FC = () => {
                         }
                       </div>
                     </div>
+                    <label className="!flex !items-start !gap-3 !rounded-2xl !border !border-emerald-700/60 !bg-emerald-950/35 !p-4 !cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.creditTerms}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditTerms: e.target.checked }))}
+                        className="!mt-1 !h-4 !w-4 !rounded !accent-emerald-400"
+                      />
+                      <span className="!text-xs !text-emerald-100/90 !leading-relaxed">
+                        <strong className="!block !text-sm !text-white">Solicitar modalidad de crédito (30 días)</strong>
+                        Por defecto operamos al contado (solo requiere e-RUT empresa). Si marcas esta opción necesitaremos escritura de constitución y cédula del representante legal para aprobar tu cuenta.
+                      </span>
+                    </label>
                   </div>
                   <button type="button" onClick={handleStep2} className="!mt-8 !w-full !flex !items-center !justify-center !gap-2 !bg-brand-300 !text-emerald-950 hover:!bg-brand-200 !font-bold !py-4 !px-8 !rounded-full hover:!shadow-lg !transition-all !border-0 !cursor-pointer">
                     Continuar <ArrowRight className="!w-4 !h-4" />

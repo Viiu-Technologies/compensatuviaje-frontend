@@ -162,6 +162,7 @@ export interface RegisterCompanyRequest {
   companyType?: CompanyType;
   direccion?: string;
   phone?: string;
+  creditTerms?: boolean;
   adminUser: AdminUserData;
 }
 
@@ -186,6 +187,6 @@ export interface RegisterCompanyResponse {
   };
 }
 
-export type CompanySize = 'micro' | 'pequena' | 'mediana' | 'grande';
+export type CompanySize = 'micro' | 'pequeña' | 'pequena' | 'mediana' | 'grande';
 export type CompanyType = 'TRAVEL_AGENCY' | 'TRANSPORT' | 'LOGISTICS' | 'CORPORATE' | 'EVENTS' | 'OTHER';
 export type CompanyStatus = 'registered' | 'pending_contract' | 'signed' | 'active' | 'suspended';

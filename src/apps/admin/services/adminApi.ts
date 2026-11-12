@@ -121,6 +121,7 @@ export interface Company {
   rut: string;
   industry?: string;
   tamanoEmpresa?: string;
+  creditTerms?: boolean;
   status: string;
   createdAt: string;
   _count?: {
@@ -176,6 +177,11 @@ export const getCompanyDetail = async (id: string) => {
 export const updateCompanyStatus = async (id: string, toStatus: string, note?: string) => {
   // Backend espera { toStatus, note } - NO { status, reason }
   const response = await api.put(`/admin/companies/${id}/status`, { toStatus, note }) as any;
+  return response;
+};
+
+export const updateCompanyCreditTerms = async (id: string, creditTerms: boolean) => {
+  const response = await api.put(`/admin/companies/${id}/credit-terms`, { creditTerms }) as any;
   return response;
 };
 
@@ -804,11 +810,36 @@ export const getProjectsPendingReview = async (params?: {
 // PLATFORM SETTINGS
 // ============================================
 
+export interface BankTransferDetails {
+  bankName: string;
+  accountType: string;
+  accountNumber: string;
+  accountHolder: string;
+  rut: string;
+  email: string;
+  message?: string;
+  configured?: boolean;
+}
+
 export interface PlatformSettings {
   id: string;
   default_margin_percent: number;
   min_price_clp_per_ton: number;
   max_price_clp_per_ton: number;
+  legal_razon_social?: string;
+  legal_rut?: string;
+  legal_address?: string;
+  legal_giro?: string;
+  legal_representative?: string;
+  legal_contact_email?: string;
+  b2b_sales_enabled?: boolean;
+  legal_complete?: boolean;
+  missing_legal_fields?: string[];
+  invalid_legal_fields?: string[];
+  b2b_sales_effective?: boolean;
+  checkout_allowed?: boolean;
+  bank_transfer_details?: BankTransferDetails;
+  bank_details_configured?: boolean;
   updated_at: string;
   updated_by?: string;
 }

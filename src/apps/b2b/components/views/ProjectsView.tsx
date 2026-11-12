@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Copy, Mail, MapPin, Search, ShoppingCart, TreePine } from 'lucide-react';
 import { getProjects, type Project } from '../../services/projectsService';
-import { createOrder, getBankDetails, getEmissionDebt, type BankDetails, type EmissionDebt } from '../../services/ordersService';
+import { createOrder, getBankDetails, getEmissionDebt, getPublicLegalStatus, type BankDetails, type EmissionDebt, type PublicLegalStatus } from '../../services/ordersService';
 import { calculateTonsFromUnits, calculateUnitsFromTons } from '../../../../utils/carbon';
 import {
   Badge,
@@ -34,6 +34,14 @@ const CheckoutDialog: React.FC<{ project: Project; onClose: () => void; onSucces
   const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [debt, setDebt] = useState<EmissionDebt | null>(null);
+
+  const hasConfiguredBankDetails = Boolean(
+    bankDetails &&
+    bankDetails.configured !== false &&
+    bankDetails.bankName?.trim() &&
+    bankDetails.accountNumber?.trim() &&
+    bankDetails.rut?.trim()
+  );
 
   // Unidades físicas que se reservarán (Enfoque B)
   const physicalUnits = project.carbon_capture_per_unit ? calculateUnitsFromTons(tons, project.carbon_capture_per_unit) : null;
@@ -206,7 +214,7 @@ const CheckoutDialog: React.FC<{ project: Project; onClose: () => void; onSucces
             </span>
           </p>
 
-          {bankDetails && (
+          {hasConfiguredBankDetails && bankDetails ? (
             <dl className="m-0 rounded-xl border border-gray-200 p-4 space-y-2 text-sm">
               {[
                 ['Banco', bankDetails.bankName],
@@ -235,6 +243,10 @@ const CheckoutDialog: React.FC<{ project: Project; onClose: () => void; onSucces
                 ))}
               {bankDetails.message && <p className="m-0 pt-2 border-t border-gray-100 text-xs text-amber-800">{bankDetails.message}</p>}
             </dl>
+          ) : (
+            <p className="m-0 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+              Nuestro equipo te enviará los datos de transferencia definitivos junto con la confirmación comercial de tu orden.
+            </p>
           )}
         </div>
       )}
@@ -260,6 +272,7 @@ const ProjectsView: React.FC<{ onNavigateToOrders?: () => void }> = ({ onNavigat
   const [reloadKey, setReloadKey] = useState(0);
   const [projects, setProjects] = useState<Project[]>([]);
   const [checkout, setCheckout] = useState<Project | null>(null);
+  const [publicLegal, setPublicLegal] = useState<PublicLegalStatus | null>(null);
 
   // Se carga una vez y se filtra en el navegador (antes cada tecla de la búsqueda hacía una petición).
   useEffect(() => {
@@ -267,7 +280,12 @@ const ProjectsView: React.FC<{ onNavigateToOrders?: () => void }> = ({ onNavigat
       setLoading(true);
       setFailed(false);
       try {
-        setProjects(await getProjects());
+        const [projectList, legalRes] = await Promise.all([
+          getProjects(),
+          getPublicLegalStatus().catch(() => null),
+        ]);
+        setProjects(projectList);
+        setPublicLegal(legalRes);
       } catch {
         // Sin proyectos de ejemplo: se podía iniciar una compra sobre uno que no existe.
         setProjects([]);
@@ -294,6 +312,12 @@ const ProjectsView: React.FC<{ onNavigateToOrders?: () => void }> = ({ onNavigat
   return (
     <div className="space-y-6">
       <PageHeader title="Proyectos" subtitle="Proyectos verificados para compensar la huella de tu empresa." />
+
+      {publicLegal && !publicLegal.checkoutAllowed && (
+        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <strong>Pre-venta B2B:</strong> la emisión directa de órdenes está pausada temporalmente mientras completamos la habilitación comercial. Puedes explorar el catálogo y calcular tus emisiones.
+        </div>
+      )}
 
       <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
         <div className="relative lg:w-80">
@@ -398,11 +422,15 @@ const ProjectsView: React.FC<{ onNavigateToOrders?: () => void }> = ({ onNavigat
                     )}
 
                     <div className="mt-auto pt-5">
-                      {canBuy ? (
+                      {canBuy && publicLegal?.checkoutAllowed !== false ? (
                         <button type="button" onClick={() => setCheckout(p)} className={cx(btn.primary, 'w-full')}>
                           <ShoppingCart className="w-4 h-4" aria-hidden="true" />
                           Compensar
                         </button>
+                      ) : canBuy ? (
+                        <p className="m-0 rounded-full bg-amber-50 border border-amber-200 py-2.5 text-center text-sm text-amber-800">
+                          Ventas B2B en pre-lanzamiento
+                        </p>
                       ) : (
                         <p className="m-0 rounded-full bg-gray-100 py-2.5 text-center text-sm text-gray-500">
                           {p.isSoldOut ? 'Sin stock este mes' : 'Aún no disponible para compra'}
