@@ -26,6 +26,12 @@ export interface EstimateResponse {
   };
   emissions?: {
     kgCO2e: number;
+    /** kgCO2e incluye forzamiento radiativo (lo que se cobra). Decisión D3. */
+    radiativeForcingIncluded?: boolean;
+    /** Emisiones sin forzamiento radiativo: línea base del GHG Protocol. */
+    withoutRf?: { kgCO2e: number; tonCO2e: number; factorUsed: number };
+    /** Versión de los factores, p. ej. "DEFRA 2025 v1". */
+    factorsVersion?: string;
     tonCO2e: number;
     factorUsed: number;
     /** Origen de los factores, p. ej. "DEFRA 2025". */

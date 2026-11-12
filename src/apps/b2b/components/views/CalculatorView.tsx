@@ -89,6 +89,11 @@ const CalculatorView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNa
             <div className="rounded-xl border border-gray-200 p-4">
               <dt className="text-sm text-gray-500">CO₂ emitido</dt>
               <dd className="m-0 mt-1 text-3xl font-bold text-gray-900 tabular-nums">{fmtKgAuto(result.emissions.kgCO2e)}</dd>
+              {result.emissions.withoutRf && (
+                <p className="m-0 mt-1 text-xs text-gray-500">
+                  Incluye forzamiento radiativo. Sin él (línea base GHG Protocol): {fmtKgAuto(result.emissions.withoutRf.kgCO2e)}
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-gray-200 p-4">
               <dt className="text-sm text-gray-500">Distancia</dt>

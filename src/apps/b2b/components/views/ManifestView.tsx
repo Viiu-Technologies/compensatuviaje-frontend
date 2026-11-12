@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Download, FileSpreadsheet, Leaf, RefreshCw, UploadCloud, XCircle } from 'lucide-react';
-import { listBatches, uploadManifest, type BatchStatus, type UploadBatch, type UploadBatchResult } from '../../services/batchService';
+import { downloadEmissionsReport, listBatches, uploadManifest, type BatchStatus, type UploadBatch, type UploadBatchResult } from '../../services/batchService';
 import {
   Badge,
   btn,
@@ -30,10 +30,12 @@ const STATUS: Record<BatchStatus, { label: string; tone: Tone }> = {
 const fileSize = (bytes: number) =>
   bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${fmtNum(bytes / (1024 * 1024), 1)} MB`;
 
-const CSV_TEMPLATE = `flight_number,flight_date,origin,destination,cabin,passengers,round_trip
-LA500,2026-01-15,SCL,MIA,economy,150,false
-LA501,2026-01-16,SCL,JFK,business,12,true
-LA800,2026-01-20,SCL,LIM,economy,180,false`;
+// cabin acepta economy/económica, premium, business/ejecutiva y first/primera.
+// tipo_viaje es opcional: negocio (GHG cat. 6) o turno (cat. 7, traslados a faena).
+const CSV_TEMPLATE = `flight_number,flight_date,origin,destination,cabin,passengers,round_trip,tipo_viaje
+LA500,2026-01-15,SCL,MIA,economy,1,false,negocio
+LA501,2026-01-16,SCL,JFK,ejecutiva,2,true,negocio
+LA340,2026-01-20,SCL,CJC,economy,12,true,turno`;
 
 const downloadTemplate = () => {
   const url = URL.createObjectURL(new Blob([CSV_TEMPLATE], { type: 'text/csv' }));
@@ -54,7 +56,31 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<UploadBatchResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [reportFrom, setReportFrom] = useState('');
+  const [reportTo, setReportTo] = useState('');
+  const [downloading, setDownloading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const downloadReport = async () => {
+    setDownloading(true);
+    setReportError(null);
+    try {
+      const blob = await downloadEmissionsReport(reportFrom || undefined, reportTo || undefined);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-emisiones-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (err: any) {
+      setReportError(err?.message || 'No pudimos generar el informe.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
@@ -210,6 +236,36 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
         )}
       </Card>
 
+      {doneBatches.length > 0 && (
+        <Card className="p-6">
+          <CardHeader
+            title="Informe de emisiones"
+            subtitle="Excel con una fila por vuelo, emisiones con y sin forzamiento radiativo, resumen por mes y metodología (DEFRA 2025). Sirve para el inventario de alcance 3 de la empresa."
+            icon={FileSpreadsheet}
+          />
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="text-sm text-gray-600">
+              Desde
+              <input type="date" value={reportFrom} onChange={(e) => setReportFrom(e.target.value)} className="mt-1 block rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </label>
+            <label className="text-sm text-gray-600">
+              Hasta
+              <input type="date" value={reportTo} onChange={(e) => setReportTo(e.target.value)} className="mt-1 block rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </label>
+            <button type="button" className={btn.primary} onClick={downloadReport} disabled={downloading}>
+              <Download className="w-4 h-4" aria-hidden="true" />
+              {downloading ? 'Generando…' : 'Descargar informe (Excel)'}
+            </button>
+          </div>
+          <p className="m-0 mt-3 text-xs text-gray-500">Sin fechas, incluye todos los vuelos. Las planillas subidas antes de noviembre de 2026 no guardaban el detalle por vuelo.</p>
+          {reportError && (
+            <p role="alert" className="m-0 mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              {reportError}
+            </p>
+          )}
+        </Card>
+      )}
+
       {result && (
         <Card className={result.status === 'done' ? 'p-6 border-brand-100' : 'p-6 border-rose-200'}>
           <CardHeader
@@ -237,6 +293,13 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
               </div>
             ))}
           </dl>
+
+          {(result.rowsWithoutDate ?? 0) > 0 && (
+            <p className="m-0 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              {fmtInt(result.rowsWithoutDate ?? 0)} {result.rowsWithoutDate === 1 ? 'vuelo no traía' : 'vuelos no traían'} fecha: se
+              registraron con la fecha de hoy. Para que el resumen mensual sea correcto, agrega la fecha y vuelve a subir la planilla.
+            </p>
+          )}
 
           {result.monthlySummaries?.length > 0 && (
             <div className="mt-5 overflow-x-auto">
