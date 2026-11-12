@@ -434,6 +434,73 @@ export async function getUserProfile(): Promise<any> {
   return res.data;
 }
 
+export interface B2CChatTurn {
+  role: 'user' | 'model';
+  content: string;
+}
+
+export interface B2CAssistantReply {
+  message: string;
+  toolsUsed?: string[];
+}
+
+const HISTORY_LIMIT = 10;
+const ASSISTANT_TIMEOUT_MS = 60_000;
+
+/**
+ * Envía una pregunta al asistente Doctor IA con el token B2C (Supabase o dev).
+ * Incluye el historial reciente de la conversación (máx. 10 turnos).
+ */
+export async function askAssistant(
+  message: string,
+  history: B2CChatTurn[] = []
+): Promise<B2CAssistantReply> {
+  const headers = await getAuthHeaders();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ASSISTANT_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${API_URL}/shared/chat/doctor-ia`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        message,
+        history: history.slice(-HISTORY_LIMIT),
+      }),
+      signal: controller.signal,
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.response) {
+      const err: any = new Error(data?.message || data?.error || 'El asistente no devolvió respuesta.');
+      err.status = response.status;
+      err.data = data;
+      throw err;
+    }
+
+    return {
+      message: data.response,
+      toolsUsed: Array.isArray(data.toolsUsed) ? data.toolsUsed : undefined,
+    };
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      const timeoutErr: any = new Error('La consulta tardó demasiado.');
+      timeoutErr.code = 'ECONNABORTED';
+      throw timeoutErr;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function assistantErrorMessage(err: unknown): string {
+  const e = err as { status?: number; data?: { message?: string; error?: string }; code?: string; message?: string };
+  if (e?.status === 503) return 'El asistente no está disponible en este momento.';
+  if (e?.status === 429) return 'Has hecho muchas consultas seguidas. Espera un minuto y vuelve a intentarlo.';
+  if (e?.code === 'ECONNABORTED') return 'La consulta tardó demasiado. Intenta con una pregunta más corta.';
+  return e?.data?.message || e?.data?.error || e?.message || 'No se pudo consultar al asistente. Inténtalo de nuevo.';
+}
+
 /**
  * Eliminar un cálculo/vuelo (solo si no está compensado)
  */
@@ -454,6 +521,8 @@ const b2cApi = {
   createPaymentTransaction,
   getUserProfile,
   deleteCalculation,
+  askAssistant,
+  assistantErrorMessage,
 };
 
 export default b2cApi;
