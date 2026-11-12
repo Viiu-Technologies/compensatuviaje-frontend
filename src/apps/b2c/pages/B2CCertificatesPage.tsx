@@ -81,7 +81,7 @@ const B2CCertificatesPage: React.FC = () => {
       date: cert.date,
       projectName: cert.project,
       treesEquiv: cert.equivalencies?.trees ?? 0,
-      carKmAvoided: Math.round(cert.co2Compensated * 4000),
+      carKmAvoided: cert.equivalencies?.carKm ?? 0,
       nftTxHash: cert.nftTxHash,
       // Doble métrica: leídas de la BD, sin recalcular
       unitsFinanced: cert.unitsFinanced ?? null,
@@ -131,7 +131,7 @@ const B2CCertificatesPage: React.FC = () => {
           unit="t"
           icon={FaLeaf}
           tone="good"
-          hint={totalTrees > 0 ? `Equivale a lo que absorben unos ${fmtInt(totalTrees)} árboles en un año.` : undefined}
+          hint={totalTrees > 0 ? `Equivale a lo que absorben unos ${fmtInt(totalTrees)} árboles urbanos en un año (US EPA).` : undefined}
         />
         <StatCard label="Certificados" value={fmtInt(certificates.length)} icon={FaCertificate} />
         <StatCard
@@ -250,7 +250,7 @@ const B2CCertificatesPage: React.FC = () => {
               <div>
                 <dt className="text-gray-500">Equivalencia</dt>
                 <dd className="m-0 font-medium text-gray-900">
-                  Lo que absorben unos {fmtInt(selected.equivalencies?.trees ?? 0)} árboles en un año
+                  Lo que absorben unos {fmtInt(selected.equivalencies?.trees ?? 0)} árboles urbanos en un año (US EPA)
                 </dd>
               </div>
             </dl>

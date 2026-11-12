@@ -85,9 +85,11 @@ export interface B2CCertificate {
   project: string;
   flightRoute?: string | null;
   status: 'verified' | 'pending' | string;
-  // Árboles que absorben en un año el CO₂ del certificado (regla única del backend).
+  // Equivalencias con fuente, calculadas en el backend (US EPA y DEFRA 2025).
   equivalencies: {
-    trees: number;
+  trees: number;
+  carKm: number;
+  sources: { trees: string; carKm: string };
   };
   nftTxHash?: string | null;
   nftTokenId?: string | null;

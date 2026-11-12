@@ -32,9 +32,11 @@ export interface EstimateResponse {
     methodology?: string;
     passengers: number;
   };
-  /** Árboles que absorben en un año el CO₂ del vuelo (regla única del backend, calculatorConstants.js). */
+  /** Equivalencias con fuente, calculadas en el backend (calculatorConstants.js). */
   equivalencies?: {
     trees: number;
+    carKm: number;
+    sources: { trees: string; carKm: string };
   };
   /** Precio del proyecto disponible más barato; null si no hay proyectos con stock. */
   pricing?: {

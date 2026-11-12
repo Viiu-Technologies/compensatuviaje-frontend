@@ -47,9 +47,11 @@ export interface PricingData {
   pricePerTonCLP: number;
 }
 
-// Árboles que absorben en un año el CO₂ del vuelo (regla única del backend).
+// Equivalencias con fuente, calculadas en el backend (US EPA y DEFRA 2025).
 export interface Equivalencies {
   trees: number;
+  carKm: number;
+  sources: { trees: string; carKm: string };
 }
 
 export interface CalculationResponse {

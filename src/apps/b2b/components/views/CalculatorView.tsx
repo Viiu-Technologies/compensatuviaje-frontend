@@ -106,7 +106,7 @@ const CalculatorView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNa
           {result.equivalencies?.trees > 0 && (
             <p className="m-0 mt-4 flex items-center gap-2 text-sm text-gray-600">
               <Leaf className="w-4 h-4 text-brand-700" aria-hidden="true" />
-              Equivale a lo que capturan unos {fmtInt(result.equivalencies.trees)} árboles en un año.
+              Equivale a lo que capturan unos {fmtInt(result.equivalencies.trees)} árboles urbanos en un año (US EPA).
             </p>
           )}
 
