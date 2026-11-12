@@ -35,6 +35,41 @@ const DEV_ACCOUNTS = [
 ];
 const DEV_SEED_PASSWORD = import.meta.env.VITE_DEV_SEED_PASSWORD || 'Prueba1234!';
 
+/**
+ * Perfil con el que se entra (CTV-38). Hay dos formas de entrar y antes se
+ * mostraban juntas sin explicar cuál era de quién: las personas entran solo con
+ * Google; empresas, partners y el equipo, con correo y contraseña. Una persona
+ * que escribía su correo recibía "credenciales inválidas" sin saber por qué.
+ */
+type Profile = 'persona' | 'empresa' | 'partner';
+
+const PROFILES: { id: Profile; label: string; hint: string }[] = [
+  { id: 'persona', label: 'Persona', hint: 'Compensas tus propios vuelos.' },
+  { id: 'empresa', label: 'Empresa', hint: 'Gestionas los vuelos de tu equipo.' },
+  { id: 'partner', label: 'Partner', hint: 'Tienes un proyecto ambiental.' },
+];
+
+const PROFILE_STORAGE_KEY = 'ctv.loginProfile';
+
+/** Perfil inicial: ?perfil=, la página de la que viene, el vuelo de la calculadora o la última elección. */
+function initialProfile(search: string, fromPath: string | undefined, hasTrip: boolean): Profile {
+  const param = new URLSearchParams(search).get('perfil');
+  if (param === 'persona' || param === 'empresa' || param === 'partner') return param;
+  if (fromPath) {
+    if (/^\/(b2c|calculator|impacto)/.test(fromPath)) return 'persona';
+    if (/^\/(b2b|onboarding|company)/.test(fromPath)) return 'empresa';
+    if (fromPath.startsWith('/partner')) return 'partner';
+  }
+  if (hasTrip) return 'persona';
+  try {
+    const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (saved === 'persona' || saved === 'empresa' || saved === 'partner') return saved;
+  } catch {
+    // Sin almacenamiento (modo privado): se usa el valor por defecto.
+  }
+  return 'empresa';
+}
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,6 +90,19 @@ const Login: React.FC = () => {
   // /b2c/calculator?origin=…&destination=…). Personaliza el titular y la Fig. 2.
   const trip = useMemo(() => tripOf((location.state as LocationState | null)?.from?.search), [location.state]);
   const destinationCity = trip ? POPULAR_AIRPORTS.find((a) => a.code === trip.destination)?.city ?? trip.destination : null;
+
+  const [profile, setProfile] = useState<Profile>(() =>
+    initialProfile(location.search, (location.state as LocationState | null)?.from?.pathname, Boolean(trip))
+  );
+  const chooseProfile = (next: Profile) => {
+    setProfile(next);
+    clearError();
+    try {
+      localStorage.setItem(PROFILE_STORAGE_KEY, next);
+    } catch {
+      // Sin almacenamiento: la elección dura hasta recargar.
+    }
+  };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value, type, checked } = e.target;
@@ -174,6 +222,26 @@ const Login: React.FC = () => {
             </p>
           </div>
 
+          <div role="radiogroup" aria-label="¿Cómo usas CompensaTuViaje?" className="!grid !grid-cols-3 !gap-2 !mb-8">
+            {PROFILES.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                role="radio"
+                aria-checked={profile === p.id}
+                onClick={() => chooseProfile(p.id)}
+                className={`!min-w-0 !rounded-xl !border-[1.5px] !px-3 !py-2.5 !text-left !transition-all ${
+                  profile === p.id
+                    ? '!border-brand-700 !bg-[#EDF4F1] !text-brand-900'
+                    : '!border-brand-900/15 !bg-white !text-brand-900/70 hover:!border-brand-900/30'
+                }`}
+              >
+                <span className="!block !text-sm !font-bold">{p.label}</span>
+                <span className="!hidden sm:!block !text-xs !leading-snug !mt-0.5 !opacity-80">{p.hint}</span>
+              </button>
+            ))}
+          </div>
+
           {error && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
@@ -181,10 +249,18 @@ const Login: React.FC = () => {
               className="!mb-6 !p-4 !bg-[#FEE2E2] !border !border-[#FCA5A5] !rounded-xl !flex !items-start !gap-3 !text-[#991B1B]"
             >
               <AlertCircle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
-              <span className="!text-sm">{error}</span>
+              <span className="!text-sm">
+                {error}
+                {profile !== 'persona' && (
+                  <span className="!block !mt-1">
+                    Si usas CompensaTuViaje como persona, elige «Persona» y entra con Google.
+                  </span>
+                )}
+              </span>
             </motion.div>
           )}
 
+          {profile !== 'persona' && (
           <form onSubmit={handleSubmit} className="!space-y-6">
             <div className="!space-y-2">
               <label htmlFor="email" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Correo Electrónico</label>
@@ -271,14 +347,14 @@ const Login: React.FC = () => {
               )}
             </motion.button>
           </form>
+          )}
 
           <div className="!mt-10 !text-center">
-            <div className="!flex !items-center !gap-4 !mb-5">
-              <div className="!flex-1 !h-px !bg-brand-900/10" />
-              <p className="!text-brand-900/50 !text-sm !whitespace-nowrap">O continúa con</p>
-              <div className="!flex-1 !h-px !bg-brand-900/10" />
-            </div>
-
+            {profile === 'persona' && (
+            <>
+            <p className="!text-brand-900/70 !text-sm !mb-5">
+              Las personas entran con su cuenta de Google: no necesitas contraseña. La primera vez se crea tu cuenta.
+            </p>
             <button
               type="button"
               onClick={async () => {
@@ -305,6 +381,8 @@ const Login: React.FC = () => {
               )}
               <span>{isGoogleSigningIn ? 'Conectando...' : 'Iniciar sesión con Google'}</span>
             </button>
+            </>
+            )}
 
             {DEV_LOGIN_ENABLED && (
               <div className="!mt-5 !p-4 !rounded-2xl !border !border-dashed !border-amber-400 !bg-amber-50 !text-left">
@@ -352,12 +430,22 @@ const Login: React.FC = () => {
               </div>
             )}
 
-            <div className="!mt-6">
-              <span className="!text-brand-900/70">¿No tienes cuenta? </span>
-              <Link to="/register" state={location.state} className="!text-brand-900 !font-bold hover:!text-brand-700 !underline !decoration-2 !underline-offset-4 !transition-colors">
-                Regístrate aquí
-              </Link>
-            </div>
+            {profile === 'empresa' && (
+              <div className="!mt-6">
+                <span className="!text-brand-900/70">¿Tu empresa aún no tiene cuenta? </span>
+                <Link to="/register/empresa" state={location.state} className="!text-brand-900 !font-bold hover:!text-brand-700 !underline !decoration-2 !underline-offset-4 !transition-colors">
+                  Regístrala aquí
+                </Link>
+              </div>
+            )}
+            {profile === 'partner' && (
+              <div className="!mt-6">
+                <span className="!text-brand-900/70">¿Quieres ser partner? </span>
+                <Link to="/aliados" className="!text-brand-900 !font-bold hover:!text-brand-700 !underline !decoration-2 !underline-offset-4 !transition-colors">
+                  Mira cómo postular
+                </Link>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

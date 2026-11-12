@@ -461,7 +461,7 @@ const PartnersGuidePage = () => {
               ))}
             </div>
             <div className="pg-faq__footer-link">
-              <Link to="/partner/login" className="ctv-btn ctv-btn--outline">
+              <Link to="/login?perfil=partner" className="ctv-btn ctv-btn--outline">
                 Ya soy aliado, iniciar sesión
               </Link>
             </div>
