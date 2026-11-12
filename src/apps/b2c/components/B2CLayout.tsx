@@ -12,6 +12,7 @@ import {
   FaCubes,
   FaTrophy,
   FaLeaf,
+  FaRobot,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import b2cApi from '../services/b2cApi';
@@ -55,6 +56,7 @@ const navGroups: NavGroup[] = [
       { id: 'certificates', label: 'Certificados', icon: FaCertificate, path: '/b2c/certificates' },
       { id: 'nft-certificates', label: 'Certificados NFT', icon: FaCubes, path: '/b2c/nft-certificates' },
       { id: 'achievements', label: 'Mis logros', icon: FaTrophy, path: '/b2c/achievements' },
+      { id: 'assistant', label: 'Asistente IA', icon: FaRobot, path: '/b2c/assistant' },
     ],
   },
 ];
