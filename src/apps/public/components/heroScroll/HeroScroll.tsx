@@ -15,9 +15,11 @@ import './HeroScroll.css';
 /**
  * HeroScroll — hero de la landing con scroll pinneado.
  *
- * Un avión atraviesa el wordmark envuelto en bruma, su estela se vuelve la
- * ruta del vuelo y el recorrido termina en la calculadora (emisión → medición).
- * Los tiempos de cada escena están en heroScrollConfig.ts.
+ * Un solo vuelo y una sola línea: el avión despega del origen, sube
+ * atravesando el wordmark envuelto en bruma y baja al destino dibujando su
+ * ruta; al caer la noche esa misma ruta se acomoda bajo el titular y la
+ * calculadora se abre desde el punto de destino (emisión → medición).
+ * Los tiempos están en heroScrollConfig.ts y la historia en heroTimeline.ts.
  *
  * Sin JavaScript el marcado ya es una página completa: el cielo con el
  * wordmark y, debajo, el titular con la calculadora. La animación se monta
@@ -135,6 +137,7 @@ const HeroScroll: React.FC = () => {
       <div className="hs-stage">
         <div className="hs-sky" aria-hidden="true" />
         <div className="hs-night" aria-hidden="true" />
+        <div className="hs-stars" aria-hidden="true" />
         <Mountains />
 
         <CloudWordmark methodology={methodology} />

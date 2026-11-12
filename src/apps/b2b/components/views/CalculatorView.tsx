@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ArrowRight, Leaf, Plane, RotateCcw } from 'lucide-react';
 import { FlightStep } from '../CarbonCalculator/Steps/FlightStep';
@@ -58,7 +59,17 @@ const CalculatorView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNa
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <PageHeader title="Calculadora de CO₂" subtitle="Calcula las emisiones de un vuelo con factores DEFRA / GHG Protocol." />
+      <PageHeader
+        title="Calculadora de CO₂"
+        subtitle={
+          <>
+            Calcula las emisiones de un vuelo con factores DEFRA / GHG Protocol.{' '}
+            <Link to="/metodologia" className="font-semibold text-brand-700 hover:underline">
+              Ver metodología y tabla oficial
+            </Link>
+          </>
+        }
+      />
 
       {!result ? (
         <Card className="p-6 sm:p-8">

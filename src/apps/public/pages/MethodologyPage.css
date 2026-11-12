@@ -1,0 +1,363 @@
+/* ==========================================================================
+   MethodologyPage.css — Metodología Científica y Factores DEFRA 2025 (D4)
+   ========================================================================== */
+@import '../components/landing/tokens.css';
+
+.mtp-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ctv-canvas-1);
+  color: var(--ctv-ink);
+  font-family: var(--ctv-font-body);
+}
+
+.mtp-main {
+  flex: 1;
+  padding-top: 5rem;
+}
+
+.mtp-container {
+  width: 100%;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+/* ── Hero ── */
+.mtp-hero {
+  padding: clamp(2rem, 4vw, 3.25rem) 0 2.5rem;
+  background: radial-gradient(circle at 82% 20%, rgba(8, 174, 6, 0.08) 0%, transparent 58%);
+  border-bottom: 1px solid rgba(4, 68, 67, 0.08);
+}
+
+.mtp-back-link {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: var(--ctv-space-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ctv-ink-soft);
+  text-decoration: none;
+  margin-bottom: var(--ctv-space-6);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.mtp-back-link:hover {
+  color: var(--ctv-brand);
+  transform: translateX(-3px);
+}
+
+.mtp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ctv-space-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ctv-brand);
+  margin-bottom: var(--ctv-space-5);
+  background: rgba(8, 174, 6, 0.08);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--ctv-radius-pill);
+  border: 1px solid rgba(8, 174, 6, 0.2);
+}
+
+.mtp-title {
+  text-wrap: balance;
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: var(--ctv-text-h1);
+  line-height: 1.1;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 var(--ctv-space-4);
+  max-width: 24ch;
+  letter-spacing: -0.02em;
+}
+
+.mtp-lead {
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  max-width: 64ch;
+  margin: 0 0 var(--ctv-space-6);
+}
+
+.mtp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+.mtp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.78rem 1.35rem;
+  border-radius: var(--ctv-radius-md, 12px);
+  background: var(--ctv-brand-deep);
+  color: #ffffff;
+  border: 1px solid var(--ctv-brand-deep);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.mtp-btn-primary:hover:not(:disabled) {
+  background: #033534;
+}
+
+.mtp-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.mtp-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.78rem 1.35rem;
+  border-radius: var(--ctv-radius-md, 12px);
+  background: #ffffff;
+  color: var(--ctv-brand-deep);
+  border: 1px solid rgba(4, 68, 67, 0.22);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.mtp-btn-secondary:hover {
+  border-color: var(--ctv-brand-deep);
+  background: rgba(4, 68, 67, 0.04);
+}
+
+/* ── Sections ── */
+.mtp-section {
+  padding: clamp(2.25rem, 4.5vw, 3.5rem) 0;
+}
+
+.mtp-section--tinted {
+  background: rgba(4, 68, 67, 0.03);
+  border-top: 1px solid rgba(4, 68, 67, 0.08);
+  border-bottom: 1px solid rgba(4, 68, 67, 0.08);
+}
+
+.mtp-section-title {
+  font-family: var(--ctv-font-display);
+  font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+  color: var(--ctv-brand-deep);
+  margin: 0 0 0.5rem;
+}
+
+.mtp-section-sub {
+  color: var(--ctv-ink-soft);
+  font-size: 0.98rem;
+  line-height: 1.6;
+  max-width: 68ch;
+  margin: 0 0 1.75rem;
+}
+
+/* ── Formula & Cards ── */
+.mtp-formula-box {
+  background: #ffffff;
+  border: 1px solid rgba(4, 68, 67, 0.16);
+  border-left: 4px solid var(--ctv-brand);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mtp-formula-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ctv-brand);
+  margin-bottom: 0.45rem;
+}
+
+.mtp-formula-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(0.92rem, 1.5vw, 1.12rem);
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  word-break: break-word;
+}
+
+.mtp-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.mtp-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.mtp-card {
+  background: #ffffff;
+  border: 1px solid rgba(4, 68, 67, 0.12);
+  border-radius: 16px;
+  padding: 1.35rem;
+}
+
+.mtp-card__badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  background: rgba(8, 174, 6, 0.1);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.65rem;
+}
+
+.mtp-card__title {
+  font-family: var(--ctv-font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 0.45rem;
+}
+
+.mtp-card__text {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+}
+
+.mtp-callout {
+  margin-top: 1.25rem;
+  background: rgba(8, 174, 6, 0.06);
+  border: 1px solid rgba(8, 174, 6, 0.22);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ctv-ink);
+}
+
+.mtp-callout__icon {
+  color: var(--ctv-brand);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ── Factors Table ── */
+.mtp-table-wrap {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid rgba(4, 68, 67, 0.14);
+  border-radius: 16px;
+}
+
+.mtp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.mtp-table th {
+  background: var(--ctv-brand-deep);
+  color: #ffffff;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  white-space: nowrap;
+}
+
+.mtp-table th.mtp-num,
+.mtp-table td.mtp-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mtp-table td {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid rgba(4, 68, 67, 0.1);
+  color: var(--ctv-ink);
+}
+
+.mtp-table td.mtp-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 600;
+  color: var(--ctv-brand-deep);
+}
+
+.mtp-haul-cell {
+  background: rgba(4, 68, 67, 0.025);
+  vertical-align: middle;
+}
+
+.mtp-haul-name {
+  display: block;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+}
+
+.mtp-haul-rule {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ctv-ink-soft);
+  margin-top: 0.15rem;
+}
+
+.mtp-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ctv-brand);
+  text-decoration: none;
+}
+
+.mtp-source-link:hover {
+  text-decoration: underline;
+}
+
+.mtp-note {
+  margin-top: 1.5rem;
+  font-size: 0.86rem;
+  color: var(--ctv-ink-soft);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .mtp-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .mtp-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .mtp-actions,
+  .mtp-back-link,
+  header,
+  footer {
+    display: none !important;
+  }
+  .mtp-main {
+    padding-top: 0;
+  }
+}
+

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { HiArrowRight, HiSwitchHorizontal, HiSparkles, HiInformationCircle, HiChevronDown } from 'react-icons/hi';
 import { FaPlane, FaUsers, FaLeaf, FaTree } from 'react-icons/fa';
 import {
@@ -422,7 +422,10 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
           </button>
 
           <p className="qfc-compact-note">
-            Certificado verificable por número · factor {emissions?.methodology ?? 'DEFRA'}
+            Certificado verificable por número · factor{' '}
+            <Link to="/metodologia" style={{ color: 'inherit', textDecoration: 'underline' }}>
+              {emissions?.methodology ?? 'DEFRA'}
+            </Link>
           </p>
         </>
       ) : (
@@ -448,7 +451,10 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
               ? `${Math.round(estimate.meta.distanceKmTotal).toLocaleString('es-CL')} km de vuelo · `
               : ''}
             {roundTrip ? 'Ida y vuelta' : 'Trayecto de ida'}
-            {emissions?.methodology ? ` · ${emissions.methodology}` : ''}
+            {' · '}
+            <Link to="/metodologia" style={{ color: 'inherit', textDecoration: 'underline' }}>
+              {emissions?.methodology || 'DEFRA 2025'}
+            </Link>
           </p>
           {emissions?.withoutRf && (
             <p className="qfc-metric-sub">

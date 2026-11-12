@@ -2,32 +2,52 @@
  * Geometría del vuelo en coordenadas del escenario (px, origen arriba a la
  * izquierda). Se recalcula cuando cambia el ancho de la ventana.
  *
- *   cruce   P0 ──────────► cima        (escena 2, atraviesa el wordmark)
- *   arco    SCL ──► cima ──► LIM        (escena 3)
+ * Todo el hero es una sola línea:
  *
- * El cruce termina en la cima del arco con la misma tangente (horizontal): así
- * la estela "se convierte" en la mitad izquierda del arco y el avión sigue por
- * la derecha sin saltos.
+ *   vuelo      SCL ──► cima (atraviesa el wordmark) ──► LIM
+ *   reposo     la misma línea se acomoda bajo el titular y termina en el
+ *              costado de la calculadora (solo escritorio)
+ *
+ * Las dos formas tienen la misma estructura (dos cúbicas, siete puntos), así
+ * que pasar de una a otra es interpolar punto a punto: no hay un segundo
+ * camino que aparezca de la nada.
  */
 
 export type Point = { x: number; y: number };
 export type Rect = { x: number; y: number; w: number; h: number };
 
+/** M p0 · C p1 p2 p3 · C p4 p5 p6 */
+export type LinePoints = readonly [Point, Point, Point, Point, Point, Point, Point];
+
 export type HeroGeometry = {
-  crossing: string;
+  /** Arco del vuelo SCL → LIM. */
   arc: string;
+  arcPts: LinePoints;
   from: Point;
   to: Point;
-  /** Arco de la escena 4 hacia la card; null si la card no está junto al titular. */
+  /** La línea en reposo, bajo el titular y hasta la card; null si la card no está junto al titular. */
+  settlePts: LinePoints | null;
+  /** Lo mismo como `d`, para la versión sin animación. */
   landing: string | null;
   landingFrom: Point | null;
 };
 
 const f = (n: number) => n.toFixed(1);
+const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+export const pathFrom = (p: readonly Point[]) =>
+  `M${f(p[0].x)} ${f(p[0].y)} ` +
+  `C${f(p[1].x)} ${f(p[1].y)} ${f(p[2].x)} ${f(p[2].y)} ${f(p[3].x)} ${f(p[3].y)} ` +
+  `C${f(p[4].x)} ${f(p[4].y)} ${f(p[5].x)} ${f(p[5].y)} ${f(p[6].x)} ${f(p[6].y)}`;
+
+export const lerpPoint = (a: Point, b: Point, t: number): Point => ({
+  x: a.x + (b.x - a.x) * t,
+  y: a.y + (b.y - a.y) * t,
+});
 
 /**
- * `copy`: bloque del titular de la escena 4. El arco de aterrizaje pasa por
- * debajo de él (antes cruzaba el titular y el párrafo).
+ * `copy`: bloque del titular de la escena final. La línea en reposo pasa por
+ * debajo de él.
  */
 export const computeGeometry = (
   stage: { w: number; h: number },
@@ -39,46 +59,60 @@ export const computeGeometry = (
   const { w, h } = stage;
   const apex: Point = { x: w * 0.5, y: wordmark.y + wordmark.h * 0.5 };
 
-  const p0: Point = mobile ? { x: w * 0.06, y: h * 0.19 } : { x: w * 0.05, y: h * 0.2 };
   // En móvil los extremos van casi al borde: el número ocupa casi todo el ancho
   // y el arco no debe cruzarlo.
   const from: Point = mobile ? { x: w * 0.07, y: h * 0.84 } : { x: w * 0.13, y: h * 0.8 };
-  const to: Point = mobile ? { x: w * 0.93, y: h * 0.78 } : { x: w * 0.83, y: h * 0.68 };
+  // En escritorio el destino cae dentro de la calculadora: al final, ella se
+  // abre desde ese punto.
+  const to: Point = mobile
+    ? { x: w * 0.93, y: h * 0.78 }
+    : card
+      ? { x: clamp(w * 0.83, card.x + card.w * 0.25, card.x + card.w * 0.8), y: card.y + card.h * 0.72 }
+      : { x: w * 0.83, y: h * 0.68 };
 
-  // Cruce: baja suave desde arriba a la izquierda y entra horizontal al centro.
-  const crossing = [
-    `M${f(p0.x)} ${f(p0.y)}`,
-    `C${f(w * 0.2)} ${f(p0.y + (apex.y - p0.y) * 0.15)} ${f(w * 0.26)} ${f(apex.y)} ${f(apex.x)} ${f(apex.y)}`,
-  ].join(' ');
-
-  // Arco en dos cúbicas unidas en la cima con tangente horizontal.
+  // Arco en dos cúbicas unidas en la cima con tangente horizontal: el avión
+  // pasa por el centro del wordmark en vuelo nivelado.
   const spanL = apex.x - from.x;
   const spanR = to.x - apex.x;
-  const arc = [
-    `M${f(from.x)} ${f(from.y)}`,
-    `C${f(from.x + spanL * 0.18)} ${f(from.y - (from.y - apex.y) * 0.7)} ${f(apex.x - spanL * 0.55)} ${f(apex.y)} ${f(apex.x)} ${f(apex.y)}`,
-    `C${f(apex.x + spanR * 0.55)} ${f(apex.y)} ${f(to.x - spanR * 0.18)} ${f(to.y - (to.y - apex.y) * 0.7)} ${f(to.x)} ${f(to.y)}`,
-  ].join(' ');
+  const arcPts: LinePoints = [
+    from,
+    { x: from.x + spanL * 0.3, y: from.y - (from.y - apex.y) * 0.62 },
+    { x: apex.x - spanL * 0.55, y: apex.y },
+    apex,
+    { x: apex.x + spanR * 0.55, y: apex.y },
+    { x: to.x - spanR * 0.3, y: to.y - (to.y - apex.y) * 0.62 },
+    to,
+  ];
 
-  // Las dos mitades no miden lo mismo si los extremos están a distinta
-  // altura: la fracción del largo en la que cae la cima se mide en el DOM
-  // (fractionAtTop).
-
-  let landing: string | null = null;
+  let settlePts: LinePoints | null = null;
   let landingFrom: Point | null = null;
   if (card) {
     // Corre bajo el texto (por debajo de los chips) y sube recién junto a la
-    // card, para aterrizar en su costado a la altura del resultado.
+    // card, para llegar a su costado a la altura del resultado.
     const low = Math.min(h * 0.97, Math.max(h * 0.88, copy ? copy.y + copy.h + h * 0.08 : 0));
     landingFrom = { x: w * 0.03, y: Math.min(h * 0.97, low + h * 0.02) };
-    const end: Point = { x: card.x - 6, y: card.y + card.h * 0.72 };
-    landing = [
-      `M${f(landingFrom.x)} ${f(landingFrom.y)}`,
-      `C${f(w * 0.3)} ${f(low)} ${f(end.x - w * 0.1)} ${f(low)} ${f(end.x)} ${f(end.y)}`,
-    ].join(' ');
+    const end: Point = { x: card.x - 6, y: to.y };
+    const mid: Point = { x: landingFrom.x + (end.x - landingFrom.x) * 0.55, y: low };
+    settlePts = [
+      landingFrom,
+      { x: landingFrom.x + (mid.x - landingFrom.x) * 0.4, y: low },
+      { x: mid.x - (mid.x - landingFrom.x) * 0.3, y: low },
+      mid,
+      { x: mid.x + (end.x - mid.x) * 0.45, y: low },
+      { x: end.x - w * 0.05, y: low },
+      end,
+    ];
   }
 
-  return { crossing, arc, from, to, landing, landingFrom };
+  return {
+    arc: pathFrom(arcPts),
+    arcPts,
+    from,
+    to,
+    settlePts,
+    landing: settlePts ? pathFrom(settlePts) : null,
+    landingFrom,
+  };
 };
 
 /**

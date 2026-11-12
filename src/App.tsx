@@ -52,6 +52,7 @@ const NewsDetailPage = lazy(() => import('./apps/public/pages/NewsDetailPage'));
 const NewsletterActionPage = lazy(() => import('./apps/public/pages/NewsletterActionPage'));
 const PartnersGuidePage = lazy(() => import('./apps/public/pages/PartnersGuidePage'));
 const CalculatorPage = lazy(() => import('./apps/public/pages/CalculatorPage'));
+const MethodologyPage = lazy(() => import('./apps/public/pages/MethodologyPage'));
 const ContactPage = lazy(() => import('./apps/public/pages/ContactPage'));
 const PaymentMethodsPage = lazy(() => import('./apps/public/pages/PaymentMethodsPage'));
 const TermsPage = lazy(() => import('./apps/public/pages/legal/TermsPage'));
@@ -129,6 +130,7 @@ function App() {
             <Route path="/blog/:slug" element={<NewsDetailPage />} />
             <Route path="/aliados" element={<PartnersGuidePage />} />
             <Route path="/calculadora" element={<CalculatorPage />} />
+            <Route path="/metodologia" element={<MethodologyPage />} />
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/pagos" element={<PaymentMethodsPage />} />
 

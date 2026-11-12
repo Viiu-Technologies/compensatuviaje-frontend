@@ -24,7 +24,7 @@ const SECTIONS = [
       { label: 'Blog', href: '/blog' },
       { label: 'Sé un aliado', href: '/aliados' },
       { label: 'Verificar certificado', href: '/#verificar' },
-      { label: 'Metodología', href: '/calculadora#metodologia' },
+      { label: 'Metodología', href: '/metodologia' },
       { label: 'FAQ', href: '/#faq' },
     ],
   },

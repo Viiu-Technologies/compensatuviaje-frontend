@@ -165,6 +165,177 @@ export async function estimateEmissions(payload: EstimateRequest): Promise<Estim
   }
 }
 
+export interface MethodologyHaulCabin {
+  code: 'economy' | 'premium_economy' | 'business' | 'first';
+  label: string;
+  withRf: number;
+  withoutRf: number;
+}
+
+export interface MethodologyHaul {
+  code: string;
+  label: string;
+  rule: string;
+  cabins: MethodologyHaulCabin[];
+}
+
+export interface MethodologyData {
+  methodology: string;
+  factorsVersion: string;
+  standard: string;
+  source: {
+    organization: string;
+    documentTitle: string;
+    url: string;
+  };
+  formula: {
+    expression: string;
+    roundTripNote: string;
+    unit: string;
+  };
+  distance: {
+    method: string;
+    earthRadiusKm: number;
+    routeUpliftIncludedInFactor: boolean;
+    routeUpliftNote: string;
+  };
+  radiativeForcing: {
+    appliedByDefault: boolean;
+    summary: string;
+  };
+  thresholds: {
+    domesticMaxKm: number;
+    shortHaulMaxKm: number;
+  };
+  hauls: MethodologyHaul[];
+  equivalencies: {
+    trees: {
+      kgPerTreeYear: number;
+      tCo2PerTreeYear: number;
+      treesPerTonYear: number;
+      source: string;
+      url: string;
+    };
+    car: {
+      kgCo2ePerKm: number;
+      kmPerTon: number;
+      source: string;
+      url: string;
+    };
+  };
+  note: string;
+}
+
+export const DEFAULT_METHODOLOGY: MethodologyData = {
+  methodology: 'DEFRA 2025',
+  factorsVersion: 'DEFRA 2025 v1',
+  standard: 'GHG Protocol Corporate Value Chain (Scope 3) — Categoría 6 (Viajes de negocios) y Categoría 7 (Traslados)',
+  source: {
+    organization: 'UK DESNZ / DEFRA',
+    documentTitle: 'Greenhouse gas reporting: conversion factors 2025 (Business travel - air)',
+    url: 'https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025',
+  },
+  formula: {
+    expression: 'distancia_km × factor_kg_co2e_por_pasajero_km × pasajeros',
+    roundTripNote: 'Si el vuelo es ida y vuelta, la distancia ortodrómica de un tramo se multiplica por 2.',
+    unit: 'kg CO₂e',
+  },
+  distance: {
+    method: 'Fórmula de Haversine (distancia ortodrómica en línea recta entre coordenadas IATA de origen y destino)',
+    earthRadiusKm: 6371,
+    routeUpliftIncludedInFactor: true,
+    routeUpliftNote:
+      'Los factores oficiales DEFRA ya incorporan internamente el factor de incremento por desvíos de ruta y espera en vuelo (+8%). No aplicamos un 8% adicional sobre la distancia Haversine para evitar doble contabilidad.',
+  },
+  radiativeForcing: {
+    appliedByDefault: true,
+    summary:
+      'Para la contribución climática y emisión de certificados usamos los factores con forzamiento radiativo (With RF), que reflejan el efecto adicional de volar en altura. También calculamos y guardamos el valor sin forzamiento radiativo (Without RF) como referencia para inventarios base bajo GHG Protocol.',
+  },
+  thresholds: {
+    domesticMaxKm: 500,
+    shortHaulMaxKm: 3700,
+  },
+  hauls: [
+    {
+      code: 'Domestic',
+      label: 'Doméstico',
+      rule: 'Menor a 500 km (solo ida)',
+      cabins: [
+        { code: 'economy', label: 'Económica (Economy)', withRf: 0.22928, withoutRf: 0.13552 },
+        { code: 'premium_economy', label: 'Premium Económica', withRf: 0.22928, withoutRf: 0.13552 },
+        { code: 'business', label: 'Ejecutiva (Business)', withRf: 0.22928, withoutRf: 0.13552 },
+        { code: 'first', label: 'Primera (First)', withRf: 0.22928, withoutRf: 0.13552 },
+      ],
+    },
+    {
+      code: 'Short-haul',
+      label: 'Corto alcance',
+      rule: 'Entre 500 km y 3699 km (solo ida)',
+      cabins: [
+        { code: 'economy', label: 'Económica (Economy)', withRf: 0.12576, withoutRf: 0.07435 },
+        { code: 'premium_economy', label: 'Premium Económica', withRf: 0.18863, withoutRf: 0.11152 },
+        { code: 'business', label: 'Ejecutiva (Business)', withRf: 0.18863, withoutRf: 0.11152 },
+        { code: 'first', label: 'Primera (First)', withRf: 0.18863, withoutRf: 0.11152 },
+      ],
+    },
+    {
+      code: 'Long-haul',
+      label: 'Largo alcance',
+      rule: 'Igual o mayor a 3.700 km (solo ida)',
+      cabins: [
+        { code: 'economy', label: 'Económica (Economy)', withRf: 0.11704, withoutRf: 0.06926 },
+        { code: 'premium_economy', label: 'Premium Económica', withRf: 0.18726, withoutRf: 0.11081 },
+        { code: 'business', label: 'Ejecutiva (Business)', withRf: 0.33940, withoutRf: 0.20083 },
+        { code: 'first', label: 'Primera (First)', withRf: 0.46814, withoutRf: 0.27701 },
+      ],
+    },
+  ],
+  equivalencies: {
+    trees: {
+      kgPerTreeYear: 60,
+      tCo2PerTreeYear: 0.06,
+      treesPerTonYear: 17,
+      source: 'US EPA, Greenhouse Gas Equivalencies Calculator (2026)',
+      url: 'https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references',
+    },
+    car: {
+      kgCo2ePerKm: 0.16725,
+      kmPerTon: 5979,
+      source: 'UK DESNZ/DEFRA, GHG Conversion Factors 2025',
+      url: 'https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025',
+    },
+  },
+  note:
+    'CompensaTuViaje permite financiar iniciativas de contribución climática verificadas; no representa un retiro automático de créditos de carbono certificados en registros externos salvo indicación expresa.',
+};
+
+function publicApiBase(): string {
+  return cleanBaseUrl.endsWith('/api') ? `${cleanBaseUrl}/public` : `${cleanBaseUrl}/api/public`;
+}
+
+export function getMethodologyPdfUrl(): string {
+  return `${publicApiBase()}/calculator/methodology/pdf`;
+}
+
+/**
+ * Obtiene la especificación oficial desde el backend (lee directo de calculatorConstants.js).
+ * Si el backend no responde, usa DEFAULT_METHODOLOGY para que la página no quede vacía.
+ */
+export async function getMethodology(signal?: AbortSignal): Promise<{ data: MethodologyData; live: boolean }> {
+  try {
+    const res = await fetch(`${publicApiBase()}/calculator/methodology`, { signal });
+    if (!res.ok) return { data: DEFAULT_METHODOLOGY, live: false };
+    const body = await res.json();
+    if (body?.success && body?.data) {
+      return { data: body.data as MethodologyData, live: true };
+    }
+    return { data: DEFAULT_METHODOLOGY, live: false };
+  } catch {
+    return { data: DEFAULT_METHODOLOGY, live: false };
+  }
+}
+
 /**
  * Public endpoint: POST /api/public/support/contact
  */

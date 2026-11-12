@@ -84,10 +84,10 @@ const NAV_GROUPS: NavGroup[] = [
       },
       {
         label: 'Metodología & Estándares',
-        href: '/calculadora#metodologia',
-        description: 'Factores oficiales DEFRA y GHG Protocol.',
+        href: '/metodologia',
+        description: 'Fórmula, distancia Haversine y factores DEFRA 2025.',
         icon: FaShieldAlt,
-        prefetchKey: 'calculator',
+        prefetchKey: 'methodology',
       },
       {
         label: 'Métodos de Pago',

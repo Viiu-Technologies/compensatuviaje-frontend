@@ -4,6 +4,7 @@
 
 export const prefetchRoutes = {
   calculator: () => import('../../apps/public/pages/CalculatorPage'),
+  methodology: () => import('../../apps/public/pages/MethodologyPage'),
   contact: () => import('../../apps/public/pages/ContactPage'),
   payments: () => import('../../apps/public/pages/PaymentMethodsPage'),
   blog: () => import('../../apps/public/pages/BlogPage'),
@@ -32,6 +33,7 @@ export function scheduleIdlePrefetch() {
 
   const prefetchPublicPages = () => {
     prefetchRoute('calculator');
+    prefetchRoute('methodology');
     prefetchRoute('payments');
     prefetchRoute('contact');
     prefetchRoute('blog');
