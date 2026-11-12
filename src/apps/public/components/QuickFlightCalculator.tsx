@@ -463,7 +463,7 @@ export const QuickFlightCalculator: React.FC<QuickFlightCalculatorProps> = ({
               <span className="qfc-eco-detail">
                 {trees !== undefined ? (
                   <>
-                    Equivale a <strong>~{trees.toLocaleString('es-CL')} {trees === 1 ? 'árbol' : 'árboles'}</strong>
+                    Lo que absorben <strong>~{trees.toLocaleString('es-CL')} {trees === 1 ? 'árbol' : 'árboles'}</strong> en un año
                   </>
                 ) : (
                   'Calcula tu vuelo para ver su equivalencia'

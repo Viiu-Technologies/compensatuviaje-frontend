@@ -32,12 +32,9 @@ export interface EstimateResponse {
     methodology?: string;
     passengers: number;
   };
-  /** Equivalencias del backend (1 t = 1 árbol, ver calculatorConstants.js). */
+  /** Árboles que absorben en un año el CO₂ del vuelo (regla única del backend, calculatorConstants.js). */
   equivalencies?: {
     trees: number;
-    waterLiters: number;
-    housingM2: number;
-    textileKg: number;
   };
   /** Precio del proyecto disponible más barato; null si no hay proyectos con stock. */
   pricing?: {

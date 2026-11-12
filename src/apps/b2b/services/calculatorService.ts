@@ -47,11 +47,9 @@ export interface PricingData {
   pricePerTonCLP: number;
 }
 
+// Árboles que absorben en un año el CO₂ del vuelo (regla única del backend).
 export interface Equivalencies {
   trees: number;
-  waterLiters: number;
-  housingM2: number;
-  textileKg: number;
 }
 
 export interface CalculationResponse {
