@@ -5,6 +5,7 @@ import {
   FaMinus, FaPlus, FaArrowRight,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
 import B2CLayout from './B2CLayout';
 import { cx, fmtInt, fmtNum } from '../ui';
 import './B2CCalculator.css';
@@ -272,17 +273,22 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
     setIsCalculating(true);
     setError(null);
     try {
+      const token = !reuseId && user?.id ? await authService.getAccessToken() : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
       const response = await fetch(`${API_URL}/public/calculator/estimate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           origin: trip.origin.code,
           destination: trip.destination.code,
           cabinCode: trip.cabinCode,
           passengers: trip.passengers,
           roundTrip: trip.roundTrip,
-          // Sin userId el backend no guarda: un viaje ya guardado no se duplica.
+          // Sin token ni userId el backend no guarda: un viaje ya guardado no se duplica.
           userId: reuseId ? undefined : user?.id,
+          saveCalculation: !reuseId && Boolean(user?.id),
         }),
       });
       const data = await response.json();
