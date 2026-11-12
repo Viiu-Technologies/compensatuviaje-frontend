@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
+import { getSettings } from '../services/adminApi';
 import {
   LayoutDashboard,
+  AlertTriangle,
   Building2,
   Users,
   TreePine,
@@ -196,10 +198,40 @@ export default function AdminLayout() {
   // Se recuerda entre sesiones (antes volvía a abrirse al recargar).
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readCollapsed);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [legalWarning, setLegalWarning] = useState<{ incomplete: boolean; missingCount: number }>({
+    incomplete: false,
+    missingCount: 0,
+  });
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const current = findCurrent(location.pathname);
+
+  useEffect(() => {
+    let active = true;
+    const checkLegalSettings = async () => {
+      try {
+        const s = await getSettings();
+        if (!active) return;
+        setLegalWarning({
+          incomplete: s?.legal_complete === false,
+          missingCount: Array.isArray(s?.missing_legal_fields) ? s.missing_legal_fields.length : 0,
+        });
+      } catch {
+        // Silencioso si settings no está disponible aún
+      }
+    };
+
+    checkLegalSettings();
+    const onUpdated = () => {
+      checkLegalSettings();
+    };
+    window.addEventListener('admin-settings-updated', onUpdated);
+    return () => {
+      active = false;
+      window.removeEventListener('admin-settings-updated', onUpdated);
+    };
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -272,6 +304,31 @@ export default function AdminLayout() {
         </header>
 
         <div className="adm-content">
+          {legalWarning.incomplete && (
+            <div
+              role="alert"
+              className="adm-alert adm-alert--warning"
+              style={{
+                marginBottom: 16,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <AlertTriangle aria-hidden="true" />
+                <div>
+                  <strong>Faltan datos legales de la plataforma.</strong> Completa la ficha legal
+                  {legalWarning.missingCount > 0 ? ` (${legalWarning.missingCount} campos pendientes)` : ''} antes de habilitar ventas B2B en producción.
+                </div>
+              </div>
+              <Link to="/admin/settings" className="adm-btn adm-btn--sm adm-btn--primary">
+                Completar datos legales
+              </Link>
+            </div>
+          )}
           <Outlet />
         </div>
       </main>
