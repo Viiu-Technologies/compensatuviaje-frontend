@@ -53,15 +53,21 @@ export interface UploadBatchResult {
 
 // ─── API Functions ────────────────────────────────────────────────────────────
 
+export type EmissionsReportFormat = 'xlsx' | 'pdf';
+
 /**
- * GET /api/b2b/reports/emissions?desde=&hasta=
- * Informe Excel con una fila por vuelo (con y sin forzamiento radiativo),
- * resumen por mes y metodología. Fechas opcionales en formato AAAA-MM-DD.
+ * GET /api/b2b/reports/emissions?desde=&hasta=&formato=xlsx|pdf
+ * Informe de emisiones en Excel (una fila por vuelo, con y sin RF) o PDF resumen
+ * ejecutivo por periodo. Fechas opcionales en formato AAAA-MM-DD.
  */
-export const downloadEmissionsReport = async (desde?: string, hasta?: string): Promise<Blob> => {
+export const downloadEmissionsReport = async (
+  desde?: string,
+  hasta?: string,
+  formato: EmissionsReportFormat = 'xlsx'
+): Promise<Blob> => {
   try {
     const blob = (await api.get('/b2b/reports/emissions', {
-      params: { ...(desde && { desde }), ...(hasta && { hasta }) },
+      params: { ...(desde && { desde }), ...(hasta && { hasta }), formato },
       responseType: 'blob',
     })) as unknown as Blob;
     if (!(blob instanceof Blob)) throw new Error('Respuesta inesperada del servidor.');

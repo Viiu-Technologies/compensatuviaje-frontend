@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CheckCircle2, Download, FileSpreadsheet, Leaf, RefreshCw, UploadCloud, XCircle } from 'lucide-react';
-import { downloadEmissionsReport, listBatches, uploadManifest, type BatchStatus, type UploadBatch, type UploadBatchResult } from '../../services/batchService';
+import { CheckCircle2, Download, FileSpreadsheet, FileText, Leaf, RefreshCw, UploadCloud, XCircle } from 'lucide-react';
+import {
+  downloadEmissionsReport,
+  listBatches,
+  uploadManifest,
+  type BatchStatus,
+  type EmissionsReportFormat,
+  type UploadBatch,
+  type UploadBatchResult,
+} from '../../services/batchService';
 import {
   Badge,
   btn,
@@ -58,19 +66,20 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [reportFrom, setReportFrom] = useState('');
   const [reportTo, setReportTo] = useState('');
-  const [downloading, setDownloading] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] = useState<EmissionsReportFormat | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const downloadReport = async () => {
-    setDownloading(true);
+  const downloadReport = async (formato: EmissionsReportFormat) => {
+    setDownloadingFormat(formato);
     setReportError(null);
     try {
-      const blob = await downloadEmissionsReport(reportFrom || undefined, reportTo || undefined);
+      const blob = await downloadEmissionsReport(reportFrom || undefined, reportTo || undefined, formato);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
       a.href = url;
-      a.download = `informe-emisiones-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = formato === 'pdf' ? `resumen-emisiones-${stamp}.pdf` : `informe-emisiones-${stamp}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -78,7 +87,7 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
     } catch (err: any) {
       setReportError(err?.message || 'No pudimos generar el informe.');
     } finally {
-      setDownloading(false);
+      setDownloadingFormat(null);
     }
   };
 
@@ -240,7 +249,7 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
         <Card className="p-6">
           <CardHeader
             title="Informe de emisiones"
-            subtitle="Excel con una fila por vuelo, emisiones con y sin forzamiento radiativo, resumen por mes y metodología (DEFRA 2025). Sirve para el inventario de alcance 3 de la empresa."
+            subtitle="Descarga el detalle en Excel (una fila por vuelo, con y sin forzamiento radiativo) o el resumen ejecutivo en PDF por periodo para auditoría e inventario de alcance 3 (DEFRA 2025)."
             icon={FileSpreadsheet}
           />
           <div className="flex flex-wrap items-end gap-3">
@@ -252,9 +261,23 @@ const ManifestView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavi
               Hasta
               <input type="date" value={reportTo} onChange={(e) => setReportTo(e.target.value)} className="mt-1 block rounded-lg border border-gray-300 px-3 py-2 text-sm" />
             </label>
-            <button type="button" className={btn.primary} onClick={downloadReport} disabled={downloading}>
+            <button
+              type="button"
+              className={btn.primary}
+              onClick={() => downloadReport('pdf')}
+              disabled={downloadingFormat !== null}
+            >
+              <FileText className="w-4 h-4" aria-hidden="true" />
+              {downloadingFormat === 'pdf' ? 'Generando PDF…' : 'Descargar resumen (PDF)'}
+            </button>
+            <button
+              type="button"
+              className={btn.secondary}
+              onClick={() => downloadReport('xlsx')}
+              disabled={downloadingFormat !== null}
+            >
               <Download className="w-4 h-4" aria-hidden="true" />
-              {downloading ? 'Generando…' : 'Descargar informe (Excel)'}
+              {downloadingFormat === 'xlsx' ? 'Generando Excel…' : 'Descargar detalle (Excel)'}
             </button>
           </div>
           <p className="m-0 mt-3 text-xs text-gray-500">Sin fechas, incluye todos los vuelos. Las planillas subidas antes de noviembre de 2026 no guardaban el detalle por vuelo.</p>
