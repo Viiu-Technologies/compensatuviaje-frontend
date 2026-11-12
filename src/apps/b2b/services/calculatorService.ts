@@ -47,11 +47,11 @@ export interface PricingData {
   pricePerTonCLP: number;
 }
 
+// Equivalencias con fuente, calculadas en el backend (US EPA y DEFRA 2025).
 export interface Equivalencies {
   trees: number;
-  waterLiters: number;
-  housingM2: number;
-  textileKg: number;
+  carKm: number;
+  sources: { trees: string; carKm: string };
 }
 
 export interface CalculationResponse {

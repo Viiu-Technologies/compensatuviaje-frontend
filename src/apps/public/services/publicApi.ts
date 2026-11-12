@@ -32,12 +32,11 @@ export interface EstimateResponse {
     methodology?: string;
     passengers: number;
   };
-  /** Equivalencias del backend (1 t = 1 árbol, ver calculatorConstants.js). */
+  /** Equivalencias con fuente, calculadas en el backend (calculatorConstants.js). */
   equivalencies?: {
     trees: number;
-    waterLiters: number;
-    housingM2: number;
-    textileKg: number;
+    carKm: number;
+    sources: { trees: string; carKm: string };
   };
   /** Precio del proyecto disponible más barato; null si no hay proyectos con stock. */
   pricing?: {

@@ -85,9 +85,11 @@ export interface B2CCertificate {
   project: string;
   flightRoute?: string | null;
   status: 'verified' | 'pending' | string;
+  // Equivalencias con fuente, calculadas en el backend (US EPA y DEFRA 2025).
   equivalencies: {
-    trees: number;
-    water: number;
+  trees: number;
+  carKm: number;
+  sources: { trees: string; carKm: string };
   };
   nftTxHash?: string | null;
   nftTokenId?: string | null;
