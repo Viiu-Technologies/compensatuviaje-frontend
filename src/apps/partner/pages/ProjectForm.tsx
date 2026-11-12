@@ -152,15 +152,19 @@ const ProjectForm: React.FC = () => {
     else if (!/^[A-Z0-9-_]+$/i.test(formData.code)) e.code = 'Solo letras, números, guiones y guiones bajos';
     if (!formData.projectType) e.projectType = 'Elige el tipo de proyecto';
     if (!formData.country) e.country = 'Elige el país';
+    if (!formData.description?.trim()) e.description = 'Describe el proyecto y su impacto ambiental';
+    if (!formData.provider_cost_unit_clp || formData.provider_cost_unit_clp <= 0) {
+      e.provider_cost_unit_clp = 'Indica el costo por unidad (debe ser mayor a 0)';
+    }
+    if (!formData.capacity_total || formData.capacity_total <= 0) {
+      e.capacity_total = 'Indica la capacidad total de unidades del proyecto';
+    }
     if (!isEditing) {
       if (!formData.impact_unit_type) e.impact_unit_type = 'Elige la unidad de impacto';
       if (!formData.impact_unit_spec?.trim()) e.impact_unit_spec = 'Indica la especie o el tipo';
       if (!formData.monthly_stock || formData.monthly_stock <= 0) e.monthly_stock = 'Indica cuántas unidades puedes entregar este mes';
       if (photoFiles.length < MIN_PHOTOS) e.photos = `Sube al menos ${MIN_PHOTOS} fotos (llevas ${photoFiles.length})`;
       if (techDocFiles.length < 1) e.techDocs = 'Sube al menos un documento técnico en PDF';
-    }
-    if (formData.provider_cost_unit_clp !== undefined && formData.provider_cost_unit_clp < 0) {
-      e.provider_cost_unit_clp = 'El costo no puede ser negativo';
     }
     if (formData.transparencyUrl && !/^https?:\/\/.+/.test(formData.transparencyUrl)) {
       e.transparencyUrl = 'La dirección debe comenzar con http:// o https://';
@@ -184,12 +188,13 @@ const ProjectForm: React.FC = () => {
     try {
       let projectResult: EsgProject | null = null;
       if (isEditing) {
-        const updateData: UpdateProjectRequest = {
+        const updateData: UpdateProjectRequest & { transparencyUrl?: string } = {
           name: formData.name,
           description: formData.description,
           country: formData.country,
           region: formData.region,
           transparency_url: formData.transparencyUrl,
+          transparencyUrl: formData.transparencyUrl,
           provider_cost_unit_clp: formData.provider_cost_unit_clp,
           capacity_total: formData.capacity_total,
         };
@@ -384,14 +389,22 @@ const ProjectForm: React.FC = () => {
               </FormField>
             )}
 
-            <FormField label="Descripción" htmlFor="f-description" help="Qué hace el proyecto y qué impacto ambiental genera." className="sm:col-span-2">
+            <FormField
+              label="Descripción"
+              htmlFor="f-description"
+              required
+              error={errors.description}
+              help="Qué hace el proyecto y qué impacto ambiental genera."
+              className="sm:col-span-2"
+            >
               <textarea
                 id="f-description"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={4}
                 placeholder="Describe el proyecto, sus objetivos y el impacto esperado"
-                className={cx(inputCls, 'resize-y')}
+                className={cx(fieldCls(!!errors.description), 'resize-y')}
+                {...aria('description')}
               />
             </FormField>
           </div>
@@ -450,6 +463,7 @@ const ProjectForm: React.FC = () => {
             <FormField
               label={`Costo por ${unitName.toLowerCase()}`}
               htmlFor="f-provider_cost_unit_clp"
+              required
               error={errors.provider_cost_unit_clp}
               help="Lo que te cuesta entregar una unidad."
             >
@@ -457,7 +471,7 @@ const ProjectForm: React.FC = () => {
                 id="f-provider_cost_unit_clp"
                 type="number"
                 inputMode="numeric"
-                min="0"
+                min="1"
                 value={numberValue(formData.provider_cost_unit_clp)}
                 onChange={(e) => handleChange('provider_cost_unit_clp', parseNum(e.target.value))}
                 placeholder="Ej.: 432"
@@ -487,16 +501,23 @@ const ProjectForm: React.FC = () => {
               />
             </FormField>
 
-            <FormField label="Capacidad total" htmlFor="f-capacity_total" help="Unidades que el proyecto puede entregar en toda su vida.">
+            <FormField
+              label="Capacidad total"
+              htmlFor="f-capacity_total"
+              required
+              error={errors.capacity_total}
+              help="Unidades que el proyecto puede entregar en toda su vida."
+            >
               <input
                 id="f-capacity_total"
                 type="number"
                 inputMode="numeric"
-                min="0"
+                min="1"
                 value={numberValue(formData.capacity_total)}
                 onChange={(e) => handleChange('capacity_total', parseNum(e.target.value))}
                 placeholder="Ej.: 50000"
-                className={inputCls}
+                className={fieldCls(!!errors.capacity_total)}
+                {...aria('capacity_total')}
               />
             </FormField>
 

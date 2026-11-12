@@ -94,7 +94,11 @@ const Results: React.FC<{ evaluation: CertificationEvaluation; showAi?: boolean 
         <Card className="p-5">
           <p className="m-0 text-sm text-gray-500">Confianza de la IA</p>
           <p className="m-0 mt-1.5 text-3xl font-bold text-gray-900 tabular-nums leading-none">
-            {evaluation.confidence_score ?? 0}
+            {evaluation.confidence_score != null
+              ? evaluation.confidence_score > 0 && evaluation.confidence_score <= 1
+                ? Math.round(evaluation.confidence_score * 100)
+                : Math.round(evaluation.confidence_score)
+              : 0}
             <span className="text-base font-medium text-gray-400"> %</span>
           </p>
         </Card>

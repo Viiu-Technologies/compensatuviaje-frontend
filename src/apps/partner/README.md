@@ -189,11 +189,13 @@ backend mientras la evaluación de la IA está pendiente.
 |------|------------------|
 | `reforestation` | Reforestación |
 | `conservation` | Conservación |
-| `renewable_energy` | Energía Renovable |
-| `methane_capture` | Captura de Metano |
-| `ocean_cleanup` | Limpieza Oceánica |
-| `sustainable_agriculture` | Agricultura Sostenible |
-| `other` | Otro |
+| `clean_water` | Agua Limpia |
+| `water_security` | Seguridad Hídrica |
+| `circular_economy` | Economía Circular |
+| `waste_management` | Gestión de Residuos |
+| `energy_efficiency` | Eficiencia Energética |
+| `social_housing` | Vivienda Social |
+| `community_development` | Desarrollo Comunitario |
 
 ## Estados de Proyecto
 
