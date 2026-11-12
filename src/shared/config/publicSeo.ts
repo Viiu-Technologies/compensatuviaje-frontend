@@ -30,6 +30,11 @@ export const PUBLIC_SEO = {
     description: 'Calcula gratis las emisiones de CO₂ de tu vuelo con factores DEFRA y compénsalas con proyectos verificados.',
     path: '/calculadora',
   },
+  '/metodologia': {
+    title: 'Metodología de Cálculo de Emisiones',
+    description: 'Fórmula ortodrómica Haversine, tramos de vuelo y tabla oficial DEFRA 2025 con y sin forzamiento radiativo bajo GHG Protocol Alcance 3.',
+    path: '/metodologia',
+  },
   '/contacto': {
     title: 'Contacto y Soporte',
     description: 'Escríbenos para consultas de personas, empresas, aliados o prensa sobre compensación de huella de carbono.',

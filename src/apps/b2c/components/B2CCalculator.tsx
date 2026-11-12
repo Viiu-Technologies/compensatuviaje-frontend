@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FaPlane, FaLeaf, FaMapMarkerAlt, FaUsers, FaExchangeAlt, FaCheckCircle, FaArrowLeft, FaSpinner, FaInfoCircle,
   FaMinus, FaPlus, FaArrowRight,
@@ -582,6 +582,12 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
                 </li>
               ))}
             </ol>
+            <p className="m-0 mt-4 text-xs text-gray-500">
+              Cálculo según factores oficiales DEFRA 2025 y GHG Protocol.{' '}
+              <Link to="/metodologia" className="font-semibold text-brand-700 hover:underline">
+                Ver metodología
+              </Link>
+            </p>
           </div>
         </div>
       )}
