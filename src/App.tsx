@@ -270,10 +270,10 @@ function App() {
               element={<PaymentResultPage />} 
             />
 
-            {/* Redirigir /b2c/login al selector de login principal */}
+            {/* Redirigir /b2c/login al login principal, con el perfil Persona elegido */}
             <Route 
               path="/b2c/login" 
-              element={<Navigate to="/login" replace />} 
+              element={<Navigate to="/login?perfil=persona" replace />} 
             />
             
             <Route 
@@ -347,6 +347,9 @@ function App() {
             {/* Rutas Partner - Proyectos ESG */}
             {/* ===================== */}
             
+            {/* La guía de partners y correos antiguos enlazan aquí: antes no existía */}
+            <Route path="/partner/login" element={<Navigate to="/login?perfil=partner" replace />} />
+
             <Route 
               path="/partner/*" 
               element={
