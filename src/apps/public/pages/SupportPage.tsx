@@ -40,7 +40,7 @@ const SUPPORT_TOPICS: SupportTopic[] = [
     title: 'Vuelos, cálculos y verificación de certificados',
     body: (
       <>
-        Tus cálculos, contribuciones climáticas y certificados digitales se sincronizan entre la app iOS
+        Tus cálculos, contribuciones climáticas y certificados digitales se sincronizan entre la app móvil
         y tu cuenta web. Puedes comprobar la autenticidad de cualquier certificado emitido usando su
         código único en el verificador público.
       </>
@@ -59,18 +59,16 @@ const SUPPORT_TOPICS: SupportTopic[] = [
   },
   {
     id: 'eliminar-cuenta',
-    title: 'Cómo eliminar tu cuenta y datos (App iOS y Web)',
+    title: 'Cómo eliminar tu cuenta y datos (Android, iOS y Web)',
     highlight: true,
     body: (
       <>
         Puedes eliminar tu cuenta en cualquier momento desde la opción <strong>Eliminar cuenta</strong>{' '}
-        dentro de la aplicación iOS (si ingresaste con Apple, la app solicitará reconfirmar con tu Apple
-        ID para revocar el acceso). También puedes pedir la baja escribiendo a{' '}
-        <a href={`mailto:${LEGAL.emails.support}`}>{LEGAL.emails.support}</a> o mediante el formulario de
-        abajo desde tu correo registrado.
+        dentro de la app móvil (si ingresaste con Apple, la app solicitará reconfirmar con tu Apple ID
+        para revocar el acceso), o enviarnos una solicitud web sin necesidad de abrir la aplicación.
       </>
     ),
-    link: { to: `${LEGAL_ROUTES.privacy}#eliminacion`, label: 'Ver detalles en Política de Privacidad' },
+    link: { to: '/eliminar-cuenta', label: 'Solicitar eliminación y ver datos retenidos' },
   },
 ];
 
@@ -97,7 +95,7 @@ const SupportPage: React.FC = () => {
             </span>
 
             <h1 className="cp-title">
-              Soporte y ayuda para la app iOS y la plataforma web.
+              Soporte y ayuda para la app móvil y la plataforma web.
             </h1>
 
             <p className="cp-lead">
@@ -142,7 +140,7 @@ const SupportPage: React.FC = () => {
                 Guías rápidas de ayuda
               </h2>
               <p className="sp-guides-sub">
-                Soluciones frecuentes para quienes usan la aplicación móvil iOS o la plataforma web.
+                Soluciones frecuentes para quienes usan la aplicación móvil (Android e iOS) o la plataforma web.
               </p>
             </div>
 
@@ -174,7 +172,7 @@ const SupportPage: React.FC = () => {
             eyebrow="Soporte Técnico"
             titleTop="¿Necesitas ayuda"
             titleAccent="con tu cuenta o la app?"
-            lede="Cuéntanos qué ocurrió en la app iOS o en la web (si puedes, indica el correo de tu cuenta y tu dispositivo) y nuestro equipo te responderá en menos de 24 horas hábiles."
+            lede="Cuéntanos qué ocurrió en la app móvil (Android o iOS) o en la web (si puedes, indica el correo de tu cuenta y tu dispositivo) y nuestro equipo te responderá en menos de 24 horas hábiles."
           />
         </section>
 

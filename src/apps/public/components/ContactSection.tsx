@@ -12,6 +12,7 @@ const SUBJECT_OPTIONS = [
   { value: 'b2b', label: 'Compensación corporativa (B2B / Scope 3)' },
   { value: 'alianzas', label: 'Alianzas y registro de proyectos' },
   { value: 'soporte_tecnico', label: 'Soporte y verificación' },
+  { value: 'Solicitud de eliminación de cuenta', label: 'Solicitud de eliminación de cuenta' },
   { value: 'otro', label: 'Otro requerimiento' },
 ];
 
@@ -23,6 +24,8 @@ export interface ContactSectionProps {
   titleTop?: string;
   titleAccent?: string;
   lede?: string;
+  messagePlaceholder?: string;
+  submitLabel?: string;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
@@ -33,6 +36,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   titleTop = 'Inicia tu plan de',
   titleAccent = 'acción climática',
   lede = 'Cuéntanos sobre tus requerimientos de viaje individual o metas corporativas Scope 3. Nuestro equipo de especialistas en sostenibilidad responde en menos de 24 horas hábiles.',
+  messagePlaceholder = 'Indícanos si viajas de manera particular o el volumen de colaboradores que deseas incluir en tu reporte...',
+  submitLabel = 'Enviar mensaje directo',
 }) => {
   // ?asunto=b2b preselecciona el asunto (lo usa "Agendar reunión corporativa").
   const [searchParams] = useSearchParams();
@@ -287,7 +292,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                       rows={4}
                       value={formData.message}
                       onChange={handleChange}
-                      placeholder="Indícanos si viajas de manera particular o el volumen de colaboradores que deseas incluir en tu reporte..."
+                      placeholder={messagePlaceholder}
                       className="contact-textarea"
                     />
                   </div>
@@ -301,7 +306,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                       <span>Enviando mensaje...</span>
                     ) : (
                       <>
-                        <span>Enviar mensaje directo</span>
+                        <span>{submitLabel}</span>
                         <HiArrowRight aria-hidden="true" />
                       </>
                     )}

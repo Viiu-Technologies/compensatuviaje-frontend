@@ -48,8 +48,9 @@ const sections: LegalSection[] = [
         <li><strong>Pagos:</strong> monto, fecha, estado y código de autorización. <strong>No recibimos ni guardamos los datos de tu tarjeta</strong>; los procesa Transbank.</li>
         <li><strong>Comunicaciones:</strong> mensajes que nos envías por formularios o correo, y tu suscripción al newsletter.</li>
         <li>
-          <strong>Datos técnicos:</strong> dirección IP, navegador o versión de la aplicación móvil iOS, sistema
-          operativo y registros de actividad necesarios para la seguridad y funcionamiento del servicio.
+          <strong>Datos técnicos:</strong> dirección IP, navegador o versión de la aplicación móvil (Android e
+          iOS), sistema operativo y registros de actividad necesarios para la seguridad y funcionamiento del
+          servicio.
         </li>
       </ul>
     ),
@@ -162,10 +163,13 @@ const sections: LegalSection[] = [
     title: 'Cuánto tiempo guardamos los datos',
     body: (
       <ul>
-        <li>Datos de cuenta: mientras la cuenta esté activa y hasta 12 meses después de cerrarla.</li>
-        <li>Datos de compras y documentos tributarios: 6 años, por obligación tributaria.</li>
+        <li>
+          Datos de cuenta y perfil: mientras la cuenta esté activa. Al eliminarla desde la app se borran o
+          anonimizan de inmediato (o en un máximo de 30 días corridos si lo solicitas por web o correo).
+        </li>
+        <li>Datos de compras, pagos y documentos tributarios: 6 años, por obligación tributaria.</li>
         <li>Newsletter: hasta que te des de baja.</li>
-        <li>Registros técnicos de seguridad: hasta 12 meses.</li>
+        <li>Registros técnicos y de seguridad: hasta 12 meses.</li>
       </ul>
     ),
   },
@@ -191,25 +195,27 @@ const sections: LegalSection[] = [
   },
   {
     id: 'eliminacion',
-    title: 'Eliminación de cuenta y datos (Web e iOS)',
+    title: 'Eliminación de cuenta y datos (Web, Android e iOS)',
     body: (
       <>
         <p>
-          Puedes eliminar tu cuenta en cualquier momento directamente desde la aplicación móvil iOS en la
-          opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la app te pedirá
-          reconfirmar con tu Apple ID para revocar de forma segura la autorización asociada antes de
+          Puedes eliminar tu cuenta en cualquier momento directamente desde la aplicación móvil (Android o
+          iOS) en la opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la app te
+          pedirá reconfirmar con tu Apple ID para revocar de forma segura la autorización asociada antes de
           completar el borrado.
         </p>
         <p>
-          También puedes solicitar la eliminación por correo a{' '}
+          También puedes solicitar el borrado sin necesidad de abrir la app desde nuestra página pública de{' '}
+          <Link to="/eliminar-cuenta">Eliminación de cuenta</Link>, escribiendo a{' '}
           <a href={`mailto:${LEGAL.emails.privacy}`}>{LEGAL.emails.privacy}</a> desde la dirección
-          registrada o desde nuestra página de <Link to="/soporte#eliminar-cuenta">Soporte</Link>.
+          registrada o en <Link to="/soporte#eliminar-cuenta">Soporte</Link>.
         </p>
         <p>
           Al confirmar la eliminación, cerramos tu acceso en autenticación, revocamos los tokens vinculados y
-          eliminamos o anonimizamos tus datos personales de perfil y viajes. Por excepción legal, debemos
-          conservar los comprobantes tributarios cuando existan compras registradas (hasta 6 años) y el
-          registro público de Certificados emitidos en Polygon permanece sin tu nombre, correo ni RUT.
+          eliminamos o anonimizamos tu perfil, viajes guardados, rutas GPS e historial no compensado. Por
+          excepción legal, debemos conservar los comprobantes tributarios cuando existan compras registradas
+          (6 años), registros técnicos hasta 12 meses, y el registro público de Certificados emitidos en
+          Polygon permanece sin tu nombre, correo ni RUT.
         </p>
       </>
     ),
@@ -266,8 +272,8 @@ const PrivacyPage: React.FC = () => (
     intro={
       <p>
         Esta política explica cómo tratamos los datos personales de quienes usan la plataforma web y la
-        aplicación móvil (iOS) de {LEGAL.brand}, de acuerdo con la Ley N° 19.628 sobre protección de la
-        vida privada y la Ley N° 21.719.
+        aplicación móvil (Android e iOS) de {LEGAL.brand}, de acuerdo con la Ley N° 19.628 sobre protección
+        de la vida privada y la Ley N° 21.719.
       </p>
     }
     sections={sections}

@@ -42,8 +42,13 @@ export const PUBLIC_SEO = {
   },
   '/soporte': {
     title: 'Centro de Soporte y Ayuda',
-    description: 'Ayuda y atención técnica para usuarios de la app móvil iOS y la plataforma web de CompensaTuViaje.',
+    description: 'Ayuda y atención técnica para usuarios de la app móvil (Android e iOS) y la plataforma web de CompensaTuViaje.',
     path: '/soporte',
+  },
+  '/eliminar-cuenta': {
+    title: 'Eliminar Cuenta y Datos',
+    description: 'Solicita la eliminación de tu cuenta y datos personales en CompensaTuViaje (app móvil Android/iOS y web) y conoce qué información se conserva.',
+    path: '/eliminar-cuenta',
   },
   '/aliados': {
     title: 'Sé un Aliado: publica tu proyecto ambiental',
