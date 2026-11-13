@@ -45,6 +45,7 @@ const SECTIONS = [
       { label: 'Privacidad', href: LEGAL_ROUTES.privacy },
       { label: 'Reembolsos y Retracto', href: LEGAL_ROUTES.refunds },
       { label: 'Cookies', href: LEGAL_ROUTES.cookies },
+      { label: 'Eliminar cuenta', href: '/eliminar-cuenta' },
     ],
   },
 ];

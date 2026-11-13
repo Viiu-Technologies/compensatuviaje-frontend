@@ -7,6 +7,7 @@ export const prefetchRoutes = {
   methodology: () => import('../../apps/public/pages/MethodologyPage'),
   contact: () => import('../../apps/public/pages/ContactPage'),
   support: () => import('../../apps/public/pages/SupportPage'),
+  deleteAccount: () => import('../../apps/public/pages/DeleteAccountPage'),
   payments: () => import('../../apps/public/pages/PaymentMethodsPage'),
   blog: () => import('../../apps/public/pages/BlogPage'),
   partners: () => import('../../apps/public/pages/PartnersGuidePage'),

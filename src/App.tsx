@@ -55,6 +55,7 @@ const CalculatorPage = lazy(() => import('./apps/public/pages/CalculatorPage'));
 const MethodologyPage = lazy(() => import('./apps/public/pages/MethodologyPage'));
 const ContactPage = lazy(() => import('./apps/public/pages/ContactPage'));
 const SupportPage = lazy(() => import('./apps/public/pages/SupportPage'));
+const DeleteAccountPage = lazy(() => import('./apps/public/pages/DeleteAccountPage'));
 const PaymentMethodsPage = lazy(() => import('./apps/public/pages/PaymentMethodsPage'));
 const TermsPage = lazy(() => import('./apps/public/pages/legal/TermsPage'));
 const PrivacyPage = lazy(() => import('./apps/public/pages/legal/PrivacyPage'));
@@ -135,6 +136,8 @@ function App() {
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/soporte" element={<SupportPage />} />
             <Route path="/support" element={<Navigate to="/soporte" replace />} />
+            <Route path="/eliminar-cuenta" element={<DeleteAccountPage />} />
+            <Route path="/delete-account" element={<Navigate to="/eliminar-cuenta" replace />} />
             <Route path="/pagos" element={<PaymentMethodsPage />} />
 
             {/* Legal */}
