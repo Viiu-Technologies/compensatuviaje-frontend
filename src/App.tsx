@@ -121,9 +121,10 @@ function App() {
             {/* Landing Page */}
             <Route path="/" element={<LandingPage />} />
             
-            {/* Public Blockchain Verification */}
+            {/* Public Certificate & Blockchain Verification */}
             <Route path="/verify/:compensationId" element={<CertificateVerificationPage />} />
             <Route path="/verify/token/:tokenId" element={<CertificateVerificationPage />} />
+            <Route path="/verificar/:numero" element={<CertificateVerificationPage />} />
             {/* Noticias del sector. Las rutas de boletín deben ir ANTES de
                 /blog/:slug, o el slug capturaría "confirmar" y "baja". */}
             <Route path="/blog" element={<BlogPage />} />

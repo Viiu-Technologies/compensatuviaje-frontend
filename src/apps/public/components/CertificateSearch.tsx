@@ -197,18 +197,25 @@ const CertificateSearch: React.FC = () => {
                         <dt>Proyecto</dt>
                         <dd className="cs-stat__sm">{result.certificate.projectName}</dd>
                       </div>
+                      {result.certificate.integrityHash && (
+                        <div className="cs-stat">
+                          <dt>Sello SHA-256</dt>
+                          <dd className="cs-stat__sm" title={result.certificate.integrityHash}>
+                            {result.certificate.integrityHash.slice(0, 16)}…
+                          </dd>
+                        </div>
+                      )}
                     </dl>
 
-                    {minted && (
                     <div className="cs-result-actions">
                       <button
                         className="cs-action"
-                        onClick={() => navigate(`/verify/${result.certificate!.compensationId}`)}
+                        onClick={() => navigate(`/verificar/${encodeURIComponent(result.certificate!.certificateNumber)}`)}
                       >
                         <FaShieldAlt aria-hidden="true" />
-                        Ver registro en blockchain
+                        Ver certificado completo
                       </button>
-                      {result.blockchain?.txHash && (
+                      {minted && result.blockchain?.txHash && (
                         <a
                           href={`https://polygonscan.com/tx/${result.blockchain.txHash}`}
                           target="_blank"
@@ -220,7 +227,6 @@ const CertificateSearch: React.FC = () => {
                         </a>
                       )}
                     </div>
-                    )}
                   </div>
                 )}
 

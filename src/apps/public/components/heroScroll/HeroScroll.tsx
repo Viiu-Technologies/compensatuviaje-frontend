@@ -180,14 +180,14 @@ const HeroScroll: React.FC = () => {
               Compensa la huella de cada viaje, <em>medible</em> y trazable.
             </h2>
             <p className="hs-land__lede">
-              Factores oficiales, proyectos evaluados antes de recibir tu aporte y un certificado que puedes
-              verificar en blockchain.
+              Factores oficiales, proyectos evaluados antes de recibir tu aporte y un certificado con código público,
+              sello SHA-256 y respaldo opcional en blockchain.
             </p>
             <ul className="hs-chips" aria-label="Estándares">
               <li>GHG Protocol</li>
               <li>{methodology}</li>
               <li>Veritas AI</li>
-              <li>Polygon</li>
+              <li>SHA-256 · Polygon</li>
             </ul>
           </div>
 
