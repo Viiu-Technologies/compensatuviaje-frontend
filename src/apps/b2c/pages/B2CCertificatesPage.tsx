@@ -5,7 +5,6 @@ import B2CLayout from '../components/B2CLayout';
 import b2cApi, { type B2CCertificate } from '../services/b2cApi';
 import { MintNFTModal } from '../../../shared/components/blockchain';
 import { downloadCertificatePDF } from '../utils/CertificatePDF';
-import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { toast } from 'sonner';
 import {
@@ -27,7 +26,7 @@ import {
  */
 
 const statusBadge = (status: string) =>
-  status === 'verified' ? (
+  status === 'verified' || status === 'issued' ? (
     <Badge tone="success" icon={FaCheckCircle}>Emitido</Badge>
   ) : status === 'pending' ? (
     <Badge tone="warning" icon={FaClock}>En proceso</Badge>
@@ -39,7 +38,6 @@ const unitsText = (cert: B2CCertificate) =>
   cert.unitsFinanced ? `Financió ${fmtInt(cert.unitsFinanced)} ${cert.impactUnit || 'unidades de impacto'}` : null;
 
 const B2CCertificatesPage: React.FC = () => {
-  const { user } = useAuth();
   const [certificates, setCertificates] = useState<B2CCertificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,29 +66,15 @@ const B2CCertificatesPage: React.FC = () => {
   const totalTrees = certificates.reduce((sum, cert) => sum + (cert.equivalencies?.trees ?? 0), 0);
   const onChain = certificates.filter((c) => c.nftTxHash).length;
 
-  const handleDownload = async (cert: B2CCertificate) => {
-    const [origin, destination] = (cert.flightRoute || '').split('→').map((s) => s.trim());
-    await downloadCertificatePDF({
-      certificateNumber: cert.certificateNumber || cert.id,
-      userName: user?.nombre || user?.email?.split('@')[0] || 'Usuario',
-      userEmail: user?.email,
-      co2Tons: cert.co2Compensated,
-      co2Kg: cert.co2Compensated * 1000,
-      origin: origin || '',
-      destination: destination || '',
-      date: cert.date,
-      projectName: cert.project,
-      treesEquiv: cert.equivalencies?.trees ?? 0,
-      carKmAvoided: cert.equivalencies?.carKm ?? 0,
-      nftTxHash: cert.nftTxHash,
-      // Doble métrica: leídas de la BD, sin recalcular
-      unitsFinanced: cert.unitsFinanced ?? null,
-      impactUnit: cert.impactUnit ?? null,
-    });
-  };
+  // Un cálculo compensado sin certificado emitido (verificationUrl null) no tiene documento.
+  const canDownload = (cert: B2CCertificate) => cert.verificationUrl !== null;
+
+  const handleDownload = (cert: B2CCertificate) =>
+    downloadCertificatePDF({ id: cert.id, certificateNumber: cert.certificateNumber });
 
   const handleShare = async (cert: B2CCertificate) => {
-    const text = `Compensé ${fmtNum(cert.co2Compensated, 2)} t de CO₂e de mi viaje con el proyecto ${cert.project}. #CompensaTuViaje`;
+    const withProject = cert.project ? ` con el proyecto ${cert.project}` : '';
+    const text = `Compensé ${fmtNum(cert.co2Compensated, 2)} t de CO₂e de mi viaje${withProject}. #CompensaTuViaje`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Certificado de compensación', text });
@@ -174,7 +158,9 @@ const B2CCertificatesPage: React.FC = () => {
                 {units && <div className="mt-1 text-sm text-brand-700 font-medium">{units}</div>}
 
                 <dl className="mt-4 space-y-1.5 text-sm m-0">
-                  <div className="flex gap-2"><dt className="text-gray-500 w-20 flex-shrink-0">Proyecto</dt><dd className="m-0 text-gray-800">{cert.project}</dd></div>
+                  {cert.project && (
+                    <div className="flex gap-2"><dt className="text-gray-500 w-20 flex-shrink-0">Proyecto</dt><dd className="m-0 text-gray-800">{cert.project}</dd></div>
+                  )}
                   {cert.flightRoute && (
                     <div className="flex gap-2"><dt className="text-gray-500 w-20 flex-shrink-0">Vuelo</dt><dd className="m-0 text-gray-800">{cert.flightRoute}</dd></div>
                   )}
@@ -182,9 +168,11 @@ const B2CCertificatesPage: React.FC = () => {
                 </dl>
 
                 <div className="mt-5 pt-4 border-t border-gray-100 flex items-center gap-2 flex-wrap">
-                  <button type="button" onClick={() => handleDownload(cert)} className={cx(btn.primary, btn.sm)}>
-                    <FaDownload aria-hidden="true" /> Descargar PDF
-                  </button>
+                  {canDownload(cert) && (
+                    <button type="button" onClick={() => handleDownload(cert)} className={cx(btn.primary, btn.sm)}>
+                      <FaDownload aria-hidden="true" /> Descargar PDF
+                    </button>
+                  )}
                   <button type="button" onClick={() => setSelected(cert)} className={cx(btn.secondary, btn.sm)}>
                     Ver detalle
                   </button>
@@ -220,9 +208,11 @@ const B2CCertificatesPage: React.FC = () => {
               <button type="button" className={btn.secondary} onClick={() => handleShare(selected)}>
                 <FaShare aria-hidden="true" /> Compartir
               </button>
-              <button type="button" className={btn.primary} onClick={() => handleDownload(selected)}>
-                <FaDownload aria-hidden="true" /> Descargar PDF
-              </button>
+              {canDownload(selected) && (
+                <button type="button" className={btn.primary} onClick={() => handleDownload(selected)}>
+                  <FaDownload aria-hidden="true" /> Descargar PDF
+                </button>
+              )}
             </>
           )
         }
@@ -242,7 +232,9 @@ const B2CCertificatesPage: React.FC = () => {
               </div>
             </div>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 m-0">
-              <div><dt className="text-gray-500">Proyecto</dt><dd className="m-0 font-medium text-gray-900">{selected.project}</dd></div>
+              {selected.project && (
+                <div><dt className="text-gray-500">Proyecto</dt><dd className="m-0 font-medium text-gray-900">{selected.project}</dd></div>
+              )}
               <div><dt className="text-gray-500">Fecha de emisión</dt><dd className="m-0 font-medium text-gray-900">{fmtDate(selected.date, 'long')}</dd></div>
               {selected.flightRoute && (
                 <div><dt className="text-gray-500">Vuelo</dt><dd className="m-0 font-medium text-gray-900 flex items-center gap-2"><FaPlane className="text-gray-400" aria-hidden="true" />{selected.flightRoute}</dd></div>
@@ -271,7 +263,7 @@ const B2CCertificatesPage: React.FC = () => {
           compensationId={mintCert.id}
           compensationData={{
             co2Amount: mintCert.co2Compensated * 1000, // toneladas a kg
-            projectName: mintCert.project || 'Proyecto ESG',
+            projectName: mintCert.project ?? 'Sin proyecto asignado',
             travelType: 'flight',
           }}
           onSuccess={() => {
