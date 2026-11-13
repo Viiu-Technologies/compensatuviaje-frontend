@@ -20,6 +20,7 @@ import AIKybDetailPage from '../pages/AIKybDetailPage';
 import AICertDetailPage from '../pages/AICertDetailPage';
 import SettingsPage from '../pages/SettingsPage';
 import OrdenesB2BPage from '../pages/OrdenesB2BPage';
+import FinanzasPage from '../pages/FinanzasPage';
 import NewsQueuePage from '../pages/NewsQueuePage';
 import NewsHealthPage from '../pages/NewsHealthPage';
 import NewsArticleDetailPage from '../pages/NewsArticleDetailPage';
@@ -79,6 +80,9 @@ const AdminRoutes = () => {
 
         {/* Órdenes B2B */}
         <Route path="ordenes-b2b" element={<OrdenesB2BPage />} />
+
+        {/* Fondo y liquidaciones a partners */}
+        <Route path="finanzas" element={<FinanzasPage />} />
 
         {/* Platform Settings */}
         <Route path="settings" element={<SettingsPage />} />
