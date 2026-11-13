@@ -43,7 +43,7 @@ interface MintingStateLocal {
 }
 
 const MINTING_STEPS = [
-  { id: 1, label: 'Modo de Registro', description: 'Elige custodia CompensaTuViaje o tu wallet' },
+  { id: 1, label: 'Conectar Wallet', description: 'Conecta tu wallet para recibir el NFT' },
   { id: 2, label: 'Confirmar', description: 'Revisa los datos del certificado' },
   { id: 3, label: 'Mintear', description: 'Creando tu NFT en blockchain' },
   { id: 4, label: 'Completado', description: '¡Tu certificado NFT está listo!' }
@@ -57,7 +57,6 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
   onSuccess
 }) => {
   const [walletState, setWalletState] = useState<WalletState>(walletService.getState());
-  const [custodyMode, setCustodyMode] = useState<'custody' | 'wallet'>('custody');
   const [currentStep, setCurrentStep] = useState(1);
   const [mintingState, setMintingState] = useState<MintingStateLocal>({
     status: 'idle',
@@ -73,10 +72,10 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (custodyMode === 'wallet' && walletState.connected && currentStep === 1) {
+    if (walletState.connected && currentStep === 1) {
       setCurrentStep(2);
     }
-  }, [custodyMode, walletState.connected]);
+  }, [walletState.connected]);
 
   const handleConnect = async () => {
     try {
@@ -87,7 +86,7 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
   };
 
   const handleMint = async () => {
-    if (custodyMode === 'wallet' && !walletState.address) return;
+    if (!walletState.address) return;
 
     setCurrentStep(3);
     setMintingState({
@@ -117,10 +116,10 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
         message: 'Minteando NFT en blockchain...'
       });
 
-      // Llamar API (walletAddress opcional -> custodia de plataforma cuando custodyMode === 'custody')
+      // Llamar API
       const result = await blockchainApi.mintNFTCertificate({
         compensationId,
-        walletAddress: custodyMode === 'wallet' ? walletState.address ?? undefined : undefined,
+        walletAddress: walletState.address
       });
 
       if (!result.success) {
@@ -229,69 +228,20 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
 
         {/* Content */}
         <div className="!p-6">
-          {/* Step 1: Custody Mode or Connect Wallet */}
+          {/* Step 1: Connect Wallet */}
           {currentStep === 1 && (
             <div className="!text-center">
-              <div className="!w-14 !h-14 !mx-auto !mb-3 !bg-slate-800 !rounded-full !flex !items-center !justify-center">
-                <Wallet className="!w-7 !h-7 !text-emerald-400" />
+              <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-slate-800 !rounded-full !flex !items-center !justify-center">
+                <Wallet className="!w-8 !h-8 !text-slate-400" />
               </div>
-              <h3 className="!text-lg !font-semibold !text-white !mb-1">
-                ¿Dónde quieres recibir tu certificado NFT?
+              <h3 className="!text-lg !font-semibold !text-white !mb-2">
+                Conecta tu Wallet
               </h3>
-              <p className="!text-slate-400 !text-sm !mb-4">
-                Puedes registrarlo sin instalar MetaMask usando custodia segura de CompensaTuViaje.
+              <p className="!text-slate-400 !text-sm !mb-6">
+                Necesitas una wallet compatible con Polygon para recibir tu certificado NFT
               </p>
 
-              <div className="!grid !gap-3 !mb-5 !text-left">
-                <button
-                  type="button"
-                  onClick={() => setCustodyMode('custody')}
-                  className={`!w-full !p-4 !rounded-xl !border !text-left !cursor-pointer !transition-all ${
-                    custodyMode === 'custody'
-                      ? '!bg-emerald-950/50 !border-emerald-500 !text-white'
-                      : '!bg-slate-800/70 !border-slate-700 !text-slate-300'
-                  }`}
-                >
-                  <div className="!flex !items-center !justify-between !mb-1">
-                    <span className="!font-semibold !text-sm">Custodia CompensaTuViaje</span>
-                    <span className="!text-[11px] !px-2 !py-0.5 !rounded-full !bg-emerald-500/20 !text-emerald-300">
-                      Recomendado · Sin wallet
-                    </span>
-                  </div>
-                  <p className="!text-xs !text-slate-400 !m-0">
-                    Emitimos el NFT en Polygon bajo la billetera de custodia de la plataforma, listo para verificar públicamente.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCustodyMode('wallet')}
-                  className={`!w-full !p-4 !rounded-xl !border !text-left !cursor-pointer !transition-all ${
-                    custodyMode === 'wallet'
-                      ? '!bg-purple-950/40 !border-purple-500 !text-white'
-                      : '!bg-slate-800/70 !border-slate-700 !text-slate-300'
-                  }`}
-                >
-                  <div className="!font-semibold !text-sm !mb-1">Mi propia Wallet (MetaMask)</div>
-                  <p className="!text-xs !text-slate-400 !m-0">
-                    Conecta tu dirección compatible con Polygon para custodiar el NFT directamente.
-                  </p>
-                </button>
-              </div>
-
-              {custodyMode === 'custody' ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(2)}
-                  className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3
-                    !bg-gradient-to-r !from-emerald-600 !to-teal-600
-                    hover:!from-emerald-700 hover:!to-teal-700
-                    !text-white !font-medium !rounded-lg !transition-all !border-0 !cursor-pointer"
-                >
-                  Continuar con custodia de plataforma
-                  <ArrowRight className="!w-4 !h-4" />
-                </button>
-              ) : !walletService.isMetaMaskInstalled() ? (
+              {!walletService.isMetaMaskInstalled() ? (
                 <div className="!p-4 !bg-yellow-900/20 !border !border-yellow-700/50 !rounded-lg !mb-4">
                   <p className="!text-yellow-400 !text-sm">
                     MetaMask no detectado. 
@@ -329,7 +279,7 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                 </button>
               )}
 
-              {walletState.error && custodyMode === 'wallet' && (
+              {walletState.error && (
                 <p className="!mt-3 !text-red-400 !text-sm">{walletState.error}</p>
               )}
             </div>
@@ -357,9 +307,7 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                   <div className="!flex !items-center !justify-between">
                     <span className="!text-slate-400">Wallet destino</span>
                     <code className="!text-xs !text-slate-300 !font-mono">
-                      {custodyMode === 'custody'
-                        ? 'Custodia CompensaTuViaje'
-                        : (walletState.address ? walletService.shortenAddress(walletState.address) : '')}
+                      {walletState.address ? walletService.shortenAddress(walletState.address) : ''}
                     </code>
                   </div>
                 </div>

@@ -99,7 +99,7 @@ export const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
 // ---- Minting ----
 export interface MintRequest {
   compensationId: string;
-  walletAddress?: string;
+  walletAddress: string;
 }
 
 export interface MintResult {
@@ -109,8 +109,6 @@ export interface MintResult {
   contractAddress: string;
   blockNumber: number;
   gasUsed: string;
-  walletAddress?: string;
-  custodyMode?: boolean;
   explorerUrl: string;
   openSeaUrl: string;
 }
@@ -134,8 +132,6 @@ export const MINTING_STEPS: { key: MintingStep; label: string }[] = [
 // ---- API Responses ----
 export interface BlockchainStatusResponse {
   available: boolean;
-  custodyAvailable?: boolean;
-  custodyAddress?: string | null;
   contractAddress: string;
   network: string;
   chainId: string;
