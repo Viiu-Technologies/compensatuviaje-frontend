@@ -40,6 +40,11 @@ export const PUBLIC_SEO = {
     description: 'Escríbenos para consultas de personas, empresas, aliados o prensa sobre compensación de huella de carbono.',
     path: '/contacto',
   },
+  '/soporte': {
+    title: 'Centro de Soporte y Ayuda',
+    description: 'Ayuda y atención técnica para usuarios de la app móvil iOS y la plataforma web de CompensaTuViaje.',
+    path: '/soporte',
+  },
   '/aliados': {
     title: 'Sé un Aliado: publica tu proyecto ambiental',
     description: 'Publica tu proyecto de reforestación, energía o conservación y recibe financiamiento de viajeros y empresas que compensan su huella.',
