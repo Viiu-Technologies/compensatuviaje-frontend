@@ -42,7 +42,19 @@ const sections: LegalSection[] = [
           <em>«Ocultar mi correo»</em> con Apple), contraseña cifrada o identificador de inicio de sesión con
           Google o Sign in with Apple, y preferencias.
         </li>
-        <li><strong>Viajes y cálculos:</strong> origen, destino, fechas, medio de transporte, pasajeros y emisiones calculadas.</li>
+        <li>
+          <strong>Viajes y cálculos:</strong> origen, destino, fechas, medio de transporte (aéreo o
+          terrestre), distancia, duración, pasajeros y emisiones calculadas.
+        </li>
+        <li>
+          <strong>Ubicación, movimiento y recorridos terrestres (app móvil Android e iOS):</strong> cuando
+          inicias voluntariamente el registro de un trayecto y autorizas los permisos en tu dispositivo,
+          recolectamos puntos de ubicación GPS (latitud, longitud, precisión, velocidad, altitud y marca
+          de tiempo), coordenadas de inicio y término, distancia recorrida, modo de transporte terrestre
+          (por ejemplo, bus, automóvil, bicicleta o caminata), motivo del viaje y, cuando corresponda, la
+          actividad de movimiento detectada por el dispositivo para calcular la distancia y las emisiones
+          del desplazamiento.
+        </li>
         <li><strong>Empresas:</strong> razón social, RUT, giro, datos de facturación, datos de contacto del representante y de los usuarios que la empresa invite.</li>
         <li><strong>Aliados:</strong> datos del titular del proyecto y la documentación que suban para su verificación.</li>
         <li><strong>Pagos:</strong> monto, fecha, estado y código de autorización. <strong>No recibimos ni guardamos los datos de tu tarjeta</strong>; los procesa Transbank.</li>
@@ -66,6 +78,7 @@ const sections: LegalSection[] = [
           </thead>
           <tbody>
             <tr><td>Crear tu cuenta, calcular tu huella, procesar tu compra y emitir tu Certificado</td><td>Ejecución del contrato</td></tr>
+            <tr><td>Medir distancias y modos de transporte terrestre en la app móvil (Android e iOS)</td><td>Ejecución del contrato y permisos otorgados en el dispositivo</td></tr>
             <tr><td>Emitir boletas o facturas y llevar la contabilidad</td><td>Obligación legal</td></tr>
             <tr><td>Verificar a Empresas y Aliados y prevenir fraude</td><td>Interés legítimo</td></tr>
             <tr><td>Responder consultas y brindar soporte técnico web y móvil</td><td>Ejecución del contrato o interés legítimo</td></tr>
@@ -132,6 +145,26 @@ const sections: LegalSection[] = [
           del viaje. <strong>No incluye tu nombre, correo ni RUT.</strong> La relación entre un
           Certificado y tu identidad solo existe en nuestra base de datos, donde sí puedes pedir su
           eliminación.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'ubicacion',
+    title: 'Ubicación GPS y movimiento en la app móvil (Android e iOS)',
+    body: (
+      <>
+        <p>
+          La aplicación móvil de {LEGAL.brand} para <strong>Android e iOS</strong> utiliza permisos de{' '}
+          <strong>ubicación (GPS)</strong> y de <strong>actividad física o movimiento</strong> únicamente
+          cuando inicias el registro de un desplazamiento terrestre, con el fin de calcular la distancia
+          recorrida y asociarla al modo de transporte correspondiente.
+        </p>
+        <p>
+          No vendemos tu ubicación ni la compartimos con fines publicitarios. Puedes administrar o revocar
+          estos permisos en cualquier momento desde los <strong>Ajustes</strong> de tu dispositivo Android o
+          iOS (si los desactivas, podrás seguir usando la calculadora manual, pero no medir recorridos
+          terrestres mediante GPS).
         </p>
       </>
     ),

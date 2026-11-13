@@ -32,9 +32,9 @@ const RETENTION_ROWS: RetentionRow[] = [
     retention: 'Inmediata desde la app; máx. 30 días corridos si la solicitas por formulario o correo.',
   },
   {
-    category: 'Viajes terrestres y ubicación de rutas',
+    category: 'Trayectos terrestres, ubicación GPS y actividad de movimiento (Android e iOS)',
     action:
-      'Se eliminan los puntos GPS registrados y se borran coordenadas de inicio/fin y geometrías de trayectos.',
+      'Se eliminan todos los puntos GPS registrados del trayecto (coordenadas, velocidad, altitud, precisión, marcas de tiempo y actividad detectada) y se borran coordenadas de inicio/término y geometrías de ruta.',
     retention: 'Ninguno (eliminación inmediata al ejecutar la baja).',
   },
   {

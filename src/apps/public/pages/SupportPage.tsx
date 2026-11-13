@@ -27,32 +27,35 @@ interface SupportTopic {
 
 const SUPPORT_TOPICS: SupportTopic[] = [
   {
-    title: 'Inicio de sesión y acceso (Apple ID, Google o correo)',
+    title: 'Inicio de sesión y acceso (Google, Apple ID o correo)',
     body: (
       <>
-        Si usaste <strong>Sign in with Apple</strong> y elegiste ocultar tu correo electrónico, inicia
-        sesión nuevamente con el mismo Apple ID para mantener tus viajes y certificados asociados a tu
-        cuenta. Si cambiaste de correo o tienes problemas para ingresar, escríbenos desde el formulario.
+        Funciona en <strong>Android, iOS y web</strong>. Si usaste <strong>Google Sign-In</strong> o{' '}
+        <strong>Sign in with Apple</strong> (incluso con correo privado reenviado), vuelve a ingresar con
+        la misma cuenta para conservar tus trayectos y certificados. Si tienes problemas de acceso,
+        escríbenos indicando tu correo.
       </>
     ),
   },
   {
-    title: 'Vuelos, cálculos y verificación de certificados',
+    title: 'Trayectos terrestres, distancia y permisos GPS (Android e iOS)',
     body: (
       <>
-        Tus cálculos, contribuciones climáticas y certificados digitales se sincronizan entre la app móvil
-        y tu cuenta web. Puedes comprobar la autenticidad de cualquier certificado emitido usando su
-        código único en el verificador público.
+        Para medir la distancia y el modo de transporte de tus desplazamientos terrestres, la app móvil en{' '}
+        <strong>Android e iOS</strong> necesita permisos de ubicación (GPS) y movimiento/actividad mientras
+        registras un recorrido. Si el trayecto no calcula distancia o queda abierto, revisa los permisos de
+        ubicación en los ajustes del teléfono y verifica tu conexión para sincronizar.
       </>
     ),
-    link: { to: '/#verificar', label: 'Verificar un certificado' },
+    link: { to: `${LEGAL_ROUTES.privacy}#ubicacion`, label: 'Ver uso de ubicación y permisos' },
   },
   {
-    title: 'Pagos con Webpay y reembolsos',
+    title: 'Vuelos, certificados digitales y pagos con Webpay',
     body: (
       <>
-        Si un pago quedó pendiente, ocurrió un error técnico durante la transacción o necesitas revisar si
-        aplica devolución, indícanos la fecha aproximada y el correo de tu cuenta al escribirnos.
+        Tus cálculos, contribuciones climáticas y certificados se sincronizan entre Android, iOS y la web
+        (verificables en el <Link to="/#verificar">buscador público</Link>). Si un pago con Webpay quedó
+        pendiente o necesitas revisar un reembolso, indícanos la fecha aproximada y el correo de tu cuenta.
       </>
     ),
     link: { to: LEGAL_ROUTES.refunds, label: 'Ver Política de Reembolsos' },
@@ -64,8 +67,9 @@ const SUPPORT_TOPICS: SupportTopic[] = [
     body: (
       <>
         Puedes eliminar tu cuenta en cualquier momento desde la opción <strong>Eliminar cuenta</strong>{' '}
-        dentro de la app móvil (si ingresaste con Apple, la app solicitará reconfirmar con tu Apple ID
-        para revocar el acceso), o enviarnos una solicitud web sin necesidad de abrir la aplicación.
+        dentro de la app móvil Android o iOS (si ingresaste con Apple, la app solicitará reconfirmar con tu
+        Apple ID para revocar el acceso), o enviarnos una solicitud web sin necesidad de abrir la
+        aplicación.
       </>
     ),
     link: { to: '/eliminar-cuenta', label: 'Solicitar eliminación y ver datos retenidos' },
