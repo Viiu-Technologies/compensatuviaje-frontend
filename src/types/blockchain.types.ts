@@ -99,11 +99,15 @@ export const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
 // ---- Minting ----
 export interface MintRequest {
   compensationId: string;
-  walletAddress: string;
+  walletAddress?: string;
 }
+
+export type NFTCustodyStatus = 'custodied' | 'claimed';
 
 export interface MintResult {
   success: boolean;
+  custodyStatus?: NFTCustodyStatus;
+  walletAddress?: string;
   tokenId: string;
   txHash: string;
   contractAddress: string;
@@ -111,6 +115,19 @@ export interface MintResult {
   gasUsed: string;
   explorerUrl: string;
   openSeaUrl: string;
+}
+
+export interface ClaimRequest {
+  compensationId: string;
+  walletAddress: string;
+}
+
+export interface ClaimResult {
+  success: boolean;
+  custodyStatus: NFTCustodyStatus;
+  walletAddress: string;
+  txHash: string;
+  explorerUrl: string;
 }
 
 export type MintingStep = 'connect' | 'confirm' | 'minting' | 'success' | 'error';

@@ -1,178 +1,212 @@
 /**
  * Certificados NFT del usuario (registro en Polygon).
  *
- * Antes: portada en degradado violeta-índigo y el aviso "MetaMask no
- * detectado" repetido dos veces (el botón de conexión estaba en la portada
- * y en el estado vacío). Ahora hay un solo punto de conexión y los colores
- * de la marca (petróleo para lo que es blockchain).
+ * Los NFT se listan desde la cuenta del usuario, sin necesidad de billetera.
+ * Quedan en custodia de la plataforma y el usuario puede reclamarlos a su
+ * propia billetera cuando quiera.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import B2CLayout from '../components/B2CLayout';
-import { WalletConnectButton, NFTCertificateCard } from '../../../shared/components/blockchain';
-import { getWalletCertificates } from '../../../shared/services/blockchainApi';
+import * as b2cApi from '../services/b2cApi';
+import type { B2CCertificate } from '../services/b2cApi';
+import { claimNFTCertificate } from '../../../shared/services/blockchainApi';
 import walletService from '../../../shared/services/walletService';
-import type { WalletState, NFTCertificate, WalletCertificatesResponse } from '../../../types/blockchain.types';
-import { FaCubes, FaLeaf, FaWallet, FaSearch, FaSyncAlt, FaInfoCircle } from 'react-icons/fa';
+import { ACTIVE_CHAIN, CHAIN_CONFIGS } from '../../../types/blockchain.types';
+import { FaCubes, FaLeaf, FaSearch, FaSyncAlt, FaInfoCircle, FaExternalLinkAlt, FaShieldAlt, FaWallet, FaCheckCircle } from 'react-icons/fa';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { Card, CardHeader, EmptyState, ErrorState, Skeleton, StatCard, btn, fmtInt, fmtKgAuto } from '../ui';
 
+const hasBlockExplorer = Boolean(CHAIN_CONFIGS[ACTIVE_CHAIN].blockExplorer);
+
 const B2CNFTCertificatesPage: React.FC = () => {
-  const [wallet, setWallet] = useState<WalletState>(walletService.getState());
-  const [certificates, setCertificates] = useState<NFTCertificate[]>([]);
-  const [totalKg, setTotalKg] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [certificates, setCertificates] = useState<B2CCertificate[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-
-  useEffect(() => walletService.subscribe(setWallet), []);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [claimError, setClaimError] = useState<{ id: string; message: string } | null>(null);
+  const [claimedId, setClaimedId] = useState<string | null>(null);
 
   const fetchCertificates = useCallback(async () => {
-    if (!wallet.address) return;
     setLoading(true);
     setError(null);
     try {
-      const res: WalletCertificatesResponse = await getWalletCertificates(wallet.address);
-      if (res.success) {
-        const normalized = (res.certificates || []).map((c: any) => ({
-          ...c,
-          co2AmountGrams: c.co2AmountGrams ?? Number(c.co2Amount || 0),
-          co2AmountKg: c.co2AmountKg ?? Number(c.co2Amount || 0) / 1000,
-          co2AmountTons: c.co2AmountTons ?? Number(c.co2Amount || 0) / 1000000,
-          tokenURI: c.tokenURI || c.tokenUri || '',
-          txHash: c.txHash || null,
-          explorerUrl: c.explorerUrl || '',
-          openSeaUrl: c.openSeaUrl || '',
-        }));
-        setCertificates(normalized);
-        // totalCO2 llega como { totalGrams, totalKg, totalTons } o como número
-        const co2 = res.totalCO2 as any;
-        setTotalKg(typeof co2 === 'object' && co2 !== null ? parseFloat(co2.totalKg || '0') : Number(co2) || 0);
-      } else {
-        setError('No se pudieron cargar los certificados.');
-      }
+      const data = await b2cApi.getCertificates();
+      setCertificates((data.certificates || []).filter((c) => !!c.nftTokenId));
     } catch (err: any) {
       setError(getErrorMessage(err, 'No se pudieron cargar los certificados.'));
     } finally {
       setLoading(false);
     }
-  }, [wallet.address]);
+  }, []);
 
   useEffect(() => {
-    if (wallet.connected && wallet.address) fetchCertificates();
-    else {
-      setCertificates([]);
-      setTotalKg(0);
-    }
-  }, [wallet.connected, wallet.address, fetchCertificates]);
+    fetchCertificates();
+  }, [fetchCertificates]);
 
+  const handleClaim = async (cert: B2CCertificate) => {
+    setClaimError(null);
+    setClaimedId(null);
+    if (!walletService.isMetaMaskInstalled()) {
+      setClaimError({
+        id: cert.id,
+        message:
+          'Necesitas MetaMask para reclamar este NFT. No te preocupes: sigue seguro en custodia de CompensaTuViaje y puedes reclamarlo más adelante.',
+      });
+      return;
+    }
+    setClaimingId(cert.id);
+    try {
+      const address = await walletService.connect();
+      await claimNFTCertificate({ compensationId: cert.id, walletAddress: address });
+      await fetchCertificates();
+      setClaimedId(cert.id);
+    } catch (err: any) {
+      setClaimError({ id: cert.id, message: getErrorMessage(err, 'No se pudo reclamar el NFT. Inténtalo nuevamente.') });
+    } finally {
+      setClaimingId(null);
+    }
+  };
+
+  const totalKg = certificates.reduce((sum, c) => sum + Number(c.co2Compensated || 0) * 1000, 0);
   const q = search.trim().toLowerCase();
   const filtered = certificates.filter(
     (c) =>
       !q ||
-      (c.tokenId || '').toLowerCase().includes(q) ||
-      (c.projectName || '').toLowerCase().includes(q) ||
-      (c.compensationId || '').toLowerCase().includes(q),
+      (c.nftTokenId || '').toLowerCase().includes(q) ||
+      (c.project || '').toLowerCase().includes(q) ||
+      (c.certificateNumber || '').toLowerCase().includes(q),
   );
 
   return (
-    <B2CLayout
-      title="Certificados NFT"
-      subtitle="Tus compensaciones registradas en la red Polygon"
-      headerRightExtra={
-        wallet.connected ? (
-          <WalletConnectButton onConnect={() => {}} onDisconnect={() => { setCertificates([]); setTotalKg(0); }} />
-        ) : undefined
-      }
-    >
+    <B2CLayout title="Certificados NFT" subtitle="Tus compensaciones registradas en la red Polygon">
       <div className="space-y-6">
-        {!wallet.connected ? (
-          <Card>
-            <div className="text-center py-8 px-4 max-w-lg mx-auto">
-              <span className="mx-auto mb-4 w-12 h-12 rounded-full bg-brand-900/5 text-brand-900 flex items-center justify-center">
-                <FaWallet className="text-xl" aria-hidden="true" />
-              </span>
-              <h2 className="text-lg font-semibold text-gray-900 m-0">Conecta tu billetera</h2>
-              <p className="text-sm text-gray-500 m-0 mt-1.5">
-                Conecta MetaMask para ver los certificados NFT de tus compensaciones en la red Polygon.
-              </p>
-              <div className="mt-5 flex justify-center">
-                <WalletConnectButton />
-              </div>
-              <p className="mt-6 text-sm text-gray-500 flex items-start gap-2 text-left rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
-                <FaInfoCircle className="mt-0.5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                <span>
-                  Un NFT es un registro público e inalterable de tu compensación. Puedes crear uno para cada certificado desde{' '}
-                  <Link to="/b2c/certificates" className="text-brand-700 font-medium">Certificados</Link>.
-                </span>
-              </p>
-            </div>
-          </Card>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <StatCard label="NFT" value={fmtInt(certificates.length)} icon={FaCubes} />
-              <StatCard label="CO₂e registrado" value={fmtKgAuto(totalKg)} icon={FaLeaf} tone="good" />
-              <StatCard
-                label="Billetera"
-                value={<span className="text-base font-mono">{wallet.address ? walletService.shortenAddress(wallet.address) : '—'}</span>}
-                icon={FaWallet}
-              />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <StatCard label="NFT" value={fmtInt(certificates.length)} icon={FaCubes} />
+          <StatCard label="CO₂e registrado" value={fmtKgAuto(totalKg)} icon={FaLeaf} tone="good" />
+        </div>
 
-            <Card className="p-0 overflow-hidden">
-              <CardHeader
-                className="px-6 pt-6 pb-5 border-b border-gray-100"
-                title="Tus NFT"
-                action={
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" aria-hidden="true" />
-                      <input
-                        type="search"
-                        aria-label="Buscar NFT"
-                        placeholder="Buscar por token o proyecto"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-56 pl-9 pr-3 py-2 rounded-full border border-gray-300 text-sm bg-white outline-none focus:border-brand-700"
-                      />
-                    </div>
-                    <button type="button" onClick={fetchCertificates} disabled={loading} className={btn.icon} aria-label="Actualizar" title="Actualizar">
-                      <FaSyncAlt className={loading ? 'animate-spin' : ''} aria-hidden="true" />
-                    </button>
-                  </div>
-                }
-              />
-              <div className="p-6">
-                {loading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-64" />)}</div>
-                ) : error ? (
-                  <ErrorState title="No pudimos leer tus NFT" text={error} onRetry={fetchCertificates} />
-                ) : filtered.length === 0 ? (
-                  <EmptyState
-                    icon={FaCubes}
-                    title={q ? 'Sin resultados' : 'Aún no tienes NFT'}
-                    text={q ? 'Prueba con otro término.' : 'Crea un NFT desde cualquiera de tus certificados.'}
-                    action={!q ? <Link to="/b2c/certificates" className={btn.primary}>Ir a Certificados</Link> : undefined}
+        <Card className="p-0 overflow-hidden">
+          <CardHeader
+            className="px-6 pt-6 pb-5 border-b border-gray-100"
+            title="Tus NFT"
+            action={
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" aria-hidden="true" />
+                  <input
+                    type="search"
+                    aria-label="Buscar NFT"
+                    placeholder="Buscar por token o proyecto"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-56 pl-9 pr-3 py-2 rounded-full border border-gray-300 text-sm bg-white outline-none focus:border-brand-700"
                   />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filtered.map((cert) => (
-                      <NFTCertificateCard
-                        key={cert.tokenId}
-                        certificate={cert}
-                        explorerUrl={cert.explorerUrl}
-                        openSeaUrl={cert.openSeaUrl}
-                        onViewDetails={() => window.open(`/verify/${cert.compensationId}`, '_blank')}
-                      />
-                    ))}
-                  </div>
-                )}
+                </div>
+                <button type="button" onClick={fetchCertificates} disabled={loading} className={btn.icon} aria-label="Actualizar" title="Actualizar">
+                  <FaSyncAlt className={loading ? 'animate-spin' : ''} aria-hidden="true" />
+                </button>
               </div>
-            </Card>
-          </>
-        )}
+            }
+          />
+          <div className="p-6 space-y-4">
+            <p className="text-sm text-gray-500 flex items-start gap-2 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 m-0">
+              <FaInfoCircle className="mt-0.5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+              <span>
+                Tus NFT quedan en custodia de CompensaTuViaje y no necesitas billetera para verlos. Si quieres, puedes reclamarlos a tu propia billetera.
+              </span>
+            </p>
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-64" />)}</div>
+            ) : error ? (
+              <ErrorState title="No pudimos leer tus NFT" text={error} onRetry={fetchCertificates} />
+            ) : filtered.length === 0 ? (
+              <EmptyState
+                icon={FaCubes}
+                title={q ? 'Sin resultados' : 'Aún no tienes NFT'}
+                text={q ? 'Prueba con otro término.' : 'Crea un NFT desde cualquiera de tus certificados.'}
+                action={!q ? <Link to="/b2c/certificates" className={btn.primary}>Ir a Certificados</Link> : undefined}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filtered.map((cert) => {
+                  const custodied = cert.nftCustodyStatus === 'custodied';
+                  const claimed = cert.nftCustodyStatus === 'claimed';
+                  return (
+                    <div key={cert.id} className="rounded-xl border border-gray-200 bg-white p-5 flex flex-col gap-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-mono text-sm text-gray-900">Token #{cert.nftTokenId}</span>
+                        {custodied && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-900/5 text-brand-900 text-xs font-medium px-2.5 py-1">
+                            <FaShieldAlt aria-hidden="true" /> Custodiado por CompensaTuViaje
+                          </span>
+                        )}
+                        {claimed && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-50 text-green-700 text-xs font-medium px-2.5 py-1">
+                            <FaWallet aria-hidden="true" /> En tu billetera
+                          </span>
+                        )}
+                      </div>
+                      <dl className="text-sm space-y-1 m-0">
+                        <div className="flex justify-between gap-2">
+                          <dt className="text-gray-500">Proyecto</dt>
+                          <dd className="m-0 text-gray-900 text-right">{cert.project}</dd>
+                        </div>
+                        <div className="flex justify-between gap-2">
+                          <dt className="text-gray-500">CO₂e</dt>
+                          <dd className="m-0 text-gray-900">{fmtKgAuto(Number(cert.co2Compensated || 0) * 1000)}</dd>
+                        </div>
+                        {claimed && cert.nftWalletAddress && (
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-gray-500">Billetera</dt>
+                            <dd className="m-0 font-mono text-gray-900">{walletService.shortenAddress(cert.nftWalletAddress)}</dd>
+                          </div>
+                        )}
+                      </dl>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                        {cert.nftTxHash && hasBlockExplorer && (
+                          <a href={walletService.getExplorerUrl(cert.nftTxHash)} target="_blank" rel="noopener noreferrer" className="text-brand-700 font-medium inline-flex items-center gap-1">
+                            Ver transacción <FaExternalLinkAlt className="text-xs" aria-hidden="true" />
+                          </a>
+                        )}
+                        {cert.nftTokenId && hasBlockExplorer && (
+                          <a href={walletService.getTokenUrl(cert.nftTokenId)} target="_blank" rel="noopener noreferrer" className="text-brand-700 font-medium inline-flex items-center gap-1">
+                            Ver token <FaExternalLinkAlt className="text-xs" aria-hidden="true" />
+                          </a>
+                        )}
+                        <a href={`/verify/${cert.id}`} target="_blank" rel="noopener noreferrer" className="text-brand-700 font-medium inline-flex items-center gap-1">
+                          Verificar <FaExternalLinkAlt className="text-xs" aria-hidden="true" />
+                        </a>
+                      </div>
+                      {custodied && (
+                        <button
+                          type="button"
+                          onClick={() => handleClaim(cert)}
+                          disabled={claimingId !== null}
+                          className={`${btn.primary} mt-auto`}
+                        >
+                          {claimingId === cert.id ? 'Reclamando...' : 'Reclamar a mi billetera'}
+                        </button>
+                      )}
+                      {claimError?.id === cert.id && (
+                        <p role="alert" className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 m-0">
+                          {claimError.message}
+                        </p>
+                      )}
+                      {claimedId === cert.id && (
+                        <p role="status" className="text-sm text-green-700 flex items-center gap-2 m-0">
+                          <FaCheckCircle aria-hidden="true" /> Listo, tu NFT ahora está en tu billetera.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
     </B2CLayout>
   );

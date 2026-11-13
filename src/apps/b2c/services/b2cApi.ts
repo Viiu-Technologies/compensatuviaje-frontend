@@ -94,6 +94,9 @@ export interface B2CCertificate {
   };
   nftTxHash?: string | null;
   nftTokenId?: string | null;
+  nftCustodyStatus?: 'custodied' | 'claimed' | null;
+  nftWalletAddress?: string | null;
+  nftMintedAt?: string | null;
   pdfUrl?: string | null;
   // URL pública para verificarlo. null cuando es un cálculo compensado sin certificado emitido:
   // en ese caso no hay documento que descargar ni verificar.
