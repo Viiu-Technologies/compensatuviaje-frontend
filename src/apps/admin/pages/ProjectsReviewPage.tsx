@@ -28,6 +28,7 @@ import { approveCertEvaluation, rejectCertEvaluation } from '../services/adminAI
 import RejectModal from '../components/shared/RejectModal';
 import { toast } from 'sonner';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { commissionMultiplier } from '../../../utils/carbon';
 import {
   EmptyState,
   PageHeader,
@@ -144,7 +145,7 @@ export default function ProjectsReviewPage() {
     cost_clp: 0,
     monthly_stock: 0,
     carbon_capture_per_unit: 0,
-    margin_percent: 30,
+    margin_percent: 20,
   });
   const [calculatedPrice, setCalculatedPrice] = useState(0);
 
@@ -197,7 +198,7 @@ export default function ProjectsReviewPage() {
         cost_clp: selectedProject.provider_cost_unit_clp || 0,
         monthly_stock: selectedProject.monthly_stock_remaining || 0,
         carbon_capture_per_unit: 0, // el admin define la equivalencia
-        margin_percent: platformSettings?.default_margin_percent || 30,
+        margin_percent: platformSettings?.default_margin_percent ?? 20,
       });
     }
   }, [selectedProject, platformSettings]);
@@ -207,7 +208,8 @@ export default function ProjectsReviewPage() {
       setCalculatedPrice(0);
       return;
     }
-    const marginMultiplier = 1 + pricingForm.margin_percent / 100;
+    // Comisión = % del precio de venta (misma fórmula que el backend)
+    const marginMultiplier = commissionMultiplier(pricingForm.margin_percent);
     const pricePerKg = (pricingForm.cost_clp * marginMultiplier) / pricingForm.carbon_capture_per_unit;
     setCalculatedPrice(pricePerKg * 1000);
   }, [pricingForm, platformSettings]);
@@ -481,10 +483,10 @@ export default function ProjectsReviewPage() {
                 <dl className="adm-dl">
                   <dt>Costo del partner</dt>
                   <dd>{formatCLP(pricingForm.cost_clp)}</dd>
-                  <dt>Margen de la plataforma</dt>
-                  <dd>{pricingForm.margin_percent} %</dd>
+                  <dt>Comisión de la plataforma</dt>
+                  <dd>{pricingForm.margin_percent} % del precio ({100 - pricingForm.margin_percent} % para el partner)</dd>
                 </dl>
-                <span className="adm-field__hint">Precio = costo × (1 + margen) ÷ kg de CO₂ × 1.000</span>
+                <span className="adm-field__hint">Precio = costo ÷ (1 − comisión) ÷ kg de CO₂ × 1.000</span>
                 <div className="adm-calc__price">
                   Precio final por tonelada
                   <b>{calculatedPrice ? formatCLP(calculatedPrice) : '—'}</b>

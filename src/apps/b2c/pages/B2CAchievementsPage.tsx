@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaShareAlt, FaLinkedin, FaCheck, FaLeaf } from 'react-icons/fa';
 import B2CLayout from '../components/B2CLayout';
 import { TrophyRoomPanel, BADGES } from '../components/badges/TrophyRoomPanel';
-import b2cApi from '../services/b2cApi';
+import b2cApi, { type B2CBadgeItem } from '../services/b2cApi';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, Skeleton, btn, fmtTons } from '../ui';
 
@@ -78,13 +78,19 @@ function ShareCard({ userId, totalKg }: { userId: string; totalKg: number }) {
 const B2CAchievementsPage: React.FC = () => {
   const { user } = useAuth();
   const [totalKg, setTotalKg] = useState(0);
+  const [badges, setBadges] = useState<B2CBadgeItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await b2cApi.getDashboardStats('all');
-        setTotalKg(data.stats.lifetimeCompensatedKg);
+        const [data, badgesRes] = await Promise.all([
+          b2cApi.getDashboardStats('all'),
+          b2cApi.getBadges(),
+        ]);
+        const calcKg = data?.stats?.lifetimeCompensatedKg ?? 0;
+        setTotalKg(Math.max(calcKg, badgesRes.totalCompensatedKg ?? 0));
+        setBadges(badgesRes.badges ?? []);
       } catch {
         // Sin datos, las insignias se muestran bloqueadas.
       } finally {
@@ -101,7 +107,7 @@ const B2CAchievementsPage: React.FC = () => {
           <Skeleton className="h-72" />
         ) : (
           <>
-            <TrophyRoomPanel totalCompensatedKg={totalKg} />
+            <TrophyRoomPanel totalCompensatedKg={totalKg} badges={badges} />
             {user && totalKg > 0 ? (
               <ShareCard userId={user.id} totalKg={totalKg} />
             ) : (

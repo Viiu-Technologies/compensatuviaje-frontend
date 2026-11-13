@@ -25,6 +25,7 @@ import {
   Activity,
   Mail,
   Rss,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import '../ui/admin-ui.css';
@@ -73,6 +74,11 @@ const demandEcosystemItems: NavItem[] = [
   { path: '/admin/usuarios-b2c', icon: Users, label: 'Usuarios B2C' },
 ];
 
+// Finanzas: fondo de la plataforma y pagos a partners
+const financeItems: NavItem[] = [
+  { path: '/admin/finanzas', icon: Wallet, label: 'Fondo y liquidaciones' },
+];
+
 // D. Trazabilidad y Configuración
 const traceabilityItems: NavItem[] = [
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
@@ -88,6 +94,7 @@ const navSections: NavSection[] = [
   { title: 'Centro de Auditoría', items: auditCenterItems },
   { title: 'Ecosistema de Oferta', items: supplyEcosystemItems },
   { title: 'Ecosistema de Demanda', items: demandEcosystemItems },
+  { title: 'Finanzas', items: financeItems },
   { title: 'Trazabilidad', items: traceabilityItems },
 ];
 

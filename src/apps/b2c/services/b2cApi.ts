@@ -82,7 +82,8 @@ export interface B2CCertificate {
   co2Compensated: number;      // Toneladas de CO₂ (el backend envía tonsCompensated del certificado)
   unitsFinanced?: number;      // Unidades físicas congeladas (Ej: 50 árboles)
   impactUnit?: string | null;  // Nombre de la unidad (Ej: "árboles")
-  project: string;
+  // null cuando el certificado no tiene un proyecto vinculado: no se inventa un nombre.
+  project: string | null;
   flightRoute?: string | null;
   status: 'verified' | 'pending' | string;
   // Equivalencias con fuente, calculadas en el backend (US EPA y DEFRA 2025).
@@ -93,7 +94,13 @@ export interface B2CCertificate {
   };
   nftTxHash?: string | null;
   nftTokenId?: string | null;
+  nftCustodyStatus?: 'custodied' | 'claimed' | null;
+  nftWalletAddress?: string | null;
+  nftMintedAt?: string | null;
   pdfUrl?: string | null;
+  // URL pública para verificarlo. null cuando es un cálculo compensado sin certificado emitido:
+  // en ese caso no hay documento que descargar ni verificar.
+  verificationUrl?: string | null;
 }
 
 export interface B2CProject {
@@ -387,6 +394,26 @@ export async function getCertificate(id: string): Promise<any> {
 }
 
 /**
+ * Certificado en PDF. El servidor lo arma con los datos guardados del certificado
+ * y solo se lo entrega a su dueño: aquí solo se manda el id.
+ */
+export async function downloadCertificatePdf(id: string): Promise<{ blob: Blob; filename: string }> {
+  const { Authorization } = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/b2c/certificates/${encodeURIComponent(id)}/pdf`, {
+    headers: Authorization ? { Authorization } : {},
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Error ${response.status}`);
+  }
+
+  const disposition = response.headers.get('Content-Disposition') || '';
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] || 'certificado-compensatuviaje.pdf';
+  return { blob: await response.blob(), filename };
+}
+
+/**
  * Proyectos públicos aprobados/activos
  */
 export async function getPublicProjects(): Promise<B2CProject[]> {
@@ -501,6 +528,34 @@ export function assistantErrorMessage(err: unknown): string {
   return e?.data?.message || e?.data?.error || e?.message || 'No se pudo consultar al asistente. Inténtalo de nuevo.';
 }
 
+export interface B2CBadgeItem {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  thresholdKg: number;
+  icon: string;
+  unlocked: boolean;
+  earnedAt: string | null;
+  progress: number;
+  remainingKg: number;
+}
+
+export interface B2CBadgesResponse {
+  totalCompensatedKg: number;
+  badges: B2CBadgeItem[];
+  currentBadge: B2CBadgeItem | null;
+}
+
+export async function getBadges(): Promise<B2CBadgesResponse> {
+  try {
+    const res = await authFetch<{ success: boolean; data: B2CBadgesResponse }>('/b2c/badges');
+    return res.data ?? { totalCompensatedKg: 0, badges: [], currentBadge: null };
+  } catch {
+    return { totalCompensatedKg: 0, badges: [], currentBadge: null };
+  }
+}
+
 /**
  * Eliminar un cálculo/vuelo (solo si no está compensado)
  */
@@ -516,10 +571,12 @@ const b2cApi = {
   getCalculations,
   getCertificates,
   getCertificate,
+  downloadCertificatePdf,
   getPublicProjects,
   getPaymentHistory,
   createPaymentTransaction,
   getUserProfile,
+  getBadges,
   deleteCalculation,
   askAssistant,
   assistantErrorMessage,
