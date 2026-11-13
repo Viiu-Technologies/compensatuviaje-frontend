@@ -27,3 +27,13 @@ export const calculateTonsFromUnits = (units: number, carbonCapturePerUnit: numb
   // Redondear a 2 decimales para que la UI se vea limpia (ej. 1.50 t)
   return Math.round(tons * 100) / 100;
 };
+
+/**
+ * Comisión de la plataforma como % del precio de venta (Configuración del SuperAdmin).
+ * Misma fórmula que el backend (shared/finance/pricing.js):
+ *   precio = costo ÷ (1 − comisión)  → con 20 %: 80 % partner / 20 % plataforma.
+ */
+export const commissionMultiplier = (commissionPercent: number): number => {
+  const pct = Number.isFinite(commissionPercent) ? Math.min(Math.max(commissionPercent, 0), 95) : 20;
+  return 1 / (1 - pct / 100);
+};
