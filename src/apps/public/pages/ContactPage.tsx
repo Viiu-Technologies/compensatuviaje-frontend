@@ -12,6 +12,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ContactSection from '../components/ContactSection';
 import './ContactPage.css';
+import { LEGAL } from '../../../shared/config/legal';
 import { useSeo } from '../../../shared/utils/useSeo';
 import { PUBLIC_SEO } from '../../../shared/config/publicSeo';
 
@@ -59,7 +60,7 @@ const ContactPage: React.FC = () => {
                 <HiMail className="cp-meta-card__icon" />
                 <div>
                   <h4>Email de atención directa</h4>
-                  <a href="mailto:contacto@compensatuviaje.com">contacto@compensatuviaje.com</a>
+                  <a href={`mailto:${LEGAL.emails.contact}`}>{LEGAL.emails.contact}</a>
                 </div>
               </div>
 

@@ -31,8 +31,8 @@ const SECTIONS = [
   {
     title: 'Contacto',
     links: [
-      { label: 'Contáctanos', href: `mailto:${LEGAL.emails.contact}` },
-      { label: 'Soporte', href: `mailto:${LEGAL.emails.support}?subject=Soporte` },
+      { label: 'Contáctanos', href: '/contacto' },
+      { label: 'Soporte', href: '/soporte' },
       { label: 'Prensa', href: `mailto:${LEGAL.emails.contact}?subject=Prensa` },
       { label: 'Empresas', href: `mailto:${LEGAL.emails.contact}?subject=Empresas` },
       { label: 'Partners', href: `mailto:${LEGAL.emails.contact}?subject=Partners` },

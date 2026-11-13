@@ -54,6 +54,7 @@ const PartnersGuidePage = lazy(() => import('./apps/public/pages/PartnersGuidePa
 const CalculatorPage = lazy(() => import('./apps/public/pages/CalculatorPage'));
 const MethodologyPage = lazy(() => import('./apps/public/pages/MethodologyPage'));
 const ContactPage = lazy(() => import('./apps/public/pages/ContactPage'));
+const SupportPage = lazy(() => import('./apps/public/pages/SupportPage'));
 const PaymentMethodsPage = lazy(() => import('./apps/public/pages/PaymentMethodsPage'));
 const TermsPage = lazy(() => import('./apps/public/pages/legal/TermsPage'));
 const PrivacyPage = lazy(() => import('./apps/public/pages/legal/PrivacyPage'));
@@ -132,6 +133,8 @@ function App() {
             <Route path="/calculadora" element={<CalculatorPage />} />
             <Route path="/metodologia" element={<MethodologyPage />} />
             <Route path="/contacto" element={<ContactPage />} />
+            <Route path="/soporte" element={<SupportPage />} />
+            <Route path="/support" element={<Navigate to="/soporte" replace />} />
             <Route path="/pagos" element={<PaymentMethodsPage />} />
 
             {/* Legal */}

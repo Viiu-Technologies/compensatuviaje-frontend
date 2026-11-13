@@ -7,7 +7,8 @@ import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 // Proveedores que tratan datos por cuenta de CompensaTuViaje. Mantener
 // sincronizado con las integraciones reales del backend.
 const PROCESSORS = [
-  { name: 'Supabase', purpose: 'Autenticación e inicio de sesión (incluido Google)', location: 'Estados Unidos' },
+  { name: 'Supabase', purpose: 'Autenticación e inicio de sesión (correo electrónico, Google y Apple)', location: 'Estados Unidos' },
+  { name: 'Apple (Sign in with Apple)', purpose: 'Inicio de sesión y verificación de identidad en la app iOS', location: 'Estados Unidos' },
   { name: 'Railway', purpose: 'Servidores de la aplicación y base de datos', location: 'Estados Unidos' },
   { name: 'Vercel', purpose: 'Alojamiento del sitio web', location: 'Estados Unidos' },
   { name: 'Cloudflare R2', purpose: 'Almacenamiento de documentos y archivos', location: 'Estados Unidos / global' },
@@ -36,13 +37,20 @@ const sections: LegalSection[] = [
     title: 'Qué datos tratamos',
     body: (
       <ul>
-        <li><strong>Cuenta:</strong> nombre, correo electrónico, contraseña cifrada o identificador de Google, y preferencias.</li>
+        <li>
+          <strong>Cuenta:</strong> nombre, correo electrónico (o dirección privada reenviada si eliges{' '}
+          <em>«Ocultar mi correo»</em> con Apple), contraseña cifrada o identificador de inicio de sesión con
+          Google o Sign in with Apple, y preferencias.
+        </li>
         <li><strong>Viajes y cálculos:</strong> origen, destino, fechas, medio de transporte, pasajeros y emisiones calculadas.</li>
         <li><strong>Empresas:</strong> razón social, RUT, giro, datos de facturación, datos de contacto del representante y de los usuarios que la empresa invite.</li>
         <li><strong>Aliados:</strong> datos del titular del proyecto y la documentación que suban para su verificación.</li>
         <li><strong>Pagos:</strong> monto, fecha, estado y código de autorización. <strong>No recibimos ni guardamos los datos de tu tarjeta</strong>; los procesa Transbank.</li>
         <li><strong>Comunicaciones:</strong> mensajes que nos envías por formularios o correo, y tu suscripción al newsletter.</li>
-        <li><strong>Datos técnicos:</strong> dirección IP, navegador y registros de actividad necesarios para la seguridad del servicio.</li>
+        <li>
+          <strong>Datos técnicos:</strong> dirección IP, navegador o versión de la aplicación móvil iOS, sistema
+          operativo y registros de actividad necesarios para la seguridad y funcionamiento del servicio.
+        </li>
       </ul>
     ),
   },
@@ -59,7 +67,7 @@ const sections: LegalSection[] = [
             <tr><td>Crear tu cuenta, calcular tu huella, procesar tu compra y emitir tu Certificado</td><td>Ejecución del contrato</td></tr>
             <tr><td>Emitir boletas o facturas y llevar la contabilidad</td><td>Obligación legal</td></tr>
             <tr><td>Verificar a Empresas y Aliados y prevenir fraude</td><td>Interés legítimo</td></tr>
-            <tr><td>Responder consultas y dar soporte</td><td>Ejecución del contrato o interés legítimo</td></tr>
+            <tr><td>Responder consultas y brindar soporte técnico web y móvil</td><td>Ejecución del contrato o interés legítimo</td></tr>
             <tr><td>Enviarte el newsletter y novedades</td><td>Consentimiento (puedes retirarlo en cualquier correo)</td></tr>
             <tr><td>Mostrar tu perfil público de impacto</td><td>Consentimiento (solo si lo activas)</td></tr>
           </tbody>
@@ -182,6 +190,31 @@ const sections: LegalSection[] = [
     ),
   },
   {
+    id: 'eliminacion',
+    title: 'Eliminación de cuenta y datos (Web e iOS)',
+    body: (
+      <>
+        <p>
+          Puedes eliminar tu cuenta en cualquier momento directamente desde la aplicación móvil iOS en la
+          opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la app te pedirá
+          reconfirmar con tu Apple ID para revocar de forma segura la autorización asociada antes de
+          completar el borrado.
+        </p>
+        <p>
+          También puedes solicitar la eliminación por correo a{' '}
+          <a href={`mailto:${LEGAL.emails.privacy}`}>{LEGAL.emails.privacy}</a> desde la dirección
+          registrada o desde nuestra página de <Link to="/soporte#eliminar-cuenta">Soporte</Link>.
+        </p>
+        <p>
+          Al confirmar la eliminación, cerramos tu acceso en autenticación, revocamos los tokens vinculados y
+          eliminamos o anonimizamos tus datos personales de perfil y viajes. Por excepción legal, debemos
+          conservar los comprobantes tributarios cuando existan compras registradas (hasta 6 años) y el
+          registro público de Certificados emitidos en Polygon permanece sin tu nombre, correo ni RUT.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'seguridad',
     title: 'Seguridad',
     body: (
@@ -229,10 +262,12 @@ const PrivacyPage: React.FC = () => (
     title={PUBLIC_SEO[LEGAL_ROUTES.privacy].title}
     description={PUBLIC_SEO[LEGAL_ROUTES.privacy].description}
     path={LEGAL_ROUTES.privacy}
+    lastUpdated="12 de noviembre de 2026"
     intro={
       <p>
-        Esta política explica cómo tratamos los datos personales de quienes usan {LEGAL.brand}, de
-        acuerdo con la Ley N° 19.628 sobre protección de la vida privada y la Ley N° 21.719.
+        Esta política explica cómo tratamos los datos personales de quienes usan la plataforma web y la
+        aplicación móvil (iOS) de {LEGAL.brand}, de acuerdo con la Ley N° 19.628 sobre protección de la
+        vida privada y la Ley N° 21.719.
       </p>
     }
     sections={sections}

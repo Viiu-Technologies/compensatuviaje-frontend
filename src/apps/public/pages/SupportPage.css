@@ -1,0 +1,84 @@
+/* ==========================================================================
+   SupportPage.css — Estilos complementarios para el Centro de Soporte (/soporte)
+   Reutiliza la base visual de ContactPage.css y tokens.css.
+   ========================================================================== */
+@import '../components/landing/tokens.css';
+
+.sp-guides-section {
+  padding: 1.5rem 0 1rem;
+}
+
+.sp-guides-header {
+  max-width: 58ch;
+  margin-bottom: var(--ctv-space-6);
+}
+
+.sp-guides-title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  line-height: 1.2;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 var(--ctv-space-2);
+}
+
+.sp-guides-sub {
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+}
+
+.sp-guides-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ctv-space-5);
+}
+
+@media (min-width: 768px) {
+  .sp-guides-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sp-guide-card {
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  border-radius: var(--ctv-radius-lg);
+  padding: 1.4rem 1.5rem;
+  box-shadow: var(--ctv-shadow-card);
+  backdrop-filter: blur(10px);
+}
+
+.sp-guide-card--highlight {
+  border-color: rgba(8, 174, 6, 0.28);
+}
+
+.sp-guide-card h3 {
+  font-family: var(--ctv-font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 0.45rem;
+}
+
+.sp-guide-card p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+}
+
+.sp-guide-card__link {
+  display: inline-block;
+  margin-top: 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ctv-brand);
+  text-decoration: none;
+}
+
+.sp-guide-card__link:hover {
+  text-decoration: underline;
+}
+
