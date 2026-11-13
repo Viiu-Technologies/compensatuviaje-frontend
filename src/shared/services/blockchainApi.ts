@@ -11,6 +11,8 @@ import type {
   CertificateResponse,
   MintRequest,
   MintResult,
+  ClaimRequest,
+  ClaimResult,
   WalletCertificatesResponse,
   BlockchainStatsResponse,
   PublicVerification,
@@ -41,6 +43,11 @@ export const getCertificateByTokenId = async (
   tokenId: string
 ): Promise<{ success: boolean; certificate: NFTCertificate }> => {
   const res: any = await api.get(`${BASE}/token/${tokenId}`);
+  return unwrap(res);
+};
+
+export const claimNFTCertificate = async (data: ClaimRequest): Promise<ClaimResult> => {
+  const res: any = await api.post(`${BASE}/claim`, data);
   return unwrap(res);
 };
 
@@ -94,6 +101,7 @@ const blockchainApi = {
   getCertificateByCompensation,
   getCertificateByTokenId,
   mintNFTCertificate,
+  claimNFTCertificate,
   verifyTransaction,
   getWalletCertificates,
   getBlockchainStats,

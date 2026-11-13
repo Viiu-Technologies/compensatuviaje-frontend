@@ -117,6 +117,19 @@ export interface MintResult {
   openSeaUrl: string;
 }
 
+export interface ClaimRequest {
+  compensationId: string;
+  walletAddress: string;
+}
+
+export interface ClaimResult {
+  success: boolean;
+  custodyStatus: NFTCustodyStatus;
+  walletAddress: string;
+  txHash: string;
+  explorerUrl: string;
+}
+
 export type MintingStep = 'connect' | 'confirm' | 'minting' | 'success' | 'error';
 
 export interface MintingState {
