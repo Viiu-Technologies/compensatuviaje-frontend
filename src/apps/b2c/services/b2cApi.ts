@@ -82,7 +82,8 @@ export interface B2CCertificate {
   co2Compensated: number;      // Toneladas de CO₂ (el backend envía tonsCompensated del certificado)
   unitsFinanced?: number;      // Unidades físicas congeladas (Ej: 50 árboles)
   impactUnit?: string | null;  // Nombre de la unidad (Ej: "árboles")
-  project: string;
+  // null cuando el certificado no tiene un proyecto vinculado: no se inventa un nombre.
+  project: string | null;
   flightRoute?: string | null;
   status: 'verified' | 'pending' | string;
   // Equivalencias con fuente, calculadas en el backend (US EPA y DEFRA 2025).
