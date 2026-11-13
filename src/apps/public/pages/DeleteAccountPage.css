@@ -1,0 +1,75 @@
+/* ==========================================================================
+   DeleteAccountPage.css — Estilos específicos para /eliminar-cuenta
+   Reutiliza ContactPage.css, SupportPage.css y .lgl-table de LegalLayout.css.
+   ========================================================================== */
+@import '../components/landing/tokens.css';
+
+.da-section {
+  padding: 1.75rem 0 0.75rem;
+}
+
+.da-header {
+  max-width: 64ch;
+  margin-bottom: var(--ctv-space-5);
+}
+
+.da-title {
+  font-family: var(--ctv-font-display);
+  font-weight: var(--ctv-display-weight);
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  line-height: 1.2;
+  color: var(--ctv-brand-deep);
+  margin: 0 0 var(--ctv-space-2);
+}
+
+.da-sub {
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+  margin: 0;
+}
+
+.da-steps {
+  margin: 0.65rem 0 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+}
+
+.da-steps strong {
+  color: var(--ctv-brand-deep);
+}
+
+.da-table-card {
+  background: var(--ctv-glass-bg);
+  border: 1px solid var(--ctv-glass-border);
+  border-radius: var(--ctv-radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--ctv-shadow-card);
+  backdrop-filter: blur(10px);
+}
+
+.da-table-card .lgl-table-wrap {
+  margin-bottom: 0;
+}
+
+.da-note {
+  margin: 1rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--ctv-ink-soft);
+}
+
+.da-note a {
+  color: var(--ctv-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.da-note a:hover {
+  text-decoration: underline;
+}
+

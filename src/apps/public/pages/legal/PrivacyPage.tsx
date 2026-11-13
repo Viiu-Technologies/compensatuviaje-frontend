@@ -42,14 +42,27 @@ const sections: LegalSection[] = [
           <em>«Ocultar mi correo»</em> con Apple), contraseña cifrada o identificador de inicio de sesión con
           Google o Sign in with Apple, y preferencias.
         </li>
-        <li><strong>Viajes y cálculos:</strong> origen, destino, fechas, medio de transporte, pasajeros y emisiones calculadas.</li>
+        <li>
+          <strong>Viajes y cálculos:</strong> origen, destino, fechas, medio de transporte (aéreo o
+          terrestre), distancia, duración, pasajeros y emisiones calculadas.
+        </li>
+        <li>
+          <strong>Ubicación, movimiento y recorridos terrestres (app móvil Android e iOS):</strong> cuando
+          inicias voluntariamente el registro de un trayecto y autorizas los permisos en tu dispositivo,
+          recolectamos puntos de ubicación GPS (latitud, longitud, precisión, velocidad, altitud y marca
+          de tiempo), coordenadas de inicio y término, distancia recorrida, modo de transporte terrestre
+          (por ejemplo, bus, automóvil, bicicleta o caminata), motivo del viaje y, cuando corresponda, la
+          actividad de movimiento detectada por el dispositivo para calcular la distancia y las emisiones
+          del desplazamiento.
+        </li>
         <li><strong>Empresas:</strong> razón social, RUT, giro, datos de facturación, datos de contacto del representante y de los usuarios que la empresa invite.</li>
         <li><strong>Aliados:</strong> datos del titular del proyecto y la documentación que suban para su verificación.</li>
         <li><strong>Pagos:</strong> monto, fecha, estado y código de autorización. <strong>No recibimos ni guardamos los datos de tu tarjeta</strong>; los procesa Transbank.</li>
         <li><strong>Comunicaciones:</strong> mensajes que nos envías por formularios o correo, y tu suscripción al newsletter.</li>
         <li>
-          <strong>Datos técnicos:</strong> dirección IP, navegador o versión de la aplicación móvil iOS, sistema
-          operativo y registros de actividad necesarios para la seguridad y funcionamiento del servicio.
+          <strong>Datos técnicos:</strong> dirección IP, navegador o versión de la aplicación móvil (Android e
+          iOS), sistema operativo y registros de actividad necesarios para la seguridad y funcionamiento del
+          servicio.
         </li>
       </ul>
     ),
@@ -65,6 +78,7 @@ const sections: LegalSection[] = [
           </thead>
           <tbody>
             <tr><td>Crear tu cuenta, calcular tu huella, procesar tu compra y emitir tu Certificado</td><td>Ejecución del contrato</td></tr>
+            <tr><td>Medir distancias y modos de transporte terrestre en la app móvil (Android e iOS)</td><td>Ejecución del contrato y permisos otorgados en el dispositivo</td></tr>
             <tr><td>Emitir boletas o facturas y llevar la contabilidad</td><td>Obligación legal</td></tr>
             <tr><td>Verificar a Empresas y Aliados y prevenir fraude</td><td>Interés legítimo</td></tr>
             <tr><td>Responder consultas y brindar soporte técnico web y móvil</td><td>Ejecución del contrato o interés legítimo</td></tr>
@@ -136,6 +150,26 @@ const sections: LegalSection[] = [
     ),
   },
   {
+    id: 'ubicacion',
+    title: 'Ubicación GPS y movimiento en la app móvil (Android e iOS)',
+    body: (
+      <>
+        <p>
+          La aplicación móvil de {LEGAL.brand} para <strong>Android e iOS</strong> utiliza permisos de{' '}
+          <strong>ubicación (GPS)</strong> y de <strong>actividad física o movimiento</strong> únicamente
+          cuando inicias el registro de un desplazamiento terrestre, con el fin de calcular la distancia
+          recorrida y asociarla al modo de transporte correspondiente.
+        </p>
+        <p>
+          No vendemos tu ubicación ni la compartimos con fines publicitarios. Puedes administrar o revocar
+          estos permisos en cualquier momento desde los <strong>Ajustes</strong> de tu dispositivo Android o
+          iOS (si los desactivas, podrás seguir usando la calculadora manual, pero no medir recorridos
+          terrestres mediante GPS).
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'perfil',
     title: 'Perfil público de impacto',
     body: (
@@ -162,10 +196,13 @@ const sections: LegalSection[] = [
     title: 'Cuánto tiempo guardamos los datos',
     body: (
       <ul>
-        <li>Datos de cuenta: mientras la cuenta esté activa y hasta 12 meses después de cerrarla.</li>
-        <li>Datos de compras y documentos tributarios: 6 años, por obligación tributaria.</li>
+        <li>
+          Datos de cuenta y perfil: mientras la cuenta esté activa. Al eliminarla desde la app se borran o
+          anonimizan de inmediato (o en un máximo de 30 días corridos si lo solicitas por web o correo).
+        </li>
+        <li>Datos de compras, pagos y documentos tributarios: 6 años, por obligación tributaria.</li>
         <li>Newsletter: hasta que te des de baja.</li>
-        <li>Registros técnicos de seguridad: hasta 12 meses.</li>
+        <li>Registros técnicos y de seguridad: hasta 12 meses.</li>
       </ul>
     ),
   },
@@ -191,25 +228,27 @@ const sections: LegalSection[] = [
   },
   {
     id: 'eliminacion',
-    title: 'Eliminación de cuenta y datos (Web e iOS)',
+    title: 'Eliminación de cuenta y datos (Web, Android e iOS)',
     body: (
       <>
         <p>
-          Puedes eliminar tu cuenta en cualquier momento directamente desde la aplicación móvil iOS en la
-          opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la app te pedirá
-          reconfirmar con tu Apple ID para revocar de forma segura la autorización asociada antes de
+          Puedes eliminar tu cuenta en cualquier momento directamente desde la aplicación móvil (Android o
+          iOS) en la opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la app te
+          pedirá reconfirmar con tu Apple ID para revocar de forma segura la autorización asociada antes de
           completar el borrado.
         </p>
         <p>
-          También puedes solicitar la eliminación por correo a{' '}
+          También puedes solicitar el borrado sin necesidad de abrir la app desde nuestra página pública de{' '}
+          <Link to="/eliminar-cuenta">Eliminación de cuenta</Link>, escribiendo a{' '}
           <a href={`mailto:${LEGAL.emails.privacy}`}>{LEGAL.emails.privacy}</a> desde la dirección
-          registrada o desde nuestra página de <Link to="/soporte#eliminar-cuenta">Soporte</Link>.
+          registrada o en <Link to="/soporte#eliminar-cuenta">Soporte</Link>.
         </p>
         <p>
           Al confirmar la eliminación, cerramos tu acceso en autenticación, revocamos los tokens vinculados y
-          eliminamos o anonimizamos tus datos personales de perfil y viajes. Por excepción legal, debemos
-          conservar los comprobantes tributarios cuando existan compras registradas (hasta 6 años) y el
-          registro público de Certificados emitidos en Polygon permanece sin tu nombre, correo ni RUT.
+          eliminamos o anonimizamos tu perfil, viajes guardados, rutas GPS e historial no compensado. Por
+          excepción legal, debemos conservar los comprobantes tributarios cuando existan compras registradas
+          (6 años), registros técnicos hasta 12 meses, y el registro público de Certificados emitidos en
+          Polygon permanece sin tu nombre, correo ni RUT.
         </p>
       </>
     ),
@@ -266,8 +305,8 @@ const PrivacyPage: React.FC = () => (
     intro={
       <p>
         Esta política explica cómo tratamos los datos personales de quienes usan la plataforma web y la
-        aplicación móvil (iOS) de {LEGAL.brand}, de acuerdo con la Ley N° 19.628 sobre protección de la
-        vida privada y la Ley N° 21.719.
+        aplicación móvil (Android e iOS) de {LEGAL.brand}, de acuerdo con la Ley N° 19.628 sobre protección
+        de la vida privada y la Ley N° 21.719.
       </p>
     }
     sections={sections}

@@ -27,50 +27,52 @@ interface SupportTopic {
 
 const SUPPORT_TOPICS: SupportTopic[] = [
   {
-    title: 'Inicio de sesión y acceso (Apple ID, Google o correo)',
+    title: 'Inicio de sesión y acceso (Google, Apple ID o correo)',
     body: (
       <>
-        Si usaste <strong>Sign in with Apple</strong> y elegiste ocultar tu correo electrónico, inicia
-        sesión nuevamente con el mismo Apple ID para mantener tus viajes y certificados asociados a tu
-        cuenta. Si cambiaste de correo o tienes problemas para ingresar, escríbenos desde el formulario.
+        Funciona en <strong>Android, iOS y web</strong>. Si usaste <strong>Google Sign-In</strong> o{' '}
+        <strong>Sign in with Apple</strong> (incluso con correo privado reenviado), vuelve a ingresar con
+        la misma cuenta para conservar tus trayectos y certificados. Si tienes problemas de acceso,
+        escríbenos indicando tu correo.
       </>
     ),
   },
   {
-    title: 'Vuelos, cálculos y verificación de certificados',
+    title: 'Trayectos terrestres, distancia y permisos GPS (Android e iOS)',
     body: (
       <>
-        Tus cálculos, contribuciones climáticas y certificados digitales se sincronizan entre la app iOS
-        y tu cuenta web. Puedes comprobar la autenticidad de cualquier certificado emitido usando su
-        código único en el verificador público.
+        Para medir la distancia y el modo de transporte de tus desplazamientos terrestres, la app móvil en{' '}
+        <strong>Android e iOS</strong> necesita permisos de ubicación (GPS) y movimiento/actividad mientras
+        registras un recorrido. Si el trayecto no calcula distancia o queda abierto, revisa los permisos de
+        ubicación en los ajustes del teléfono y verifica tu conexión para sincronizar.
       </>
     ),
-    link: { to: '/#verificar', label: 'Verificar un certificado' },
+    link: { to: `${LEGAL_ROUTES.privacy}#ubicacion`, label: 'Ver uso de ubicación y permisos' },
   },
   {
-    title: 'Pagos con Webpay y reembolsos',
+    title: 'Vuelos, certificados digitales y pagos con Webpay',
     body: (
       <>
-        Si un pago quedó pendiente, ocurrió un error técnico durante la transacción o necesitas revisar si
-        aplica devolución, indícanos la fecha aproximada y el correo de tu cuenta al escribirnos.
+        Tus cálculos, contribuciones climáticas y certificados se sincronizan entre Android, iOS y la web
+        (verificables en el <Link to="/#verificar">buscador público</Link>). Si un pago con Webpay quedó
+        pendiente o necesitas revisar un reembolso, indícanos la fecha aproximada y el correo de tu cuenta.
       </>
     ),
     link: { to: LEGAL_ROUTES.refunds, label: 'Ver Política de Reembolsos' },
   },
   {
     id: 'eliminar-cuenta',
-    title: 'Cómo eliminar tu cuenta y datos (App iOS y Web)',
+    title: 'Cómo eliminar tu cuenta y datos (Android, iOS y Web)',
     highlight: true,
     body: (
       <>
         Puedes eliminar tu cuenta en cualquier momento desde la opción <strong>Eliminar cuenta</strong>{' '}
-        dentro de la aplicación iOS (si ingresaste con Apple, la app solicitará reconfirmar con tu Apple
-        ID para revocar el acceso). También puedes pedir la baja escribiendo a{' '}
-        <a href={`mailto:${LEGAL.emails.support}`}>{LEGAL.emails.support}</a> o mediante el formulario de
-        abajo desde tu correo registrado.
+        dentro de la app móvil Android o iOS (si ingresaste con Apple, la app solicitará reconfirmar con tu
+        Apple ID para revocar el acceso), o enviarnos una solicitud web sin necesidad de abrir la
+        aplicación.
       </>
     ),
-    link: { to: `${LEGAL_ROUTES.privacy}#eliminacion`, label: 'Ver detalles en Política de Privacidad' },
+    link: { to: '/eliminar-cuenta', label: 'Solicitar eliminación y ver datos retenidos' },
   },
 ];
 
@@ -97,7 +99,7 @@ const SupportPage: React.FC = () => {
             </span>
 
             <h1 className="cp-title">
-              Soporte y ayuda para la app iOS y la plataforma web.
+              Soporte y ayuda para la app móvil y la plataforma web.
             </h1>
 
             <p className="cp-lead">
@@ -142,7 +144,7 @@ const SupportPage: React.FC = () => {
                 Guías rápidas de ayuda
               </h2>
               <p className="sp-guides-sub">
-                Soluciones frecuentes para quienes usan la aplicación móvil iOS o la plataforma web.
+                Soluciones frecuentes para quienes usan la aplicación móvil (Android e iOS) o la plataforma web.
               </p>
             </div>
 
@@ -174,7 +176,7 @@ const SupportPage: React.FC = () => {
             eyebrow="Soporte Técnico"
             titleTop="¿Necesitas ayuda"
             titleAccent="con tu cuenta o la app?"
-            lede="Cuéntanos qué ocurrió en la app iOS o en la web (si puedes, indica el correo de tu cuenta y tu dispositivo) y nuestro equipo te responderá en menos de 24 horas hábiles."
+            lede="Cuéntanos qué ocurrió en la app móvil (Android o iOS) o en la web (si puedes, indica el correo de tu cuenta y tu dispositivo) y nuestro equipo te responderá en menos de 24 horas hábiles."
           />
         </section>
 
