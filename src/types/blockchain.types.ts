@@ -211,6 +211,8 @@ export interface PublicVerification {
     tokenId: string | null;
     mintedAt: string | null;
     walletAddress: string | null;
+    integrityHash?: string;
+    integrityHashSource?: 'pdf_sha256' | 'record_sha256';
   } | null;
   blockchain: {
     minted: boolean;

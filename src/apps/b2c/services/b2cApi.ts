@@ -528,6 +528,34 @@ export function assistantErrorMessage(err: unknown): string {
   return e?.data?.message || e?.data?.error || e?.message || 'No se pudo consultar al asistente. Inténtalo de nuevo.';
 }
 
+export interface B2CBadgeItem {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  thresholdKg: number;
+  icon: string;
+  unlocked: boolean;
+  earnedAt: string | null;
+  progress: number;
+  remainingKg: number;
+}
+
+export interface B2CBadgesResponse {
+  totalCompensatedKg: number;
+  badges: B2CBadgeItem[];
+  currentBadge: B2CBadgeItem | null;
+}
+
+export async function getBadges(): Promise<B2CBadgesResponse> {
+  try {
+    const res = await authFetch<{ success: boolean; data: B2CBadgesResponse }>('/b2c/badges');
+    return res.data ?? { totalCompensatedKg: 0, badges: [], currentBadge: null };
+  } catch {
+    return { totalCompensatedKg: 0, badges: [], currentBadge: null };
+  }
+}
+
 /**
  * Eliminar un cálculo/vuelo (solo si no está compensado)
  */
@@ -548,6 +576,7 @@ const b2cApi = {
   getPaymentHistory,
   createPaymentTransaction,
   getUserProfile,
+  getBadges,
   deleteCalculation,
   askAssistant,
   assistantErrorMessage,

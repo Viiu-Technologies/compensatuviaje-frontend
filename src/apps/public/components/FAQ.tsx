@@ -39,7 +39,7 @@ const FAQS_B2C = [
   {
     id: 7,
     q: '¿Recibo un certificado?',
-    a: 'Sí, un certificado digital con número único. Desde tu panel puedes registrarlo como NFT en blockchain pública (Polygon), y así cualquiera puede verificarlo. Las empresas reciben certificados corporativos con el detalle del impacto.',
+    a: 'Sí, recibes un certificado digital con código único y sello de integridad SHA-256 verificable públicamente al instante. De forma opcional, también puedes registrarlo como NFT en Polygon bajo custodia de CompensaTuViaje y reclamarlo cuando quieras a tu propia wallet. Las empresas reciben certificados corporativos con el detalle del impacto.',
   },
 ];
 

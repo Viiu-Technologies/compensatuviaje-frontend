@@ -22,25 +22,56 @@ import {
 import blockchainApi from '../../services/blockchainApi';
 import walletService from '../../services/walletService';
 import NFTCertificateCard from './NFTCertificateCard';
-import type { NFTCertificate } from '../../../types/blockchain.types';
+import type { NFTCertificate, PublicVerification } from '../../../types/blockchain.types';
 
 interface VerificationResult {
-  status: 'loading' | 'verified' | 'not-found' | 'invalid' | 'error';
+  status: 'loading' | 'verified' | 'revoked' | 'not-found' | 'invalid' | 'error';
   certificate?: NFTCertificate;
+  publicCert?: NonNullable<PublicVerification['certificate']>;
+  blockchain?: PublicVerification['blockchain'];
   explorerUrl?: string;
   openSeaUrl?: string;
   error?: string;
 }
 
 const CertificateVerificationPage: React.FC = () => {
-  const { compensationId, tokenId } = useParams<{ compensationId?: string; tokenId?: string }>();
+  const { compensationId, tokenId, numero } = useParams<{
+    compensationId?: string;
+    tokenId?: string;
+    numero?: string;
+  }>();
   const [verification, setVerification] = useState<VerificationResult>({ status: 'loading' });
   const [copied, setCopied] = useState(false);
+  const [copiedHash, setCopiedHash] = useState(false);
   const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     verifyCertificate();
-  }, [compensationId, tokenId]);
+  }, [compensationId, tokenId, numero]);
+
+  const applyPublicVerification = (pub: PublicVerification, nftCert?: NFTCertificate, explorerUrl?: string, openSeaUrl?: string) => {
+    if (pub.status === 'revoked') {
+      setVerification({
+        status: 'revoked',
+        publicCert: pub.certificate ?? undefined,
+        blockchain: pub.blockchain ?? undefined,
+      });
+      return;
+    }
+    if (pub.valid && pub.certificate) {
+      const txHash = pub.blockchain?.txHash || undefined;
+      setVerification({
+        status: 'verified',
+        certificate: nftCert,
+        publicCert: pub.certificate,
+        blockchain: pub.blockchain,
+        explorerUrl: explorerUrl || (txHash ? `https://polygonscan.com/tx/${txHash}` : undefined),
+        openSeaUrl,
+      });
+      return;
+    }
+    setVerification({ status: 'not-found' });
+  };
 
   const verifyCertificate = async () => {
     setVerification({ status: 'loading' });
@@ -48,7 +79,25 @@ const CertificateVerificationPage: React.FC = () => {
     try {
       let response;
 
-      if (tokenId) {
+      if (numero) {
+        const pub = await blockchainApi.searchCertificateByNumber(decodeURIComponent(numero));
+        let nftCert: NFTCertificate | undefined;
+        let explorerUrl: string | undefined;
+        let openSeaUrl: string | undefined;
+        if (pub.valid && pub.certificate?.compensationId && pub.blockchain?.minted) {
+          try {
+            const nftRes = await blockchainApi.getCertificateByCompensation(pub.certificate.compensationId);
+            if (nftRes.success && nftRes.hasNFT && nftRes.certificate) {
+              nftCert = nftRes.certificate;
+              explorerUrl = (nftRes as any).explorerUrl || nftRes.certificate.explorerUrl;
+              openSeaUrl = (nftRes as any).openSeaUrl || nftRes.certificate.openSeaUrl;
+            }
+          } catch {
+            // Optional NFT lookup fallback: public verification remains valid via SHA-256
+          }
+        }
+        applyPublicVerification(pub, nftCert, explorerUrl, openSeaUrl);
+      } else if (tokenId) {
         // Verificar por tokenId
         response = await blockchainApi.getCertificateByTokenId(tokenId);
         if (response.success && response.certificate) {
@@ -62,23 +111,24 @@ const CertificateVerificationPage: React.FC = () => {
           setVerification({ status: 'not-found' });
         }
       } else if (compensationId) {
-        // Verificar por compensationId
-        response = await blockchainApi.getCertificateByCompensation(compensationId);
-        if (response.success && response.hasNFT && response.certificate) {
-          setVerification({
-            status: 'verified',
-            certificate: response.certificate,
-            explorerUrl: response.explorerUrl,
-            openSeaUrl: response.openSeaUrl
-          });
-        } else if (response.success && !response.hasNFT) {
-          setVerification({ 
-            status: 'not-found',
-            error: 'Esta compensación no tiene un certificado NFT asociado'
-          });
-        } else {
-          setVerification({ status: 'not-found' });
+        // Verificar certificado público (D9: válido con o sin NFT) + enriquecer con NFT si existe
+        const pub = await blockchainApi.publicVerifyCertificate(compensationId);
+        let nftCert: NFTCertificate | undefined;
+        let explorerUrl: string | undefined;
+        let openSeaUrl: string | undefined;
+        if (pub.valid && pub.blockchain?.minted) {
+          try {
+            const nftRes = await blockchainApi.getCertificateByCompensation(compensationId);
+            if (nftRes.success && nftRes.hasNFT && nftRes.certificate) {
+              nftCert = nftRes.certificate;
+              explorerUrl = (nftRes as any).explorerUrl || nftRes.certificate.explorerUrl;
+              openSeaUrl = (nftRes as any).openSeaUrl || nftRes.certificate.openSeaUrl;
+            }
+          } catch {
+            // Public verification continues with DB/SHA-256 record
+          }
         }
+        applyPublicVerification(pub, nftCert, explorerUrl, openSeaUrl);
       } else {
         setVerification({ 
           status: 'invalid',
@@ -91,6 +141,12 @@ const CertificateVerificationPage: React.FC = () => {
         error: error.message || 'Error al verificar el certificado'
       });
     }
+  };
+
+  const handleCopyHash = async (hash: string) => {
+    await navigator.clipboard.writeText(hash);
+    setCopiedHash(true);
+    setTimeout(() => setCopiedHash(false), 2000);
   };
 
   const handleCopyLink = async () => {
@@ -152,16 +208,54 @@ const CertificateVerificationPage: React.FC = () => {
           </div>
         )}
 
-        {/* Verified */}
-        {verification.status === 'verified' && verification.certificate && (
+        {/* Verified (soporta certificados válidos con o sin NFT + SHA-256) */}
+        {verification.status === 'verified' && (verification.certificate || verification.publicCert) && (
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Certificate Card */}
+            {/* Certificate Card (NFT o certificado verificado por registro + SHA-256) */}
             <div>
-              <NFTCertificateCard
-                certificate={verification.certificate}
-                explorerUrl={verification.explorerUrl}
-                openSeaUrl={verification.openSeaUrl}
-              />
+              {verification.certificate ? (
+                <NFTCertificateCard
+                  certificate={verification.certificate}
+                  explorerUrl={verification.explorerUrl}
+                  openSeaUrl={verification.openSeaUrl}
+                />
+              ) : verification.publicCert && (
+                <div className="p-8 bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 border border-emerald-700/50 rounded-2xl shadow-xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold">
+                      <CheckCircle className="w-4 h-4" />
+                      Certificado emitido vigente
+                    </span>
+                    <span className="text-xs font-mono text-slate-400">
+                      {verification.publicCert.certificateNumber}
+                    </span>
+                  </div>
+                  <p className="text-xs uppercase tracking-wider text-slate-400 mb-1">Impacto compensado</p>
+                  <p className="text-4xl font-extrabold text-white mb-6">
+                    {verification.publicCert.co2AmountKg.toLocaleString('es-CL', { maximumFractionDigits: 2 })} kg CO₂e
+                  </p>
+                  <div className="space-y-3 border-t border-slate-800 pt-4 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-slate-400">Proyecto ESG</span>
+                      <span className="text-white font-medium text-right">{verification.publicCert.projectName}</span>
+                    </div>
+                    {verification.publicCert.issuedAt && (
+                      <div className="flex justify-between gap-4">
+                        <span className="text-slate-400">Fecha de emisión</span>
+                        <span className="text-white">
+                          {new Date(verification.publicCert.issuedAt).toLocaleDateString('es-CL')}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-4">
+                      <span className="text-slate-400">Respaldo blockchain (NFT)</span>
+                      <span className="text-slate-300">
+                        {verification.blockchain?.minted ? 'Registrado en Polygon' : 'No requerido (verificación SHA-256)'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Verification Details */}
@@ -177,7 +271,9 @@ const CertificateVerificationPage: React.FC = () => {
                       Certificado Verificado ✓
                     </h2>
                     <p className="text-emerald-300/70">
-                      Este certificado existe en la blockchain de Polygon y es auténtico.
+                      {verification.blockchain?.minted
+                        ? 'Emitido por CompensaTuViaje y respaldado como NFT en la blockchain de Polygon.'
+                        : 'Emitido por CompensaTuViaje, vigente en nuestro registro público con integridad SHA-256.'}
                     </p>
                   </div>
                 </div>
@@ -191,33 +287,87 @@ const CertificateVerificationPage: React.FC = () => {
                 </h3>
 
                 <div className="space-y-4">
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Token ID</p>
-                    <p className="text-white font-mono">#{verification.certificate.tokenId}</p>
-                  </div>
+                  {verification.publicCert?.certificateNumber && (
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">N.º de Certificado</p>
+                      <p className="text-white font-mono">{verification.publicCert.certificateNumber}</p>
+                    </div>
+                  )}
+
+                  {verification.certificate?.tokenId && (
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Token ID (Polygon NFT)</p>
+                      <p className="text-white font-mono">#{verification.certificate.tokenId}</p>
+                    </div>
+                  )}
 
                   <div>
                     <p className="text-xs text-slate-400 mb-1">ID Compensación</p>
                     <p className="text-white font-mono text-sm break-all">
-                      {verification.certificate.compensationId}
+                      {verification.certificate?.compensationId || verification.publicCert?.compensationId}
                     </p>
                   </div>
 
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Propietario Actual</p>
-                    <p className="text-white font-mono text-sm break-all">
-                      {verification.certificate.beneficiary}
-                    </p>
-                  </div>
+                  {verification.publicCert?.integrityHash && (
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">
+                        Sello de integridad SHA-256 ({verification.publicCert.integrityHashSource === 'pdf_sha256' ? 'PDF oficial' : 'Registro verificado'})
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-emerald-300 font-mono break-all">
+                          {verification.publicCert.integrityHash}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyHash(verification.publicCert!.integrityHash!)}
+                          title="Copiar SHA-256"
+                          className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                        >
+                          {copiedHash ? (
+                            <Check className="w-4 h-4 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-4 h-4 text-slate-300" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Registrado en Blockchain</p>
-                    <p className="text-white">
-                      {new Date(verification.certificate.timestamp).toLocaleString('es-CL')}
-                    </p>
-                  </div>
+                  {verification.certificate?.beneficiary && (
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Wallet de custodia / titular</p>
+                      <p className="text-white font-mono text-sm break-all">
+                        {verification.certificate.beneficiary}
+                      </p>
+                    </div>
+                  )}
 
-                  {verification.certificate.verified && (
+                  {(verification.certificate?.timestamp || verification.publicCert?.issuedAt) && (
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">
+                        {verification.certificate?.timestamp ? 'Registrado en Blockchain' : 'Fecha de emisión'}
+                      </p>
+                      <p className="text-white">
+                        {new Date(verification.certificate?.timestamp || verification.publicCert!.issuedAt!).toLocaleString('es-CL')}
+                      </p>
+                    </div>
+                  )}
+
+                  {verification.explorerUrl && (
+                    <div className="pt-2">
+                      <a
+                        href={verification.explorerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Ver transacción en Polygonscan
+                      </a>
+                    </div>
+                  )}
+
+                  {verification.certificate?.verified && (
                     <div className="pt-3 border-t border-slate-700">
                       <div className="flex items-center gap-2 text-blue-400">
                         <CheckCircle className="w-4 h-4" />
@@ -256,6 +406,27 @@ const CertificateVerificationPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Revoked */}
+        {verification.status === 'revoked' && (
+          <div className="max-w-md mx-auto text-center py-20">
+            <div className="w-20 h-20 mx-auto mb-6 bg-red-900/20 rounded-full flex items-center justify-center">
+              <XCircle className="w-10 h-10 text-red-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">
+              Certificado Revocado
+            </h2>
+            <p className="text-slate-400 mb-6">
+              Este certificado ({verification.publicCert?.certificateNumber || compensationId || numero}) fue anulado y ya no es válido.
+            </p>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
+            >
+              Ir al inicio
+            </Link>
           </div>
         )}
 
