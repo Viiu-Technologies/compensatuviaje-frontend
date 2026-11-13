@@ -275,7 +275,6 @@ const B2CCertificatesPage: React.FC = () => {
             travelType: 'flight',
           }}
           onSuccess={() => {
-            setMintCert(null);
             b2cApi.getCertificates().then((data) => setCertificates(data.certificates || []));
           }}
         />
