@@ -17,6 +17,7 @@ interface LegalLayoutProps {
   title: string;
   description: string;
   path: string;
+  lastUpdated?: string;
   intro: React.ReactNode;
   sections: LegalSection[];
 }
@@ -29,7 +30,14 @@ const RELATED = [
 ];
 
 /** Estructura común de las páginas legales: índice lateral + secciones numeradas. */
-const LegalLayout: React.FC<LegalLayoutProps> = ({ title, description, path, intro, sections }) => {
+const LegalLayout: React.FC<LegalLayoutProps> = ({
+  title,
+  description,
+  path,
+  lastUpdated = LEGAL.lastUpdated,
+  intro,
+  sections,
+}) => {
   useSeo({ title, description, path });
 
   useEffect(() => {
@@ -49,7 +57,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ title, description, path, int
           <header className="lgl-head">
             <p className="lgl-eyebrow">Legal</p>
             <h1 className="lgl-title">{title}</h1>
-            <p className="lgl-meta">Última actualización: {LEGAL.lastUpdated}</p>
+            <p className="lgl-meta">Última actualización: {lastUpdated}</p>
             <div className="lgl-intro">{intro}</div>
           </header>
 

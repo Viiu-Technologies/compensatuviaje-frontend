@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { HiArrowRight, HiCheck, HiExclamation, HiMail, HiOutlineClock, HiShieldCheck } from 'react-icons/hi';
 import { useGsapReveal, reveal } from '../hooks/useGsapReveal';
 import { sendContactMessage } from '../services/publicApi';
+import { LEGAL } from '../../../shared/config/legal';
 import './ContactSection.css';
 
 const SUBJECT_OPTIONS = [
@@ -14,15 +15,34 @@ const SUBJECT_OPTIONS = [
   { value: 'otro', label: 'Otro requerimiento' },
 ];
 
-const OFFICIAL_CONTACT_EMAIL = 'contacto@compensatuviaje.com';
+export interface ContactSectionProps {
+  defaultSubject?: string;
+  contactEmail?: string;
+  sectionId?: string;
+  eyebrow?: string;
+  titleTop?: string;
+  titleAccent?: string;
+  lede?: string;
+}
 
-export const ContactSection: React.FC = () => {
+export const ContactSection: React.FC<ContactSectionProps> = ({
+  defaultSubject = 'general',
+  contactEmail = LEGAL.emails.contact,
+  sectionId = 'contacto',
+  eyebrow = 'Atención y Consultas',
+  titleTop = 'Inicia tu plan de',
+  titleAccent = 'acción climática',
+  lede = 'Cuéntanos sobre tus requerimientos de viaje individual o metas corporativas Scope 3. Nuestro equipo de especialistas en sostenibilidad responde en menos de 24 horas hábiles.',
+}) => {
   // ?asunto=b2b preselecciona el asunto (lo usa "Agendar reunión corporativa").
   const [searchParams] = useSearchParams();
   const subjectParam = searchParams.get('asunto');
+  const fallbackSubject = SUBJECT_OPTIONS.some((o) => o.value === defaultSubject)
+    ? defaultSubject
+    : 'general';
   const initialSubject = SUBJECT_OPTIONS.some((o) => o.value === subjectParam)
     ? (subjectParam as string)
-    : 'general';
+    : fallbackSubject;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -92,7 +112,7 @@ export const ContactSection: React.FC = () => {
   };
 
   return (
-    <section ref={scopeRef} id="contacto" className="contact-section">
+    <section ref={scopeRef} id={sectionId} className="contact-section">
       <div className="contact-container">
         <div className="contact-grid">
           {/* Columna Izquierda: Información Institucional */}
@@ -100,20 +120,20 @@ export const ContactSection: React.FC = () => {
             <header className="contact-header">
               <span className="contact-eyebrow ctv-reveal">
                 <span className="contact-eyebrow__line" />
-                Atención y Consultas
+                {eyebrow}
               </span>
 
               <h2 className="contact-title">
-                <span className="hero-line"><span className="hero-line__inner">Inicia tu plan de</span></span>
+                <span className="hero-line"><span className="hero-line__inner">{titleTop}</span></span>
                 <span className="hero-line contact-title--accent">
-                  <span className="hero-line__inner"><em>acción climática</em>.</span>
+                  <span className="hero-line__inner">
+                    <em>{titleAccent}</em>
+                    {/[?.!]$/.test(titleAccent) ? '' : '.'}
+                  </span>
                 </span>
               </h2>
 
-              <p className="contact-lede ctv-reveal">
-                Cuéntanos sobre tus requerimientos de viaje individual o metas corporativas Scope 3.
-                Nuestro equipo de especialistas en sostenibilidad responde en menos de 24 horas hábiles.
-              </p>
+              <p className="contact-lede ctv-reveal">{lede}</p>
 
               <div className="contact-channel-card ctv-reveal">
                 <div className="contact-channel-icon">
@@ -121,8 +141,8 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div className="contact-channel-info">
                   <span className="contact-channel-label">Canal Oficial Institucional</span>
-                  <a href={`mailto:${OFFICIAL_CONTACT_EMAIL}`} className="contact-channel-email">
-                    {OFFICIAL_CONTACT_EMAIL}
+                  <a href={`mailto:${contactEmail}`} className="contact-channel-email">
+                    {contactEmail}
                   </a>
                 </div>
               </div>
@@ -160,7 +180,7 @@ export const ContactSection: React.FC = () => {
                         name: '',
                         email: '',
                         company: '',
-                        subject: 'general',
+                        subject: initialSubject,
                         message: '',
                       });
                     }}
