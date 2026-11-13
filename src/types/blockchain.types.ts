@@ -99,11 +99,15 @@ export const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
 // ---- Minting ----
 export interface MintRequest {
   compensationId: string;
-  walletAddress: string;
+  walletAddress?: string;
 }
+
+export type NFTCustodyStatus = 'custodied' | 'claimed';
 
 export interface MintResult {
   success: boolean;
+  custodyStatus?: NFTCustodyStatus;
+  walletAddress?: string;
   tokenId: string;
   txHash: string;
   contractAddress: string;

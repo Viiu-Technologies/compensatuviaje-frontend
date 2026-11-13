@@ -3,22 +3,19 @@
  * Modal para mintear certificado NFT
  */
 
-import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  Wallet, 
-  Loader2, 
-  CheckCircle, 
-  AlertCircle, 
+import React, { useState } from 'react';
+import {
+  X,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
   ExternalLink,
   Sparkles,
   Shield,
-  Leaf,
-  ArrowRight
+  Leaf
 } from 'lucide-react';
-import walletService from '../../services/walletService';
 import blockchainApi from '../../services/blockchainApi';
-import type { WalletState, MintResult } from '../../../types/blockchain.types';
+import type { MintResult } from '../../../types/blockchain.types';
 
 interface MintNFTModalProps {
   isOpen: boolean;
@@ -32,22 +29,19 @@ interface MintNFTModalProps {
   onSuccess?: (result: MintResult) => void;
 }
 
-interface MintingStateLocal {
-  status: 'idle' | 'preparing' | 'uploading_metadata' | 'minting' | 'success' | 'error';
-  step: number;
-  totalSteps: number;
-  message: string;
-  tokenId?: string;
-  transactionHash?: string;
-  error?: string;
-}
+type MintingStatus = 'idle' | 'minting' | 'success' | 'error';
 
 const MINTING_STEPS = [
-  { id: 1, label: 'Conectar Wallet', description: 'Conecta tu wallet para recibir el NFT' },
-  { id: 2, label: 'Confirmar', description: 'Revisa los datos del certificado' },
-  { id: 3, label: 'Mintear', description: 'Creando tu NFT en blockchain' },
-  { id: 4, label: 'Completado', description: '¡Tu certificado NFT está listo!' }
+  { id: 1, label: 'Confirmar' },
+  { id: 2, label: 'Mintear' },
+  { id: 3, label: 'Completado' }
 ];
+
+const stepForStatus = (status: MintingStatus): number => {
+  if (status === 'success') return 3;
+  if (status === 'idle') return 1;
+  return 2;
+};
 
 const MintNFTModal: React.FC<MintNFTModalProps> = ({
   isOpen,
@@ -56,114 +50,48 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
   compensationData,
   onSuccess
 }) => {
-  const [walletState, setWalletState] = useState<WalletState>(walletService.getState());
-  const [currentStep, setCurrentStep] = useState(1);
-  const [mintingState, setMintingState] = useState<MintingStateLocal>({
-    status: 'idle',
-    step: 1,
-    totalSteps: 4,
-    message: ''
-  });
+  const [status, setStatus] = useState<MintingStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mintResult, setMintResult] = useState<MintResult | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = walletService.subscribe(setWalletState);
-    return unsubscribe;
-  }, []);
-
-  useEffect(() => {
-    if (walletState.connected && currentStep === 1) {
-      setCurrentStep(2);
-    }
-  }, [walletState.connected]);
-
-  const handleConnect = async () => {
-    try {
-      await walletService.connect();
-    } catch (error) {
-      console.error('Connect error:', error);
-    }
-  };
+  const currentStep = stepForStatus(status);
+  const isDemoMode = Boolean((mintResult as { demoMode?: boolean } | null)?.demoMode);
 
   const handleMint = async () => {
-    if (!walletState.address) return;
-
-    setCurrentStep(3);
-    setMintingState({
-      status: 'preparing',
-      step: 1,
-      totalSteps: 4,
-      message: 'Preparando datos del certificado...'
-    });
+    setStatus('minting');
+    setErrorMessage(null);
 
     try {
-      // Simular pasos de preparación
-      await new Promise(r => setTimeout(r, 1000));
-
-      setMintingState({
-        status: 'uploading_metadata',
-        step: 2,
-        totalSteps: 4,
-        message: 'Subiendo metadata a IPFS...'
-      });
-
-      await new Promise(r => setTimeout(r, 1500));
-
-      setMintingState({
-        status: 'minting',
-        step: 3,
-        totalSteps: 4,
-        message: 'Minteando NFT en blockchain...'
-      });
-
-      // Llamar API
-      const result = await blockchainApi.mintNFTCertificate({
-        compensationId,
-        walletAddress: walletState.address
-      });
+      const result = await blockchainApi.mintNFTCertificate({ compensationId });
 
       if (!result.success) {
         throw new Error('Minting failed');
       }
 
       setMintResult(result);
-      setMintingState({
-        status: 'success',
-        step: 4,
-        totalSteps: 4,
-        message: '¡Certificado NFT creado exitosamente!',
-        tokenId: result.tokenId,
-        transactionHash: result.txHash
-      });
-      setCurrentStep(4);
-
-      if (onSuccess) {
-        onSuccess(result);
-      }
-    } catch (error: any) {
-      setMintingState({
-        status: 'error',
-        step: mintingState.step,
-        totalSteps: 4,
-        message: 'Error al mintear NFT',
-        error: error.message
-      });
+      setStatus('success');
+      onSuccess?.(result);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'No se pudo crear el NFT');
+      setStatus('error');
     }
+  };
+
+  const handleRetry = () => {
+    setStatus('idle');
+    setErrorMessage(null);
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="!fixed !inset-0 !z-50 !flex !items-center !justify-center !p-4">
-      {/* Overlay */}
-      <div 
+      <div
         className="!absolute !inset-0 !bg-black/70 !backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="!relative !w-full !max-w-lg !bg-slate-900 !border !border-slate-700 !rounded-2xl !shadow-2xl !overflow-hidden">
-        {/* Header */}
         <div className="!relative !p-6 !bg-gradient-to-br !from-emerald-600/20 !to-teal-600/20 !border-b !border-slate-700">
           <button
             onClick={onClose}
@@ -183,7 +111,6 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
           </div>
         </div>
 
-        {/* Progress Steps */}
         <div className="!px-6 !py-4 !border-b !border-slate-700">
           <div className="!flex !items-center !justify-between">
             {MINTING_STEPS.map((step, index) => (
@@ -191,18 +118,18 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                 <div className="!flex !flex-col !items-center">
                   <div className={`
                     !w-8 !h-8 !rounded-full !flex !items-center !justify-center
-                    ${currentStep >= step.id 
-                      ? '!bg-emerald-500 !text-white' 
+                    ${currentStep >= step.id
+                      ? '!bg-emerald-500 !text-white'
                       : '!bg-slate-700 !text-slate-400'
                     }
-                    ${currentStep === step.id && mintingState.status !== 'error' 
-                      ? '!ring-2 !ring-emerald-500 !ring-offset-2 !ring-offset-slate-900' 
+                    ${currentStep === step.id && status !== 'error'
+                      ? '!ring-2 !ring-emerald-500 !ring-offset-2 !ring-offset-slate-900'
                       : ''
                     }
                   `}>
-                    {currentStep > step.id ? (
+                    {currentStep > step.id || (status === 'success' && currentStep === step.id) ? (
                       <CheckCircle className="!w-5 !h-5" />
-                    ) : mintingState.status === 'error' && currentStep === step.id ? (
+                    ) : status === 'error' && currentStep === step.id ? (
                       <AlertCircle className="!w-5 !h-5 !text-red-400" />
                     ) : (
                       step.id
@@ -226,71 +153,12 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
           </div>
         </div>
 
-        {/* Content */}
         <div className="!p-6">
-          {/* Step 1: Connect Wallet */}
-          {currentStep === 1 && (
-            <div className="!text-center">
-              <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-slate-800 !rounded-full !flex !items-center !justify-center">
-                <Wallet className="!w-8 !h-8 !text-slate-400" />
-              </div>
-              <h3 className="!text-lg !font-semibold !text-white !mb-2">
-                Conecta tu Wallet
-              </h3>
-              <p className="!text-slate-400 !text-sm !mb-6">
-                Necesitas una wallet compatible con Polygon para recibir tu certificado NFT
-              </p>
-
-              {!walletService.isMetaMaskInstalled() ? (
-                <div className="!p-4 !bg-yellow-900/20 !border !border-yellow-700/50 !rounded-lg !mb-4">
-                  <p className="!text-yellow-400 !text-sm">
-                    MetaMask no detectado. 
-                    <a 
-                      href="https://metamask.io/download/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="!underline !ml-1 !text-yellow-300"
-                    >
-                      Instalar MetaMask
-                    </a>
-                  </p>
-                </div>
-              ) : (
-                <button
-                  onClick={handleConnect}
-                  disabled={walletState.connecting}
-                  className="!w-full !flex !items-center !justify-center !gap-2 !px-6 !py-3
-                    !bg-gradient-to-r !from-purple-600 !to-blue-600
-                    hover:!from-purple-700 hover:!to-blue-700
-                    !text-white !font-medium !rounded-lg
-                    disabled:!opacity-50 !transition-all !border-0 !cursor-pointer"
-                >
-                  {walletState.connecting ? (
-                    <>
-                      <Loader2 className="!w-5 !h-5 !animate-spin" />
-                      Conectando...
-                    </>
-                  ) : (
-                    <>
-                      <Wallet className="!w-5 !h-5" />
-                      Conectar MetaMask
-                    </>
-                  )}
-                </button>
-              )}
-
-              {walletState.error && (
-                <p className="!mt-3 !text-red-400 !text-sm">{walletState.error}</p>
-              )}
-            </div>
-          )}
-
-          {/* Step 2: Confirm */}
-          {currentStep === 2 && (
+          {status === 'idle' && (
             <div>
               <div className="!p-4 !bg-slate-800 !rounded-lg !mb-4">
                 <h4 className="!text-sm !font-medium !text-slate-400 !mb-3">Datos del Certificado</h4>
-                
+
                 <div className="!space-y-3">
                   <div className="!flex !items-center !justify-between">
                     <span className="!text-slate-400">CO2 Compensado</span>
@@ -305,10 +173,8 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                   </div>
 
                   <div className="!flex !items-center !justify-between">
-                    <span className="!text-slate-400">Wallet destino</span>
-                    <code className="!text-xs !text-slate-300 !font-mono">
-                      {walletState.address ? walletService.shortenAddress(walletState.address) : ''}
-                    </code>
+                    <span className="!text-slate-400">Titular del NFT</span>
+                    <span className="!text-white !text-sm">CompensaTuViaje (custodia)</span>
                   </div>
                 </div>
               </div>
@@ -317,9 +183,9 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                 <div className="!flex !items-start !gap-3">
                   <Shield className="!w-5 !h-5 !text-emerald-400 !mt-0.5" />
                   <div>
-                    <p className="!text-emerald-400 !font-medium !text-sm">Certificado Inmutable</p>
+                    <p className="!text-emerald-400 !font-medium !text-sm">Sin billetera, sin riesgo</p>
                     <p className="!text-emerald-300/70 !text-xs !mt-1">
-                      Una vez creado, este NFT será un registro permanente e inalterable de tu compensación en la blockchain de Polygon.
+                      No necesitas MetaMask. Guardamos tu NFT en custodia: tu certificado sigue siendo válido y verificable por su número aunque no tengas una billetera.
                     </p>
                   </div>
                 </div>
@@ -327,10 +193,10 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
 
               <div className="!flex !gap-3">
                 <button
-                  onClick={() => setCurrentStep(1)}
+                  onClick={onClose}
                   className="!flex-1 !px-4 !py-3 !bg-slate-700 hover:!bg-slate-600 !text-white !rounded-lg !transition-colors !border-0 !cursor-pointer"
                 >
-                  Atrás
+                  Cancelar
                 </button>
                 <button
                   onClick={handleMint}
@@ -346,76 +212,58 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
             </div>
           )}
 
-          {/* Step 3: Minting */}
-          {currentStep === 3 && (
+          {status === 'minting' && (
             <div className="!text-center !py-6">
-              {mintingState.status === 'error' ? (
-                <>
-                  <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-red-900/30 !rounded-full !flex !items-center !justify-center">
-                    <AlertCircle className="!w-8 !h-8 !text-red-400" />
-                  </div>
-                  <h3 className="!text-lg !font-semibold !text-white !mb-2">
-                    Error al mintear
-                  </h3>
-                  <p className="!text-red-400 !text-sm !mb-6">
-                    {mintingState.error}
-                  </p>
-                  <button
-                    onClick={() => {
-                      setCurrentStep(2);
-                      setMintingState({ status: 'idle', step: 1, totalSteps: 4, message: '' });
-                    }}
-                    className="!px-6 !py-3 !bg-slate-700 hover:!bg-slate-600 !text-white !rounded-lg !transition-colors !border-0 !cursor-pointer"
-                  >
-                    Intentar de nuevo
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="!w-16 !h-16 !mx-auto !mb-4 !relative">
-                    <div className="!absolute !inset-0 !bg-emerald-500/20 !rounded-full !animate-ping" />
-                    <div className="!relative !w-full !h-full !bg-slate-800 !rounded-full !flex !items-center !justify-center">
-                      <Loader2 className="!w-8 !h-8 !text-emerald-400 !animate-spin" />
-                    </div>
-                  </div>
-                  <h3 className="!text-lg !font-semibold !text-white !mb-2">
-                    {mintingState.message}
-                  </h3>
-                  <p className="!text-slate-400 !text-sm">
-                    Por favor no cierres esta ventana
-                  </p>
-
-                  {/* Progress bar */}
-                  <div className="!mt-6 !w-full !bg-slate-700 !rounded-full !h-2">
-                    <div 
-                      className="!bg-emerald-500 !h-2 !rounded-full !transition-all !duration-500"
-                      style={{ width: `${(mintingState.step / mintingState.totalSteps) * 100}%` }}
-                    />
-                  </div>
-                  <p className="!text-slate-500 !text-xs !mt-2">
-                    Paso {mintingState.step} de {mintingState.totalSteps}
-                  </p>
-                </>
-              )}
+              <div className="!w-16 !h-16 !mx-auto !mb-4 !relative">
+                <div className="!absolute !inset-0 !bg-emerald-500/20 !rounded-full !animate-ping" />
+                <div className="!relative !w-full !h-full !bg-slate-800 !rounded-full !flex !items-center !justify-center">
+                  <Loader2 className="!w-8 !h-8 !text-emerald-400 !animate-spin" />
+                </div>
+              </div>
+              <h3 className="!text-lg !font-semibold !text-white !mb-2">
+                Creando tu NFT en la blockchain...
+              </h3>
+              <p className="!text-slate-400 !text-sm">
+                Por favor no cierres esta ventana
+              </p>
             </div>
           )}
 
-          {/* Step 4: Success */}
-          {currentStep === 4 && mintResult && (
+          {status === 'error' && (
+            <div className="!text-center !py-6">
+              <div className="!w-16 !h-16 !mx-auto !mb-4 !bg-red-900/30 !rounded-full !flex !items-center !justify-center">
+                <AlertCircle className="!w-8 !h-8 !text-red-400" />
+              </div>
+              <h3 className="!text-lg !font-semibold !text-white !mb-2">
+                Error al mintear
+              </h3>
+              <p className="!text-red-400 !text-sm !mb-6">
+                {errorMessage}
+              </p>
+              <button
+                onClick={handleRetry}
+                className="!px-6 !py-3 !bg-slate-700 hover:!bg-slate-600 !text-white !rounded-lg !transition-colors !border-0 !cursor-pointer"
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          )}
+
+          {status === 'success' && mintResult && (
             <div className="!text-center">
               <div className="!w-20 !h-20 !mx-auto !mb-4 !bg-emerald-500/20 !rounded-full !flex !items-center !justify-center">
                 <CheckCircle className="!w-10 !h-10 !text-emerald-400" />
               </div>
               <h3 className="!text-xl !font-bold !text-white !mb-2">
-                ¡NFT Creado! 🎉
+                ¡NFT Creado!
               </h3>
               <p className="!text-slate-400 !text-sm !mb-6">
-                {(mintResult as any).demoMode
+                {isDemoMode
                   ? 'Tu certificado fue registrado en modo demo (sin blockchain real)'
                   : 'Tu certificado de compensación ahora es un NFT en Polygon'}
               </p>
 
-              {(mintResult as any).demoMode && (
+              {isDemoMode && (
                 <div className="!p-3 !bg-amber-500/10 !border !border-amber-500/30 !rounded-lg !mb-4">
                   <p className="!text-xs !text-amber-300 !text-center">
                     <strong>Modo Demo:</strong> Los datos se guardaron localmente. Para mintear en la blockchain real de Polygon, configura las variables de entorno del servidor.
@@ -430,19 +278,25 @@ const MintNFTModal: React.FC<MintNFTModalProps> = ({
                     <span className="!text-emerald-400 !font-mono">#{mintResult.tokenId}</span>
                   </div>
                   <div className="!flex !items-center !justify-between">
+                    <span className="!text-slate-400 !text-sm">Custodia</span>
+                    <span className="!text-white !text-sm">
+                      {mintResult.custodyStatus === 'claimed' ? 'En tu billetera' : 'CompensaTuViaje'}
+                    </span>
+                  </div>
+                  <div className="!flex !items-center !justify-between">
                     <span className="!text-slate-400 !text-sm">Modo</span>
                     <span className={`!text-xs !font-semibold !px-2 !py-0.5 !rounded-full ${
-                      (mintResult as any).demoMode 
-                        ? '!bg-amber-500/20 !text-amber-400' 
+                      isDemoMode
+                        ? '!bg-amber-500/20 !text-amber-400'
                         : '!bg-emerald-500/20 !text-emerald-400'
                     }`}>
-                      {(mintResult as any).demoMode ? 'Demo' : 'Blockchain Real'}
+                      {isDemoMode ? 'Demo' : 'Blockchain Real'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {!(mintResult as any).demoMode && (
+              {!isDemoMode && (
                 <div className="!flex !gap-3">
                   {mintResult.explorerUrl && (
                     <a
