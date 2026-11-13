@@ -8,6 +8,7 @@ import {
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { validateChileanRut } from '../../../shared/utils/chileanRut';
 import { PageHeader, Panel, Skeleton, StatusBadge, formatCLP } from '../ui';
+import { commissionMultiplier } from '../../../utils/carbon';
 
 const EMPTY_BANK_DETAILS = {
   bankName: '',
@@ -138,7 +139,7 @@ export default function SettingsPage() {
 
   const calculateExamplePrice = () => {
     if (!exampleCalc.capacity_kg) return 0;
-    const marginMultiplier = 1 + (formData.default_margin_percent / 100);
+    const marginMultiplier = commissionMultiplier(formData.default_margin_percent);
     const pricePerKg = (exampleCalc.cost_clp * marginMultiplier) / exampleCalc.capacity_kg;
     return pricePerKg * 1000;
   };
@@ -206,7 +207,7 @@ export default function SettingsPage() {
   const header = (
     <PageHeader
       title="Configuración de la plataforma"
-      description="Precios, identidad legal de la plataforma, interruptor B2B y datos bancarios."
+      description="Comisión de la plataforma, precios, identidad legal, interruptor B2B y datos bancarios."
       actions={
         <button type="button" className="adm-btn adm-btn--primary" onClick={handleSave} disabled={saving || loading || !!rangeError || !!legalRutError || !!legalEmailError}>
           <Save aria-hidden="true" />
@@ -226,7 +227,10 @@ export default function SettingsPage() {
     );
   }
 
-  const withMargin = exampleCalc.cost_clp * (1 + formData.default_margin_percent / 100);
+  // La comisión es % del precio: precio = costo ÷ (1 − comisión)
+  const withMargin = exampleCalc.cost_clp * commissionMultiplier(formData.default_margin_percent);
+  const partnerShare = Math.max(0, 100 - formData.default_margin_percent);
+  const pct = (n: number) => n.toLocaleString('es-CL', { maximumFractionDigits: 2 });
   const pricePerTon = calculateExamplePrice();
 
   return (
@@ -248,9 +252,9 @@ export default function SettingsPage() {
 
       <Panel title="Parámetros de precio" description="Pesos chilenos por tonelada de CO₂e">
         <div className="adm-form-grid">
-          {numberField('st-margin', 'Margen por defecto (%)', formData.default_margin_percent,
-            (v) => setFormData({ ...formData, default_margin_percent: v }), { step: '0.1', min: 0, max: 100 },
-            'Se suma al costo del partner.')}
+          {numberField('st-margin', 'Comisión de la plataforma (%)', formData.default_margin_percent,
+            (v) => setFormData({ ...formData, default_margin_percent: v }), { step: '0.1', min: 0, max: 95 },
+            `Porcentaje de lo cobrado: ${pct(partnerShare)} % partner / ${pct(formData.default_margin_percent)} % plataforma.`)}
           {numberField('st-min', 'Precio mínimo (CLP/t)', formData.min_price_clp_per_ton,
             (v) => setFormData({ ...formData, min_price_clp_per_ton: v }), { step: '1', min: 0 })}
           {numberField('st-max', 'Precio máximo (CLP/t)', formData.max_price_clp_per_ton,
@@ -393,7 +397,7 @@ export default function SettingsPage() {
       <Panel title="Calculadora de precio" description="Prueba la fórmula con valores de ejemplo; no guarda nada">
         <div className="adm-stack-v">
           <p className="adm-note">
-            Precio por tonelada = costo × (1 + margen) ÷ kg de CO₂ × 1.000
+            Precio por tonelada = costo ÷ (1 − comisión) ÷ kg de CO₂ × 1.000
           </p>
           <div className="adm-form-grid">
             {numberField('st-cost', 'Costo del proyecto (CLP)', exampleCalc.cost_clp,
@@ -403,8 +407,12 @@ export default function SettingsPage() {
           </div>
           <div className="adm-calc">
             <dl className="adm-dl">
-              <dt>Costo con margen ({formData.default_margin_percent} %)</dt>
+              <dt>Precio de venta (comisión {pct(formData.default_margin_percent)} %)</dt>
               <dd>{formatCLP(withMargin)}</dd>
+              <dt>Para el partner ({pct(partnerShare)} %)</dt>
+              <dd>{formatCLP(exampleCalc.cost_clp)}</dd>
+              <dt>Para la plataforma</dt>
+              <dd>{formatCLP(withMargin - exampleCalc.cost_clp)}</dd>
               <dt>Por kg de CO₂</dt>
               <dd>{formatCLP(pricePerTon / 1000)}</dd>
             </dl>
