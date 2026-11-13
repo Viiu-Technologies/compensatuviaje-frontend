@@ -93,6 +93,9 @@ export interface B2CCertificate {
   };
   nftTxHash?: string | null;
   nftTokenId?: string | null;
+  nftCustodyStatus?: 'custodied' | 'claimed' | null;
+  nftWalletAddress?: string | null;
+  nftMintedAt?: string | null;
   pdfUrl?: string | null;
 }
 
