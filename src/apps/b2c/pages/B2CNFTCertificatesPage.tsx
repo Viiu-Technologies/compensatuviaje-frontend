@@ -13,9 +13,12 @@ import * as b2cApi from '../services/b2cApi';
 import type { B2CCertificate } from '../services/b2cApi';
 import { claimNFTCertificate } from '../../../shared/services/blockchainApi';
 import walletService from '../../../shared/services/walletService';
+import { ACTIVE_CHAIN, CHAIN_CONFIGS } from '../../../types/blockchain.types';
 import { FaCubes, FaLeaf, FaSearch, FaSyncAlt, FaInfoCircle, FaExternalLinkAlt, FaShieldAlt, FaWallet, FaCheckCircle } from 'react-icons/fa';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { Card, CardHeader, EmptyState, ErrorState, Skeleton, StatCard, btn, fmtInt, fmtKgAuto } from '../ui';
+
+const hasBlockExplorer = Boolean(CHAIN_CONFIGS[ACTIVE_CHAIN].blockExplorer);
 
 const B2CNFTCertificatesPage: React.FC = () => {
   const [certificates, setCertificates] = useState<B2CCertificate[]>([]);
@@ -163,12 +166,12 @@ const B2CNFTCertificatesPage: React.FC = () => {
                         )}
                       </dl>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                        {cert.nftTxHash && (
+                        {cert.nftTxHash && hasBlockExplorer && (
                           <a href={walletService.getExplorerUrl(cert.nftTxHash)} target="_blank" rel="noopener noreferrer" className="text-brand-700 font-medium inline-flex items-center gap-1">
                             Ver transacción <FaExternalLinkAlt className="text-xs" aria-hidden="true" />
                           </a>
                         )}
-                        {cert.nftTokenId && (
+                        {cert.nftTokenId && hasBlockExplorer && (
                           <a href={walletService.getTokenUrl(cert.nftTokenId)} target="_blank" rel="noopener noreferrer" className="text-brand-700 font-medium inline-flex items-center gap-1">
                             Ver token <FaExternalLinkAlt className="text-xs" aria-hidden="true" />
                           </a>
