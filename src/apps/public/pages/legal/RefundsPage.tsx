@@ -7,18 +7,19 @@ import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 const sections: LegalSection[] = [
   {
     id: 'retracto',
-    title: 'Exclusión del derecho de retracto',
+    title: 'Derecho de retracto (10 días corridos)',
     body: (
       <>
         <p className="lgl-callout">
-          Conforme al artículo 3 bis, letra b), de la Ley N° 19.496, informamos de forma expresa que{' '}
-          <strong>las compensaciones no admiten derecho de retracto una vez confirmado el pago</strong>.
+          Conforme a la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores (Art. 3 bis),{' '}
+          <strong>puedes ejercer tu derecho de retracto dentro de los 10 días corridos</strong> contados desde
+          la confirmación del pago o desde que recibes tu Certificado de Compensación.
         </p>
         <p>
-          El motivo es que, al confirmarse el pago, la Compensación se asigna al proyecto y el
-          Certificado se registra de forma permanente en una red pública. Ese impacto no puede
-          “devolverse” ni revenderse. Antes de pagar te pedimos aceptar esta condición de forma
-          explícita.
+          Para solicitar el retracto dentro de ese plazo, escríbenos desde tu correo registrado indicando el
+          identificador del pago o certificado. Una vez procesada la devolución, el Certificado asociado se
+          revoca (pasa a estado <strong>revocado</strong>) y las unidades de impacto regresan al stock disponible
+          del proyecto.
         </p>
       </>
     ),
@@ -58,9 +59,10 @@ const sections: LegalSection[] = [
     title: 'Qué pasa con el Certificado',
     body: (
       <p>
-        Si reembolsamos una Compensación que ya tenía Certificado, lo anularemos en nuestros
-        registros y dejará de ser válido. Como el registro en la red pública es permanente, ese
-        registro seguirá existiendo, pero no representará una compensación vigente.
+        Si reembolsamos una Compensación o ejerces tu derecho de retracto,{' '}
+        <strong>el Certificado pasa a estado revocado</strong>, deja de ser válido y el verificador
+        público lo muestra como revocado. Además, las unidades de impacto asignadas regresan al stock
+        disponible del proyecto.
       </p>
     ),
   },

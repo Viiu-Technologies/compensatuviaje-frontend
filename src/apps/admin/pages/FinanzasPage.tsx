@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Banknote, Check, RefreshCw, Wallet } from 'lucide-react';
+import { AlertTriangle, Banknote, Check, RefreshCw, RotateCcw, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import {
   generateSettlements,
   getFund,
+  getPayments,
   getSettlements,
   paySettlement,
+  refundB2bOrder,
+  refundPayment,
   settlementCode,
+  type AdminPaymentRow,
   type FundReport,
   type PartnerSettlement,
 } from '../services/adminFinanceApi';
@@ -36,6 +40,7 @@ const formatMonth = (ym: string) => {
 export default function FinanzasPage() {
   const [fund, setFund] = useState<FundReport | null>(null);
   const [settlements, setSettlements] = useState<PartnerSettlement[]>([]);
+  const [payments, setPayments] = useState<AdminPaymentRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
@@ -48,12 +53,22 @@ export default function FinanzasPage() {
   const [isPaying, setIsPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
+  const [refundTarget, setRefundTarget] = useState<AdminPaymentRow | null>(null);
+  const [confirmPaidSettlement, setConfirmPaidSettlement] = useState(false);
+  const [isRefunding, setIsRefunding] = useState(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
+
   const load = async () => {
     setIsLoading(true);
     try {
-      const [fundData, settlementData] = await Promise.all([getFund(), getSettlements()]);
+      const [fundData, settlementData, paymentData] = await Promise.all([
+        getFund(),
+        getSettlements(),
+        getPayments(),
+      ]);
       setFund(fundData);
       setSettlements(settlementData);
+      setPayments(paymentData);
       setLoadError(false);
     } catch (err) {
       console.error('Error loading finance:', err);
@@ -118,6 +133,39 @@ export default function FinanzasPage() {
       setPayError(err?.response?.data?.message || 'No se pudo registrar el pago');
     } finally {
       setIsPaying(false);
+    }
+  };
+
+  const openRefund = (p: AdminPaymentRow) => {
+    setRefundTarget(p);
+    setConfirmPaidSettlement(false);
+    setRefundError(null);
+  };
+
+  const closeRefund = () => setRefundTarget(null);
+
+  const submitRefund = async () => {
+    if (!refundTarget) return;
+    if (refundTarget.settlementStatus === 'paid' && !confirmPaidSettlement) {
+      setRefundError('Debes confirmar explícitamente que esta venta ya fue pagada al partner.');
+      return;
+    }
+    setIsRefunding(true);
+    setRefundError(null);
+    try {
+      const payload = refundTarget.settlementStatus === 'paid' ? { confirmPaidSettlement: true } : {};
+      if (refundTarget.source === 'b2b') {
+        await refundB2bOrder(refundTarget.orderId || refundTarget.id, payload);
+      } else {
+        await refundPayment(refundTarget.id, payload);
+      }
+      toast.success('Reembolso procesado, certificado revocado y stock restaurado.');
+      closeRefund();
+      await load();
+    } catch (err: any) {
+      setRefundError(err?.response?.data?.message || getErrorMessage(err, 'No se pudo procesar el reembolso'));
+    } finally {
+      setIsRefunding(false);
     }
   };
 
@@ -369,6 +417,154 @@ export default function FinanzasPage() {
               <div role="alert" className="adm-alert adm-alert--danger">
                 <AlertTriangle aria-hidden="true" />
                 <div>{payError}</div>
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
+
+      <Panel
+        title="Ventas cobradas y reembolsos"
+        description="Pagos B2C (Webpay) y órdenes B2B aprobadas. Reembolsar anula el cobro, revoca certificados y restaura el stock del proyecto."
+        flush
+      >
+        <div className="adm-table-scroll">
+          <table className="adm-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente / Canal</th>
+                <th>Proyecto / Partner</th>
+                <th className="adm-col-num">Monto</th>
+                <th>Estado</th>
+                <th className="adm-col-actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <TableSkeletonRows columns={6} rows={4} />
+              ) : payments.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <EmptyState
+                      title="Sin ventas registradas"
+                      text="Cuando existan pagos B2C confirmados u órdenes B2B aprobadas aparecerán aquí."
+                    />
+                  </td>
+                </tr>
+              ) : (
+                payments.map((p) => {
+                  const settlementLabel =
+                    p.settlementStatus === 'paid'
+                      ? 'Liquidación pagada'
+                      : p.settlementStatus === 'pending'
+                        ? 'En liquidación pendiente'
+                        : 'Sin liquidar';
+                  return (
+                    <tr key={`${p.source || 'b2c'}-${p.calculationId || p.orderId || p.id}`}>
+                      <td>{new Date(p.date).toLocaleDateString('es-CL')}</td>
+                      <td>
+                        <span className="adm-cell-title">{p.userEmail}</span>
+                        <span className="adm-cell-sub">
+                          {p.source === 'b2b' ? 'B2B Transferencia' : `B2C ${p.provider}`}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="adm-cell-title">{p.projectName}</span>
+                        <span className="adm-cell-sub">{p.partnerName}</span>
+                      </td>
+                      <td className="adm-col-num">
+                        <span className="adm-cell-title">{formatCLP(p.amount)}</span>
+                        <span className="adm-cell-sub">Partner: {formatCLP(p.partnerAmount)}</span>
+                      </td>
+                      <td>
+                        {p.status === 'refunded' ? (
+                          <StatusBadge tone="danger">Reembolsado</StatusBadge>
+                        ) : (
+                          <StatusBadge tone="success">Pagado</StatusBadge>
+                        )}
+                        <span className="adm-cell-sub">{settlementLabel}</span>
+                      </td>
+                      <td className="adm-col-actions">
+                        {p.status === 'paid' && (
+                          <button
+                            type="button"
+                            className="adm-btn adm-btn--sm adm-btn--danger"
+                            onClick={() => openRefund(p)}
+                          >
+                            <RotateCcw aria-hidden="true" /> Reembolsar
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
+
+      <Modal
+        open={!!refundTarget}
+        title="Confirmar reembolso"
+        onClose={closeRefund}
+        busy={isRefunding}
+        footer={
+          <>
+            <button type="button" className="adm-btn" onClick={closeRefund} disabled={isRefunding}>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="adm-btn adm-btn--danger"
+              onClick={submitRefund}
+              disabled={isRefunding || (refundTarget?.settlementStatus === 'paid' && !confirmPaidSettlement)}
+            >
+              {isRefunding ? 'Procesando…' : 'Confirmar reembolso'}
+            </button>
+          </>
+        }
+      >
+        {refundTarget && (
+          <>
+            <p>
+              Esta acción devolverá el pago, marcará el certificado asociado como <b>revocado</b> y
+              restaurará el stock mensual del proyecto.
+            </p>
+            <dl className="adm-dl">
+              <dt>Cliente</dt>
+              <dd>{refundTarget.userEmail}</dd>
+              <dt>Proyecto</dt>
+              <dd>{refundTarget.projectName} · {refundTarget.partnerName}</dd>
+              <dt>Canal</dt>
+              <dd>{refundTarget.source === 'b2b' ? 'B2B Transferencia' : `B2C (${refundTarget.provider})`}</dd>
+              <dt>Monto a reembolsar</dt>
+              <dd><b>{formatCLP(refundTarget.amount)}</b></dd>
+            </dl>
+            {refundTarget.settlementStatus === 'paid' && (
+              <>
+                <div role="alert" className="adm-alert adm-alert--warning">
+                  <AlertTriangle aria-hidden="true" />
+                  <div>
+                    Esta venta pertenece a una <b>liquidación ya pagada al partner</b>. Al reembolsar, la
+                    plataforma asume temporalmente la devolución frente al cliente.
+                  </div>
+                </div>
+                <label className="adm-check">
+                  <input
+                    type="checkbox"
+                    checked={confirmPaidSettlement}
+                    onChange={(e) => setConfirmPaidSettlement(e.target.checked)}
+                  />
+                  <span>Confirmo reembolsar una venta cuya liquidación al partner ya fue pagada.</span>
+                </label>
+              </>
+            )}
+            {refundError && (
+              <div role="alert" className="adm-alert adm-alert--danger">
+                <AlertTriangle aria-hidden="true" />
+                <div>{refundError}</div>
               </div>
             )}
           </>
