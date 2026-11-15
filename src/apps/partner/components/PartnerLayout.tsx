@@ -22,6 +22,7 @@ import {
   Shield,
   ShieldAlert,
   UserCircle,
+  Wallet,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -197,6 +198,7 @@ const Sidebar: React.FC<{
 /** Nombre de la sección para la cabecera. */
 const sectionOf = (path: string) => {
   if (path.startsWith('/partner/projects')) return 'Mis proyectos';
+  if (path.startsWith('/partner/payments')) return 'Mis pagos';
   if (path.startsWith('/partner/kyb')) return 'Verificación KYB';
   if (path.startsWith('/partner/profile')) return 'Mi perfil';
   return 'Resumen';
@@ -272,6 +274,7 @@ const PartnerLayout: React.FC = () => {
         ? 'Completa tu perfil y la verificación KYB para acceder'
         : 'La verificación KYB debe ser aprobada por un administrador',
     },
+    { path: '/partner/payments', icon: Wallet, label: 'Mis pagos' },
   ];
 
   const name = profile?.name || user?.name || 'Partner';
