@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Loader2, RotateCcw, SendHorizontal, User } from 'lucide-react';
 import { LEGAL } from '../../../../shared/config/legal';
+import { McpConnectTrigger } from '../../../../shared/components/McpConnectTrigger';
 import { askAssistant, assistantErrorMessage, type ChatTurn } from '../../services/assistantService';
 import { btn, Card, cx, PageHeader } from '../../ui';
 
@@ -120,12 +121,15 @@ const AssistantView: React.FC<{ onNavigate?: (tab: string) => void }> = () => {
         title="Asistente IA"
         subtitle="Pregunta por la huella de tu empresa, tus órdenes o los proyectos disponibles."
         actions={
-          conversation.length > 0 ? (
-            <button type="button" className={btn.secondary} onClick={reset} disabled={waiting}>
-              <RotateCcw className="w-4 h-4" aria-hidden="true" />
-              Nueva conversación
-            </button>
-          ) : undefined
+          <div className="flex items-center gap-2 flex-wrap">
+            <McpConnectTrigger role="b2b" />
+            {conversation.length > 0 && (
+              <button type="button" className={btn.secondary} onClick={reset} disabled={waiting}>
+                <RotateCcw className="w-4 h-4" aria-hidden="true" />
+                Nueva conversación
+              </button>
+            )}
+          </div>
         }
       />
 

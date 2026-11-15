@@ -20,6 +20,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import type { EsgProject, OnboardingStatus, PartnerStats } from '../../../types/partner.types';
+import { McpConnectTrigger } from '../../../shared/components/McpConnectTrigger';
 import type { KybStatusResponse } from '../../../types/kyb.types';
 import { getKybVisualStatus, KYB_TIER_LABELS } from '../../../types/kyb.types';
 import { getPartnerProjects, getPartnerStats } from '../services/partnerApi';
@@ -288,12 +289,15 @@ const PartnerDashboard: React.FC = () => {
         title={`Hola, ${profile?.name || 'partner'}`}
         subtitle="Resumen de tu organización y de tus proyectos de compensación."
         actions={
-          isKybVerified ? (
-            <Link to="/partner/projects/create" className={btn.primary}>
-              <Plus className="w-4 h-4" aria-hidden="true" />
-              Nuevo proyecto
-            </Link>
-          ) : undefined
+          <div className="flex items-center gap-2 flex-wrap">
+            <McpConnectTrigger role="partner" />
+            {isKybVerified && (
+              <Link to="/partner/projects/create" className={btn.primary}>
+                <Plus className="w-4 h-4" aria-hidden="true" />
+                Nuevo proyecto
+              </Link>
+            )}
+          </div>
         }
       />
 
