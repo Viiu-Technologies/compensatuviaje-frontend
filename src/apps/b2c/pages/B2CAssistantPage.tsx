@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Loader2, RotateCcw, SendHorizontal, User } from 'lucide-react';
 import { LEGAL } from '../../../shared/config/legal';
+import { McpConnectTrigger } from '../../../shared/components/McpConnectTrigger';
 import B2CLayout from '../components/B2CLayout';
 import {
   askAssistant,
@@ -147,17 +148,20 @@ const B2CAssistantPage: React.FC = () => {
       title="Asistente IA"
       subtitle="Pregunta por tus viajes, tus certificados, el estado de un pago o los proyectos disponibles"
       headerRightExtra={
-        conversation.length > 0 ? (
-          <button
-            type="button"
-            className={cx(btn.secondary, btn.sm)}
-            onClick={reset}
-            disabled={waiting}
-          >
-            <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-            Nueva conversación
-          </button>
-        ) : undefined
+        <div className="flex items-center gap-2 flex-wrap">
+          <McpConnectTrigger role="b2c" />
+          {conversation.length > 0 && (
+            <button
+              type="button"
+              className={cx(btn.secondary, btn.sm)}
+              onClick={reset}
+              disabled={waiting}
+            >
+              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+              Nueva conversación
+            </button>
+          )}
+        </div>
       }
     >
       <div className="max-w-3xl">

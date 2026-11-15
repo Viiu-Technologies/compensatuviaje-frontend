@@ -89,6 +89,46 @@ export const generateSettlements = async (month: string): Promise<GenerateSettle
   };
 };
 
+export interface AdminPaymentRow {
+  id: string;
+  source?: 'b2c' | 'b2b';
+  calculationId?: string;
+  orderId?: string;
+  certificateId?: string | null;
+  date: string;
+  userEmail: string;
+  projectName: string;
+  partnerName: string;
+  amount: number;
+  platformFee: number;
+  partnerAmount: number;
+  settled: boolean;
+  settlementStatus?: 'unsettled' | 'pending' | 'paid';
+  status: 'paid' | 'refunded';
+  provider: string;
+}
+
+export const getPayments = async (month?: string): Promise<AdminPaymentRow[]> => {
+  const response = await api.get(`${BASE}/payments`, { params: month ? { month } : undefined }) as any;
+  return response.data || [];
+};
+
+export const refundPayment = async (
+  paymentId: string,
+  body?: { reason?: string; confirmPaidSettlement?: boolean }
+): Promise<any> => {
+  const response = await api.post(`${BASE}/payments/${paymentId}/refund`, body || {}) as any;
+  return response.data;
+};
+
+export const refundB2bOrder = async (
+  orderId: string,
+  body?: { reason?: string; confirmPaidSettlement?: boolean }
+): Promise<any> => {
+  const response = await api.post(`${BASE}/b2b-orders/${orderId}/refund`, body || {}) as any;
+  return response.data;
+};
+
 export const paySettlement = async (
   id: string,
   body: { payment_reference: string; payment_date?: string }

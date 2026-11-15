@@ -22,6 +22,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { getDashboard, getMetrics, DashboardData, MetricsData } from '../services/adminApi';
+import { McpConnectTrigger } from '../../../shared/components/McpConnectTrigger';
 import {
   ADMIN_COLORS,
   EmptyState,
@@ -212,6 +213,7 @@ export default function SuperAdminDashboard() {
       description={`Resumen de la plataforma. Los gráficos muestran los ${periodLabel}.`}
       actions={
         <>
+          <McpConnectTrigger role="admin" variant="admin" />
           <label className="sr-only" htmlFor="adm-period">Período</label>
           <select id="adm-period" className="adm-select" value={period} onChange={(e) => setPeriod(e.target.value)}>
             <option value="7d">Últimos 7 días</option>
