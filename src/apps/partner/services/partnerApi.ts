@@ -435,6 +435,52 @@ export const getProjectStats = async (
   }
 };
 
+export interface PartnerSettlementItem {
+  id: string;
+  partnerId: string;
+  periodMonth: string;
+  sequence: number;
+  code: string;
+  totalAmountCollected: number;
+  platformFee: number;
+  partnerAmountOwed: number;
+  status: 'pending' | 'paid';
+  paidAt: string | null;
+  paymentReference: string | null;
+  createdAt: string;
+  salesCount: number;
+}
+
+export interface PartnerSettlementsSummary {
+  totalPaid: number;
+  totalPending: number;
+  unsettledAmount: number;
+  totalAccrued: number;
+}
+
+export interface PartnerSettlementsData {
+  settlements: PartnerSettlementItem[];
+  summary: PartnerSettlementsSummary;
+}
+
+export const getPartnerSettlements = async (params?: {
+  status?: 'pending' | 'paid' | 'all';
+  month?: string;
+}): Promise<PartnerSettlementsData> => {
+  const queryParams: Record<string, string> = {};
+  if (params?.status && params.status !== 'all') queryParams.status = params.status;
+  if (params?.month) queryParams.month = params.month;
+
+  const response = await api.get('/partner/settlements', {
+    params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+  }) as any;
+
+  return response.data || {
+    settlements: [],
+    summary: { totalPaid: 0, totalPending: 0, unsettledAmount: 0, totalAccrued: 0 },
+  };
+};
+
 // ============================================
 // EXPORT DEFAULT
 // ============================================
@@ -453,6 +499,8 @@ export default {
   changePassword,
   // Stats
   getPartnerStats,
+  // Settlements
+  getPartnerSettlements,
   // Projects
   getPartnerProjects,
   getProjectById,

@@ -14,6 +14,7 @@ import { PartnerProvider } from '../context/PartnerContext';
 import PartnerDashboard from '../pages/PartnerDashboard';
 import PartnerProfile from '../pages/PartnerProfile';
 import PartnerProjects from '../pages/PartnerProjects';
+import PartnerSettlementsPage from '../pages/PartnerSettlementsPage';
 import ProjectDetail from '../pages/ProjectDetail';
 import ProjectForm from '../pages/ProjectForm';
 import MonthlyRestockPage from '../pages/MonthlyRestockPage';
@@ -47,6 +48,9 @@ const PartnerRoutes: React.FC = () => {
 
           {/* Project Certification (Agent 2) */}
           <Route path="projects/:id/certification" element={<ProjectCertificationPage />} />
+
+          {/* Settlements / Mis pagos (CTV-20) */}
+          <Route path="payments" element={<PartnerSettlementsPage />} />
         </Route>
 
         {/* Fallback - redirect to dashboard */}
