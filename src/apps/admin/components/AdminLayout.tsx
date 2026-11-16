@@ -26,6 +26,7 @@ import {
   Mail,
   Rss,
   Wallet,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react';
 import '../ui/admin-ui.css';
@@ -82,6 +83,7 @@ const financeItems: NavItem[] = [
 // D. Trazabilidad y Configuración
 const traceabilityItems: NavItem[] = [
   { path: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
+  { path: '/admin/registro-accesos', icon: ShieldCheck, label: 'Registro de accesos' },
   { path: '/admin/nft-blockchain', icon: Blocks, label: 'NFT Blockchain' },
   { path: '/admin/noticias/fuentes', icon: Rss, label: 'Fuentes de Noticias' },
   { path: '/admin/noticias/boletin', icon: Mail, label: 'Boletín' },
