@@ -203,6 +203,17 @@ export const reviewCompanyDocument = async (companyId: string, documentId: strin
   return response;
 };
 
+export const downloadCompanyDocument = async (companyId: string, documentId: string, fileName: string) => {
+  const res: any = await api.get(`/admin/companies/${companyId}/documents/${documentId}/download`, {
+    responseType: 'blob',
+  });
+  const blob: Blob = res instanceof Blob ? res : res?.data;
+  if (!(blob instanceof Blob)) {
+    throw new Error('Respuesta inválida al descargar documento');
+  }
+  downloadCSV(blob, fileName || 'documento');
+};
+
 // ============================================
 // VERIFICACIÓN
 // ============================================
@@ -331,6 +342,9 @@ export interface Project {
   monthly_stock_approved?: number;
   monthly_stock_remaining?: number;
   is_sold_out?: boolean;
+  // Test project mode (CTV-63)
+  is_test?: boolean;
+  test_visible_until?: string | null;
   // Partner
   partner?: { id: string; name: string; logo_url?: string } | null;
   // Counts
@@ -424,6 +438,8 @@ export interface ProjectDetailData {
   monthly_stock_approved?: number | null;
   monthly_stock_remaining?: number | null;
   is_sold_out?: boolean;
+  is_test?: boolean;
+  test_visible_until?: string | null;
   // Partner
   partner?: {
     id: string;
@@ -510,6 +526,21 @@ export const createProject = async (data: Partial<Project>) => {
 export const updateProject = async (id: string, data: Partial<Project>) => {
   const response = await api.put(`/admin/projects/${id}`, data) as any;
   return response.data || response;
+};
+
+export const updateProjectTestWindow = async (
+  id: string,
+  payload: { isTest?: boolean; publishNow?: boolean; publishWindowMinutes?: number | null }
+) => {
+  const response = await api.put(`/admin/projects/${id}/test-window`, payload) as any;
+  return response.data || response;
+};
+
+export const getRemainingTestMinutes = (until?: string | null): number => {
+  if (!until) return 0;
+  const diffMs = new Date(until).getTime() - Date.now();
+  if (!Number.isFinite(diffMs) || diffMs <= 0) return 0;
+  return Math.max(1, Math.ceil(diffMs / 60_000));
 };
 
 export const deleteProject = async (id: string) => {

@@ -13,7 +13,8 @@ import {
   Loader2,
   Inbox,
   RefreshCw,
-  Eye
+  Eye,
+  Download
 } from 'lucide-react';
 import {
   getPendingVerifications,
@@ -22,6 +23,7 @@ import {
   getCompanyDetail,
   updateCompanyStatus,
   reviewCompanyDocument,
+  downloadCompanyDocument,
   verifyDomain
 } from '../services/adminApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
@@ -79,6 +81,7 @@ const VerificationPanel = () => {
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [companyDocs, setCompanyDocs] = useState<CompanyDoc[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
+  const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'companies' | 'domains'>('companies');
@@ -170,6 +173,29 @@ const VerificationPanel = () => {
       toast.error(getErrorMessage(e, 'No se pudo revisar el documento'));
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleDownloadDoc = async (doc: CompanyDoc) => {
+    if (!selectedCompany?.id) return;
+    try {
+      setDownloadingDocId(doc.id);
+      await downloadCompanyDocument(
+        selectedCompany.id,
+        doc.id,
+        doc.fileName || doc.fileType || 'documento'
+      );
+    } catch (e: any) {
+      const status = e?.response?.status;
+      if (status === 410) {
+        toast.error('Archivo no disponible en almacenamiento (posiblemente anterior a la migración a R2)');
+      } else if (status === 404) {
+        toast.error('Documento no encontrado');
+      } else {
+        toast.error(getErrorMessage(e, 'No se pudo descargar el documento'));
+      }
+    } finally {
+      setDownloadingDocId(null);
     }
   };
 
@@ -309,11 +335,19 @@ const VerificationPanel = () => {
                   </div>
                   <div className="!flex !items-center !gap-3">
                     {statusBadge(doc.status)}
-                    {doc.fileUrl && (
-                      <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="!p-2 !text-slate-400 hover:!text-blue-600 !transition-colors">
-                        <Eye className="!w-4 !h-4" />
-                      </a>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDoc(doc)}
+                      disabled={downloadingDocId === doc.id}
+                      title="Descargar documento"
+                      className="!p-2 !text-slate-400 hover:!text-blue-600 !transition-colors disabled:!opacity-50"
+                    >
+                      {downloadingDocId === doc.id ? (
+                        <Loader2 className="!w-4 !h-4 !animate-spin" />
+                      ) : (
+                        <Download className="!w-4 !h-4" />
+                      )}
+                    </button>
                     {doc.status === 'pending' && (
                       <>
                         <button
