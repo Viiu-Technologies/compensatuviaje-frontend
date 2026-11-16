@@ -146,7 +146,9 @@ const Half: React.FC<{ layer: number; side: Side; ridge: Ridge }> = ({ layer, si
 const Mountains: React.FC = () => (
   <div className="hs-mountains" aria-hidden="true">
     {LAYERS.map((layer, i) => (
-      <div key={layer.seed} className={`hs-mtn hs-mtn--${i}`} style={{ height: `${layer.height}vh` }}>
+      // El alto va como variable: en móvil el CSS lo reduce para que se vea la
+      // cordillera y no un par de picos gigantes (ver HeroScroll.css).
+      <div key={layer.seed} className={`hs-mtn hs-mtn--${i}`} style={{ '--hs-mtn-h': layer.height } as React.CSSProperties}>
         <Half layer={i} side="l" ridge={layer.left} />
         <Half layer={i} side="r" ridge={layer.right} />
       </div>

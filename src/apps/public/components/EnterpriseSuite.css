@@ -219,9 +219,37 @@
   margin-bottom: var(--ctv-space-6);
 }
 
+/* Móvil: dos cifras lado a lado y la destacada a todo el ancho (antes eran
+   tres tarjetas apiladas), y la barra del mockup en una sola línea. */
 @media (max-width: 480px) {
   .es-metrics-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .es-m-card--accent {
+    grid-column: 1 / -1;
+  }
+
+  /* Sin esto el título en una línea ensancha la columna más que la pantalla. */
+  .es-grid > * {
+    min-width: 0;
+  }
+
+  .es-mockup-bar {
+    gap: 0.6rem;
+  }
+
+  .es-mockup-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .es-mockup-badge {
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 }
 
@@ -334,4 +362,34 @@
   color: var(--ctv-accent-contrast);
   font-size: 0.85rem;
   flex-shrink: 0;
+}
+
+/* ── Móvil: mockup resumido ──────────────────────────────────────────────
+   Cada función queda en su título; la bajada, la nota bajo cada cifra y el
+   pie del mockup se guardan para pantallas más anchas. */
+@media (max-width: 767.98px) {
+  .es-f-text p,
+  .es-m-sub,
+  .es-mockup-footer {
+    display: none;
+  }
+
+  .es-f-text h3 {
+    margin: 0;
+  }
+
+  /* "Ver más" pegado a su párrafo; el margen del párrafo pasa a ir debajo. */
+  .es-lede + .ctv-clamp-btn[data-needed='true'] {
+    margin-top: -2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .es-feature-item {
+    align-items: center;
+  }
+
+  .es-features-list {
+    gap: var(--ctv-space-2);
+    margin-bottom: 0;
+  }
 }

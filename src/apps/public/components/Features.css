@@ -325,3 +325,22 @@
 .ft-payment {
   all: revert;
 }
+
+/* ── Móvil: versión liviana ──────────────────────────────────────────────
+   Queda el mapa del paso 1 (es el que responde al vuelo de la calculadora);
+   las figuras de los pasos 2 y 3, la línea de ejemplo y la ficha técnica de
+   cada paso se guardan para pantallas más anchas. El texto largo se corta
+   con "Ver más" (ClampText). */
+@media (max-width: 767.98px) {
+  .ft-section__bg,
+  .ft-step:not(:first-child) .ft-step__art,
+  .ft-step__spec,
+  .ft-step .hw-readout {
+    display: none;
+  }
+
+  /* "Ver más" pegado a su párrafo: sin el espacio entre bloques del encabezado. */
+  .ft-header > .ctv-clamp-btn {
+    margin-top: -0.75rem;
+  }
+}

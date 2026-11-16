@@ -102,6 +102,15 @@
   outline: none;
 }
 
+/* OrbitControls pone touch-action: none (en línea) en el contenedor del lienzo
+   para quedarse con todos los gestos. En un teléfono el lienzo ocupa casi toda
+   la pantalla y la página no bajaba al deslizar el dedo sobre él. Con pan-y el
+   gesto vertical es de la página y el horizontal sigue girando la cámara. Solo
+   afecta al tacto; con mouse nada cambia. */
+.forest-canvas-container > div {
+  touch-action: pan-y !important;
+}
+
 /* Fallback de Carga */
 .forest-canvas-fallback {
   position: absolute;
@@ -377,5 +386,25 @@
   .vfs-telemetry-grid {
     grid-template-columns: 1fr;
     gap: 0.6rem;
+  }
+}
+
+/* ── Móvil: menos texto sobre y bajo el lienzo ───────────────────────────
+   Los selectores quedan sin rótulo (los nombres de las opciones se explican
+   solos) y la tarjeta inferior muestra solo sus tres titulares. */
+@media (max-width: 640px) {
+  .vfs-ctrl-label,
+  .vfs-telemetry-sub,
+  .vfs-telemetry-badge {
+    display: none;
+  }
+
+  .vfs-ctrl-group {
+    padding: 0.3rem;
+  }
+
+  /* El encabezado de esta sección va centrado. */
+  .vfs-header > .ctv-clamp-btn {
+    align-self: center;
   }
 }

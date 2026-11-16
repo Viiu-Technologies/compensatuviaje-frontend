@@ -83,6 +83,23 @@
   transition: all 0.25s var(--ctv-ease-out);
 }
 
+/* En teléfonos las tres pestañas no cabían (353px): ensanchaban la página y
+   el navegador la mostraba entera más chica. Ahora se reparten el ancho. */
+@media (max-width: 480px) {
+  .faq-tabs {
+    width: 100%;
+    gap: 0.15rem;
+  }
+
+  .faq-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.65rem 0.4rem;
+    text-align: center;
+  }
+}
+
 .faq-tab:hover {
   color: var(--ctv-brand-deep);
 }

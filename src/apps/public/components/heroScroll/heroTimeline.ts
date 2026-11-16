@@ -134,7 +134,9 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
     transformOrigin: '50% 50%',
     motionPath: { path: geo.arc, autoRotate: true, start: 0, end: 0 },
   });
-  gsap.set(planeBody, { transformOrigin: '50% 50%', scale: 0.32 * k, opacity: 0.55 });
+  // En móvil espera más grande y más marcado: con la escala de escritorio era
+  // una mota de 12 px en la esquina y no se entendía que era el avión.
+  gsap.set(planeBody, { transformOrigin: '50% 50%', scale: (mobile ? 0.55 : 0.32) * k, opacity: mobile ? 0.85 : 0.55 });
 
   const pinDistance = () => (window.innerHeight * script.pinVh) / 100;
   // La calculadora recibe clics cuando ya terminó de abrirse.
@@ -185,6 +187,8 @@ export function setupHeroMotion(root: HTMLElement, { mobile, onCount }: MotionOp
   tl.to(planeBody, { scale: 0.62 * k, ease: 'sine.inOut', duration: script.flight[1] - tApex }, tApex);
 
   tl.to(['.hs-eyebrow', '.hs-sub'], { autoAlpha: 0, y: -12, duration: len(script.introOut) }, at(script.introOut));
+  // La invitación a deslizar (solo móvil) se va apenas empieza el vuelo.
+  tl.to('.hs-cue', { autoAlpha: 0, duration: 0.05 }, at(script.flight));
 
   // La bruma se abre al paso del avión: cada elipse cuando él cruza su x, y
   // solo las que tiene delante (las que están más a la izquierda de donde entra
