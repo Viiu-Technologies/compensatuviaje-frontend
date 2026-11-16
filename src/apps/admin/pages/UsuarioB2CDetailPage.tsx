@@ -129,7 +129,15 @@ export default function UsuarioB2CDetailPage() {
     <div className="adm-page">
       {back}
 
-      <PageHeader title={user.nombre || user.email} description={meta} />
+      <PageHeader
+        title={user.nombre || user.email}
+        description={meta}
+        actions={
+          <Link to={`/admin/registro-accesos?entity_id=${id}`} className="adm-btn adm-btn--sm">
+            Quién vio sus datos
+          </Link>
+        }
+      />
 
       {/* Antes la tarjeta decía "Emisiones (kg)" y mostraba toneladas. */}
       <div className="adm-kpis">
