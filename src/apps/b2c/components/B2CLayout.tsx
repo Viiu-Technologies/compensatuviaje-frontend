@@ -13,6 +13,7 @@ import {
   FaTrophy,
   FaLeaf,
   FaRobot,
+  FaUserShield,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import b2cApi from '../services/b2cApi';
@@ -58,6 +59,10 @@ const navGroups: NavGroup[] = [
       { id: 'achievements', label: 'Mis logros', icon: FaTrophy, path: '/b2c/achievements' },
       { id: 'assistant', label: 'Asistente IA', icon: FaRobot, path: '/b2c/assistant' },
     ],
+  },
+  {
+    groupLabel: 'Cuenta',
+    items: [{ id: 'account', label: 'Mi cuenta y privacidad', icon: FaUserShield, path: '/b2c/cuenta' }],
   },
 ];
 
