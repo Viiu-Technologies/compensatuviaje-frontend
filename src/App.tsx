@@ -41,6 +41,7 @@ const B2CDashboardPage = lazy(() => import('./apps/b2c/pages/B2CDashboardPage'))
 const B2CFlightsPage = lazy(() => import('./apps/b2c/pages/B2CFlightsPage'));
 const B2CProjectsPage = lazy(() => import('./apps/b2c/pages/B2CProjectsPage'));
 const B2CCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CCertificatesPage'));
+const B2CAccountPage = lazy(() => import('./apps/b2c/pages/B2CAccountPage'));
 const B2CCalculatorPage = lazy(() => import('./apps/b2c/pages/B2CCalculatorPage'));
 const B2CNFTCertificatesPage = lazy(() => import('./apps/b2c/pages/B2CNFTCertificatesPage'));
 const B2CAchievementsPage = lazy(() => import('./apps/b2c/pages/B2CAchievementsPage'));
@@ -333,6 +334,14 @@ function App() {
                   <B2CNFTCertificatesPage />
                 </B2CProtectedRoute>
               } 
+            />
+            <Route
+              path="/b2c/cuenta"
+              element={
+                <B2CProtectedRoute>
+                  <B2CAccountPage />
+                </B2CProtectedRoute>
+              }
             />
             <Route
               path="/b2c/achievements"
