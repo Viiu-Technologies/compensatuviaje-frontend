@@ -281,7 +281,9 @@ export const ForestCanvas: React.FC<ForestCanvasProps> = ({
 
           {/* Controles de Cámara Suaves e Intuitivos. Sin zoom: con la rueda
               activa, el canvas (~600px de alto) capturaba el scroll y la
-              página dejaba de bajar al pasar el mouse por encima. */}
+              página dejaba de bajar al pasar el mouse por encima. En táctil
+              pasa lo mismo con el dedo: se resuelve en VirtualForestSection.css
+              (touch-action: pan-y sobre el contenedor del lienzo). */}
           <OrbitControls
             target={[0, 3.2, 0]}
             enableZoom={false}

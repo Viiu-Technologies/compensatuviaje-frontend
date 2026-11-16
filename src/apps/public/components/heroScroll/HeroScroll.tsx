@@ -4,6 +4,7 @@ import type { EstimateResponse } from '../../services/publicApi';
 import type { CabinCode } from '../QuickFlightCalculator';
 import QuickFlightCalculator from '../QuickFlightCalculator';
 import { flightFromEstimate, setFlight } from '../howItWorks/flight';
+import ClampText from '../landing/ClampText';
 import CloudWordmark from './CloudWordmark';
 import Mountains from './Mountains';
 import Plane from './Plane';
@@ -179,10 +180,10 @@ const HeroScroll: React.FC = () => {
             <h2 className="hs-land__title">
               Compensa la huella de cada viaje, <em>medible</em> y trazable.
             </h2>
-            <p className="hs-land__lede">
+            <ClampText className="hs-land__lede" lines={2}>
               Factores oficiales, proyectos evaluados antes de recibir tu aporte y un certificado con código público,
               sello SHA-256 y respaldo opcional en blockchain.
-            </p>
+            </ClampText>
             <ul className="hs-chips" aria-label="Estándares">
               <li>GHG Protocol</li>
               <li>{methodology}</li>

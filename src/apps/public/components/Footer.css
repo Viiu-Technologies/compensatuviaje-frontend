@@ -245,6 +245,31 @@
   color: var(--ctv-brand);
 }
 
+/* Móvil: cada enlace medía 24px de alto, con 12px entre uno y otro. Ahora la
+   zona de toque es de 44px y la separación sale del propio enlace. */
+@media (max-width: 767.98px) {
+  .ft-col__title {
+    margin-bottom: 0.5rem;
+  }
+
+  .ft-col__list {
+    gap: 0;
+  }
+
+  .ft-col__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.35rem 0;
+  }
+
+  .ft-newsletter__legal a {
+    display: inline-block;
+    padding: 0.75rem 0.25rem;
+    margin: -0.75rem -0.25rem;
+  }
+}
+
 /* ── Bottom ─────────────────────────────────────────── */
 .ft-bottom {
   display: flex;

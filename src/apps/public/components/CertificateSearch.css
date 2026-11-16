@@ -576,3 +576,11 @@
 .cs-section .vf-card {
   stroke: rgba(255, 255, 255, 0.5);
 }
+
+/* ── Móvil: sin la ilustración del flujo de verificación ─────────────────
+   El buscador y los tres puntos de confianza ya dicen lo mismo. */
+@media (max-width: 767.98px) {
+  .cs-visual {
+    display: none;
+  }
+}

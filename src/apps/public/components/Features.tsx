@@ -3,6 +3,7 @@ import { gsap, useGsapReveal, sectionTimeline, reveal } from '../hooks/useGsapRe
 import { stackCards } from '../hooks/motion';
 import HowItWorksFigure, { type FigureKind } from './howItWorks/HowItWorksFigure';
 import { BlobField } from './landing/EcoArt';
+import ClampText from './landing/ClampText';
 import './Features.css';
 
 const STEPS: Array<{
@@ -79,10 +80,10 @@ const Features = () => {
             <span className="hero-line"><span className="hero-line__inner">climático verificable.</span></span>
           </h2>
 
-          <p className="ft-lede ctv-reveal">
+          <ClampText className="ft-lede ctv-reveal" lines={2}>
             Cada cálculo conecta tu vuelo con factores oficiales de emisión y proyectos auditados,
             mostrando en tiempo real la fórmula aplicada a tu ruta.
-          </p>
+          </ClampText>
         </header>
 
         {/* En escritorio, cartillas apiladas: cada paso queda fijo y el siguiente
@@ -108,7 +109,7 @@ const Features = () => {
                     <span className="ft-step__spec">{step.spec}</span>
                   </div>
                   <h3 className="ft-step__title">{step.title}</h3>
-                  <p className="ft-step__body">{step.body}</p>
+                  <ClampText className="ft-step__body" lines={2}>{step.body}</ClampText>
                 </div>
               </li>
             );
