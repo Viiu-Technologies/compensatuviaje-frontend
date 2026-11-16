@@ -72,6 +72,13 @@ server {
         include /etc/nginx/snippets/headers.conf;
         proxy_pass $backend/api/public/share/profile/$1$is_args$args;
     }
+    # Imagen para compartir el perfil (CTV-67). Mismo dominio que el enlace y
+    # con extensión .jpg para que Cloudflare la guarde en caché; antes venía de
+    # api.compensatuviaje.com y WhatsApp a veces no la alcanzaba a traer.
+    location ~ ^/og/profile/([^/]+\.jpg)$ {
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/public/og/profile/$1$is_args$args;
+    }
 
     # --- Archivos estáticos ---
     location /assets/ {

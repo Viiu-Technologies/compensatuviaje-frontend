@@ -26,6 +26,7 @@ import NewsHealthPage from '../pages/NewsHealthPage';
 import NewsArticleDetailPage from '../pages/NewsArticleDetailPage';
 import NewsCampaignsPage from '../pages/NewsCampaignsPage';
 import NewsSourcesPage from '../pages/NewsSourcesPage';
+import RegistroAccesosPage from '../pages/RegistroAccesosPage';
 
 const AdminRoutes = () => {
   return (
@@ -68,6 +69,9 @@ const AdminRoutes = () => {
         <Route path="noticias/boletin" element={<NewsCampaignsPage />} />
         <Route path="noticias/fuentes" element={<NewsSourcesPage />} />
         <Route path="noticias/:id" element={<NewsArticleDetailPage />} />
+
+        {/* Ley 21.719: quién consultó datos personales */}
+        <Route path="registro-accesos" element={<RegistroAccesosPage />} />
 
         {/* Reportes y Exportación */}
         <Route path="reportes" element={<ReportesPage />} />

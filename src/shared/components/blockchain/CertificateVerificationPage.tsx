@@ -22,6 +22,7 @@ import {
 import blockchainApi from '../../services/blockchainApi';
 import walletService from '../../services/walletService';
 import NFTCertificateCard from './NFTCertificateCard';
+import { useTailwindSpacing } from '../../utils/useTailwindSpacing';
 import type { NFTCertificate, PublicVerification } from '../../../types/blockchain.types';
 
 interface VerificationResult {
@@ -44,6 +45,9 @@ const CertificateVerificationPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  // CTV-67: sin esto el reset global (margin/padding 0, sin capa) anula
+  // max-w-*, mx-auto, px-* y py-* y la página queda pegada a los bordes.
+  useTailwindSpacing();
 
   useEffect(() => {
     verifyCertificate();
@@ -204,7 +208,7 @@ const CertificateVerificationPage: React.FC = () => {
               </div>
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Verificando Certificado</h2>
-            <p className="text-slate-400">Consultando la blockchain de Polygon...</p>
+            <p className="text-slate-400">Consultando el registro de certificados…</p>
           </div>
         )}
 
@@ -440,7 +444,7 @@ const CertificateVerificationPage: React.FC = () => {
               Certificado No Encontrado
             </h2>
             <p className="text-slate-400 mb-6">
-              {verification.error || 'No se encontró un certificado NFT con este identificador en la blockchain.'}
+              {verification.error || 'No encontramos un certificado con este identificador. Revisa que el enlace esté completo.'}
             </p>
             <Link
               to="/"
@@ -497,22 +501,24 @@ const CertificateVerificationPage: React.FC = () => {
       {/* Footer info */}
       <footer className="border-t border-slate-800 mt-12">
         <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-center gap-6 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-slate-400">
             <Link to="/metodologia" className="hover:text-white transition-colors">
               Metodología de cálculo (DEFRA 2025)
             </Link>
-            <span>•</span>
-            <span>Verificado en Polygon</span>
-            <span>•</span>
-            <a 
-              href="https://polygon.technology" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 hover:text-white transition-colors"
-            >
-              Polygon Network
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            {verification.status === 'verified' && verification.blockchain?.minted && (
+              <>
+                <span>•</span>
+                <a
+                  href="https://polygon.technology"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:text-white transition-colors"
+                >
+                  Respaldado en Polygon
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </>
+            )}
           </div>
         </div>
       </footer>

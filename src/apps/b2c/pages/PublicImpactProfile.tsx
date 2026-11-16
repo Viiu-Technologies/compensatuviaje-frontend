@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { SproutSvg, GlobeSvg, TreeSvg } from '../components/badges/BadgeSvgs';
+import { fmtKgAuto } from '../ui/format';
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -53,10 +54,9 @@ const BADGE_LEVELS = [
 ];
 
 // ─── Formatters ────────────────────────────────────────────────────────────────
-function formatKg(kg: number): string {
-  if (kg >= 1000) return `${(kg / 1000).toFixed(2).replace('.', ',')} t`;
-  return `${Math.round(kg).toLocaleString('es-CL')} kg`;
-}
+// CTV-67: mismo formato que el resto del área B2C y que la imagen para
+// compartir ("1,1 t"); antes aquí decía "1,07 t".
+const formatKg = (kg: number): string => fmtKgAuto(kg);
 
 // ─── Count-up hook ─────────────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1800, start = false) {
@@ -263,7 +263,7 @@ function JourneyBadge({
             {badge.threshold <= 0.001
               ? ''
               : `Faltan ${badge.threshold - totalKg >= 1000
-                  ? `${((badge.threshold - totalKg) / 1000).toFixed(1)} t`
+                  ? fmtKgAuto(badge.threshold - totalKg)
                   : `${Math.ceil(badge.threshold - totalKg)} kg`}`}
           </div>
         </div>
@@ -606,9 +606,7 @@ const PublicImpactProfile: React.FC = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              {totalKg >= 1000
-                ? `${(counted / 1000).toFixed(2).replace('.', ',')} t`
-                : `${counted.toLocaleString('es-CL')} kg`}
+              {totalKg >= 1000 ? fmtKgAuto(counted) : `${counted.toLocaleString('es-CL')} kg`}
             </div>
           </motion.div>
 
