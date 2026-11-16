@@ -9,9 +9,9 @@ import { PUBLIC_SEO } from '../../../../shared/config/publicSeo';
 const PROCESSORS = [
   { name: 'Supabase', purpose: 'Autenticación e inicio de sesión (correo electrónico, Google y Apple)', location: 'Estados Unidos' },
   { name: 'Apple (Sign in with Apple)', purpose: 'Inicio de sesión y verificación de identidad en la app iOS', location: 'Estados Unidos' },
-  { name: 'Railway', purpose: 'Servidores de la aplicación y base de datos', location: 'Estados Unidos' },
-  { name: 'Vercel', purpose: 'Alojamiento del sitio web', location: 'Estados Unidos' },
-  { name: 'Cloudflare R2', purpose: 'Almacenamiento de documentos y archivos', location: 'Estados Unidos / global' },
+  { name: 'Hostinger', purpose: 'Servidor donde funcionan el sitio web, la aplicación y la base de datos', location: 'Estados Unidos' },
+  { name: 'Cloudflare', purpose: 'Conexión segura y protección del sitio (DNS, cifrado y filtrado de tráfico)', location: 'Global' },
+  { name: 'Cloudflare R2', purpose: 'Almacenamiento de archivos y de los respaldos cifrados de la base de datos', location: 'Estados Unidos / global' },
   { name: 'Resend y proveedor SMTP', purpose: 'Envío de correos transaccionales y newsletter', location: 'Estados Unidos' },
   { name: 'Transbank (Webpay)', purpose: 'Procesamiento de pagos', location: 'Chile' },
   { name: 'Google (Gemini)', purpose: 'Análisis automatizado de documentos de Aliados y Empresas', location: 'Estados Unidos' },
@@ -197,12 +197,13 @@ const sections: LegalSection[] = [
     body: (
       <ul>
         <li>
-          Datos de cuenta y perfil: mientras la cuenta esté activa. Al eliminarla desde la app se borran o
+          Datos de cuenta y perfil: mientras la cuenta esté activa. Al eliminarla desde la web o la app se borran o
           anonimizan de inmediato (o en un máximo de 30 días corridos si lo solicitas por web o correo).
         </li>
         <li>Datos de compras, pagos y documentos tributarios: 6 años, por obligación tributaria.</li>
         <li>Newsletter: hasta que te des de baja.</li>
         <li>Registros técnicos y de seguridad: hasta 12 meses.</li>
+        <li>Respaldos de la base de datos: 30 días. Los datos eliminados desaparecen de los respaldos al cumplirse ese plazo.</li>
       </ul>
     ),
   },
@@ -214,10 +215,25 @@ const sections: LegalSection[] = [
         <p>
           Puedes ejercer tus derechos de <strong>acceso, rectificación, supresión, oposición,
           portabilidad y bloqueo</strong> de tus datos, y retirar tu consentimiento en cualquier
-          momento, escribiendo a{' '}
-          <a href={`mailto:${LEGAL.emails.privacy}`}>{LEGAL.emails.privacy}</a> desde el correo
-          asociado a tu cuenta. El ejercicio de estos derechos es gratuito.
+          momento. El ejercicio de estos derechos es gratuito.
         </p>
+        <ul>
+          <li>
+            <strong>Acceso y portabilidad:</strong> desde la web, en{' '}
+            <Link to="/b2c/cuenta">Mi cuenta y privacidad</Link>, puedes descargar al instante un archivo
+            (formato JSON, legible y reutilizable) con tu perfil, cálculos, viajes, certificados, pagos,
+            insignias y suscripción al newsletter.
+          </li>
+          <li>
+            <strong>Supresión:</strong> puedes eliminar tu cuenta desde la misma página o desde la app
+            móvil (ver más abajo).
+          </li>
+          <li>
+            <strong>Rectificación, oposición, bloqueo y cualquier otra solicitud:</strong> escríbenos a{' '}
+            <a href={`mailto:${LEGAL.emails.privacy}`}>{LEGAL.emails.privacy}</a> desde el correo asociado
+            a tu cuenta.
+          </li>
+        </ul>
         <p>
           Responderemos dentro de 30 días corridos, plazo que podremos extender una vez por igual
           período si la solicitud es compleja, informándote el motivo. Si no quedas conforme, puedes
@@ -232,10 +248,11 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          Puedes eliminar tu cuenta en cualquier momento directamente desde la aplicación móvil (Android o
-          iOS) en la opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la app te
-          pedirá reconfirmar con tu Apple ID para revocar de forma segura la autorización asociada antes de
-          completar el borrado.
+          Puedes eliminar tu cuenta en cualquier momento desde la web, en{' '}
+          <Link to="/b2c/cuenta">Mi cuenta y privacidad</Link>, o desde la aplicación móvil (Android o iOS)
+          en la opción <strong>Eliminar cuenta</strong>. Si iniciaste sesión con Apple, la eliminación debe
+          hacerse desde la app de iOS, que te pedirá reconfirmar con tu Apple ID para revocar de forma segura
+          la autorización asociada; si no tienes la app, escríbenos y la eliminamos por ti.
         </p>
         <p>
           También puedes solicitar el borrado sin necesidad de abrir la app desde nuestra página pública de{' '}
@@ -245,7 +262,8 @@ const sections: LegalSection[] = [
         </p>
         <p>
           Al confirmar la eliminación, cerramos tu acceso en autenticación, revocamos los tokens vinculados y
-          eliminamos o anonimizamos tu perfil, viajes guardados, rutas GPS e historial no compensado. Por
+          eliminamos o anonimizamos tu perfil, viajes guardados, rutas GPS, historial no compensado, insignias,
+          suscripción al newsletter y la imagen de tu perfil para compartir. Por
           excepción legal, debemos conservar los comprobantes tributarios cuando existan compras registradas
           (6 años), registros técnicos hasta 12 meses, y el registro público de Certificados emitidos en
           Polygon permanece sin tu nombre, correo ni RUT.
@@ -259,8 +277,12 @@ const sections: LegalSection[] = [
     body: (
       <p>
         Usamos conexiones cifradas (HTTPS), contraseñas almacenadas con hash, control de acceso por
-        roles y respaldos. Si ocurre una vulneración de seguridad que afecte tus datos, te
-        informaremos a ti y a la autoridad según lo exija la ley.
+        roles y respaldos diarios guardados en almacenamiento privado. Los documentos de verificación de
+        Empresas y Aliados se guardan en un almacenamiento sin acceso público y solo se abren mediante
+        enlaces temporales para el personal autorizado. Las herramientas internas de operación
+        (servidores, registros y monitoreo) solo son accesibles para nuestro equipo, con verificación de
+        identidad. Si ocurre una vulneración de seguridad que
+        afecte tus datos, te informaremos a ti y a la autoridad según lo exija la ley.
       </p>
     ),
   },
@@ -301,7 +323,7 @@ const PrivacyPage: React.FC = () => (
     title={PUBLIC_SEO[LEGAL_ROUTES.privacy].title}
     description={PUBLIC_SEO[LEGAL_ROUTES.privacy].description}
     path={LEGAL_ROUTES.privacy}
-    lastUpdated="12 de noviembre de 2026"
+    lastUpdated="16 de noviembre de 2026"
     intro={
       <p>
         Esta política explica cómo tratamos los datos personales de quienes usan la plataforma web y la
