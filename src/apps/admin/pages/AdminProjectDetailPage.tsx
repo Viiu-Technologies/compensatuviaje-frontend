@@ -7,10 +7,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Pause, Play, ExternalLink, FileQuestion, ChevronDown, ChevronUp, Inbox, ClipboardCheck } from 'lucide-react';
+import { ArrowLeft, Pause, Play, ExternalLink, FileQuestion, ChevronDown, ChevronUp, Inbox, ClipboardCheck, FlaskConical } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
-import { getProjectDetail, ProjectDetailData } from '../services/adminApi';
+import { getProjectDetail, getRemainingTestMinutes, updateProjectTestWindow, ProjectDetailData } from '../services/adminApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import api from '../../../shared/services/api';
 import AdminPendingBadge from '../components/shared/AdminPendingBadge';
@@ -50,6 +50,7 @@ export default function AdminProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('evidence');
   const [showReportId, setShowReportId] = useState<string | null>(null);
 
@@ -91,6 +92,35 @@ export default function AdminProjectDetailPage() {
       toast.error(getErrorMessage(err, 'No se pudo cambiar el estado'));
     } finally {
       setStatusLoading(false);
+    }
+  }
+
+  async function handleUpdateTestMode(payload: { isTest?: boolean; publishWindowMinutes?: number }) {
+    if (!project) return;
+    if (payload.isTest === false) {
+      const ok = await confirm({
+        title: `¿Quitar modo prueba de ${project.name}?`,
+        description: 'Volverá a comportarse como proyecto real y sus futuras transacciones contarán en las finanzas reales.',
+        confirmLabel: 'Sí, marcar como real',
+      });
+      if (!ok) return;
+    }
+
+    try {
+      setTestLoading(true);
+      await updateProjectTestWindow(project.id, payload);
+      if (payload.publishWindowMinutes && payload.publishWindowMinutes > 0) {
+        toast.success(`Proyecto de prueba visible por ${payload.publishWindowMinutes} minutos (desaparecerá tras el primer pago)`);
+      } else if (payload.publishWindowMinutes === 0) {
+        toast.success('Proyecto de prueba ocultado inmediatamente del catálogo');
+      } else {
+        toast.success(payload.isTest ? 'Marcado como proyecto de prueba' : 'Proyecto marcado como real');
+      }
+      await loadProject();
+    } catch (err: any) {
+      toast.error(getErrorMessage(err, 'No se pudo actualizar la configuración de prueba'));
+    } finally {
+      setTestLoading(false);
     }
   }
 
@@ -175,6 +205,13 @@ export default function AdminProjectDetailPage() {
 
       <div className="adm-chips">
         <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+        {project.is_test && <StatusBadge tone="warning">Proyecto de prueba</StatusBadge>}
+        {project.is_test && getRemainingTestMinutes(project.test_visible_until) > 0 && (
+          <StatusBadge tone="info">Visible en catálogo ({getRemainingTestMinutes(project.test_visible_until)} min)</StatusBadge>
+        )}
+        {project.is_test && getRemainingTestMinutes(project.test_visible_until) === 0 && (
+          <StatusBadge tone="neutral">Oculto del catálogo</StatusBadge>
+        )}
         {project.is_sold_out && <StatusBadge tone="danger">Agotado</StatusBadge>}
       </div>
 
@@ -383,6 +420,55 @@ export default function AdminProjectDetailPage() {
         </div>
 
         <div className="adm-stack-v">
+          <Panel
+            title="Modo prueba y visibilidad temporal"
+            description="Los proyectos de prueba no aparecen en finanzas reales. Se muestran temporalmente solo mientras dure la ventana o hasta el primer pago."
+            aside={<FlaskConical aria-hidden="true" />}
+          >
+            <div className="adm-stack-v" style={{ gap: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, cursor: testLoading ? 'not-allowed' : 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(project.is_test)}
+                  disabled={testLoading}
+                  onChange={(e) => handleUpdateTestMode({ isTest: e.target.checked })}
+                />
+                Proyecto de prueba (aislar ingresos y ocultarlo por defecto)
+              </label>
+
+              {project.is_test && (
+                <>
+                  <div className="adm-chips">
+                    {getRemainingTestMinutes(project.test_visible_until) > 0 ? (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn--sm adm-btn--danger"
+                        onClick={() => handleUpdateTestMode({ isTest: true, publishWindowMinutes: 0 })}
+                        disabled={testLoading}
+                      >
+                        Ocultar ahora del catálogo
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn--sm adm-btn--primary"
+                        onClick={() => handleUpdateTestMode({ isTest: true, publishWindowMinutes: 15 })}
+                        disabled={testLoading}
+                      >
+                        Publicar prueba (15 min)
+                      </button>
+                    )}
+                  </div>
+                  {!['active', 'approved'].includes(project.status) && (
+                    <span className="adm-cell-sub">
+                      Nota: para que aparezca en el catálogo durante la prueba, el estado del proyecto debe ser Activo o Por activar.
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+          </Panel>
+
           <Panel title="Datos del proyecto">
             <dl className="adm-dl">
               <dt>Tipo</dt>
