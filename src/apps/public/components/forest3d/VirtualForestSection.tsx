@@ -5,6 +5,7 @@ import type { TimeOfDay, TreeSpecies } from './ForestCanvas';
 import { scrollToSection } from '../DeferredSection';
 import { useGsapReveal, reveal, sectionTimeline, ScrollTrigger } from '../../hooks/useGsapReveal';
 import { useDarkHeaderOver } from '../../hooks/useHeaderTheme';
+import ClampText from '../landing/ClampText';
 import './VirtualForestSection.css';
 
 // La escena (three.js + ez-tree + texturas) se descarga solo cuando la sección
@@ -82,11 +83,11 @@ export const VirtualForestSection: React.FC = () => {
 
           {/* Antes decía "gemelo digital en tiempo real": la escena es una
               recreación procedural, no está conectada a datos de campo. */}
-          <p className="vfs-lede">
+          <ClampText className="vfs-lede" lines={2}>
             No compensas una transacción abstracta: apoyas proyectos concretos de conservación y
             restauración. Explora una recreación del bosque nativo del sur de Chile, como el que
             protegen los proyectos de nuestra red.
-          </p>
+          </ClampText>
         </header>
 
         {/* Visor 3D Interactivo con HUD Flotante */}

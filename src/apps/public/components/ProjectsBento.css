@@ -563,3 +563,24 @@
   height: clamp(160px, 26vh, 240px);
   flex-shrink: 0;
 }
+
+/* ── Móvil: tarjeta destacada más compacta ───────────────────────────────
+   Foto más baja, descripción a tres líneas (como las tarjetas laterales) y
+   sin la categoría, que repite lo que dice el título. */
+@media (max-width: 767.98px) {
+  .pb-card--featured .pb-card-media {
+    height: 200px;
+  }
+
+  .pb-card--featured .pb-category {
+    display: none;
+  }
+
+  .pb-card-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+}

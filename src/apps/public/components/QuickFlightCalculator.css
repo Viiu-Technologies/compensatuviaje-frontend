@@ -1035,3 +1035,26 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Móvil: las etiquetas en mono medían menos de 10px. Piso de 11px. */
+@media (max-width: 767.98px) {
+  .qfc-card--compact .qfc-card-tag,
+  .qfc-card--compact .qfc-price-currency,
+  .qfc-compact-caption,
+  .qfc-compact-note {
+    font-size: 0.69rem;
+  }
+
+  .qfc-card--compact .qfc-airport-city,
+  .qfc-compact-sub {
+    font-size: 0.75rem;
+  }
+
+  /* El enlace del pie mide una línea de 11px: se le agranda la zona de toque
+     sin mover el texto. */
+  .qfc-compact-note a {
+    display: inline-block;
+    padding: 0.8rem 0.4rem;
+    margin: -0.8rem -0.4rem;
+  }
+}

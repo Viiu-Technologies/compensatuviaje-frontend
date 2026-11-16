@@ -95,6 +95,8 @@
   left: 0;
   right: 0;
   bottom: 0;
+  /* --hs-mtn-h: alto de la capa en vh, lo pone Mountains.tsx. */
+  height: calc(var(--hs-mtn-h) * 1vh);
 }
 
 /* Las dos mitades de cada capa se abren hacia los lados con el scroll. Sin
@@ -208,8 +210,14 @@
 }
 
 .hs-label,
-.hs-readout {
+.hs-readout,
+.hs-cue {
   display: none;
+}
+
+@keyframes hs-cue-nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
 }
 
 .hs-label {
@@ -460,8 +468,10 @@
     top: 22vh;
   }
 
+  /* Nunca bajo 10px, y 11px desde los 390 de ancho: en mono y mayúsculas, más
+     chico no se lee. Se achica con la pantalla para seguir en una línea. */
   .hs-eyebrow {
-    font-size: 0.64rem;
+    font-size: clamp(0.62rem, 2.9vw, 0.7rem);
     letter-spacing: 0.14em;
   }
 
@@ -478,19 +488,51 @@
     font-size: 0.95rem;
   }
 
-  /* Dos capas de montañas en vez de cuatro, y menos bruma. */
-  .hs-mtn--1,
+  /* Las crestas están dibujadas para una pantalla ancha y el SVG se ajusta al
+     alto de su capa: en vertical, a 46vh de alto solo cabía un pico y medio y
+     se veían dos triángulos gigantes. Con capas más bajas el dibujo se achica
+     y entra la cordillera (2 a 4 picos por capa). Tres capas en vez de cuatro,
+     y menos bruma. */
+  .hs-mtn {
+    height: calc(var(--hs-mtn-h) * 0.62vh);
+  }
+
   .hs-mtn--2,
   .hs-mist__e--desktop {
     display: none;
   }
 
+  /* Invitación a deslizar: se va con el subtítulo cuando despega el avión. */
+  .hs--motion .hs-cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: var(--ctv-space-6) 0 0;
+    font-family: var(--hs-mono);
+    font-size: 0.69rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--hs-ink-soft);
+  }
+
+  .hs--motion .hs-cue svg {
+    animation: hs-cue-nudge 1.8s ease-in-out infinite;
+  }
+
+  /* El número arriba y la unidad debajo: en una fila, una cifra real
+     ("1.234,56 kg CO₂e") era más ancha que el arco y se cruzaba con la ruta. */
   .hs-readout {
     top: 50%;
   }
 
+  .hs-readout .hs-readout__value {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
   .hs-readout__caption {
-    font-size: 0.62rem;
+    font-size: 0.69rem;
     letter-spacing: 0.12em;
   }
 
@@ -499,12 +541,37 @@
   }
 
   .hs-readout__meta {
-    font-size: 0.66rem;
+    font-size: 0.72rem;
+  }
+
+  /* Después de dos pantallas de animación, la calculadora va primero: titular,
+     calculadora y recién después el texto de apoyo y los sellos. Antes había
+     una pantalla entera de texto entre el vuelo y el formulario. El bloque de
+     texto se "disuelve" (display: contents) para poder intercalar la tarjeta. */
+  .hs-land {
+    padding: 2.75rem 0 3.5rem;
   }
 
   .hs-land__inner {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ctv-space-5);
   }
+
+  .hs-land__copy {
+    display: contents;
+  }
+
+  .hs-land__eyebrow { order: 1; }
+  .hs-land__title { order: 2; }
+  .hs-card { order: 3; }
+  .hs-land__lede { order: 4; margin-top: var(--ctv-space-3); }
+  /* "Ver más" del texto de apoyo: pegado a su párrafo, no a un gap de distancia. */
+  .hs-land__copy > .ctv-clamp-btn { order: 4; margin-top: calc(var(--ctv-space-5) * -1 + 0.25rem); }
+
+  /* Los sellos repiten la cinta de estándares que viene justo debajo. */
+  .hs-chips { display: none; }
 
   .hs-land__title {
     font-size: clamp(2rem, 8.5vw, 2.6rem);

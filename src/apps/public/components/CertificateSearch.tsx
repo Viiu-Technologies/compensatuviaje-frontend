@@ -12,6 +12,7 @@ import { useDarkHeaderOver } from '../hooks/useHeaderTheme';
 import { Button, Input } from '../../../shared/components/ui';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import VerificationFlow, { type FlowData } from './verificationFlow/VerificationFlow';
+import ClampText from './landing/ClampText';
 import './CertificateSearch.css';
 
 const TRUST = [
@@ -138,10 +139,10 @@ const CertificateSearch: React.FC = () => {
                 <span className="hero-line"><span className="hero-line__inner cs-title__accent">en segundos.</span></span>
               </h2>
 
-              <p className="cs-sub ctv-reveal">
+              <ClampText className="cs-sub ctv-reveal" lines={2}>
                 Busca por número de certificado o ID de compensación. Si el certificado también
                 está registrado en blockchain, verás su transacción en Polygon.
-              </p>
+              </ClampText>
             </header>
 
             <form className="cs-form ctv-reveal" onSubmit={handleSearch}>

@@ -7,6 +7,7 @@ import { formatCLPPerTon } from '../../../utils/currency';
 import { gsap, useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import { horizontalRail } from '../hooks/motion';
 import { scrollToY } from '../hooks/smoothScroll';
+import ClampText from './landing/ClampText';
 import './ProjectsBento.css';
 
 export interface ProjectData {
@@ -393,10 +394,10 @@ export const ProjectsBento: React.FC = () => {
         {/* La nota va fuera del párrafo: la animación divide el párrafo en
             palabras, y React no puede insertar después un hijo dentro de él. */}
         <div>
-          <p className="pb-lede">
+          <ClampText className="pb-lede" lines={2}>
             Cada proyecto pasa por Veritas AI, nuestra certificación agéntica que evalúa su
             evidencia documental, y por una revisión humana antes de poder recibir compensaciones.
-          </p>
+          </ClampText>
           {isReference && (
             <p className="pb-reference-note">
               Los proyectos de abajo son ejemplos de referencia del tipo de iniciativa que evaluamos.

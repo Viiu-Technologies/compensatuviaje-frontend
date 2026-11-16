@@ -75,6 +75,15 @@ const CloudWordmark: React.FC<Props> = ({ methodology }) => (
     <p className="hs-sub">
       Calcula y compensa las emisiones de tus vuelos con factores oficiales {methodology}.
     </p>
+
+    {/* Solo móvil y solo con animación (ver HeroScroll.css): en un teléfono
+        nada indicaba que deslizar hace despegar el avión. Decorativo. */}
+    <p className="hs-cue" aria-hidden="true">
+      Desliza para despegar
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+        <path d="M3.5 6l4.5 4.5L12.5 6" />
+      </svg>
+    </p>
   </div>
 );
 

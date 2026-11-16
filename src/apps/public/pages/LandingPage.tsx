@@ -50,19 +50,19 @@ const LandingPage: React.FC = () => {
             Orden de la historia: el hero cuenta emisión → medición; siguen cómo
             funciona, la verificación y la regeneración (proyectos y el bosque,
             que la cierra), y al final empresas y preguntas. */}
-        <DeferredSection id="como-funciona" heights={[2202, 2551, 1708]}>
+        <DeferredSection id="como-funciona" heights={[1519, 2551, 1708]}>
           <Features />
         </DeferredSection>
-        <DeferredSection id="verificar" heights={[1045, 1090, 625]}>
+        <DeferredSection id="verificar" heights={[680, 1090, 625]}>
           <CertificateSearch />
         </DeferredSection>
-        <DeferredSection id="proyectos" heights={[2123, 1666, 1780]}>
+        <DeferredSection id="proyectos" heights={[1985, 1666, 1780]}>
           <ProjectsBento />
         </DeferredSection>
-        <DeferredSection id="entorno-verde" heights={[1022, 1024, 1042]}>
+        <DeferredSection id="entorno-verde" heights={[990, 1024, 1042]}>
           <VirtualForestSection />
         </DeferredSection>
-        <DeferredSection id="empresas" heights={[1769, 1113, 772]}>
+        <DeferredSection id="empresas" heights={[1304, 1113, 772]}>
           <EnterpriseSuite />
         </DeferredSection>
         <DeferredSection id="faq" heights={[1304, 1200, 1356]}>
@@ -70,7 +70,7 @@ const LandingPage: React.FC = () => {
         </DeferredSection>
       </main>
       <SectionRail />
-      <DeferredSection heights={[1915, 1615, 1385]}>
+      <DeferredSection heights={[2039, 1615, 1385]}>
         <Footer curtain />
       </DeferredSection>
     </>

@@ -4,6 +4,7 @@ import { HiArrowRight, HiOutlineDocumentReport, HiOutlineCloudUpload, HiOutlineC
 import { FaShieldAlt } from 'react-icons/fa';
 import { useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapReveal';
 import { enterFrom } from '../hooks/motion';
+import ClampText from './landing/ClampText';
 import './EnterpriseSuite.css';
 
 const B2B_BENEFITS = [
@@ -45,10 +46,10 @@ export const EnterpriseSuite: React.FC = () => {
               Automatiza la huella Scope 3 de los viajes de tu empresa.
             </h2>
 
-            <p className="es-lede">
+            <ClampText className="es-lede" lines={3}>
               Gestiona y mide las emisiones de los viajes de negocios de toda tu organización y contribuye a proyectos ambientales verificados.
               Genera reportes ejecutivos para comités de sustentabilidad, memorias anuales y procesos de auditoría.
-            </p>
+            </ClampText>
 
             <ul className="es-benefits">
               {B2B_BENEFITS.map((b) => (
