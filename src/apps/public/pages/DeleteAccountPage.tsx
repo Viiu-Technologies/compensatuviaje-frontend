@@ -28,8 +28,8 @@ const RETENTION_ROWS: RetentionRow[] = [
   {
     category: 'Cuenta y credenciales de acceso (correo, Google, Apple ID y Supabase)',
     action:
-      'Se elimina el usuario de autenticación, se revocan las sesiones y tokens vinculados (incluido Sign in with Apple) y se anonimizan nombre, correo, foto de perfil y preferencia de newsletter.',
-    retention: 'Inmediata desde la app; máx. 30 días corridos si la solicitas por formulario o correo.',
+      'Se elimina el usuario de autenticación, se revocan las sesiones y tokens vinculados (incluido Sign in with Apple) y se anonimizan nombre, correo y foto de perfil. También se borra tu suscripción al newsletter.',
+    retention: 'Inmediata desde la app o la web; máx. 30 días corridos si la solicitas por formulario o correo.',
   },
   {
     category: 'Trayectos terrestres, ubicación GPS y actividad de movimiento (Android e iOS)',
@@ -120,7 +120,7 @@ const DeleteAccountPage: React.FC = () => {
                 <HiOutlineClock className="cp-meta-card__icon" aria-hidden="true" />
                 <div>
                   <h4>Tiempo de procesamiento</h4>
-                  <p>Inmediato en la app · Máx. 30 días vía web</p>
+                  <p>Inmediato en la app o la web · Máx. 30 días por formulario o correo</p>
                 </div>
               </div>
             </div>
@@ -134,8 +134,8 @@ const DeleteAccountPage: React.FC = () => {
                 Pasos para solicitar la eliminación de tu cuenta
               </h2>
               <p className="da-sub">
-                Puedes borrar tu cuenta directamente dentro de la app o enviarnos una solicitud pública
-                sin necesidad de tener la aplicación instalada.
+                Puedes borrar tu cuenta tú mismo desde la app o desde la web, o enviarnos una solicitud
+                sin necesidad de iniciar sesión.
               </p>
             </div>
 
@@ -161,7 +161,28 @@ const DeleteAccountPage: React.FC = () => {
               </article>
 
               <article className="sp-guide-card">
-                <h3>Opción 2: Solicitud web o por correo (sin abrir la app)</h3>
+                <h3>Opción 2: Desde la web</h3>
+                <ol className="da-steps">
+                  <li>
+                    Inicia sesión en <a href={LEGAL.site}>{LEGAL.site.replace('https://', '')}</a> y entra a{' '}
+                    <Link to="/b2c/cuenta">Mi cuenta y privacidad</Link>.
+                  </li>
+                  <li>
+                    Si quieres una copia, toca <strong>Descargar mis datos</strong> antes de continuar.
+                  </li>
+                  <li>
+                    Toca <strong>Eliminar mi cuenta</strong> y escribe <strong>ELIMINAR</strong> para confirmar.
+                    La eliminación es inmediata.
+                  </li>
+                  <li>
+                    Si iniciaste sesión con <strong>Sign in with Apple</strong>, Apple exige confirmarlo desde
+                    la app de iOS; si no la tienes, usa la opción 3.
+                  </li>
+                </ol>
+              </article>
+
+              <article className="sp-guide-card">
+                <h3>Opción 3: Formulario o correo (sin iniciar sesión)</h3>
                 <ol className="da-steps">
                   <li>
                     Completa el <a href="#solicitar-eliminacion">formulario de abajo</a> indicando{' '}

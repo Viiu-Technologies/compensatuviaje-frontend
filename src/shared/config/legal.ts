@@ -6,13 +6,13 @@
 // vender en línea, así que estos valores deben estar completos antes de
 // desplegar.
 //
-// PENDIENTE: completar legalName, rut y address. Mientras estén vacíos, los
-// textos los omiten y usan el nombre de marca (ver OWNER_NAME / ownerLine).
+// PENDIENTE: completar address. Mientras esté vacío, los
+// textos lo omiten y usan el nombre de marca (ver OWNER_NAME / ownerLine).
 
 export const LEGAL = {
   brand: 'CompensaTuViaje',
-  legalName: '' as string, // p. ej. 'CompensaTuViaje SpA'
-  rut: '' as string, // p. ej. '76.123.456-7'
+  legalName: 'Viiu Technologies SpA' as string,
+  rut: '78.138.242-6' as string,
   address: '' as string, // p. ej. 'Av. Providencia 1234, Providencia, Región Metropolitana, Chile'
   site: 'https://compensatuviaje.com',
 
