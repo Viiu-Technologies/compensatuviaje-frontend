@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { formatCLP, formatCLPPerTon } from '../../../utils/currency';
 import { calculateTonsFromUnits, calculateUnitsFromKg } from '../../../utils/carbon';
@@ -42,6 +42,9 @@ const B2CProjectsPage: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<B2CProject | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [payingProjectId, setPayingProjectId] = useState<string | null>(null);
+  // CTV-64: el estado tarda un render en bloquear el botón; un doble clic
+  // rápido alcanzaba a crear dos transacciones Webpay. El ref bloquea al instante.
+  const payingRef = useRef(false);
   // Aceptación explícita de términos y de la exclusión del retracto (Ley 19.496 art. 3 bis):
   // sin ella la exclusión no es oponible al consumidor.
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -83,11 +86,25 @@ const B2CProjectsPage: React.FC = () => {
     return Math.round(emissionsKg * (project.pricePerTonCLP / 1000));
   };
 
+  // Al volver con "Atrás" desde Webpay el navegador puede restaurar la página
+  // tal cual quedó (botón bloqueado); se desbloquea al mostrarse de nuevo.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      payingRef.current = false;
+      setPayingProjectId(null);
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
+
   /** Inicia el pago en Webpay para un proyecto. */
   const handlePayProject = async (project: B2CProject) => {
-    if (!calcId) return;
+    if (!calcId || payingRef.current) return;
+    payingRef.current = true;
     setPayingProjectId(project.id);
     setError(null);
+    let redirecting = false;
     try {
       const physicalUnits =
         project.carbon_capture_per_unit && emissionsKg
@@ -111,14 +128,20 @@ const B2CProjectsPage: React.FC = () => {
         input.value = data.token;
         form.appendChild(input);
         document.body.appendChild(form);
+        // Se queda bloqueado: el navegador está saliendo hacia Webpay.
+        redirecting = true;
         form.submit();
         return;
       }
+      setError('No pudimos iniciar el pago. Vuelve a intentarlo o prueba con otro método.');
     } catch (err: any) {
       console.error('Error creating payment:', err);
       setError(getErrorMessage(err, 'No pudimos iniciar el pago. Vuelve a intentarlo o prueba con otro método.'));
     } finally {
-      setPayingProjectId(null);
+      if (!redirecting) {
+        payingRef.current = false;
+        setPayingProjectId(null);
+      }
     }
   };
 
@@ -294,7 +317,7 @@ const B2CProjectsPage: React.FC = () => {
           hasCalculation && emissionsKg && p.carbon_capture_per_unit ? calculateUnitsFromKg(emissionsKg, p.carbon_capture_per_unit) : null;
         const availableStock = p.monthlyStockRemaining ?? 0;
         const hasInsufficientStock = neededUnits !== null && neededUnits > availableStock;
-        const isCtaDisabled = soldOut || hasInsufficientStock || payingProjectId === p.id || (hasCalculation && !acceptedTerms);
+        const isCtaDisabled = soldOut || hasInsufficientStock || payingProjectId !== null || (hasCalculation && !acceptedTerms);
 
         // Co-beneficios: arreglo de textos u objeto { clave: true }
         const raw = p.coBenefits;
