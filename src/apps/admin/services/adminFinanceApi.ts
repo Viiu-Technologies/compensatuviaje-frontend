@@ -106,10 +106,20 @@ export interface AdminPaymentRow {
   settlementStatus?: 'unsettled' | 'pending' | 'paid';
   status: 'paid' | 'refunded';
   provider: string;
+  isTest?: boolean;
+  purchaseOrderNumber?: string | null;
 }
 
-export const getPayments = async (month?: string): Promise<AdminPaymentRow[]> => {
-  const response = await api.get(`${BASE}/payments`, { params: month ? { month } : undefined }) as any;
+export const getPayments = async (
+  month?: string,
+  mode?: 'real' | 'test' | 'all'
+): Promise<AdminPaymentRow[]> => {
+  const params: Record<string, string> = {};
+  if (month) params.month = month;
+  if (mode) params.mode = mode;
+  const response = await api.get(`${BASE}/payments`, {
+    params: Object.keys(params).length ? params : undefined,
+  }) as any;
   return response.data || [];
 };
 

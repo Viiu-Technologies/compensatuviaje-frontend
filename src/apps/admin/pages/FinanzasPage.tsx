@@ -16,7 +16,7 @@ import {
   type PartnerSettlement,
 } from '../services/adminFinanceApi';
 import {
-  EmptyState, KpiCard, Modal, PageHeader, Panel, Skeleton, StatusBadge, TableSkeletonRows,
+  EmptyState, KpiCard, Modal, PageHeader, Panel, Segmented, Skeleton, StatusBadge, TableSkeletonRows,
   formatCLP, formatInt,
 } from '../ui';
 
@@ -41,6 +41,7 @@ export default function FinanzasPage() {
   const [fund, setFund] = useState<FundReport | null>(null);
   const [settlements, setSettlements] = useState<PartnerSettlement[]>([]);
   const [payments, setPayments] = useState<AdminPaymentRow[]>([]);
+  const [paymentMode, setPaymentMode] = useState<'real' | 'test' | 'all'>('real');
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
@@ -425,7 +426,19 @@ export default function FinanzasPage() {
 
       <Panel
         title="Ventas cobradas y reembolsos"
-        description="Pagos B2C (Webpay) y órdenes B2B aprobadas. Reembolsar anula el cobro, revoca certificados y restaura el stock del proyecto."
+        description="Pagos B2C (Webpay) y órdenes B2B aprobadas. Las compras de proyectos de prueba se separan para no contaminar el fondo real."
+        aside={
+          <Segmented
+            label="Filtrar tipo de ventas"
+            value={paymentMode}
+            onChange={(v) => setPaymentMode(v as 'real' | 'test' | 'all')}
+            options={[
+              { value: 'real', label: `Ventas reales · ${payments.filter((p) => !p.isTest).length}` },
+              { value: 'test', label: `Pruebas · ${payments.filter((p) => p.isTest).length}` },
+              { value: 'all', label: `Todas · ${payments.length}` },
+            ]}
+          />
+        }
         flush
       >
         <div className="adm-table-scroll">
@@ -443,17 +456,27 @@ export default function FinanzasPage() {
             <tbody>
               {isLoading ? (
                 <TableSkeletonRows columns={6} rows={4} />
-              ) : payments.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <EmptyState
-                      title="Sin ventas registradas"
-                      text="Cuando existan pagos B2C confirmados u órdenes B2B aprobadas aparecerán aquí."
-                    />
-                  </td>
-                </tr>
-              ) : (
-                payments.map((p) => {
+              ) : (() => {
+                const visiblePayments = paymentMode === 'real'
+                  ? payments.filter((p) => !p.isTest)
+                  : paymentMode === 'test'
+                    ? payments.filter((p) => p.isTest)
+                    : payments;
+
+                if (visiblePayments.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={6}>
+                        <EmptyState
+                          title={paymentMode === 'test' ? 'Sin ventas de prueba registradas' : 'Sin ventas reales registradas'}
+                          text={paymentMode === 'test' ? 'Cuando compres un proyecto marcado como prueba aparecerá aquí.' : 'Cuando existan pagos B2C confirmados u órdenes B2B aprobadas aparecerán aquí.'}
+                        />
+                      </td>
+                    </tr>
+                  );
+                }
+
+                return visiblePayments.map((p) => {
                   const settlementLabel =
                     p.settlementStatus === 'paid'
                       ? 'Liquidación pagada'
@@ -467,6 +490,7 @@ export default function FinanzasPage() {
                         <span className="adm-cell-title">{p.userEmail}</span>
                         <span className="adm-cell-sub">
                           {p.source === 'b2b' ? 'B2B Transferencia' : `B2C ${p.provider}`}
+                          {p.purchaseOrderNumber ? ` · OC ${p.purchaseOrderNumber}` : ''}
                         </span>
                       </td>
                       <td>
@@ -478,11 +502,14 @@ export default function FinanzasPage() {
                         <span className="adm-cell-sub">Partner: {formatCLP(p.partnerAmount)}</span>
                       </td>
                       <td>
-                        {p.status === 'refunded' ? (
-                          <StatusBadge tone="danger">Reembolsado</StatusBadge>
-                        ) : (
-                          <StatusBadge tone="success">Pagado</StatusBadge>
-                        )}
+                        <div className="adm-chips">
+                          {p.status === 'refunded' ? (
+                            <StatusBadge tone="danger">Reembolsado</StatusBadge>
+                          ) : (
+                            <StatusBadge tone="success">Pagado</StatusBadge>
+                          )}
+                          {p.isTest && <StatusBadge tone="info">Prueba</StatusBadge>}
+                        </div>
                         <span className="adm-cell-sub">{settlementLabel}</span>
                       </td>
                       <td className="adm-col-actions">
@@ -498,8 +525,8 @@ export default function FinanzasPage() {
                       </td>
                     </tr>
                   );
-                })
-              )}
+                });
+              })()}
             </tbody>
           </table>
         </div>

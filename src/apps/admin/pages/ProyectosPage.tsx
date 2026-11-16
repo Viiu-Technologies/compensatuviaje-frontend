@@ -11,9 +11,9 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Eye, Pause, Play, ExternalLink, TreePine, ClipboardCheck, AlertTriangle } from 'lucide-react';
+import { Eye, Pause, Play, ExternalLink, TreePine, ClipboardCheck, AlertTriangle, FlaskConical } from 'lucide-react';
 import { toast } from 'sonner';
-import { getProjects, getProjectsStats, Project } from '../services/adminApi';
+import { getProjects, getProjectsStats, getRemainingTestMinutes, updateProjectTestWindow, Project } from '../services/adminApi';
 import api from '../../../shared/services/api';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import {
@@ -138,6 +138,26 @@ export default function ProyectosPage() {
     }
   };
 
+  const handleToggleTestPublish = async (project: Project, publishNow: boolean) => {
+    setActionLoading(project.id);
+    try {
+      await updateProjectTestWindow(project.id, {
+        isTest: true,
+        publishWindowMinutes: publishNow ? 15 : 0,
+      });
+      toast.success(
+        publishNow
+          ? 'Proyecto de prueba visible durante 15 minutos (se ocultará al primer pago)'
+          : 'Proyecto de prueba ocultado del catálogo'
+      );
+      loadData();
+    } catch (err: any) {
+      toast.error(getErrorMessage(err, 'No se pudo actualizar la visibilidad de prueba'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const inv = stats?.inventory;
   const filtered = !!(searchParams.get('search') || typeFilter);
 
@@ -225,6 +245,7 @@ export default function ProyectosPage() {
                   const remaining = project.monthly_stock_remaining || 0;
                   const pct = approved ? Math.round((remaining / approved) * 100) : 0;
                   const busy = actionLoading === project.id;
+                  const testMinsLeft = project.is_test ? getRemainingTestMinutes(project.test_visible_until) : 0;
                   return (
                     <tr key={project.id}>
                       <td>
@@ -258,10 +279,24 @@ export default function ProyectosPage() {
                       <td>
                         <div className="adm-chips">
                           <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+                          {project.is_test && <StatusBadge tone="warning">Prueba</StatusBadge>}
+                          {testMinsLeft > 0 && <StatusBadge tone="info">Visible {testMinsLeft} min</StatusBadge>}
                           {project.is_sold_out && <StatusBadge tone="danger">Agotado</StatusBadge>}
                         </div>
                       </td>
                       <td className="adm-col-actions">
+                        {project.is_test && (
+                          <button
+                            type="button"
+                            className="adm-icon-btn"
+                            onClick={() => handleToggleTestPublish(project, testMinsLeft === 0)}
+                            disabled={busy}
+                            title={testMinsLeft > 0 ? 'Ocultar proyecto de prueba ahora' : 'Publicar prueba por 15 min'}
+                            aria-label={testMinsLeft > 0 ? `Ocultar prueba de ${project.name}` : `Publicar prueba 15 min para ${project.name}`}
+                          >
+                            <FlaskConical aria-hidden="true" />
+                          </button>
+                        )}
                         <Link to={`/admin/proyectos/${project.id}`} className="adm-icon-btn" title="Ver detalle" aria-label={`Ver detalle de ${project.name}`}>
                           <Eye aria-hidden="true" />
                         </Link>
