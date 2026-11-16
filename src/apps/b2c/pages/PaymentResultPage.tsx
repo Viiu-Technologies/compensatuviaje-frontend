@@ -139,6 +139,19 @@ const PaymentResultPage: React.FC = () => {
     );
   }
 
+  // Webpay cobró pero no se pudo compensar (p. ej. se acabó el stock del
+  // proyecto mientras pagabas): el backend devolvió el dinero en el acto.
+  if (status === 'refunded') {
+    return (
+      <ResultCard icon={FaExclamationTriangle} tone="neutral" title="Te devolvimos el dinero" text="Tu pago se aprobó, pero no pudimos completar la compensación (por ejemplo, porque el proyecto se quedó sin cupos mientras pagabas). Anulamos el cobro de inmediato: no se te cargará nada. Puedes intentarlo de nuevo, quizás con otro proyecto.">
+        <div className="mt-6 space-y-3">
+          <Link to={retryUrl} className={cx(btn.primary, 'w-full')}>{retryLabel}</Link>
+          {secondaryActions}
+        </div>
+      </ResultCard>
+    );
+  }
+
   if (status === 'rejected') {
     return (
       <ResultCard icon={FaTimesCircle} tone="danger" title="Pago rechazado" text="Tu banco rechazó la transacción. Revisa que tengas saldo disponible o prueba con otra tarjeta.">
