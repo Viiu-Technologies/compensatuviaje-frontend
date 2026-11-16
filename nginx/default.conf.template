@@ -1,0 +1,98 @@
+# Equivalente a vercel.json para servir el frontend desde la VPS.
+#
+# La imagen oficial de nginx pasa este archivo por envsubst al arrancar y solo
+# reemplaza variables de entorno definidas, así que $uri y compañía quedan intactas.
+#   BACKEND_UPSTREAM  backend por la red interna del proyecto, ej. http://backend:3000
+#   NGINX_RESOLVER    DNS interno de Docker (127.0.0.11 por defecto)
+#
+# Los rewrites hacia el backend van por la red interna y NO por
+# https://api.compensatuviaje.com: si pasaran otra vez por Cloudflare, CF-Connecting-IP
+# sería la IP de la VPS y todas las visitas a /blog y /share compartirían el mismo
+# contador del rate limit. Por la red interna, nginx reenvía la cabecera original.
+
+# Mismo criterio que los headers X-Robots-Tag de vercel.json. Se calcula sobre la URL
+# original ($request_uri), así se aplica también cuando la ruta cae en index.html.
+map $request_uri $robots_tag {
+    default                                                                                                        "";
+    "~^/(admin|partner|b2c|b2b|dashboard|onboarding|company|auth|login|register|forgot-password|verify|impacto|share)" "noindex, nofollow";
+    "~^/blog/(confirmar|baja)/"                                                                                    "noindex, nofollow";
+}
+
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    # Con proxy_pass a una variable, el nombre se resuelve en cada petición: nginx
+    # arranca aunque el backend todavía no esté arriba.
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+    set $backend ${BACKEND_UPSTREAM};
+
+    server_tokens off;
+    gzip on;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json application/xml image/svg+xml;
+    # Brotli lo agrega Cloudflare hacia el usuario.
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    # CF-Connecting-IP pasa tal cual (nginx reenvía las cabeceras del cliente).
+
+    # --- Rewrites hacia el backend ---
+    location = /blog {
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/news/page$is_args$args;
+    }
+    location = /blog/feed.xml {
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/news/feed.xml;
+    }
+    location = /blog/sitemap.xml {
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/news/sitemap.xml;
+    }
+    # Páginas de la SPA (confirmar y dar de baja la suscripción).
+    location ^~ /blog/confirmar/ {
+        include /etc/nginx/snippets/headers.conf;
+        try_files /index.html =404;
+    }
+    location ^~ /blog/baja/ {
+        include /etc/nginx/snippets/headers.conf;
+        try_files /index.html =404;
+    }
+    location ~ ^/blog/([^/]+)$ {
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/news/page/$1$is_args$args;
+    }
+    location ~ ^/share/profile/([^/]+)$ {
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/public/share/profile/$1$is_args$args;
+    }
+
+    # --- Archivos estáticos ---
+    location /assets/ {
+        include /etc/nginx/snippets/headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    location ~ \.html$ {
+        include /etc/nginx/snippets/headers.conf;
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+    }
+
+    # Páginas prerenderizadas (dist/<ruta>/index.html) y, si no, la SPA.
+    location / {
+        include /etc/nginx/snippets/headers.conf;
+        try_files $uri $uri/index.html /index.html;
+    }
+
+    location = /healthz {
+        access_log off;
+        return 200 "ok\n";
+    }
+}
