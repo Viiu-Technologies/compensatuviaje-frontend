@@ -7,6 +7,7 @@ import {
   FaExternalLinkAlt, FaExclamationTriangle,
 } from 'react-icons/fa';
 import B2CLayout from '../components/B2CLayout';
+import { SandboxHelp, useIsSandbox } from '../components/SandboxHelp';
 import b2cApi, { createPaymentTransaction, type B2CProject } from '../services/b2cApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import {
@@ -48,6 +49,7 @@ const B2CProjectsPage: React.FC = () => {
   // Aceptación explícita de términos y de la exclusión del retracto (Ley 19.496 art. 3 bis):
   // sin ella la exclusión no es oponible al consumidor.
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const isSandbox = useIsSandbox();
 
   // Contexto que llega desde la calculadora
   const calcId = searchParams.get('calcId');
@@ -185,6 +187,8 @@ const B2CProjectsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {hasCalculation && isSandbox && <SandboxHelp />}
 
       {error && (
         <div role="alert" className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
