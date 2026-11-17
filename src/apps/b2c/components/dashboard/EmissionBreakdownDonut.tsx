@@ -1,6 +1,6 @@
 import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { FaGlobeAmericas, FaPlane } from 'react-icons/fa';
+import { FaCar, FaGlobeAmericas, FaPlane } from 'react-icons/fa';
 import { EmissionCategoryItem } from '../../services/b2cApi';
 import { fmtNum } from '../../ui';
 
@@ -25,7 +25,7 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
             Origen de tus emisiones
           </h3>
           <p className="text-xs text-gray-500 m-0">
-            Distribución por alcance de ruta aérea
+            Vuelos nacionales, internacionales y viajes terrestres
           </p>
         </div>
       </div>
@@ -86,7 +86,9 @@ export const EmissionBreakdownDonut: React.FC<EmissionBreakdownDonutProps> = ({
                         style={{ backgroundColor: cat.color }}
                         aria-hidden="true"
                       />
-                      <FaPlane className="text-gray-400 text-xs" aria-hidden="true" />
+                      {cat.icon === 'ground'
+                        ? <FaCar className="text-gray-400 text-xs" aria-hidden="true" />
+                        : <FaPlane className="text-gray-400 text-xs" aria-hidden="true" />}
                       <span className="font-semibold text-gray-800">{cat.name}</span>
                     </div>
                     <div className="flex items-center gap-2.5 tabular-nums">

@@ -61,6 +61,10 @@ async function publicFetch<T>(endpoint: string): Promise<T> {
 
 export interface B2CCalculation {
   id: string;
+  /** 'ground' = viaje terrestre registrado en la app móvil (CTV-61). */
+  type?: 'flight' | 'ground';
+  transportMode?: string | null;
+  groundTripId?: string | null;
   originAirport: string;
   destinationAirport: string;
   date: string;
@@ -164,6 +168,10 @@ export interface RecentTripItem {
   isCompensated: boolean;
   routeType: 'Internacional' | 'Nacional' | null;
   transportMode: string;
+  /** CTV-61: los viajes terrestres no tienen origen ni destino. */
+  type: 'flight' | 'ground';
+  mode: string | null;
+  distanceKm: number;
 }
 
 export interface NextAchievementItem {
@@ -246,6 +254,7 @@ const ACHIEVEMENT_LEVELS = [
 const CATEGORY_COLORS: Record<string, string> = {
   international: '#046302',
   national: '#93DC88',
+  ground: '#2F7D6D',
 };
 
 /** Próximo nivel según lo compensado en todo el historial; null si ya tiene el máximo. */
@@ -298,16 +307,41 @@ export function normalizeDashboardData(raw: Partial<DashboardData>): DashboardDa
   };
 
   const recentFlights = raw.recentFlights ?? [];
-  const recentTrips: RecentTripItem[] = recentFlights.map((f) => ({
-    id: f.id,
-    origin: f.origin,
-    destination: f.destination,
-    date: f.date,
-    co2Tons: num(f.co2Tons),
-    isCompensated: Boolean(f.isCompensated),
-    routeType: f.routeType === 'Internacional' || f.routeType === 'Nacional' ? f.routeType : null,
-    transportMode: f.transportMode || 'Avión',
-  }));
+  const asRouteType = (r: unknown) => (r === 'Internacional' || r === 'Nacional' ? r : null);
+  // CTV-61: el backend manda recentTrips con vuelos Y viajes terrestres de la
+  // app. Antes se armaba desde recentFlights y los terrestres salían como
+  // "GND → GND" o no salían.
+  const rawTrips = (raw as unknown as { recentTrips?: Array<Record<string, unknown>> }).recentTrips;
+  const recentTrips: RecentTripItem[] = Array.isArray(rawTrips) && rawTrips.length > 0
+    ? rawTrips.map((t) => {
+        const ground = t.type === 'ground';
+        return {
+          id: String(t.calculationId || t.id),
+          origin: ground ? '' : String(t.origin ?? ''),
+          destination: ground ? '' : String(t.destination ?? ''),
+          date: String(t.date ?? t.createdAt ?? ''),
+          co2Tons: num(t.co2Tons),
+          isCompensated: Boolean(t.isCompensated),
+          routeType: ground ? null : asRouteType(t.routeType),
+          transportMode: ground ? String(t.mode ?? '') : 'Avión',
+          type: ground ? 'ground' : 'flight',
+          mode: ground ? (t.mode ? String(t.mode) : null) : null,
+          distanceKm: num(t.distanceKm),
+        };
+      })
+    : recentFlights.map((f) => ({
+        id: f.id,
+        origin: f.origin,
+        destination: f.destination,
+        date: f.date,
+        co2Tons: num(f.co2Tons),
+        isCompensated: Boolean(f.isCompensated),
+        routeType: asRouteType(f.routeType),
+        transportMode: f.transportMode || 'Avión',
+        type: 'flight' as const,
+        mode: null,
+        distanceKm: 0,
+      }));
 
   return {
     user: {
@@ -324,7 +358,7 @@ export function normalizeDashboardData(raw: Partial<DashboardData>): DashboardDa
     emissionsByCategory: (raw.emissionsByCategory ?? []).map((c) => ({
       ...c,
       color: CATEGORY_COLORS[c.id] ?? '#079705',
-      icon: 'plane',
+      icon: c.id === 'ground' ? 'ground' : 'plane',
     })),
     nextAchievement: nextAchievementFor(lifetimeCompensatedKg),
     planetEquivalent: {
@@ -354,7 +388,7 @@ export async function getDashboardStats(period: DashboardPeriod = 'all'): Promis
 /**
  * Cálculos/Vuelos - Listar cálculos del usuario
  */
-export async function getCalculations(page = 1, limit = 50): Promise<{
+export async function getCalculations(page = 1, limit = 50, type: 'all' | 'flight' | 'ground' = 'all'): Promise<{
   calculations: B2CCalculation[];
   total: number;
   stats: {
@@ -366,7 +400,8 @@ export async function getCalculations(page = 1, limit = 50): Promise<{
   };
 }> {
   const res = await authFetch<{ success: boolean; calculations: B2CCalculation[]; total: number; stats: any }>(
-    `/b2c/calculations?page=${page}&limit=${limit}`
+    // CTV-61: sin type el backend devuelve solo vuelos y escondía los viajes de la app.
+    `/b2c/calculations?page=${page}&limit=${limit}&type=${type}`
   );
   return { calculations: res.calculations, total: res.total, stats: res.stats };
 }
