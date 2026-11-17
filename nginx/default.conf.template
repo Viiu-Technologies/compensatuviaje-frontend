@@ -18,6 +18,13 @@ map $request_uri $robots_tag {
     "~^/blog/(confirmar|baja)/"                                                                                    "noindex, nofollow";
 }
 
+# Bots de redes sociales (vistas previas de enlaces). Solo ellos reciben las
+# etiquetas del certificado en /verify/:id; las personas siguen en la SPA.
+map $http_user_agent $is_social_bot {
+    default 0;
+    "~*(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|slackbot|telegrambot|discordbot|skypeuripreview|pinterest|applebot|vkshare)" 1;
+}
+
 server {
     listen 80;
     server_name _;
@@ -90,6 +97,22 @@ server {
     location ~ \.html$ {
         include /etc/nginx/snippets/headers.conf;
         add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+    }
+
+    # /verify/<id>: WhatsApp no ejecuta JavaScript y solo veía las etiquetas
+    # genéricas de index.html. A los bots se les responde con las del
+    # certificado (backend); a las personas, la SPA de siempre.
+    location ~ "^/verify/([0-9a-fA-F-]{36})$" {
+        include /etc/nginx/snippets/headers.conf;
+        if ($is_social_bot) {
+            rewrite "^/verify/([0-9a-fA-F-]{36})$" /__certificate_meta/$1 last;
+        }
+        try_files $uri /index.html;
+    }
+    location ~ "^/__certificate_meta/([0-9a-fA-F-]{36})$" {
+        internal;
+        include /etc/nginx/snippets/headers.conf;
+        proxy_pass $backend/api/public/share/certificate/$1;
     }
 
     # Páginas prerenderizadas (dist/<ruta>/index.html) y, si no, la SPA.

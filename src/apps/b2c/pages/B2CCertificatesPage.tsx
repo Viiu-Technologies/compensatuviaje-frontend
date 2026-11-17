@@ -75,11 +75,14 @@ const B2CCertificatesPage: React.FC = () => {
   const handleShare = async (cert: B2CCertificate) => {
     const withProject = cert.project ? ` con el proyecto ${cert.project}` : '';
     const text = `Compensé ${fmtNum(cert.co2Compensated, 2)} t de CO₂e de mi viaje${withProject}. #CompensaTuViaje`;
+    // Antes se compartía solo el texto: WhatsApp no tenía enlace y no mostraba
+    // vista previa. El enlace de verificación trae número, CO₂ y proyecto.
+    const url = cert.verificationUrl || undefined;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Certificado de compensación', text });
+        await navigator.share({ title: 'Certificado de compensación', text, url });
       } else {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(url ? `${text} ${url}` : text);
         toast.success('Texto copiado. Pégalo donde quieras compartirlo.');
       }
     } catch {
