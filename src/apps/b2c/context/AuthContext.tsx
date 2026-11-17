@@ -1,16 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import authService, { B2CUser, hasStoredB2CSession } from '../services/authService';
+import { saveAuthReturnTo } from '../services/authReturnTo';
 
 interface AuthContextType {
   user: B2CUser | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  /** Sale hacia Google. `returnTo`: ruta /b2c/… a la que volver después de entrar. */
+  login: (returnTo?: string) => Promise<void>;
   /** Entorno local: entra como persona de prueba, sin Google. */
   loginAsTestUser: (email?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  /** Fija la persona ya verificada por el backend (callback de Google), sin pedirla otra vez. */
+  setAuthenticatedUser: (user: B2CUser) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,6 +51,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const userRef               = useRef<B2CUser | null>(null);
   // Carga inicial en curso: los eventos de Supabase que llegan mientras tanto la esperan.
   const initialLoadRef        = useRef<Promise<void> | null>(null);
+  // Sube cada vez que la persona se fija a mano (callback de Google). Una carga
+  // que empezó antes no pisa ese valor: en el primer login, /b2c/auth/me podía
+  // responder antes de que el backend creara la cuenta y dejar la sesión en null.
+  const userEpochRef          = useRef(0);
   userRef.current             = user;
 
   // Solo importa si se está DENTRO o FUERA de B2C. Antes el efecto dependía de
@@ -78,13 +86,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let mounted = true;
 
     const initAuth = async () => {
+      const epoch = userEpochRef.current;
       try {
         setLoading(true);
         const currentUser = await authService.getCurrentUser();
-        if (mounted) setUser(currentUser);
+        if (mounted && epoch === userEpochRef.current) setUser(currentUser);
       } catch (error) {
         console.error('❌ [B2C AuthContext] Error cargando usuario:', error);
-        if (mounted) setUser(null);
+        if (mounted && epoch === userEpochRef.current) setUser(null);
       } finally {
         if (mounted) setLoading(false);
         initialLoadRef.current = null;
@@ -131,19 +140,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [onB2C]);
 
   const loadUser = async (session?: any) => {
+    const epoch = userEpochRef.current;
     try {
       setLoading(true);
       const currentUser = await authService.getCurrentUser(session);
-      setUser(currentUser);
+      if (epoch === userEpochRef.current) setUser(currentUser);
     } catch (error) {
       console.error('❌ [B2C AuthContext] Error refrescando usuario:', error);
-      setUser(null);
+      if (epoch === userEpochRef.current) setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const login       = useCallback(async () => { await authService.loginWithGoogle(); }, []);
+  const login       = useCallback(async (returnTo?: string) => {
+    // Sin destino válido se borra el de un intento anterior.
+    saveAuthReturnTo(returnTo);
+    await authService.loginWithGoogle();
+  }, []);
   const loginAsTestUser = useCallback(async (email?: string) => {
     const testUser = await authService.loginAsTestUser(email);
     if (!testUser) throw new Error('El backend no reconoció la sesión de prueba');
@@ -151,6 +165,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
   const logout      = useCallback(async () => { await authService.logout(); setUser(null); }, []);
   const refreshUser = useCallback(async () => { await loadUser(); }, []);
+  const setAuthenticatedUser = useCallback((verified: B2CUser) => {
+    userEpochRef.current += 1;
+    setUser(verified);
+    setLoading(false);
+  }, []);
 
   // Sin memoizar, este objeto era una referencia nueva en cada render de
   // AuthProvider -- como envuelve toda la app (rutas B2C), cualquier consumidor
@@ -164,8 +183,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       loginAsTestUser,
       logout,
       refreshUser,
+      setAuthenticatedUser,
     }),
-    [user, loading, login, loginAsTestUser, logout, refreshUser]
+    [user, loading, login, loginAsTestUser, logout, refreshUser, setAuthenticatedUser]
   );
 
   return (
