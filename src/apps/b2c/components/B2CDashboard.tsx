@@ -69,7 +69,8 @@ export const B2CDashboard: React.FC = () => {
       try {
         setLoading(true);
         setError(false);
-        const dashData = await b2cApi.getDashboardStats(selectedPeriod);
+        // "Reintentar" (reloadKey > 0) siempre va al servidor.
+        const dashData = await b2cApi.getDashboardStats(selectedPeriod, { fresh: reloadKey > 0 });
         setData(dashData);
       } catch (err) {
         console.error('Error cargando dashboard:', err);

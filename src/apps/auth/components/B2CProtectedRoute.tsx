@@ -18,8 +18,10 @@ const B2CProtectedRoute: React.FC<B2CProtectedRouteProps> = ({
   const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Loading state
-  if (loading) {
+  // Spinner solo mientras todavía no se sabe quién es. Si ya hay alguien
+  // cargado y la sesión se refresca en segundo plano, la página sigue montada
+  // (antes se desmontaba y repetía todas sus peticiones).
+  if (loading && !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
         <div className="text-center">
