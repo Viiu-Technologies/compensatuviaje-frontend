@@ -33,6 +33,9 @@ const monthlySoldPct = (p: B2CProject) => {
 
 const unitName = (p: B2CProject) => p.impact_unit || 'unidades';
 
+/** Pago mínimo que acepta Webpay; el backend valida lo mismo (create-transaction). */
+const WEBPAY_MIN_CLP = 50;
+
 const B2CProjectsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState<B2CProject[]>([]);
@@ -52,11 +55,15 @@ const B2CProjectsPage: React.FC = () => {
   const isSandbox = useIsSandbox();
 
   // Contexto que llega desde la calculadora
+  // Orden 9: calcIds=a,b,c llega desde "Mis viajes" al juntar varios viajes.
   const calcId = searchParams.get('calcId');
+  const calcIds = (searchParams.get('calcIds') || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const calculationIds = calcIds.length > 0 ? calcIds : calcId ? [calcId] : [];
   const tonsParam = searchParams.get('tons');
   const kgParam = searchParams.get('kg');
   const emissionsKg = kgParam ? parseFloat(kgParam) : tonsParam ? parseFloat(tonsParam) * 1000 : null;
-  const hasCalculation = Boolean(calcId && emissionsKg && emissionsKg > 0);
+  const hasCalculation = Boolean(calculationIds.length > 0 && emissionsKg && emissionsKg > 0);
+  const tripCount = calculationIds.length;
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -102,7 +109,7 @@ const B2CProjectsPage: React.FC = () => {
 
   /** Inicia el pago en Webpay para un proyecto. */
   const handlePayProject = async (project: B2CProject) => {
-    if (!calcId || payingRef.current) return;
+    if (calculationIds.length === 0 || payingRef.current) return;
     payingRef.current = true;
     setPayingProjectId(project.id);
     setError(null);
@@ -114,7 +121,8 @@ const B2CProjectsPage: React.FC = () => {
           : undefined;
 
       const data = await createPaymentTransaction({
-        calculationId: calcId,
+        calculationId: calculationIds[0],
+        calculationIds,
         projectId: project.id,
         physicalUnits,
         co2KgToFreeze: emissionsKg ?? undefined,
@@ -154,7 +162,9 @@ const B2CProjectsPage: React.FC = () => {
   const layout = (content: React.ReactNode) => (
     <B2CLayout
       title="Proyectos"
-      subtitle={hasCalculation ? 'Elige con qué proyecto compensar tu viaje' : 'Los proyectos con los que puedes compensar tu huella'}
+      subtitle={hasCalculation
+        ? (tripCount > 1 ? `Elige con qué proyecto compensar tus ${tripCount} viajes` : 'Elige con qué proyecto compensar tu viaje')
+        : 'Los proyectos con los que puedes compensar tu huella'}
     >
       {content}
     </B2CLayout>
@@ -181,7 +191,8 @@ const B2CProjectsPage: React.FC = () => {
           </span>
           <div>
             <p className="m-0 font-semibold text-brand-800">
-              Tu huella: {fmtInt(emissionsKg)} kg CO₂e ({fmtNum(emissionsKg! / 1000, 3)} t)
+              {tripCount > 1 ? `Tus ${tripCount} viajes` : 'Tu huella'}:{' '}
+              {emissionsKg! < 10 ? fmtNum(emissionsKg, 2) : fmtInt(emissionsKg)} kg CO₂e ({fmtNum(emissionsKg! / 1000, 3)} t)
             </p>
             <p className="m-0 mt-0.5 text-sm text-brand-800">Elige un proyecto: el precio se calcula según tu huella.</p>
           </div>
@@ -321,7 +332,12 @@ const B2CProjectsPage: React.FC = () => {
           hasCalculation && emissionsKg && p.carbon_capture_per_unit ? calculateUnitsFromKg(emissionsKg, p.carbon_capture_per_unit) : null;
         const availableStock = p.monthlyStockRemaining ?? 0;
         const hasInsufficientStock = neededUnits !== null && neededUnits > availableStock;
-        const isCtaDisabled = soldOut || hasInsufficientStock || payingProjectId !== null || (hasCalculation && !acceptedTerms);
+        // Webpay no acepta menos de $50 (el backend responde AMOUNT_BELOW_MINIMUM).
+        // Antes se llegaba a ese error después de pulsar "Pagar"; ahora se avisa
+        // antes y se ofrece juntar el viaje con otros.
+        const totalForMin = hasCalculation ? getProjectTotalCLP(p) : null;
+        const belowMinimum = totalForMin !== null && totalForMin < WEBPAY_MIN_CLP;
+        const isCtaDisabled = soldOut || hasInsufficientStock || belowMinimum || payingProjectId !== null || (hasCalculation && !acceptedTerms);
 
         // Co-beneficios: arreglo de textos u objeto { clave: true }
         const raw = p.coBenefits;
@@ -432,7 +448,15 @@ const B2CProjectsPage: React.FC = () => {
                   </div>
                 )}
 
-                {hasCalculation && !soldOut && !hasInsufficientStock && (
+                {belowMinimum && !soldOut && !hasInsufficientStock && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="note">
+                    <b>El monto es menor al mínimo de Webpay ({formatCLP(WEBPAY_MIN_CLP)}).</b> Junta este viaje con otros
+                    pendientes y compénsalos en un solo pago.{' '}
+                    <Link to="/b2c/flights" className="font-semibold text-amber-900 underline">Elegir viajes</Link>
+                  </div>
+                )}
+
+                {hasCalculation && !soldOut && !hasInsufficientStock && !belowMinimum && (
                   <label className="flex items-start gap-2.5 text-sm text-gray-600 cursor-pointer leading-relaxed">
                     <input
                       type="checkbox"
@@ -465,6 +489,8 @@ const B2CProjectsPage: React.FC = () => {
                     'Agotado este mes'
                   ) : hasInsufficientStock ? (
                     'Stock insuficiente este mes'
+                  ) : belowMinimum ? (
+                    `Mínimo de pago: ${formatCLP(WEBPAY_MIN_CLP)}`
                   ) : hasCalculation ? (
                     <><FaCreditCard aria-hidden="true" /> Pagar y compensar con este proyecto</>
                   ) : (
