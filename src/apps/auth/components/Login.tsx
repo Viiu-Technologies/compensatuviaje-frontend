@@ -360,7 +360,10 @@ const Login: React.FC = () => {
               onClick={async () => {
                 try {
                   setIsGoogleSigningIn(true);
-                  await loginWithGoogle();
+                  // La página que pidió el login (p. ej. la calculadora con el vuelo
+                  // ya puesto): se vuelve a ella después de Google.
+                  const from = (location.state as LocationState | null)?.from;
+                  await loginWithGoogle(from?.pathname ? `${from.pathname}${from.search ?? ''}` : undefined);
                 } catch (err) {
                   console.error('Error al iniciar sesión con Google:', err);
                   // Sin esto el fallo era invisible: el boton volvia a su

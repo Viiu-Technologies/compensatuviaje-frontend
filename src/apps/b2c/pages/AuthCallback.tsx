@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import authService from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { takeAuthReturnTo } from '../services/authReturnTo';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
 
@@ -10,42 +11,51 @@ const AuthCallback: React.FC = () => {
   useTailwindSpacing();
   useForceLightTheme();
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { setAuthenticatedUser } = useAuth();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState('');
+  // StrictMode ejecuta el efecto dos veces en desarrollo: sin esto se
+  // verificaba el token dos veces.
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
     handleCallback();
   }, []);
 
   const handleCallback = async () => {
     try {
       setStatus('processing');
-      
-      // Manejar el callback de OAuth
+
+      // Supabase lee la sesión de la URL y el backend la verifica (y crea la
+      // cuenta la primera vez). Devuelve la persona ya verificada.
       const user = await authService.handleOAuthCallback();
-      
-      if (user) {
-        setStatus('success');
-        
-        // Refrescar el usuario en el contexto
-        await refreshUser();
-        
-        // Redirigir al dashboard despues de 1.5 segundos
-        setTimeout(() => {
-          navigate('/b2c/dashboard');
-        }, 1500);
-      } else {
+      if (!user) {
         throw new Error('No se pudo autenticar al usuario');
       }
+
+      // Se usa esa misma persona. Antes se volvía a pedir a /b2c/auth/me con un
+      // límite de 5 s y, si tardaba o fallaba, la sesión quedaba en null y la
+      // ruta protegida devolvía al login justo después de entrar.
+      setAuthenticatedUser(user);
+      setStatus('success');
+
+      // Datos completos en segundo plano; si falla, se conserva la persona verificada.
+      void authService.getCurrentUser().then((fresh) => {
+        if (fresh) setAuthenticatedUser(fresh);
+      });
+
+      // replace: con "atrás" no se vuelve a este callback, que ya no tiene la sesión en la URL.
+      navigate(takeAuthReturnTo() ?? '/b2c/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Error en callback:', error);
       setStatus('error');
       setErrorMessage(error.message || 'Error desconocido al autenticar');
-      
+
       // Redirigir al login despues de 3 segundos
       setTimeout(() => {
-        navigate('/b2c/login');
+        navigate('/login?perfil=persona', { replace: true });
       }, 3000);
     }
   };
