@@ -76,7 +76,11 @@ const PaymentResultPage: React.FC = () => {
   // Datos del vuelo para reintentar (vienen del backend en rejected/cancelled)
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
+  const isGroundRetry = searchParams.get('tripType') === 'ground';
   const retryUrl = (() => {
+    // CTV-61: un viaje terrestre se vuelve a pagar desde "Mis viajes", no
+    // desde la calculadora de vuelos (antes llegaba con origin=GND).
+    if (isGroundRetry) return '/b2c/flights?type=ground';
     const params = new URLSearchParams();
     for (const key of ['origin', 'destination', 'cabin', 'passengers', 'roundTrip', 'calculationId']) {
       const v = searchParams.get(key);
@@ -85,7 +89,9 @@ const PaymentResultPage: React.FC = () => {
     const qs = params.toString();
     return `/b2c/calculator${qs ? `?${qs}` : ''}`;
   })();
-  const retryLabel = origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la calculadora';
+  const retryLabel = isGroundRetry
+    ? 'Volver a mis viajes'
+    : origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la calculadora';
 
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 

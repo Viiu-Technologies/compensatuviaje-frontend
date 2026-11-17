@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaPlane, FaChevronRight, FaLeaf, FaTree, FaCheckCircle, FaClock } from 'react-icons/fa';
 import { RecentTripItem } from '../../services/b2cApi';
 import { Badge, btn, fmtDate, fmtInt, fmtNum } from '../../ui';
+import { tripModeIcon, tripModeLabel } from '../../utils/tripMode';
 
 interface RecentTripsTableProps {
   trips: RecentTripItem[];
@@ -29,10 +30,10 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900 m-0 leading-tight font-display">
-                Registro de vuelos recientes
+                Viajes recientes
               </h3>
               <p className="text-xs text-gray-500 m-0 mt-0.5">
-                Últimas rutas calculadas y su estado de retiro.
+                Vuelos y trayectos de la app, y su estado de compensación.
               </p>
             </div>
           </div>
@@ -83,9 +84,22 @@ export const RecentTripsTable: React.FC<RecentTripsTableProps> = ({
                     {/* Ruta + Badge */}
                     <td className="py-3.5 px-3 font-semibold text-gray-900 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-gray-900">
-                          {trip.origin} → {trip.destination}
-                        </span>
+                        {trip.type === 'ground' ? (() => {
+                          const Icon = tripModeIcon(trip.mode);
+                          return (
+                            <span className="inline-flex items-center gap-1.5 font-bold text-gray-900">
+                              <Icon className="text-gray-400" aria-hidden="true" />
+                              {tripModeLabel(trip.mode)}
+                              {trip.distanceKm > 0 && (
+                                <span className="font-normal text-gray-500">· {fmtNum(trip.distanceKm, 1)} km</span>
+                              )}
+                            </span>
+                          );
+                        })() : (
+                          <span className="font-mono font-bold text-gray-900">
+                            {trip.origin} → {trip.destination}
+                          </span>
+                        )}
                         {trip.routeType && (
                           <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
                             {trip.routeType}
