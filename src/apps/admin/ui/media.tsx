@@ -59,7 +59,7 @@ export const PhotoGallery: React.FC<{ photos: GalleryPhoto[] }> = ({ photos }) =
               aria-label={`Ver foto ${n + 1}`}
               aria-current={n === i ? 'true' : undefined}
             >
-              <img src={p.thumbnailUrl || p.url} alt="" />
+              <img src={p.thumbnailUrl || p.url} alt="" loading="lazy" decoding="async" />
             </button>
           ))}
         </div>

@@ -287,7 +287,7 @@ export default function PartnersPage() {
                       <td>
                         <Link to={`/admin/partners/${partner.id}`} className="adm-cell-main">
                           {partner.logo_url
-                            ? <img src={partner.logo_url} alt="" className="adm-cell-initial" style={{ objectFit: 'cover' }} />
+                            ? <img src={partner.logo_url} alt="" className="adm-cell-initial" style={{ objectFit: 'cover' }} loading="lazy" decoding="async" />
                             : <span className="adm-cell-initial" aria-hidden="true">{partner.name.charAt(0)}</span>}
                           <span>
                             <span className="adm-cell-title">{partner.name}</span>

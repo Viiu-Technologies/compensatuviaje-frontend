@@ -211,6 +211,8 @@ const AssistantView: React.FC<{ onNavigate?: (tab: string) => void }> = () => {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
+                // IME: el Enter que confirma una composición no debe enviar (Safari reporta keyCode 229)
+                if (e.nativeEvent.isComposing || e.keyCode === 229) return;
                 ask(draft);
               }
             }}
