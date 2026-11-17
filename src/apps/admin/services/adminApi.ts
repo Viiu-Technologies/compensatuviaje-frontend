@@ -634,6 +634,17 @@ export const exportReport = async (params: {
   return response;
 };
 
+/**
+ * CTV-23: Excel del mes (AAAA-MM) con una fila por compensación y el desglose
+ * cobrado / comisión / partner. Lo arma el backend con exceljs.
+ */
+export const downloadMonthlyRevenueExcel = async (month: string) => {
+  const res: any = await api.get('/admin/reports/monthly-revenue', { params: { month }, responseType: 'blob' });
+  const blob: unknown = res instanceof Blob ? res : res?.data;
+  if (!(blob instanceof Blob)) throw new Error('La respuesta no es un archivo');
+  downloadCSV(blob, `ingresos-${month}.xlsx`);
+};
+
 export const downloadCSV = (data: Blob, filename: string) => {
   const url = window.URL.createObjectURL(data);
   const link = document.createElement('a');

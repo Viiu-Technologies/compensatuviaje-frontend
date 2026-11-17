@@ -5,6 +5,7 @@ import type { IconType } from 'react-icons';
 import { useForceLightTheme } from '../../../shared/utils/useForceLightTheme';
 import { useTailwindSpacing } from '../../../shared/utils/useTailwindSpacing';
 import { btn, cx, fmtCLP, fmtKgAuto } from '../ui';
+import { SandboxHelp, useIsSandbox } from '../components/SandboxHelp';
 
 /**
  * Resultado del pago en Webpay. El backend redirige aquí después de
@@ -50,17 +51,6 @@ const ResultCard: React.FC<{ icon: IconType; tone: Tone; title: string; text: st
 );
 
 /** Instrucciones del ambiente de pruebas de Transbank; solo en localhost. */
-const SandboxHelp: React.FC = () => (
-  <div className="mt-5 rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-900">
-    <p className="m-0 font-semibold">Ambiente de pruebas (solo en localhost)</p>
-    <ol className="mt-2 mb-0 pl-5 space-y-0.5">
-      <li>Tarjeta <span className="font-mono">4051 8842 3993 7852</span>, CVV <span className="font-mono">123</span>, cualquier fecha futura</li>
-      <li>En el banco simulado: RUT <span className="font-mono">11.111.111-1</span>, clave <span className="font-mono">123</span></li>
-      <li>Aceptar en ambas pantallas</li>
-    </ol>
-  </div>
-);
-
 const PaymentResultPage: React.FC = () => {
   useTailwindSpacing();
   useForceLightTheme();
@@ -93,7 +83,8 @@ const PaymentResultPage: React.FC = () => {
     ? 'Volver a mis viajes'
     : origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la calculadora';
 
-  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  // Antes solo en localhost; ahora siempre que Webpay esté en modo de pruebas.
+  const isDev = useIsSandbox();
 
   const secondaryActions = (
     <Link to="/b2c/dashboard" className={cx(btn.secondary, 'w-full')}>Ir a mi resumen</Link>
@@ -162,7 +153,7 @@ const PaymentResultPage: React.FC = () => {
     return (
       <ResultCard icon={FaTimesCircle} tone="danger" title="Pago rechazado" text="Tu banco rechazó la transacción. Revisa que tengas saldo disponible o prueba con otra tarjeta.">
         {(code || reason) && <p className="mt-3 mb-0 text-xs text-gray-500 font-mono">Código: {code || reason}</p>}
-        {isDev && <SandboxHelp />}
+        {isDev && <SandboxHelp className="mt-5" />}
         <div className="mt-6 space-y-3">
           <Link to={retryUrl} className={cx(btn.primary, 'w-full')}>{retryLabel}</Link>
           {secondaryActions}
@@ -174,7 +165,7 @@ const PaymentResultPage: React.FC = () => {
   return (
     <ResultCard icon={FaExclamationTriangle} tone="neutral" title="No pudimos procesar el pago" text="Vuelve a intentarlo. Si el problema sigue, escríbenos y lo revisamos.">
       {reason && <p className="mt-3 mb-0 text-xs text-gray-500 font-mono break-all">{decodeURIComponent(reason)}</p>}
-      {isDev && <SandboxHelp />}
+      {isDev && <SandboxHelp className="mt-5" />}
       <div className="mt-6 space-y-3">
         <Link to={retryUrl} className={cx(btn.primary, 'w-full')}><FaPlane aria-hidden="true" /> {retryLabel}</Link>
         {secondaryActions}

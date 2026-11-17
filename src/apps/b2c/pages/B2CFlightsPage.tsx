@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaPlane, FaCheckCircle, FaClock, FaPlus, FaTrashAlt, FaCertificate } from 'react-icons/fa';
+import { FaPlane, FaCheckCircle, FaClock, FaPlus, FaTrashAlt, FaCertificate, FaCar, FaLayerGroup } from 'react-icons/fa';
 import B2CLayout from '../components/B2CLayout';
 import b2cApi, { type B2CCalculation } from '../services/b2cApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
@@ -28,6 +28,9 @@ const CABIN: Record<string, string> = {
   first: 'Primera',
 };
 
+/** Límite de viajes por pago: los ids van en la URL de Proyectos. */
+const MAX_SELECTED = 50;
+
 const B2CFlightsPage: React.FC = () => {
   const [flights, setFlights] = useState<B2CCalculation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,17 @@ const B2CFlightsPage: React.FC = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [flightToDelete, setFlightToDelete] = useState<B2CCalculation | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // Orden 9: varios viajes pendientes en un solo pago. Un trayecto corto suele
+  // costar menos que el mínimo de Webpay ($50) y no se podía compensar solo.
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const toggleSelected = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < MAX_SELECTED) next.add(id);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const fetchFlights = async () => {
@@ -91,6 +105,12 @@ const B2CFlightsPage: React.FC = () => {
       setDeletingId(flightToDelete.id);
       await b2cApi.deleteCalculation(flightToDelete.id);
       setFlights((prev) => prev.filter((f) => f.id !== flightToDelete.id));
+      setSelected((prev) => {
+        if (!prev.has(flightToDelete.id)) return prev;
+        const next = new Set(prev);
+        next.delete(flightToDelete.id);
+        return next;
+      });
       setFlightToDelete(null);
     } catch (err: any) {
       console.error('Error deleting flight:', err);
@@ -110,9 +130,21 @@ const B2CFlightsPage: React.FC = () => {
   const totalCompensated = visible.filter((f) => f.isCompensated).reduce((sum, f) => sum + f.co2Tons, 0);
   const totalPending = visible.filter((f) => !f.isCompensated).reduce((sum, f) => sum + f.co2Tons, 0);
   const pendingCount = visible.filter((f) => !f.isCompensated).length;
+  const selectedTrips = flights.filter((f) => selected.has(f.id) && !f.isCompensated);
+  const selectedKg = selectedTrips.reduce((sum, f) => sum + (Number(f.co2Kg) || 0), 0);
+
+  const compensateSelected = () => {
+    if (selectedTrips.length === 0) return;
+    if (selectedTrips.length === 1) {
+      handleCompensate(selectedTrips[0]);
+      return;
+    }
+    const ids = selectedTrips.map((f) => f.id).join(',');
+    navigate(`/b2c/projects?calcIds=${encodeURIComponent(ids)}&kg=${Number(selectedKg.toFixed(4))}`);
+  };
 
   const layout = (content: React.ReactNode) => (
-    <B2CLayout title="Mis viajes" subtitle="Tus vuelos y los trayectos registrados en la app, con su estado de compensación">
+    <B2CLayout title="Mis viajes" subtitle="Tus vuelos y trayectos terrestres, con su estado de compensación">
       {content}
     </B2CLayout>
   );
@@ -158,11 +190,16 @@ const B2CFlightsPage: React.FC = () => {
         <CardHeader
           className="px-6 pt-6 pb-5 border-b border-gray-100"
           title="Historial de viajes"
-          subtitle="Compensados y pendientes"
+          subtitle={pendingCount > 1 ? 'Marca varios pendientes para compensarlos en un solo pago' : 'Compensados y pendientes'}
           action={
-            <Link to="/b2c/calculator" className={btn.primary}>
-              <FaPlus aria-hidden="true" /> Calcular un vuelo
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/b2c/calculator?mode=ground" className={btn.secondary}>
+                <FaCar aria-hidden="true" /> Registrar trayecto
+              </Link>
+              <Link to="/b2c/calculator" className={btn.primary}>
+                <FaPlus aria-hidden="true" /> Calcular un vuelo
+              </Link>
+            </div>
           }
         />
 
@@ -185,8 +222,11 @@ const B2CFlightsPage: React.FC = () => {
             icon={filter === 'ground' ? tripModeIcon('car') : FaPlane}
             title={filter === 'ground' ? 'No tienes viajes terrestres' : 'No tienes vuelos'}
             text={filter === 'ground'
-              ? 'Los trayectos en auto, bus, metro o bici se registran desde la app móvil y aparecen aquí.'
+              ? 'Los trayectos en auto, bus o metro se registran solos con la app móvil, o puedes agregarlos a mano.'
               : 'Calcula la huella de tu próximo vuelo y compénsala con un proyecto verificado.'}
+            action={filter === 'ground'
+              ? <Link to="/b2c/calculator?mode=ground" className={btn.primary}><FaPlus aria-hidden="true" /> Registrar un trayecto</Link>
+              : undefined}
           />
         ) : flights.length === 0 ? (
           <EmptyState
@@ -201,15 +241,31 @@ const B2CFlightsPage: React.FC = () => {
               const ground = isGroundTrip(flight);
               const Icon = tripModeIcon(flight.transportMode, ground);
               return (
-              <li key={flight.id} className="px-6 py-5 flex flex-col lg:flex-row lg:items-center gap-4">
+              <li
+                key={flight.id}
+                className={cx('px-6 py-5 flex flex-col lg:flex-row lg:items-center gap-4', selected.has(flight.id) && 'bg-brand-50')}
+              >
                 <div className="flex items-start gap-4 flex-1 min-w-0">
+                  {!flight.isCompensated && (
+                    // Área táctil de 44 px alrededor de la casilla nativa.
+                    <label className="-m-2 p-2 flex items-center self-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(flight.id)}
+                        onChange={() => toggleSelected(flight.id)}
+                        disabled={!selected.has(flight.id) && selected.size >= MAX_SELECTED}
+                        className="w-5 h-5 accent-brand-700 cursor-pointer"
+                      />
+                      <span className="sr-only">Seleccionar {tripTitle(flight)} del {fmtDate(flight.date)}</span>
+                    </label>
+                  )}
                   <span className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center flex-shrink-0">
                     <Icon aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
                     <div className="font-semibold text-gray-900">
                       {tripTitle(flight)}
-                      {ground && <span className="ml-2 text-sm font-normal text-gray-500">registrado en la app</span>}
+                      {ground && <span className="ml-2 text-sm font-normal text-gray-500">terrestre</span>}
                       {!ground && flight.roundTrip && <span className="ml-2 text-sm font-normal text-gray-500">ida y vuelta</span>}
                     </div>
                     <div className="mt-1 text-sm text-gray-500 flex flex-wrap gap-x-3 gap-y-1">
@@ -260,6 +316,33 @@ const B2CFlightsPage: React.FC = () => {
           </ul>
         )}
       </Card>
+
+      {selectedTrips.length > 0 && (
+        <div
+          className="sticky bottom-4 z-10 rounded-2xl border border-brand-100 bg-white shadow-lg px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3"
+          role="region"
+          aria-label="Viajes seleccionados"
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0" aria-live="polite">
+            <span className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0">
+              <FaLayerGroup aria-hidden="true" />
+            </span>
+            <p className="m-0 text-sm text-gray-700">
+              <b>{fmtInt(selectedTrips.length)} {selectedTrips.length === 1 ? 'viaje' : 'viajes'}</b> ·{' '}
+              {selectedKg < 10 ? fmtNum(selectedKg, 2) : fmtInt(selectedKg)} kg CO₂e
+              {selectedTrips.length > 1 && <span className="text-gray-500"> · en un solo pago</span>}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button type="button" className={cx(btn.secondary, btn.sm)} onClick={() => setSelected(new Set())}>
+              Quitar selección
+            </button>
+            <button type="button" className={cx(btn.primary, btn.sm)} onClick={compensateSelected}>
+              {selectedTrips.length === 1 ? 'Compensar' : 'Compensar juntos'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <Dialog
         open={!!flightToDelete}

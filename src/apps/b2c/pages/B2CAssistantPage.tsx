@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { assistantHistoryKey, loadAssistantHistory, saveAssistantHistory } from '../../../shared/utils/assistantHistory';
 import { Bot, Loader2, RotateCcw, SendHorizontal, User } from 'lucide-react';
 import { LEGAL } from '../../../shared/config/legal';
 import { McpConnectTrigger } from '../../../shared/components/McpConnectTrigger';
@@ -19,10 +21,10 @@ import { btn, Card, cx } from '../ui';
  * certificados emitidos, estado de pagos en Webpay, proyectos disponibles y
  * cálculos rápidos de vuelos (DEFRA 2025).
  *
- * La conversación se guarda en sessionStorage mientras la pestaña esté abierta.
+ * La conversación se guarda en sessionStorage, por usuario, mientras la pestaña
+ * esté abierta, y se borra al cerrar sesión.
  */
 
-const STORAGE_KEY = 'ctv.b2c.assistant';
 const MAX_LENGTH = 2000;
 
 const SUGGESTIONS = [
@@ -31,21 +33,6 @@ const SUGGESTIONS = [
   '¿Dónde están mis certificados?',
   '¿Cuánto emite un vuelo de Santiago a Miami ida y vuelta?',
 ];
-
-const loadConversation = (): B2CChatTurn[] => {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(saved)
-      ? saved.filter(
-          (t) =>
-            (t?.role === 'user' || t?.role === 'model') &&
-            typeof t.content === 'string'
-        )
-      : [];
-  } catch {
-    return [];
-  }
-};
 
 /** **negrita** dentro de una línea, sin insertar HTML. */
 const inline = (text: string) =>
@@ -96,7 +83,17 @@ const Formatted: React.FC<{ text: string }> = ({ text }) => {
 };
 
 const B2CAssistantPage: React.FC = () => {
-  const [conversation, setConversation] = useState<B2CChatTurn[]>(loadConversation);
+  // El historial es de cada usuario: sin esto, quien entraba después en la misma
+  // pestaña veía (y reenviaba a la IA) la conversación de la cuenta anterior.
+  const { user } = useAuth();
+  const storageKey = assistantHistoryKey('b2c', user?.id);
+  const [conversation, setConversation] = useState<B2CChatTurn[]>(() => loadAssistantHistory<B2CChatTurn>(storageKey));
+  const [loadedKey, setLoadedKey] = useState(storageKey);
+  if (loadedKey !== storageKey) {
+    // Cambió el usuario (o terminó de cargar): se muestra su propio historial.
+    setLoadedKey(storageKey);
+    setConversation(loadAssistantHistory<B2CChatTurn>(storageKey));
+  }
   const [draft, setDraft] = useState('');
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,13 +101,9 @@ const B2CAssistantPage: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(conversation.slice(-40)));
-    } catch {
-      // Sin almacenamiento (modo privado): la conversación dura hasta recargar.
-    }
+    saveAssistantHistory(storageKey, conversation);
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [conversation, waiting]);
+  }, [conversation, waiting, storageKey]);
 
   const ask = async (text: string) => {
     const message = text.trim();
@@ -267,6 +260,8 @@ const B2CAssistantPage: React.FC = () => {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
+                  // IME: el Enter que confirma una composición no debe enviar (Safari reporta keyCode 229)
+                  if (e.nativeEvent.isComposing || e.keyCode === 229) return;
                   ask(draft);
                 }
               }}

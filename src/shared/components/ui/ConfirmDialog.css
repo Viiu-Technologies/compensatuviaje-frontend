@@ -3,29 +3,36 @@
    ========================================================================== */
 @import '../../../apps/public/components/landing/tokens.css';
 
-.ctvd__overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--ctv-z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--ctv-space-4);
-  background: rgba(1, 33, 32, 0.55);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  animation: ctvd-fade 0.16s var(--ctv-ease-out);
-}
-
+/* El propio <dialog> es el panel: el navegador lo centra en la capa superior
+   (top layer) y pone la página inerte, así que no hace falta overlay ni z-index. */
 .ctvd__panel {
-  width: 100%;
+  box-sizing: border-box;
+  width: calc(100% - 2 * var(--ctv-space-4));
   max-width: 27rem;
+  border: 0;
   background: #ffffff;
   border-radius: var(--ctv-radius-lg);
   box-shadow: var(--ctv-elev-4);
   padding: var(--ctv-space-6);
   font-family: var(--ctv-font-body);
+  /* Sin esto, el scroll sobre el diálogo arrastra la página de detrás. */
+  overscroll-behavior: contain;
+}
+
+/* animation solo con [open]: display no se fija sobre dialog sin condición,
+   porque pisaría el estado cerrado. */
+.ctvd__panel[open] {
   animation: ctvd-rise 0.2s var(--ctv-ease-out);
+}
+
+.ctvd__panel::backdrop {
+  background: rgba(1, 33, 32, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  /* ::backdrop no es contenedor de scroll por defecto e ignoraría overscroll-behavior. */
+  overflow: hidden;
+  overscroll-behavior: contain;
+  animation: ctvd-fade 0.16s var(--ctv-ease-out);
 }
 
 .ctvd__title {

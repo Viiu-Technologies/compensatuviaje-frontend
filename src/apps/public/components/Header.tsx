@@ -8,6 +8,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, MotionConfig, type Transition } from 'framer-motion';
 import { useAuth } from '../../auth/context/AuthContext';
+import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
 import { 
   FaUser, 
   FaChartBar, 
@@ -185,7 +186,13 @@ const Header: React.FC<HeaderProps> = ({ transparentAtTop = false }) => {
   const drawerPanelRef = useRef<HTMLDivElement>(null);
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
 
-  const { isAuthenticated, user, logout } = useAuth();
+  // Dos sesiones: la de empresas, partners y admin (backend) y la de personas
+  // (Google/Supabase). Antes solo se miraba la primera y una persona con sesión
+  // veía "Entrar" en la portada.
+  const { isAuthenticated: isB2BAuth, user, logout } = useAuth();
+  const { user: b2cUser, logout: logoutB2C } = useB2CAuth();
+  const isAuthenticated = isB2BAuth || b2cUser !== null;
+  const userName = isB2BAuth ? user?.name : b2cUser?.nombre || b2cUser?.email;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -193,7 +200,8 @@ const Header: React.FC<HeaderProps> = ({ transparentAtTop = false }) => {
   const currentGroupData = NAV_GROUPS.find((g) => g.id === activeGroup);
 
   const dashboardPath =
-    user?.userType === 'superadmin' ? '/admin'
+    !isB2BAuth && b2cUser ? '/b2c/dashboard'
+    : user?.userType === 'superadmin' ? '/admin'
       : user?.userType === 'b2c' ? '/b2c/dashboard'
         : user?.userType === 'partner' ? '/partner'
           : user?.userType === 'b2b' ? '/b2b/dashboard'
@@ -375,7 +383,8 @@ const Header: React.FC<HeaderProps> = ({ transparentAtTop = false }) => {
   }, [location.pathname, closeMenu]);
 
   const handleLogout = () => {
-    logout();
+    if (isB2BAuth) logout();
+    if (b2cUser) logoutB2C();
     navigate('/');
     closeMenu();
   };
@@ -525,7 +534,7 @@ const Header: React.FC<HeaderProps> = ({ transparentAtTop = false }) => {
                     <FaUser />
                   </div>
                   <span className="ctv-liquid-user__name">
-                    {user?.name}
+                    {userName}
                   </span>
                 </div>
 
@@ -764,7 +773,7 @@ const Header: React.FC<HeaderProps> = ({ transparentAtTop = false }) => {
                   </div>
                   <div>
                     <p className="ctv-liquid-drawer__user-name">
-                      {user?.name}
+                      {userName}
                     </p>
                     <p className="ctv-liquid-drawer__user-role">
                       Usuario

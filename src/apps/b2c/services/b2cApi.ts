@@ -380,9 +380,34 @@ export function normalizeDashboardData(raw: Partial<DashboardData>): DashboardDa
  *
  * @param period Ventana de los totales. `all` (por defecto) = historial completo.
  */
-export async function getDashboardStats(period: DashboardPeriod = 'all'): Promise<DashboardData> {
-  const res = await authFetch<{ success: boolean; data: DashboardData }>(`/b2c/dashboard?period=${period}`);
-  return normalizeDashboardData(res.data);
+export async function getDashboardStats(
+  period: DashboardPeriod = 'all',
+  { fresh = false }: { fresh?: boolean } = {}
+): Promise<DashboardData> {
+  // La barra lateral, el dashboard y Logros piden lo mismo al cargar: se
+  // comparte la petición en curso y la respuesta vale 10 s. Los errores no
+  // se guardan, así "Reintentar" vuelve a pedir.
+  const now = Date.now();
+  const hit = dashboardCache.get(period);
+  if (!fresh && hit && (hit.pending || now - hit.at < DASHBOARD_TTL_MS)) return hit.promise;
+
+  const promise = authFetch<{ success: boolean; data: DashboardData }>(`/b2c/dashboard?period=${period}`)
+    .then((res) => normalizeDashboardData(res.data));
+  const entry = { promise, at: now, pending: true };
+  dashboardCache.set(period, entry);
+  promise.then(
+    () => { entry.pending = false; entry.at = Date.now(); },
+    () => { if (dashboardCache.get(period) === entry) dashboardCache.delete(period); }
+  );
+  return promise;
+}
+
+const DASHBOARD_TTL_MS = 10_000;
+const dashboardCache = new Map<DashboardPeriod, { promise: Promise<DashboardData>; at: number; pending: boolean }>();
+
+/** Para después de pagar o borrar: la próxima lectura va al servidor. */
+export function invalidateDashboardCache(): void {
+  dashboardCache.clear();
 }
 
 /**
@@ -470,6 +495,8 @@ export async function getPaymentHistory(): Promise<any[]> {
  */
 export async function createPaymentTransaction(params: {
   calculationId: string;
+  /** Orden 9: varios viajes en un solo pago (el backend ya lo acepta). */
+  calculationIds?: string[];
   projectId: string;
   physicalUnits?: number;
   co2KgToFreeze?: number;
@@ -486,6 +513,64 @@ export async function createPaymentTransaction(params: {
     method: 'POST',
     body: JSON.stringify(params),
   });
+}
+
+// ── Viajes terrestres registrados a mano en la web (Orden 9) ──────────────
+
+export interface GroundFactorSubtype { code: string; label: string; kgCo2PerKm: number }
+export interface GroundFactorMode {
+  mode: string;
+  defaultSubtype: string;
+  divideByPassengers: boolean;
+  subtypes: GroundFactorSubtype[];
+}
+export interface GroundFactorsCatalog { version: string; source: string; modes: GroundFactorMode[] }
+
+/** Los mismos factores que usa la app móvil (y el backend al guardar). */
+export async function getGroundEmissionFactors(): Promise<GroundFactorsCatalog> {
+  const res = await publicFetch<{ success: boolean; data: GroundFactorsCatalog }>('/public/emission-factors/ground');
+  return res.data;
+}
+
+export interface ManualGroundTrip {
+  tripId: string;
+  calculationId: string;
+  mode: string;
+  passengers: number;
+  distanceKm: number;
+  co2Kg: number;
+  compensation?: { estimatedPriceCLP: number; canPaySingleTrip: boolean };
+}
+
+/**
+ * Guarda un viaje ya terminado. Es el mismo POST /b2c/ground-trips de la app:
+ * con endedAt el backend lo cierra y crea su cálculo en el acto. El prefijo
+ * "web-" del clientTripId distingue los registrados a mano de los de GPS.
+ */
+export async function createManualGroundTrip(input: {
+  mode: string;
+  vehicleSubtype?: string;
+  passengers: number;
+  distanceKm: number;
+  /** AAAA-MM-DD, hora local. */
+  date: string;
+}): Promise<ManualGroundTrip> {
+  const at = new Date(`${input.date}T12:00:00`);
+  const when = (Number.isNaN(at.getTime()) ? new Date() : at).toISOString();
+  const res = await authFetch<{ success: boolean; data: ManualGroundTrip }>('/b2c/ground-trips', {
+    method: 'POST',
+    body: JSON.stringify({
+      clientTripId: `web-${crypto.randomUUID()}`,
+      startedAt: when,
+      endedAt: when,
+      mode: input.mode,
+      vehicleSubtype: input.vehicleSubtype,
+      passengers: input.passengers,
+      distanceMeters: Math.round(input.distanceKm * 1000),
+      purpose: 'personal',
+    }),
+  });
+  return res.data;
 }
 
 /**
@@ -531,17 +616,20 @@ export async function askAssistant(
       signal: controller.signal,
     });
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.response) {
-      const err: any = new Error(data?.message || data?.error || 'El asistente no devolvió respuesta.');
+    // Doctor IA responde { success, data: { message, toolsUsed } } (igual que en B2B);
+    // en error, { success: false, error }.
+    const body = await response.json().catch(() => ({}));
+    const reply = body?.data?.message;
+    if (!response.ok || typeof reply !== 'string' || !reply.trim()) {
+      const err: any = new Error(body?.error || body?.message || 'El asistente no devolvió respuesta.');
       err.status = response.status;
-      err.data = data;
+      err.data = body;
       throw err;
     }
 
     return {
-      message: data.response,
-      toolsUsed: Array.isArray(data.toolsUsed) ? data.toolsUsed : undefined,
+      message: reply,
+      toolsUsed: Array.isArray(body.data.toolsUsed) ? body.data.toolsUsed : undefined,
     };
   } catch (err: any) {
     if (err?.name === 'AbortError') {
@@ -595,6 +683,7 @@ export async function getBadges(): Promise<B2CBadgesResponse> {
  * Eliminar un cálculo/vuelo (solo si no está compensado)
  */
 export async function deleteCalculation(id: string): Promise<{ success: boolean; message: string }> {
+  invalidateDashboardCache();
   const res = await authFetch<{ success: boolean; message: string }>(`/b2c/calculations/${id}`, {
     method: 'DELETE'
   });

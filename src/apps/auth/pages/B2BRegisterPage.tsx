@@ -429,11 +429,11 @@ const B2BRegisterPage: React.FC = () => {
                     <div className="!grid sm:!grid-cols-2 !gap-5">
                       <div>
                         <label className={labelCls}><Lock className="!w-4 !h-4 !inline !mr-1" />Contraseña <span className="!text-red-400">*</span></label>
-                        <input type="password" name="adminPassword" value={formData.adminPassword} onChange={handleChange} required className={inputCls} placeholder="Mínimo 8 caracteres" />
+                        <input type="password" name="adminPassword" autoComplete="new-password" value={formData.adminPassword} onChange={handleChange} required className={inputCls} placeholder="Mínimo 8 caracteres" />
                       </div>
                       <div>
                         <label className={labelCls}><Lock className="!w-4 !h-4 !inline !mr-1" />Confirmar contraseña <span className="!text-red-400">*</span></label>
-                        <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required className={inputCls} placeholder="Repetir contraseña" />
+                        <input type="password" name="confirmPassword" autoComplete="new-password" value={formData.confirmPassword} onChange={handleChange} required className={inputCls} placeholder="Repetir contraseña" />
                       </div>
                     </div>
                   </div>

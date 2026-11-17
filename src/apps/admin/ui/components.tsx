@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Inbox, Search, X, type LucideIcon } from 'lucide-react';
+import { useModalDialog } from '../../../shared/components/ui/useModalDialog';
 import './admin-ui.css';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -284,49 +285,35 @@ export interface ModalProps {
 }
 
 /**
- * Diálogo modal: Escape y clic fuera cierran (salvo con busy), el foco entra
- * al primer campo o botón y vuelve al elemento que lo abrió al cerrar.
+ * Diálogo modal sobre <dialog> nativo: Escape y clic fuera cierran (salvo con
+ * busy), el foco entra al primer campo o botón y el navegador lo devuelve al
+ * elemento que lo abrió al cerrar.
  */
 export const Modal: React.FC<ModalProps> = ({ open, title, onClose, busy = false, footer, size = 'md', children }) => {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  // Refs para que Escape use siempre el busy/onClose actuales.
-  const busyRef = useRef(busy);
-  const onCloseRef = useRef(onClose);
-  busyRef.current = busy;
-  onCloseRef.current = onClose;
-
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.activeElement as HTMLElement | null;
-    const dialog = dialogRef.current;
-    const first = dialog?.querySelector<HTMLElement>('textarea, input, select, button:not([data-modal-close])');
-    (first ?? dialog)?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !busyRef.current) onCloseRef.current();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      previous?.focus?.();
-    };
-  }, [open]);
-
-  if (!open) return null;
+  const modal = useModalDialog({
+    open,
+    onClose,
+    busy,
+    initialFocus: 'textarea, input, select, button:not([data-modal-close])',
+  });
 
   return (
-    <div className="adm-modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
-      <div ref={dialogRef} className={`adm-modal${size === 'lg' ? ' adm-modal--lg' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
-        <div className="adm-modal__head">
-          <h2 id={titleId} className="adm-modal__title">{title}</h2>
-          <button type="button" className="adm-icon-btn" onClick={onClose} disabled={busy} aria-label="Cerrar" data-modal-close>
-            <X aria-hidden="true" />
-          </button>
-        </div>
-        <div className="adm-modal__body">{children}</div>
-        {footer && <div className="adm-modal__foot">{footer}</div>}
-      </div>
-    </div>
+    <dialog {...modal} className={`adm-modal${size === 'lg' ? ' adm-modal--lg' : ''}`} aria-labelledby={titleId}>
+      {/* El contenido solo existe abierto: así no se montan vistas previas ni formularios ocultos. */}
+      {open && (
+        <>
+          <div className="adm-modal__head">
+            <h2 id={titleId} className="adm-modal__title">{title}</h2>
+            <button type="button" className="adm-icon-btn" onClick={onClose} disabled={busy} aria-label="Cerrar" data-modal-close>
+              <X aria-hidden="true" />
+            </button>
+          </div>
+          <div className="adm-modal__body">{children}</div>
+          {footer && <div className="adm-modal__foot">{footer}</div>}
+        </>
+      )}
+    </dialog>
   );
 };
 
