@@ -176,7 +176,12 @@ export default function SuperAdminDashboard() {
   const periodCompensated = emissionsSeries.reduce((a, p) => a + p.compensated, 0);
 
   const revenueSeries = useMemo(
-    () => (metrics?.revenue?.series ?? []).map((p) => ({ date: p.date, value: p.valueCLP ?? 0 })),
+    () => (metrics?.revenue?.series ?? []).map((p) => ({
+      date: p.date,
+      value: p.valueCLP ?? 0,
+      platform: p.platformCLP ?? 0,
+      partners: p.partnersCLP ?? 0,
+    })),
     [metrics]
   );
 
@@ -284,11 +289,18 @@ export default function SuperAdminDashboard() {
           foot={emissionsSeries.length ? <><b>{kgToTonnes(periodCompensated)} t</b> en los {periodLabel}</> : undefined}
         />
         <KpiCard
-          label="Ingresos"
+          label="Cobrado (bruto)"
           value={formatCLP(d.overview?.totalRevenueCLP)}
-          context="Total histórico, CLP"
+          context="Lo que pagaron los clientes · total histórico, CLP"
           trend={revenueSeries.map((p) => p.value)}
-          foot={metrics?.revenue ? <><b>{formatCLP(metrics.revenue.totalCLP)}</b> en los {periodLabel}</> : undefined}
+          foot={metrics?.revenue ? (
+            <>
+              <b>{formatCLP(metrics.revenue.totalCLP)}</b> en los {periodLabel}
+              {metrics.revenue.platformCLP != null && (
+                <> · comisión <b>{formatCLP(metrics.revenue.platformCLP)}</b> · partners <b>{formatCLP(metrics.revenue.partnersCLP ?? 0)}</b></>
+              )}
+            </>
+          ) : undefined}
         />
       </div>
 
@@ -367,21 +379,35 @@ export default function SuperAdminDashboard() {
       <div className="adm-grid adm-grid--1-1">
         <Panel
           title="Ingresos por día"
-          description="Pesos chilenos"
+          description="Pesos chilenos. Cobrado = lo que pagó el cliente; comisión = lo que queda a la plataforma; partners = lo que se les debe"
           aside={metrics?.revenue ? formatCLP(metrics.revenue.totalCLP) : undefined}
         >
           {revenueSeries.length ? (
-            <div style={{ height: 220 }}>
+            <>
+            <Legend items={[
+              { label: 'Cobrado (bruto)', color: ADMIN_COLORS.series1 },
+              { label: 'Comisión plataforma', color: ADMIN_COLORS.series3 },
+              { label: 'Para partners', color: ADMIN_COLORS.series2 },
+            ]} />
+            {(metrics?.revenue?.withoutSplitCount ?? 0) > 0 && (
+              <p className="adm-cell-sub" style={{ margin: '6px 0 0' }}>
+                {metrics?.revenue?.withoutSplitCount} compensaciones antiguas no tienen desglose guardado: cuentan en el bruto, no en comisión ni partners.
+              </p>
+            )}
+            <div style={{ height: 220, marginTop: 12 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={revenueSeries} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
                   <CartesianGrid vertical={false} stroke={ADMIN_COLORS.grid} />
                   <XAxis dataKey="date" {...axisProps} tickFormatter={formatDayShort} minTickGap={32} dy={6} />
                   <YAxis {...axisProps} width={64} tickFormatter={formatCLPCompact} />
                   <Tooltip cursor={{ fill: ADMIN_COLORS.grid }} content={<ChartTooltip format={formatCLP} />} />
-                  <Bar dataKey="value" name="Ingresos" fill={ADMIN_COLORS.series1} radius={[2, 2, 0, 0]} maxBarSize={18} />
+                  <Bar dataKey="value" name="Cobrado (bruto)" fill={ADMIN_COLORS.series1} radius={[2, 2, 0, 0]} maxBarSize={14} />
+                  <Bar dataKey="platform" name="Comisión plataforma" fill={ADMIN_COLORS.series3} radius={[2, 2, 0, 0]} maxBarSize={14} />
+                  <Bar dataKey="partners" name="Para partners" fill={ADMIN_COLORS.series2} radius={[2, 2, 0, 0]} maxBarSize={14} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            </>
           ) : (
             <EmptyState title="Sin ingresos en el período" />
           )}

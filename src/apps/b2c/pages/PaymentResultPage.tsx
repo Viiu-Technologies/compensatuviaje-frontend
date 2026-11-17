@@ -76,7 +76,11 @@ const PaymentResultPage: React.FC = () => {
   // Datos del vuelo para reintentar (vienen del backend en rejected/cancelled)
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
+  const isGroundRetry = searchParams.get('tripType') === 'ground';
   const retryUrl = (() => {
+    // CTV-61: un viaje terrestre se vuelve a pagar desde "Mis viajes", no
+    // desde la calculadora de vuelos (antes llegaba con origin=GND).
+    if (isGroundRetry) return '/b2c/flights?type=ground';
     const params = new URLSearchParams();
     for (const key of ['origin', 'destination', 'cabin', 'passengers', 'roundTrip', 'calculationId']) {
       const v = searchParams.get(key);
@@ -85,7 +89,9 @@ const PaymentResultPage: React.FC = () => {
     const qs = params.toString();
     return `/b2c/calculator${qs ? `?${qs}` : ''}`;
   })();
-  const retryLabel = origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la calculadora';
+  const retryLabel = isGroundRetry
+    ? 'Volver a mis viajes'
+    : origin && destination ? `Reintentar ${origin} → ${destination}` : 'Volver a la calculadora';
 
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
@@ -131,6 +137,19 @@ const PaymentResultPage: React.FC = () => {
   if (status === 'cancelled') {
     return (
       <ResultCard icon={FaExclamationTriangle} tone="warning" title="Pago cancelado" text="Cancelaste el pago antes de completarlo. No se hizo ningún cargo a tu tarjeta.">
+        <div className="mt-6 space-y-3">
+          <Link to={retryUrl} className={cx(btn.primary, 'w-full')}>{retryLabel}</Link>
+          {secondaryActions}
+        </div>
+      </ResultCard>
+    );
+  }
+
+  // Webpay cobró pero no se pudo compensar (p. ej. se acabó el stock del
+  // proyecto mientras pagabas): el backend devolvió el dinero en el acto.
+  if (status === 'refunded') {
+    return (
+      <ResultCard icon={FaExclamationTriangle} tone="neutral" title="Te devolvimos el dinero" text="Tu pago se aprobó, pero no pudimos completar la compensación (por ejemplo, porque el proyecto se quedó sin cupos mientras pagabas). Anulamos el cobro de inmediato: no se te cargará nada. Puedes intentarlo de nuevo, quizás con otro proyecto.">
         <div className="mt-6 space-y-3">
           <Link to={retryUrl} className={cx(btn.primary, 'w-full')}>{retryLabel}</Link>
           {secondaryActions}
