@@ -18,6 +18,22 @@ map $request_uri $robots_tag {
     "~^/blog/(confirmar|baja)/"                                                                                    "noindex, nofollow";
 }
 
+# Content-Security-Policy en modo Report-Only: el navegador no bloquea nada, solo
+# avisa en la consola de lo que bloquearía. Sirve para afinar la lista antes de
+# pasarla a Content-Security-Policy. Orígenes, según lo que carga el front:
+#   style-src   'unsafe-inline': atributos style de React y los <style> de sonner/framer-motion
+#   img-src     https: fotos de proyectos, logos y avatares vienen de varios dominios
+#   connect-src API, Supabase (auth por https y realtime por wss)
+#   form-action Webpay (el pago es un POST de formulario a Transbank, producción e integración)
+# Vacío = no se envía: el HTML que genera el backend (/blog, /blog/:slug,
+# /share/profile, /og) no sigue esta política; /blog/confirmar y /blog/baja sí son la SPA.
+map $request_uri $csp_report_only {
+    default                                         "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://api.compensatuviaje.com https://ypckedscmjxgmyfewndr.supabase.co wss://ypckedscmjxgmyfewndr.supabase.co; frame-src 'self'; form-action 'self' https://webpay3g.transbank.cl https://webpay3gint.transbank.cl; object-src 'none'; base-uri 'self'; frame-ancestors 'self'";
+    "~^/blog(?!/(confirmar|baja)/)(/|$|\?)"         "";
+    "~^/share/profile/"                             "";
+    "~^/og/"                                        "";
+}
+
 # Bots de redes sociales (vistas previas de enlaces). Solo ellos reciben las
 # etiquetas del certificado en /verify/:id; las personas siguen en la SPA.
 map $http_user_agent $is_social_bot {
