@@ -34,6 +34,17 @@ map $request_uri $csp_report_only {
     "~^/og/"                                        "";
 }
 
+# HTML nunca en caché. `location ~ \.html$` ya lo hacía, pero `/` y las páginas
+# prerenderizadas (/calculadora, /pagos…) las sirve `location /` directamente desde
+# dist/<ruta>/index.html, sin pasar por esa location: salían sin Cache-Control y el
+# navegador reutilizaba el HTML viejo durante horas (caché heurística por
+# Last-Modified), que apuntaba al bundle anterior. Tras un despliegue la portada
+# seguía con el código de antes. Vacío = no se envía (imágenes, texturas, etc.).
+map $sent_http_content_type $html_cache_control {
+    default        "";
+    "~^text/html"  "no-cache, no-store, must-revalidate";
+}
+
 # Bots de redes sociales (vistas previas de enlaces). Solo ellos reciben las
 # etiquetas del certificado en /verify/:id; las personas siguen en la SPA.
 map $http_user_agent $is_social_bot {
@@ -134,6 +145,7 @@ server {
     # Páginas prerenderizadas (dist/<ruta>/index.html) y, si no, la SPA.
     location / {
         include /etc/nginx/snippets/headers.conf;
+        add_header Cache-Control $html_cache_control always;
         try_files $uri $uri/index.html /index.html;
     }
 
