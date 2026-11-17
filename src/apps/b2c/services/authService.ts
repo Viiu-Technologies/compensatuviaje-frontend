@@ -30,8 +30,9 @@ const isB2CRoute = (): boolean => {
 };
 
 const getSupabaseClient = (): Promise<SupabaseClient | null> => {
-  // NO crear cliente si no estamos en ruta B2C
-  if (!isB2CRoute()) {
+  // Fuera de B2C solo se crea si la persona ya inició sesión: así la portada
+  // reconoce su sesión, y quien nunca entró no descarga Supabase.
+  if (!isB2CRoute() && !hasStoredB2CSession()) {
     return Promise.resolve(null);
   }
 
@@ -116,6 +117,30 @@ function clearDevSession() {
     localStorage.removeItem(DEV_SESSION_KEY);
   } catch {
     // Sin localStorage no hay sesión de prueba que borrar.
+  }
+}
+
+/** Clave donde supabase-js guarda la sesión: `sb-<ref del proyecto>-auth-token`. */
+const SUPABASE_SESSION_KEY = (() => {
+  try {
+    return `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`;
+  } catch {
+    return null;
+  }
+})();
+
+/**
+ * ¿Hay una sesión de persona guardada en este navegador? Es síncrono y no carga
+ * Supabase. Sin esto, fuera de /b2c la persona aparecía como no autenticada:
+ * volvía a la portada, pulsaba "Entrar" y tenía que iniciar sesión otra vez
+ * (lo reportaron estudiantes en las pruebas de usuario).
+ */
+export function hasStoredB2CSession(): boolean {
+  try {
+    if (SUPABASE_SESSION_KEY && localStorage.getItem(SUPABASE_SESSION_KEY) !== null) return true;
+    return DEV_LOGIN_ENABLED && localStorage.getItem(DEV_SESSION_KEY) !== null;
+  } catch {
+    return false;
   }
 }
 

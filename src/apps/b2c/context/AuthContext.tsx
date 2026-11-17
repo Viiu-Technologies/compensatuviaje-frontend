@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import authService, { B2CUser } from '../services/authService';
+import authService, { B2CUser, hasStoredB2CSession } from '../services/authService';
 
 interface AuthContextType {
   user: B2CUser | null;
@@ -54,11 +54,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // volvía a armar (/auth/me + loading=true), la ruta protegida mostraba el
   // spinner, la página se desmontaba y repetía todas sus peticiones. En la
   // prueba con estudiantes se vieron 2–3 /b2c/dashboard por segundo.
-  const onB2C = isB2CPath(location.pathname);
+  //
+  // Fuera de B2C también se arranca si hay una sesión guardada: si no, en la
+  // portada y en /login la persona aparecía sin sesión y tenía que volver a
+  // entrar con Google. Quien nunca inició sesión sigue sin cargar Supabase.
+  const onB2C = isB2CPath(location.pathname) || hasStoredB2CSession();
 
   useEffect(() => {
     if (!onB2C) {
-      // Not a B2C route — nothing to do with Supabase, just stop the spinner
+      // Fuera de B2C y sin sesión guardada: nada que consultar, solo quitar el spinner
       setLoading(false);
       return;
     }
