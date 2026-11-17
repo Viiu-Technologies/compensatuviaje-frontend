@@ -616,17 +616,20 @@ export async function askAssistant(
       signal: controller.signal,
     });
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.response) {
-      const err: any = new Error(data?.message || data?.error || 'El asistente no devolvió respuesta.');
+    // Doctor IA responde { success, data: { message, toolsUsed } } (igual que en B2B);
+    // en error, { success: false, error }.
+    const body = await response.json().catch(() => ({}));
+    const reply = body?.data?.message;
+    if (!response.ok || typeof reply !== 'string' || !reply.trim()) {
+      const err: any = new Error(body?.error || body?.message || 'El asistente no devolvió respuesta.');
       err.status = response.status;
-      err.data = data;
+      err.data = body;
       throw err;
     }
 
     return {
-      message: data.response,
-      toolsUsed: Array.isArray(data.toolsUsed) ? data.toolsUsed : undefined,
+      message: reply,
+      toolsUsed: Array.isArray(body.data.toolsUsed) ? body.data.toolsUsed : undefined,
     };
   } catch (err: any) {
     if (err?.name === 'AbortError') {
