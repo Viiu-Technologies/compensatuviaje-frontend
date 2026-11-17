@@ -83,8 +83,14 @@ export interface MetricsData {
     trend: string;
   };
   revenue: {
-    series: Array<{ date: string; valueCLP: number }>;
+    /** valueCLP = bruto cobrado; platformCLP = comisión; partnersCLP = adeudado a partners (CTV-23). */
+    series: Array<{ date: string; valueCLP: number; platformCLP?: number; partnersCLP?: number }>;
     totalCLP: number;
+    platformCLP?: number;
+    partnersCLP?: number;
+    /** Compensaciones B2C antiguas sin desglose guardado: no se inventa su reparto. */
+    withoutSplitCount?: number;
+    measures?: 'gross';
     trend: string;
   };
   newCompanies: {
