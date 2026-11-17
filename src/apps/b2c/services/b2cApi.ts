@@ -679,6 +679,29 @@ export async function getBadges(): Promise<B2CBadgesResponse> {
   }
 }
 
+export interface ShareCardData {
+  /** Enlace que se comparte (el backend responde a WhatsApp con la vista previa). */
+  shareUrl: string;
+  /** La misma imagen que recibe WhatsApp en og:image; null sin insignia. */
+  ogImageUrl: string | null;
+}
+
+/**
+ * Datos de la tarjeta para compartir el perfil. Pedirlos hace que el backend
+ * genere la imagen antes de que la persona comparta: la primera vista previa
+ * en WhatsApp ya no sale sin imagen.
+ */
+export async function getShareCard(userId: string): Promise<ShareCardData | null> {
+  try {
+    const res = await fetch(`${API_URL}/public/share/profile/${encodeURIComponent(userId)}/data`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.success ? { shareUrl: json.shareUrl, ogImageUrl: json.ogImageUrl ?? null } : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Eliminar un cálculo/vuelo (solo si no está compensado)
  */
@@ -701,6 +724,7 @@ const b2cApi = {
   createPaymentTransaction,
   getUserProfile,
   getBadges,
+  getShareCard,
   deleteCalculation,
   askAssistant,
   assistantErrorMessage,

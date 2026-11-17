@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaShareAlt, FaLinkedin, FaCheck, FaLeaf } from 'react-icons/fa';
+import { FaShareAlt, FaLinkedin, FaCheck, FaLeaf, FaWhatsapp } from 'react-icons/fa';
 import B2CLayout from '../components/B2CLayout';
 import { TrophyRoomPanel, BADGES } from '../components/badges/TrophyRoomPanel';
-import b2cApi, { type B2CBadgeItem } from '../services/b2cApi';
+import b2cApi, { type B2CBadgeItem, type ShareCardData } from '../services/b2cApi';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, Skeleton, btn, fmtTons } from '../ui';
 
@@ -19,9 +19,23 @@ function currentBadge(kg: number) {
  * insignia desbloqueada y el texto dice cuánto compensó. También se quitó
  * la tarjeta "Próximamente: reducción de temperatura", que no tenía nada
  * detrás.
+ *
+ * La tarjeta muestra la misma imagen que verá quien reciba el enlace. Pedirla
+ * aquí hace que ya esté generada cuando WhatsApp la busque: antes, el primer
+ * envío solía salir sin imagen porque WhatsApp no esperaba a que se generara.
  */
 function ShareCard({ userId, totalKg }: { userId: string; totalKg: number }) {
   const [copied, setCopied] = useState(false);
+  const [card, setCard] = useState<ShareCardData | null>(null);
+  const [previewFailed, setPreviewFailed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setPreviewFailed(false);
+    b2cApi.getShareCard(userId).then((c) => { if (alive) setCard(c); });
+    return () => { alive = false; };
+  }, [userId, totalKg]);
+
   const badge = currentBadge(totalKg);
   if (!badge) return null;
 
@@ -54,6 +68,10 @@ function ShareCard({ userId, totalKg }: { userId: string; totalKg: number }) {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${text}\n${shareUrl}`)}`;
+  const previewUrl = previewFailed ? null : card?.ogImageUrl ?? null;
+  const showPreview = previewUrl !== null;
+
   return (
     <Card>
       <CardHeader
@@ -61,15 +79,36 @@ function ShareCard({ userId, totalKg }: { userId: string; totalKg: number }) {
         title="Comparte tu insignia"
         subtitle={<>Tu insignia actual es <b className="text-gray-800">{badge.title}</b>.</>}
       />
-      <p className="text-sm text-gray-600 m-0 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">{text}</p>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button type="button" onClick={handleShare} className={btn.primary}>
-          {copied ? <FaCheck aria-hidden="true" /> : <FaShareAlt aria-hidden="true" />}
-          {copied ? 'Texto copiado' : 'Compartir'}
-        </button>
-        <button type="button" onClick={handleLinkedIn} className={btn.secondary}>
-          <FaLinkedin className="text-[#0A66C2]" aria-hidden="true" /> Añadir a LinkedIn
-        </button>
+      <div className={showPreview ? 'grid gap-5 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:items-center' : ''}>
+        {previewUrl && (
+          <figure className="m-0">
+            <img
+              src={previewUrl}
+              alt={`Vista previa al compartir: insignia ${badge.title}`}
+              width={1200}
+              height={630}
+              decoding="async"
+              onError={() => setPreviewFailed(true)}
+              className="block w-full h-auto aspect-[1200/630] rounded-xl border border-gray-200 bg-brand-950 shadow-sm"
+            />
+            <figcaption className="mt-2 text-xs text-gray-500">Así se verá tu enlace en WhatsApp, LinkedIn y otras redes.</figcaption>
+          </figure>
+        )}
+        <div>
+          <p className="text-sm text-gray-600 m-0 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">{text}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={btn.primary}>
+              <FaWhatsapp aria-hidden="true" /> Enviar por WhatsApp
+            </a>
+            <button type="button" onClick={handleShare} className={btn.secondary}>
+              {copied ? <FaCheck aria-hidden="true" /> : <FaShareAlt aria-hidden="true" />}
+              {copied ? 'Texto copiado' : 'Compartir'}
+            </button>
+            <button type="button" onClick={handleLinkedIn} className={btn.secondary}>
+              <FaLinkedin className="text-[#0A66C2]" aria-hidden="true" /> Añadir a LinkedIn
+            </button>
+          </div>
+        </div>
       </div>
     </Card>
   );
