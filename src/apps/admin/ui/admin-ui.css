@@ -1384,23 +1384,18 @@ a.adm-cell-main:hover .adm-cell-title {
 /* --------------------------------------------------------------------------
    Modal
    -------------------------------------------------------------------------- */
-.adm-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(8, 26, 26, 0.45);
-}
-
+/* El propio <dialog> es el modal: el navegador lo centra en la capa superior y
+   pone la página inerte, así que no hacen falta backdrop propio ni z-index.
+   display solo con [open]: fijarlo siempre pisaría el estado cerrado. */
 .adm-modal {
-  display: flex;
+  box-sizing: border-box;
   flex-direction: column;
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 480px;
   max-height: calc(100vh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 0;
   background: var(--adm-surface);
   border-radius: 10px;
   box-shadow: 0 20px 48px rgba(15, 38, 38, 0.2);
@@ -1408,6 +1403,19 @@ a.adm-cell-main:hover .adm-cell-title {
   font-size: 14px;
   line-height: 1.5;
   color: var(--adm-ink);
+  /* Sin esto, el scroll sobre el modal arrastra la página de detrás. */
+  overscroll-behavior: contain;
+}
+
+.adm-modal[open] {
+  display: flex;
+}
+
+.adm-modal::backdrop {
+  background: rgba(8, 26, 26, 0.45);
+  /* ::backdrop no es contenedor de scroll por defecto e ignoraría overscroll-behavior. */
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .adm-modal__head {
