@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../../../auth/context/AuthContext';
+import { assistantHistoryKey, loadAssistantHistory, saveAssistantHistory } from '../../../../shared/utils/assistantHistory';
 import { Bot, Loader2, RotateCcw, SendHorizontal, User } from 'lucide-react';
 import { LEGAL } from '../../../../shared/config/legal';
 import { McpConnectTrigger } from '../../../../shared/components/McpConnectTrigger';
@@ -13,11 +15,11 @@ import { btn, Card, cx, PageHeader } from '../../ui';
  * La versión anterior a la de mantenimiento respondía textos fijos y mostraba
  * cifras inventadas; esta nunca muestra datos que no vengan del backend.
  *
- * La conversación se guarda en sessionStorage (dura mientras la pestaña esté
- * abierta) y se envía como historial en cada pregunta.
+ * La conversación se guarda en sessionStorage, por usuario (dura mientras la
+ * pestaña esté abierta y se borra al cerrar sesión), y se envía como historial
+ * en cada pregunta.
  */
 
-const STORAGE_KEY = 'ctv.b2b.assistant';
 const MAX_LENGTH = 2000;
 
 const SUGGESTIONS = [
@@ -26,15 +28,6 @@ const SUGGESTIONS = [
   '¿Cómo van nuestras órdenes?',
   '¿Cuánto emite un vuelo Santiago–Madrid en ejecutiva?',
 ];
-
-const loadConversation = (): ChatTurn[] => {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(saved) ? saved.filter((t) => (t?.role === 'user' || t?.role === 'model') && typeof t.content === 'string') : [];
-  } catch {
-    return [];
-  }
-};
 
 /** **negrita** dentro de una línea, sin insertar HTML. */
 const inline = (text: string) =>
@@ -71,7 +64,17 @@ const Formatted: React.FC<{ text: string }> = ({ text }) => {
 };
 
 const AssistantView: React.FC<{ onNavigate?: (tab: string) => void }> = () => {
-  const [conversation, setConversation] = useState<ChatTurn[]>(loadConversation);
+  // El historial es de cada usuario: sin esto, quien entraba después en la misma
+  // pestaña veía (y reenviaba a la IA) la conversación de la cuenta anterior.
+  const { user } = useAuth();
+  const storageKey = assistantHistoryKey('b2b', user?.id);
+  const [conversation, setConversation] = useState<ChatTurn[]>(() => loadAssistantHistory<ChatTurn>(storageKey));
+  const [loadedKey, setLoadedKey] = useState(storageKey);
+  if (loadedKey !== storageKey) {
+    // Cambió el usuario (o terminó de cargar): se muestra su propio historial.
+    setLoadedKey(storageKey);
+    setConversation(loadAssistantHistory<ChatTurn>(storageKey));
+  }
   const [draft, setDraft] = useState('');
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,13 +82,9 @@ const AssistantView: React.FC<{ onNavigate?: (tab: string) => void }> = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(conversation.slice(-40)));
-    } catch {
-      // Sin almacenamiento (modo privado): la conversación dura hasta recargar.
-    }
+    saveAssistantHistory(storageKey, conversation);
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [conversation, waiting]);
+  }, [conversation, waiting, storageKey]);
 
   const ask = async (text: string) => {
     const message = text.trim();

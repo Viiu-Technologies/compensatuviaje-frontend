@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { clearAssistantHistory } from '../../../shared/utils/assistantHistory';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -322,6 +323,9 @@ class AuthService {
     }
 
     clearDevSession();
+    // El historial del asistente es de esta cuenta: la siguiente que entre en la
+    // pestaña no debe verlo.
+    clearAssistantHistory();
 
     // Cerrar sesión en Supabase
     const supabase = await getSupabaseClient();
