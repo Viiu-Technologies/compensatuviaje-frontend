@@ -470,6 +470,8 @@ export async function getPaymentHistory(): Promise<any[]> {
  */
 export async function createPaymentTransaction(params: {
   calculationId: string;
+  /** Orden 9: varios viajes en un solo pago (el backend ya lo acepta). */
+  calculationIds?: string[];
   projectId: string;
   physicalUnits?: number;
   co2KgToFreeze?: number;
@@ -486,6 +488,64 @@ export async function createPaymentTransaction(params: {
     method: 'POST',
     body: JSON.stringify(params),
   });
+}
+
+// ── Viajes terrestres registrados a mano en la web (Orden 9) ──────────────
+
+export interface GroundFactorSubtype { code: string; label: string; kgCo2PerKm: number }
+export interface GroundFactorMode {
+  mode: string;
+  defaultSubtype: string;
+  divideByPassengers: boolean;
+  subtypes: GroundFactorSubtype[];
+}
+export interface GroundFactorsCatalog { version: string; source: string; modes: GroundFactorMode[] }
+
+/** Los mismos factores que usa la app móvil (y el backend al guardar). */
+export async function getGroundEmissionFactors(): Promise<GroundFactorsCatalog> {
+  const res = await publicFetch<{ success: boolean; data: GroundFactorsCatalog }>('/public/emission-factors/ground');
+  return res.data;
+}
+
+export interface ManualGroundTrip {
+  tripId: string;
+  calculationId: string;
+  mode: string;
+  passengers: number;
+  distanceKm: number;
+  co2Kg: number;
+  compensation?: { estimatedPriceCLP: number; canPaySingleTrip: boolean };
+}
+
+/**
+ * Guarda un viaje ya terminado. Es el mismo POST /b2c/ground-trips de la app:
+ * con endedAt el backend lo cierra y crea su cálculo en el acto. El prefijo
+ * "web-" del clientTripId distingue los registrados a mano de los de GPS.
+ */
+export async function createManualGroundTrip(input: {
+  mode: string;
+  vehicleSubtype?: string;
+  passengers: number;
+  distanceKm: number;
+  /** AAAA-MM-DD, hora local. */
+  date: string;
+}): Promise<ManualGroundTrip> {
+  const at = new Date(`${input.date}T12:00:00`);
+  const when = (Number.isNaN(at.getTime()) ? new Date() : at).toISOString();
+  const res = await authFetch<{ success: boolean; data: ManualGroundTrip }>('/b2c/ground-trips', {
+    method: 'POST',
+    body: JSON.stringify({
+      clientTripId: `web-${crypto.randomUUID()}`,
+      startedAt: when,
+      endedAt: when,
+      mode: input.mode,
+      vehicleSubtype: input.vehicleSubtype,
+      passengers: input.passengers,
+      distanceMeters: Math.round(input.distanceKm * 1000),
+      purpose: 'personal',
+    }),
+  });
+  return res.data;
 }
 
 /**

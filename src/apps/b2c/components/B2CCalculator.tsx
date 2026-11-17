@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
 import B2CLayout from './B2CLayout';
+import CalculatorModeSwitch from './CalculatorModeSwitch';
 import { cx, fmtInt, fmtNum } from '../ui';
 import './B2CCalculator.css';
 
@@ -431,6 +432,8 @@ const B2CCalculator: React.FC<B2CCalculatorProps> = () => {
           </div>
         </div>
       )}
+
+      {!autoCalculating && currentStep === 'form' && <CalculatorModeSwitch active="flight" />}
 
       {!autoCalculating && currentStep === 'form' && (
         <div className="b2cc-grid" key={formKey}>

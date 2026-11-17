@@ -582,7 +582,7 @@ const PublicImpactProfile: React.FC = () => {
               fontWeight: 400,
             }}
           >
-            contribuye a la acción climática por su huella de vuelo
+            contribuye a la acción climática compensando la huella de sus viajes
           </motion.p>
 
           {/* CO₂ big number */}
@@ -830,7 +830,7 @@ const PublicImpactProfile: React.FC = () => {
                 lineHeight: 1.55,
               }}
             >
-              Calcula las emisiones de tus vuelos y compénsalas apoyando proyectos
+              Calcula las emisiones de tus viajes y compénsalas apoyando proyectos
               de carbono verificados en Chile.
             </p>
             <Link
