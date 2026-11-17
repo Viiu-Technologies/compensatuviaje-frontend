@@ -5,6 +5,7 @@
 import apiClient from '../../../shared/services/apiClient';
 import { refreshSession } from '../../../shared/services/tokenRefresh';
 import { decodeJwtPayload } from '../../../shared/utils/jwt';
+import { clearAssistantHistory } from '../../../shared/utils/assistantHistory';
 import type {
   LoginResponse,
   RegisterCompanyRequest,
@@ -119,8 +120,10 @@ class AuthService {
     } catch (error) {
       console.error('Error al hacer logout en el backend:', error);
     } finally {
-      // Siempre limpiar tokens locales
+      // Siempre limpiar tokens locales y el historial del asistente: la
+      // siguiente cuenta que entre en esta pestaña no debe verlo.
       this.clearTokens();
+      clearAssistantHistory();
     }
   }
 
