@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Download, FileBarChart } from 'lucide-react';
+import { AlertTriangle, Download, FileBarChart, FileSpreadsheet } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -16,6 +16,7 @@ import {
   getB2CReport,
   exportReport,
   downloadCSV,
+  downloadMonthlyRevenueExcel,
   ReportFilters,
 } from '../services/adminApi';
 import { toast } from 'sonner';
@@ -57,6 +58,68 @@ const GROUP_LABELS: Record<string, string> = {
   type: 'Tipo',
   source: 'Fuente',
 };
+
+/** Últimos 24 meses (AAAA-MM), del más reciente al más antiguo, en hora local. */
+const recentMonths = (count = 24) => {
+  const now = new Date();
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const name = d.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+    return { value, label: i === 0 ? `${name} (en curso)` : name };
+  });
+};
+
+/**
+ * CTV-23 (Orden 5): Excel mensual para contabilidad. Una fila por
+ * compensación con cobrado bruto, comisión y monto para el partner; las
+ * antiguas sin desglose salen marcadas, sin repartir.
+ */
+function MonthlyRevenueExport() {
+  const months = recentMonths();
+  // Por defecto el último mes cerrado, que es el que se concilia.
+  const [month, setMonth] = useState(months[1].value);
+  const [busy, setBusy] = useState(false);
+
+  const download = async () => {
+    setBusy(true);
+    try {
+      await downloadMonthlyRevenueExcel(month);
+      toast.success('Excel descargado');
+    } catch (error) {
+      console.error('Error descargando Excel mensual:', error);
+      toast.error('No se pudo generar el Excel. Vuelve a intentarlo.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="adm-panel" aria-labelledby="rp-monthly-title">
+      <div className="adm-toolbar" style={{ borderBottom: 0, alignItems: 'flex-end' }}>
+        <div style={{ flex: '1 1 280px', minWidth: 0 }}>
+          <h2 id="rp-monthly-title" className="adm-panel__title">Ingresos del mes en Excel</h2>
+          <p className="adm-panel__desc">
+            Una fila por compensación (B2C y B2B) con lo cobrado, la comisión de la plataforma y lo que corresponde a cada partner.
+            Excluye proyectos de prueba.
+          </p>
+        </div>
+        <div className="adm-filters">
+          <div className="adm-field">
+            <label className="adm-field__label" htmlFor="rp-month">Mes</label>
+            <select id="rp-month" className="adm-select" value={month} onChange={(e) => setMonth(e.target.value)}>
+              {months.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </div>
+          <button type="button" className="adm-btn" onClick={download} disabled={busy} aria-busy={busy}>
+            <FileSpreadsheet aria-hidden="true" />
+            {busy ? 'Generando…' : 'Descargar Excel'}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /** Filas visibles en la tabla; el resto va en el CSV. */
 const TABLE_LIMIT = 50;
@@ -361,6 +424,8 @@ export default function ReportesPage() {
           </button>
         }
       />
+
+      <MonthlyRevenueExport />
 
       <section className="adm-panel">
         <div className="adm-toolbar" style={{ borderBottom: 0 }}>
