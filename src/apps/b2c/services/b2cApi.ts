@@ -380,9 +380,34 @@ export function normalizeDashboardData(raw: Partial<DashboardData>): DashboardDa
  *
  * @param period Ventana de los totales. `all` (por defecto) = historial completo.
  */
-export async function getDashboardStats(period: DashboardPeriod = 'all'): Promise<DashboardData> {
-  const res = await authFetch<{ success: boolean; data: DashboardData }>(`/b2c/dashboard?period=${period}`);
-  return normalizeDashboardData(res.data);
+export async function getDashboardStats(
+  period: DashboardPeriod = 'all',
+  { fresh = false }: { fresh?: boolean } = {}
+): Promise<DashboardData> {
+  // La barra lateral, el dashboard y Logros piden lo mismo al cargar: se
+  // comparte la petición en curso y la respuesta vale 10 s. Los errores no
+  // se guardan, así "Reintentar" vuelve a pedir.
+  const now = Date.now();
+  const hit = dashboardCache.get(period);
+  if (!fresh && hit && (hit.pending || now - hit.at < DASHBOARD_TTL_MS)) return hit.promise;
+
+  const promise = authFetch<{ success: boolean; data: DashboardData }>(`/b2c/dashboard?period=${period}`)
+    .then((res) => normalizeDashboardData(res.data));
+  const entry = { promise, at: now, pending: true };
+  dashboardCache.set(period, entry);
+  promise.then(
+    () => { entry.pending = false; entry.at = Date.now(); },
+    () => { if (dashboardCache.get(period) === entry) dashboardCache.delete(period); }
+  );
+  return promise;
+}
+
+const DASHBOARD_TTL_MS = 10_000;
+const dashboardCache = new Map<DashboardPeriod, { promise: Promise<DashboardData>; at: number; pending: boolean }>();
+
+/** Para después de pagar o borrar: la próxima lectura va al servidor. */
+export function invalidateDashboardCache(): void {
+  dashboardCache.clear();
 }
 
 /**
@@ -595,6 +620,7 @@ export async function getBadges(): Promise<B2CBadgesResponse> {
  * Eliminar un cálculo/vuelo (solo si no está compensado)
  */
 export async function deleteCalculation(id: string): Promise<{ success: boolean; message: string }> {
+  invalidateDashboardCache();
   const res = await authFetch<{ success: boolean; message: string }>(`/b2c/calculations/${id}`, {
     method: 'DELETE'
   });
