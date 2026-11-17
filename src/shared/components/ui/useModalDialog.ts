@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { MouseEvent, SyntheticEvent } from 'react';
+import { raiseToastLayer } from '../raiseToastLayer';
 
 interface UseModalDialogOptions {
   open: boolean;
@@ -36,6 +37,8 @@ export function useModalDialog({ open, onClose, busy = false, initialFocus }: Us
 
     if (open && !dialog.open) {
       dialog.showModal();
+      // Los toasts van por encima del modal; si no, un error quedaría tapado.
+      raiseToastLayer();
       if (initialFocus) dialog.querySelector<HTMLElement>(initialFocus)?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
@@ -56,7 +59,10 @@ export function useModalDialog({ open, onClose, busy = false, initialFocus }: Us
     // preventDefault: si seguía abierto por prop, se reabre.
     onClose: () => {
       const dialog = ref.current;
-      if (latest.current.open && dialog && !dialog.open) dialog.showModal();
+      if (latest.current.open && dialog && !dialog.open) {
+        dialog.showModal();
+        raiseToastLayer();
+      }
     },
     // Fallback del clic fuera para navegadores sin `closedby` (Safari). El clic
     // sobre el fondo llega con el propio <dialog> como target; se compara la

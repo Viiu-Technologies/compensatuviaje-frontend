@@ -1,0 +1,15 @@
+/* El popover es solo el vehículo hacia la capa superior: el UA le pone borde,
+   fondo, relleno y centrado, y aquí se anula todo. Mide 0x0 para no tapar
+   clics; el contenedor de sonner es position: fixed y se ancla al viewport. */
+.ctv-toast-layer {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  color: inherit;
+}

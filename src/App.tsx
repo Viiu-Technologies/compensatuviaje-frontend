@@ -4,7 +4,7 @@
 
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { ToastLayer } from './shared/components/ToastLayer';
 import './App.css';
 import { scheduleIdlePrefetch } from './shared/utils/routePrefetch';
 import PageTransitions from './shared/components/PageTransitions';
@@ -95,23 +95,9 @@ function App() {
         <B2CAuthProvider>
         <ThemeProvider>
           <div className="App min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
-            {/* Notificaciones globales. richColors da los tonos semanticos de
-                exito/error; closeButton permite descartarlas con teclado, y
-                sonner ya las publica en una region aria-live.
-                Se habia borrado por accidente en fad4106: desde entonces
-                ningun toast.* del sitio se mostraba. */}
-            <Toaster
-              position="top-center"
-              richColors
-              closeButton
-              duration={5000}
-              toastOptions={{
-                style: {
-                  fontFamily: "'Inter', system-ui, sans-serif",
-                  borderRadius: '12px',
-                },
-              }}
-            />
+            {/* Notificaciones globales. Se habia borrado por accidente en fad4106:
+                desde entonces ningun toast.* del sitio se mostraba. */}
+            <ToastLayer />
             <PageTransitions />
             <Suspense fallback={<PageLoader />}>
             <Routes>
