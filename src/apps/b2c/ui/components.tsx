@@ -1,4 +1,5 @@
 import React from 'react';
+import { useModalDialog } from '../../../shared/components/ui/useModalDialog';
 /** Íconos de react-icons (B2C) o lucide (partners). */
 export type IconType = React.ComponentType<{ className?: string }>;
 
@@ -175,8 +176,9 @@ export const Progress: React.FC<{ value: number; label?: string; className?: str
 };
 
 /**
- * Diálogo modal simple: Escape y clic fuera cierran (salvo con busy); el foco
- * entra al diálogo y vuelve al elemento que lo abrió.
+ * Diálogo modal simple sobre <dialog> nativo: Escape y clic fuera cierran
+ * (salvo con busy); el navegador atrapa el foco y lo devuelve al elemento que
+ * lo abrió.
  */
 export const Dialog: React.FC<{
   open: boolean;
@@ -187,45 +189,29 @@ export const Dialog: React.FC<{
   children: React.ReactNode;
   size?: 'md' | 'lg';
 }> = ({ open, title, onClose, busy = false, footer, children, size = 'md' }) => {
-  const ref = React.useRef<HTMLDivElement>(null);
   const titleId = React.useId();
-  const state = React.useRef({ busy, onClose });
-  state.current = { busy, onClose };
+  const modal = useModalDialog({ open, onClose, busy });
 
-  React.useEffect(() => {
-    if (!open) return;
-    const previous = document.activeElement as HTMLElement | null;
-    ref.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !state.current.busy) state.current.onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      previous?.focus?.();
-    };
-  }, [open]);
-
-  if (!open) return null;
+  // m-auto: el preflight de Tailwind pone margin 0 y el <dialog> dejaría de centrarse.
   return (
-    <div
-      className="fixed inset-0 z-[80] bg-black/40 flex items-center justify-center p-4"
-      onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}
+    <dialog
+      {...modal}
+      aria-labelledby={titleId}
+      className={cx(
+        'm-auto p-0 bg-white rounded-2xl shadow-xl w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto outline-none overscroll-contain',
+        'backdrop:bg-black/40 backdrop:overflow-hidden backdrop:overscroll-contain',
+        size === 'lg' ? 'max-w-2xl' : 'max-w-md',
+      )}
     >
-      <div
-        ref={ref}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className={cx('bg-white rounded-2xl shadow-xl w-full max-h-[90vh] overflow-y-auto outline-none', size === 'lg' ? 'max-w-2xl' : 'max-w-md')}
-      >
-        <div className="px-6 pt-5 pb-2">
-          <h2 id={titleId} className="text-lg font-semibold text-gray-900 m-0">{title}</h2>
-        </div>
-        <div className="px-6 pb-2 text-sm text-gray-700">{children}</div>
-        {footer && <div className="px-6 pt-4 pb-5 flex justify-end gap-2 flex-wrap">{footer}</div>}
-      </div>
-    </div>
+      {open && (
+        <>
+          <div className="px-6 pt-5 pb-2">
+            <h2 id={titleId} className="text-lg font-semibold text-gray-900 m-0">{title}</h2>
+          </div>
+          <div className="px-6 pb-2 text-sm text-gray-700">{children}</div>
+          {footer && <div className="px-6 pt-4 pb-5 flex justify-end gap-2 flex-wrap">{footer}</div>}
+        </>
+      )}
+    </dialog>
   );
 };

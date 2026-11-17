@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { formatCLP, formatCLPPerTon } from '../../../utils/currency';
 import { calculateTonsFromUnits, calculateUnitsFromKg } from '../../../utils/carbon';
+import { useModalDialog } from '../../../shared/components/ui/useModalDialog';
 import {
   FaGlobeAmericas, FaLeaf, FaTimes, FaMapMarkerAlt, FaCertificate, FaCreditCard, FaSpinner, FaShieldAlt,
   FaExternalLinkAlt, FaExclamationTriangle,
@@ -82,12 +83,12 @@ const B2CProjectsPage: React.FC = () => {
     fetchProjects();
   }, [reloadKey]);
 
-  useEffect(() => {
-    if (!selectedProject) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !payingProjectId) setSelectedProject(null); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [selectedProject, payingProjectId]);
+  // <dialog> nativo: Esc, clic fuera, foco atrapado y foco de vuelta al origen los pone el navegador.
+  const projectModal = useModalDialog({
+    open: selectedProject !== null,
+    onClose: () => setSelectedProject(null),
+    busy: payingProjectId !== null,
+  });
 
   /** Total en CLP de compensar la huella del usuario con un proyecto. */
   const getProjectTotalCLP = (project: B2CProject): number | null => {
@@ -316,6 +317,12 @@ const B2CProjectsPage: React.FC = () => {
         </div>
       )}
 
+      {/* m-auto: el preflight de Tailwind pone margin 0 y el <dialog> dejaría de centrarse. */}
+      <dialog
+        {...projectModal}
+        aria-label={selectedProject?.name}
+        className="m-auto p-0 bg-white rounded-2xl w-[calc(100%-2rem)] max-w-lg max-h-[92vh] overflow-y-auto shadow-xl overscroll-contain backdrop:bg-black/50 backdrop:overflow-hidden backdrop:overscroll-contain"
+      >
       {selectedProject && (() => {
         const p = selectedProject;
         const soldOut = p.isSoldOut;
@@ -351,11 +358,7 @@ const B2CProjectsPage: React.FC = () => {
         const tons = tonsParam ? parseFloat(tonsParam) : (emissionsKg ?? 0) / 1000;
 
         return (
-          <div
-            className="fixed inset-0 z-[80] bg-black/50 flex items-center justify-center p-4"
-            onMouseDown={(e) => { if (e.target === e.currentTarget && !payingProjectId) setSelectedProject(null); }}
-          >
-            <div role="dialog" aria-modal="true" aria-label={p.name} className="bg-white rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-xl">
+          <>
               <div className="relative h-48 bg-gray-100">
                 {heroPhoto ? (
                   <img src={heroPhoto} alt="" className="w-full h-full object-cover" />
@@ -508,10 +511,10 @@ const B2CProjectsPage: React.FC = () => {
                   )}
                 </div>
               </div>
-            </div>
-          </div>
+          </>
         );
       })()}
+      </dialog>
     </div>,
   );
 };
