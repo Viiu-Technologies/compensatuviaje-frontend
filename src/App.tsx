@@ -5,6 +5,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastLayer } from './shared/components/ToastLayer';
+import DemoModeBanner from './shared/components/DemoModeBanner';
 import './App.css';
 import { scheduleIdlePrefetch } from './shared/utils/routePrefetch';
 import PageTransitions from './shared/components/PageTransitions';
@@ -98,6 +99,7 @@ function App() {
             {/* Notificaciones globales. Se habia borrado por accidente en fad4106:
                 desde entonces ningun toast.* del sitio se mostraba. */}
             <ToastLayer />
+            <DemoModeBanner />
             <PageTransitions />
             <Suspense fallback={<PageLoader />}>
             <Routes>

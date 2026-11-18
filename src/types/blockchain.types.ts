@@ -201,6 +201,8 @@ export interface BlockchainStatsResponse {
 // Válido = el certificado existe y está emitido; el NFT es un dato aparte.
 export interface PublicVerification {
   valid: boolean;
+  /** Emitido en modo demostración: nunca es válido. */
+  demo?: boolean;
   status: 'issued' | 'revoked' | 'draft' | 'not_found';
   certificate: {
     compensationId: string;
