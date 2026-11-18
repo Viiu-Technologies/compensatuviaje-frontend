@@ -8,24 +8,11 @@
  * una sola vez por carga de página.
  */
 import React, { useEffect, useState } from 'react';
+import { fetchSiteConfig } from '../../../shared/services/siteConfig';
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:3001/api';
-
-let cached: Promise<boolean> | null = null;
-
-function isLocalhost(): boolean {
-  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-}
-
-/** ¿Webpay está en modo de pruebas? Ante cualquier error responde false (no muestra la ayuda). */
+/** ¿Webpay está en modo de pruebas? Ante un error se asume que no (no muestra la ayuda), salvo en localhost. */
 export function fetchIsSandbox(): Promise<boolean> {
-  if (!cached) {
-    cached = fetch(`${API_URL}/public/config/payments`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((body) => body?.data?.webpayEnvironment === 'integration')
-      .catch(() => isLocalhost());
-  }
-  return cached;
+  return fetchSiteConfig().then((c) => c.webpayEnvironment === 'integration');
 }
 
 export function useIsSandbox(): boolean {
