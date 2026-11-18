@@ -802,3 +802,34 @@
     transform: none !important;
   }
 }
+/* --------------------------------------------------------------------------
+   Modo demostración (DemoModeBanner)
+   El aviso va en el flujo, arriba de todo, y este encabezado es fijo: sin esto
+   lo taparía. Se baja la altura del aviso (--ctv-demo-h, la mide el banner) y
+   vuelve al borde a medida que el aviso sale de la pantalla, ligado al scroll.
+   Sin soporte de animation-timeline queda debajo del aviso: mejor un hueco que
+   ocultar el aviso.
+   -------------------------------------------------------------------------- */
+html[data-demo-mode] .ctv-liquid-surface {
+  top: var(--ctv-demo-h, 0px);
+}
+
+@supports (animation-timeline: scroll()) {
+  @keyframes ctv-demo-header-dock {
+    to { top: 0; }
+  }
+  html[data-demo-mode] .ctv-liquid-surface {
+    animation: ctv-demo-header-dock auto linear both;
+    animation-timeline: scroll(block root);
+    animation-range: 0px var(--ctv-demo-h, 0px);
+  }
+  /* Va 1:1 con el scroll (es la posición, no un efecto), así que se mantiene
+     aunque el usuario pida reducir el movimiento. */
+  @media (prefers-reduced-motion: reduce) {
+    html[data-demo-mode] .ctv-liquid-surface {
+      animation: ctv-demo-header-dock auto linear both !important;
+      animation-timeline: scroll(block root);
+      animation-range: 0px var(--ctv-demo-h, 0px);
+    }
+  }
+}

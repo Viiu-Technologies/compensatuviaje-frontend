@@ -26,7 +26,7 @@ import { useTailwindSpacing } from '../../utils/useTailwindSpacing';
 import type { NFTCertificate, PublicVerification } from '../../../types/blockchain.types';
 
 interface VerificationResult {
-  status: 'loading' | 'verified' | 'revoked' | 'not-found' | 'invalid' | 'error';
+  status: 'loading' | 'verified' | 'demo' | 'revoked' | 'not-found' | 'invalid' | 'error';
   certificate?: NFTCertificate;
   publicCert?: NonNullable<PublicVerification['certificate']>;
   blockchain?: PublicVerification['blockchain'];
@@ -60,6 +60,10 @@ const CertificateVerificationPage: React.FC = () => {
         publicCert: pub.certificate ?? undefined,
         blockchain: pub.blockchain ?? undefined,
       });
+      return;
+    }
+    if (pub.demo && pub.certificate) {
+      setVerification({ status: 'demo', publicCert: pub.certificate });
       return;
     }
     if (pub.valid && pub.certificate) {
@@ -410,6 +414,39 @@ const CertificateVerificationPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Demostración: existe, pero no tiene validez */}
+        {verification.status === 'demo' && (
+          <div className="max-w-md mx-auto text-center py-20">
+            <div className="w-20 h-20 mx-auto mb-6 bg-amber-900/20 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-10 h-10 text-amber-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Certificado de demostración</h2>
+            <p className="text-slate-300 mb-4">
+              El certificado {verification.publicCert?.certificateNumber || compensationId || numero} se emitió en el modo
+              de demostración de CompensaTuViaje. <strong className="text-amber-300">No tiene validez</strong> y no corresponde
+              a una contribución climática real.
+            </p>
+            {verification.publicCert && (
+              <dl className="text-sm text-slate-400 mb-6 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-left max-w-xs mx-auto">
+                <dt>Proyecto</dt>
+                <dd className="text-slate-300">{verification.publicCert.projectName}</dd>
+                <dt>Fecha</dt>
+                <dd className="text-slate-300">
+                  {verification.publicCert.issuedAt
+                    ? new Date(verification.publicCert.issuedAt).toLocaleDateString('es-CL', { dateStyle: 'long' })
+                    : '—'}
+                </dd>
+              </dl>
+            )}
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
+            >
+              Ir al inicio
+            </Link>
           </div>
         )}
 
