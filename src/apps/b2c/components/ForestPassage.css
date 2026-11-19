@@ -1,0 +1,195 @@
+/* Entrada por el bosque (ForestPassage.tsx). Solo transform y opacity. */
+.fp-root {
+  --fp-tree-a: #0b3b2e;
+  --fp-tree-b: #134e3a;
+  --fp-trunk: #2a1d14;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: #06231c;
+  color: #ecfdf5;
+}
+
+.fp-camera {
+  position: absolute;
+  inset: -2%;
+  animation: fp-run 0.38s ease-in-out infinite alternate;
+}
+
+.fp-root--clearing .fp-camera {
+  animation: none;
+}
+
+.fp-sky,
+.fp-ground,
+.fp-mist,
+.fp-light,
+.fp-sun,
+.fp-trees,
+.fp-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.fp-sky {
+  background: linear-gradient(180deg, #052e26 0%, #0f5132 38%, #9bd3a8 54%, #f6e7b4 56%, #134e3a 60%, #052e26 100%);
+}
+
+.fp-sun {
+  inset: auto;
+  left: 50%;
+  top: 55%;
+  width: 22vmin;
+  height: 22vmin;
+  margin: -11vmin 0 0 -11vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffbe6 0%, rgba(255, 244, 196, 0.6) 40%, transparent 70%);
+}
+
+.fp-ground {
+  top: 56%;
+  background: linear-gradient(180deg, #1f6b47 0%, #0b3b2e 45%, #052e26 100%);
+}
+
+/* El sendero: una franja clara que se abre hacia la cámara. */
+.fp-ground::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(246, 231, 180, 0.55), rgba(190, 160, 110, 0.25));
+  clip-path: polygon(48.5% 0, 51.5% 0, 75% 100%, 25% 100%);
+}
+
+/* Cada capa nace pequeña en el horizonte, crece hacia la cámara y se
+   desvanece al pasar. Las demoras negativas reparten las capas: desde el
+   primer cuadro ya hay árboles a distintas distancias. */
+.fp-layer {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 55%;
+  opacity: 0;
+  animation: fp-approach 1.5s linear infinite;
+  animation-delay: calc(var(--fp-i) * -0.2143s);
+}
+
+.fp-trees {
+  transition: opacity 0.6s ease-out, scale 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Al llegar al claro los árboles se abren hacia los lados y se apagan. */
+.fp-root--clearing .fp-trees {
+  opacity: 0;
+  scale: 1.6;
+}
+
+.fp-mist {
+  background: radial-gradient(ellipse 70% 22% at 50% 58%, rgba(236, 253, 245, 0.35), transparent 70%);
+}
+
+.fp-light {
+  inset: auto;
+  left: 50%;
+  top: 55%;
+  width: 40vmax;
+  height: 40vmax;
+  margin: -20vmax 0 0 -20vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffdf3 0%, #fff7d6 35%, rgba(255, 247, 214, 0) 70%);
+  opacity: 0;
+  scale: 0.2;
+}
+
+.fp-root--clearing .fp-light {
+  animation: fp-clearing 0.9s cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+}
+
+.fp-root--clearing {
+  animation: fp-root-out 0.55s ease-in 0.75s forwards;
+}
+
+.fp-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  margin: 0;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+}
+
+.fp-root--clearing .fp-caption {
+  color: #134e3a;
+  text-shadow: none;
+}
+
+.fp-skip {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 253, 245, 0.45);
+  background: rgba(6, 35, 28, 0.45);
+  color: inherit;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.fp-skip:hover {
+  background: rgba(6, 35, 28, 0.7);
+}
+
+.fp-skip:focus-visible {
+  outline: 2px solid #fef3c7;
+  outline-offset: 2px;
+}
+
+@keyframes fp-run {
+  from { translate: 0 -0.35%; }
+  to { translate: 0 0.35%; }
+}
+
+@keyframes fp-approach {
+  0% { transform: scale(0.28); opacity: 0; }
+  25% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+@keyframes fp-clearing {
+  0% { opacity: 0; scale: 0.2; }
+  100% { opacity: 1; scale: 5; }
+}
+
+@keyframes fp-root-out {
+  to { opacity: 0; }
+}
+
+/* ── Lista de proyectos: aparecen en orden al salir del claro ─────────── */
+.ctv-projects-grid > * {
+  --stagger-time: 70ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ctv-projects-grid > * {
+    animation: ctv-project-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--sibling-index, 1) * var(--stagger-time));
+  }
+
+  /* Literal en @supports: con var() la condición siempre es verdadera. */
+  @supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .ctv-projects-grid > * {
+      animation-delay: calc(sibling-index() * var(--stagger-time));
+    }
+  }
+}
+
+@keyframes ctv-project-in {
+  from { opacity: 0; translate: 0 14px; }
+  to { opacity: 1; translate: 0 0; }
+}
