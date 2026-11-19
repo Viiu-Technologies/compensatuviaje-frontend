@@ -58,13 +58,13 @@ const DemoModeBanner: React.FC = () => {
   return (
     <aside
       ref={ref}
-      aria-label="Modo demostración"
+      aria-label="Acceso anticipado"
       className="relative bg-amber-100 text-amber-950 border-b border-amber-300 text-center text-sm leading-snug dark:bg-amber-950 dark:text-amber-100 dark:border-amber-800"
       // En línea: el reset global de index.css anula p-* fuera de .tw-spacing (portada incluida).
       style={{ padding: '0.5rem 1rem' }}
     >
-      <strong>Sitio en modo demostración:</strong> los pagos se hacen con tarjetas de prueba y los certificados no tienen
-      validez.
+      <strong>Acceso anticipado:</strong> estás usando CompensaTuViaje antes de su apertura. Los pagos se hacen con
+      tarjetas de prueba y los certificados todavía no tienen validez.
     </aside>
   );
 };
@@ -82,7 +82,7 @@ export const DemoModeNotice: React.FC = () => {
       className="m-0 rounded-lg bg-amber-50 text-amber-950 border border-amber-200 text-sm leading-snug dark:bg-amber-950 dark:text-amber-100 dark:border-amber-800"
       style={{ padding: '0.5rem 0.75rem' }}
     >
-      <strong>Modo demostración:</strong> estos certificados no tienen validez.
+      <strong>Acceso anticipado:</strong> estos certificados se emitieron con pagos de prueba y todavía no tienen validez.
     </p>
   );
 };
