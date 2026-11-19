@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa';
 import B2CLayout from '../components/B2CLayout';
 import { SandboxHelp, useIsSandbox } from '../components/SandboxHelp';
+import ForestPassage from '../components/ForestPassage';
 import b2cApi, { createPaymentTransaction, type B2CProject } from '../services/b2cApi';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import {
@@ -33,6 +34,10 @@ const monthlySoldPct = (p: B2CProject) => {
 };
 
 const unitName = (p: B2CProject) => p.impact_unit || 'unidades';
+
+/** Sin sibling-index() en CSS, cada tarjeta recibe su posición en --sibling-index (ForestPassage.css). */
+const SUPPORTS_SIBLING_INDEX =
+  typeof CSS !== 'undefined' && CSS.supports('animation-delay: calc(sibling-index() * 0.1s)');
 
 /** Pago mínimo que acepta Webpay; el backend valida lo mismo (create-transaction). */
 const WEBPAY_MIN_CLP = 50;
@@ -167,6 +172,8 @@ const B2CProjectsPage: React.FC = () => {
         ? (tripCount > 1 ? `Elige con qué proyecto compensar tus ${tripCount} viajes` : 'Elige con qué proyecto compensar tu viaje')
         : 'Los proyectos con los que puedes compensar tu huella'}
     >
+      {/* Mismo lugar en todos los estados: no se reinicia al terminar la carga. */}
+      <ForestPassage ready={!loading} />
       {content}
     </B2CLayout>
   );
@@ -206,6 +213,10 @@ const B2CProjectsPage: React.FC = () => {
         <div role="alert" className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
       )}
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="m-0 text-base font-semibold text-gray-900">
+          {filteredProjects.length === 1 ? '1 proyecto disponible' : `${filteredProjects.length} proyectos disponibles`}
+        </h2>
       {filters.length > 2 && (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo de proyecto">
           {filters.map((f) => (
@@ -224,6 +235,7 @@ const B2CProjectsPage: React.FC = () => {
           ))}
         </div>
       )}
+      </div>
 
       {filteredProjects.length === 0 ? (
         <Card>
@@ -234,20 +246,24 @@ const B2CProjectsPage: React.FC = () => {
           />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredProjects.map((project) => {
+        <ul className="ctv-projects-grid list-none m-0 p-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 auto-rows-fr gap-4">
+          {filteredProjects.map((project, index) => {
             const soldOut = project.isSoldOut;
             const photo = project.photos?.[0]?.thumbnailUrl || project.photos?.[0]?.url || null;
             const approved = project.monthlyStockApproved || 0;
             const sold = Math.max(approved - (project.monthlyStockRemaining || 0), 0);
             const total = hasCalculation ? getProjectTotalCLP(project) : null;
             return (
+              <li
+                key={`${filter}-${project.id}`}
+                className="flex"
+                style={SUPPORTS_SIBLING_INDEX ? undefined : ({ '--sibling-index': index + 1 } as React.CSSProperties)}
+              >
               <button
-                key={project.id}
                 type="button"
                 onClick={() => { setSelectedProject(project); setAcceptedTerms(false); }}
                 className={cx(
-                  'text-left bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col cursor-pointer p-0 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-brand-700',
+                  'w-full text-left bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col cursor-pointer p-0 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-brand-700',
                   soldOut && 'opacity-70',
                 )}
               >
@@ -309,12 +325,16 @@ const B2CProjectsPage: React.FC = () => {
                     <div className="mt-1.5 text-xs text-gray-500">
                       {fmtInt(sold)} de {fmtInt(approved)} {unitName(project)} del cupo mensual ya compensados
                     </div>
+                    <span className="mt-4 block text-sm font-semibold text-brand-700">
+                      {soldOut ? 'Ver detalle' : hasCalculation ? 'Elegir este proyecto →' : 'Ver proyecto →'}
+                    </span>
                   </div>
                 </div>
               </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
 
       {/* m-auto: el preflight de Tailwind pone margin 0 y el <dialog> dejaría de centrarse. */}
