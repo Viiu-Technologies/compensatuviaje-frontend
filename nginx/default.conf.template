@@ -45,6 +45,15 @@ map $sent_http_content_type $html_cache_control {
     "~^text/html"  "no-cache, no-store, must-revalidate";
 }
 
+# /app (el QR de la landing): a la tienda del teléfono que lo abre. En escritorio,
+# o si no se reconoce, a la franja de descarga de la landing, con las dos tiendas.
+# iPadOS se presenta como Mac y cae ahí: también ve las dos.
+map $http_user_agent $app_store_target {
+    default                    "/#app";
+    "~*android"                "https://play.google.com/store/apps/details?id=com.compensatuviaje.tracker";
+    "~*(iphone|ipad|ipod)"     "https://apps.apple.com/cl/app/id6829542366";
+}
+
 # Bots de redes sociales (vistas previas de enlaces). Solo ellos reciben las
 # etiquetas del certificado en /verify/:id; las personas siguen en la SPA.
 map $http_user_agent $is_social_bot {
@@ -112,6 +121,18 @@ server {
     location ~ ^/og/profile/([^/]+\.jpg)$ {
         include /etc/nginx/snippets/headers.conf;
         proxy_pass $backend/api/public/og/profile/$1$is_args$args;
+    }
+
+    # QR de descarga de las apps (ver el map $app_store_target).
+    location = /app {
+        include /etc/nginx/snippets/headers.conf;
+        # La respuesta depende del teléfono: que nadie (Cloudflare incluido) la guarde.
+        add_header Cache-Control "no-store" always;
+        add_header Vary "User-Agent" always;
+        # Location relativa: nginx escucha en http detrás de Cloudflare y si no
+        # la armaría como http://… para el caso de escritorio.
+        absolute_redirect off;
+        return 302 $app_store_target;
     }
 
     # --- Archivos estáticos ---

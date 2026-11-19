@@ -1,0 +1,185 @@
+/* ==========================================================================
+   AppDownload.css — descarga de las apps (franja de la landing y pie)
+   ========================================================================== */
+@import './landing/tokens.css';
+
+/* ── Franja ── */
+.ad-section {
+  background: var(--ctv-canvas);
+  font-family: var(--ctv-font-body);
+  padding: calc(var(--ctv-section-y) * 0.6) 0;
+}
+
+.ad-container {
+  width: 100%;
+  max-width: var(--ctv-page-max);
+  margin: 0 auto;
+  padding: 0 var(--ctv-gutter);
+}
+
+.ad-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ctv-space-8);
+  padding: clamp(var(--ctv-space-6), 4vw, var(--ctv-space-12));
+  border: 1px solid var(--ctv-rule);
+  border-radius: var(--ctv-radius-xl);
+  background: #ffffff;
+  box-shadow: var(--ctv-shadow-card);
+}
+
+.ad-copy {
+  flex: 1 1 22rem;
+  min-width: 0;
+}
+
+.ad-eyebrow {
+  margin: 0 0 var(--ctv-space-2);
+  font-size: var(--ctv-text-caption);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ctv-brand);
+}
+
+.ad-title {
+  margin: 0 0 var(--ctv-space-3);
+  font-family: var(--ctv-font-display);
+  font-size: var(--ctv-text-h2);
+  font-weight: var(--ctv-display-weight);
+  letter-spacing: var(--ctv-display-tracking);
+  line-height: 1.1;
+  color: var(--ctv-ink);
+  text-wrap: balance;
+}
+
+.ad-lead {
+  margin: 0 0 var(--ctv-space-6);
+  max-width: var(--ctv-measure);
+  font-size: var(--ctv-text-body-lg);
+  line-height: 1.55;
+  color: var(--ctv-ink-soft);
+}
+
+/* ── Insignias ── */
+.ad-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ctv-space-3);
+}
+
+.ad-badge {
+  display: inline-flex;
+  border-radius: 8px;
+  transition: transform 0.2s var(--ctv-ease-out);
+}
+
+.ad-badge:hover {
+  transform: translateY(-2px);
+}
+
+.ad-badge:focus-visible {
+  outline: none;
+  box-shadow: var(--ctv-focus-ring);
+}
+
+/* Mismo alto visual para las dos (las guías de Apple y Google lo piden). */
+.ad-badge img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+
+.ad-other {
+  margin-top: var(--ctv-space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--ctv-text-small);
+  color: var(--ctv-ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.ad-other:hover {
+  color: var(--ctv-ink);
+}
+
+.ad-other:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: var(--ctv-focus-ring);
+}
+
+/* ── QR ── */
+.ad-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ctv-space-3);
+  margin: 0;
+  max-width: 12rem;
+  text-align: center;
+}
+
+.ad-qr img {
+  display: block;
+  width: 160px;
+  height: 160px;
+  padding: var(--ctv-space-2);
+  border: 1px solid var(--ctv-rule);
+  border-radius: var(--ctv-radius-md);
+  background: #ffffff;
+}
+
+.ad-qr__caption {
+  font-size: var(--ctv-text-caption);
+  line-height: 1.45;
+  color: var(--ctv-ink-mute);
+}
+
+/* Pantalla estrecha sin ser teléfono (ventana reducida): el QR no aporta. */
+@media (max-width: 640px) {
+  .ad-qr {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-badge {
+    transition: none;
+  }
+
+  .ad-badge:hover {
+    transform: none;
+  }
+}
+
+/* ── Variante del pie (fondo oscuro) ── */
+.ad-compact {
+  margin-top: var(--ctv-space-6);
+}
+
+.ad-compact__label {
+  margin: 0 0 var(--ctv-space-3);
+  font-size: var(--ctv-text-small);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ad-compact .ad-badge img {
+  height: 40px;
+}
+
+.ad-compact .ad-other {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ad-compact .ad-other:hover {
+  color: #ffffff;
+}

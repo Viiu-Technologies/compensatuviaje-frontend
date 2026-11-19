@@ -5,6 +5,7 @@ import { gsap, useGsapReveal, reveal, sectionTimeline } from '../hooks/useGsapRe
 import { LEGAL, LEGAL_ROUTES, ownerLine } from '../../../shared/config/legal';
 import { subscribeToNewsletter } from '../services/newsService';
 import './Footer.css';
+import AppDownload from './AppDownload';
 
 // Rutas absolutas (el footer también se usa fuera de la landing, donde un
 // "#faq" suelto no apunta a nada). Las anclas /#… las resuelve el Header.
@@ -178,6 +179,7 @@ const Footer = ({ curtain = false }: FooterProps) => {
               Compensamos la huella de carbono de tus viajes apoyando proyectos
               verificados en Chile y el mundo.
             </p>
+            <AppDownload variant="compact" />
           </div>
 
           {SECTIONS.map((section) => (
