@@ -279,6 +279,15 @@
     pointer-events: none;
   }
 
+  /* Desenfoque muy suave en las tarjetas que quedan detrás de la del frente
+     (--stack-blur va de 0 a 1, lo pone stackCards). Va en el contenido y no
+     en la tarjeta para que el borde y la sombra sigan nítidos. Al volver hacia
+     arriba la tarjeta recupera la nitidez cuando le toca estar al frente. */
+  .ft-steps > .ft-step .ft-step__art,
+  .ft-steps > .ft-step .ft-step__content {
+    filter: blur(calc(var(--stack-blur, 0) * 2.5px));
+  }
+
   .ft-steps > .ft-step .ft-step__art {
     margin: -2.25rem 0 -2.25rem -2rem;
     border-bottom: none;
