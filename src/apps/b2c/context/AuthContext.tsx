@@ -103,7 +103,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initialLoadRef.current = initAuth();
 
     // Subscribe to Supabase auth events (handles token refresh automatically)
-    const { data } = authService.onAuthStateChange(async (event, session) => {
+    // El callback se ejecuta mientras supabase-js tiene tomado su lock interno:
+    // si espera (await) algo que llame a getSession(), se produce un deadlock
+    // hasta el timeout de 5 s y la sesión se da por perdida al recargar. Por eso
+    // el trabajo se saca del callback con setTimeout (recomendación de Supabase).
+    const { data } = authService.onAuthStateChange((event, session) => {
+      setTimeout(() => { void handleAuthEvent(event, session); }, 0);
+    });
+
+    const handleAuthEvent = async (event: string, session: any) => {
       if (!mounted) return;
       if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -127,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await loadUser(session);
         }
       }
-    });
+    };
 
     return () => {
       mounted = false;
