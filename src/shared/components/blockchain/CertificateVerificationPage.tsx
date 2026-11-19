@@ -423,10 +423,10 @@ const CertificateVerificationPage: React.FC = () => {
             <div className="w-20 h-20 mx-auto mb-6 bg-amber-900/20 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-10 h-10 text-amber-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">Certificado de demostración</h2>
+            <h2 className="text-2xl font-bold text-white mb-3">Certificado de acceso anticipado</h2>
             <p className="text-slate-300 mb-4">
-              El certificado {verification.publicCert?.certificateNumber || compensationId || numero} se emitió en el modo
-              de demostración de CompensaTuViaje. <strong className="text-amber-300">No tiene validez</strong> y no corresponde
+              El certificado {verification.publicCert?.certificateNumber || compensationId || numero} se emitió durante el
+              acceso anticipado de CompensaTuViaje, con un pago de prueba. <strong className="text-amber-300">No tiene validez</strong> y no corresponde
               a una contribución climática real.
             </p>
             {verification.publicCert && (

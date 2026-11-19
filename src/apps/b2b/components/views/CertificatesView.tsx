@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Download, FileText, RefreshCw, ShieldCheck } from 'lucide-react';
+import { DemoModeNotice } from '../../../../shared/components/DemoModeBanner';
 import { getMyCertificates, type B2BCertificate } from '../../services/certificatesService';
 import {
   Badge,
@@ -65,6 +66,8 @@ const CertificatesView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ on
           </button>
         }
       />
+
+      <DemoModeNotice />
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
