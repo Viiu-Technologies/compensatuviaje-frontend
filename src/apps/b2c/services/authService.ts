@@ -266,7 +266,7 @@ class AuthService {
       // Timeout para evitar que se quede pegado indefinidamente
       const sessionPromise = supabase.auth.getSession();
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 5000)
+        setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 10000)
       );
 
       const { data, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
@@ -293,37 +293,57 @@ class AuthService {
         return null;
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+      // Al recargar, un fallo pasajero (backend despertando, 5xx, red lenta o un
+      // access token recién vencido) NO debe equivaler a "sin sesión": antes
+      // devolvía null a la primera y la ruta protegida mandaba a /login con los
+      // tokens aún guardados. Se reintenta una vez; ante un 401 se pide a
+      // Supabase renovar el token antes del reintento.
+      let accessToken = session.access_token;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        let response: Response;
+        try {
+          response = await fetch(`${API_URL}/b2c/auth/me`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` },
+            signal: controller.signal
+          });
+        } catch (error: any) {
+          console.error(
+            error.name === 'AbortError'
+              ? '❌ [AuthService] Timeout obteniendo usuario'
+              : '❌ [AuthService] Error de red obteniendo usuario:',
+            error.name === 'AbortError' ? '' : error
+          );
+          if (attempt === 0) continue;
+          return null;
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
-      const response = await fetch(`${API_URL}/b2c/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        signal: controller.signal
-      });
+        if (response.ok) {
+          const data = await response.json();
+          if (!data.success) {
+            console.error('❌ [AuthService] Backend error:', data.message);
+            return null;
+          }
+          return data.data.user;
+        }
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
         console.error('❌ [AuthService] Error response from /b2c/auth/me:', response.status);
+        if (attempt === 0 && (response.status === 401 || response.status >= 500)) {
+          if (response.status === 401 && !providedSession) {
+            const supabase = await getSupabaseClient();
+            const { data } = (await supabase?.auth.refreshSession()) ?? { data: null };
+            if (data?.session) accessToken = data.session.access_token;
+          }
+          continue;
+        }
         return null;
       }
-
-      const data = await response.json();
-      
-      if (!data.success) {
-        console.error('❌ [AuthService] Backend error:', data.message);
-        return null;
-      }
-      
-      return data.data.user;
+      return null;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.error('❌ [AuthService] Request timeout getting current user');
-      } else {
-        console.error('❌ [AuthService] Error obteniendo usuario:', error);
-      }
+      console.error('❌ [AuthService] Error obteniendo usuario:', error);
       return null;
     }
   }
