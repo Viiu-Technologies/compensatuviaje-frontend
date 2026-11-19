@@ -93,7 +93,8 @@ export function stackCards(cards: HTMLElement[], list: Element) {
     cards.forEach((card, i) => {
       let covered = 0;
       for (let j = i + 1; j < cards.length; j++) covered += arrived[j];
-      gsap.set(card, { scale: 1 - SHRINK * covered, '--stack-dim': DIM * covered });
+      // --stack-blur llega a 1 cuando la tarjeta queda tapada del todo (ver Features.css).
+      gsap.set(card, { scale: 1 - SHRINK * covered, '--stack-dim': DIM * covered, '--stack-blur': Math.min(1, covered) });
     });
   };
 
@@ -108,7 +109,7 @@ export function stackCards(cards: HTMLElement[], list: Element) {
 
   return () => {
     trigger.kill();
-    gsap.set(cards, { clearProps: 'scale,--stack-dim' });
+    gsap.set(cards, { clearProps: 'scale,--stack-dim,--stack-blur' });
   };
 }
 
