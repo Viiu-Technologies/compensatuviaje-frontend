@@ -13,6 +13,7 @@ import { usePointerEffects } from '../hooks/usePointerEffects';
 
 // Below-fold sections: lazy loaded for optimal Core Web Vitals (FCP / LCP)
 const Features = lazy(() => import('../components/Features'));
+const AppDownload = lazy(() => import('../components/AppDownload'));
 const VirtualForestSection = lazy(() => import('../components/forest3d/VirtualForestSection'));
 const ProjectsBento = lazy(() => import('../components/ProjectsBento'));
 const EnterpriseSuite = lazy(() => import('../components/EnterpriseSuite'));
@@ -52,6 +53,11 @@ const LandingPage: React.FC = () => {
             que la cierra), y al final empresas y preguntas. */}
         <DeferredSection id="como-funciona" heights={[1519, 2551, 1708]}>
           <Features />
+        </DeferredSection>
+        {/* Justo después de "Cómo funciona", que termina en "verifica tu
+            certificado": el paso siguiente natural es llevarlo en el teléfono. */}
+        <DeferredSection id="app" heights={[520, 440, 400]}>
+          <AppDownload />
         </DeferredSection>
         <DeferredSection id="verificar" heights={[680, 1090, 625]}>
           <CertificateSearch />

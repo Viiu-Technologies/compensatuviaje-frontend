@@ -19,6 +19,7 @@ import './SectionRail.css';
 
 const STOPS = [
   { id: 'como-funciona', label: 'Medir', dark: false },
+  { id: 'app', label: 'App', dark: false },
   { id: 'verificar', label: 'Verificar', dark: true },
   { id: 'proyectos', label: 'Proyectos', dark: false },
   { id: 'entorno-verde', label: 'Regenerar', dark: true },
