@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useId, useState } from 'react';
+import { useModalDialog } from './ui/useModalDialog';
 import { Check, Copy, PlugZap, ShieldAlert, X } from 'lucide-react';
 import authService from '../../apps/b2c/services/authService';
 
@@ -86,9 +87,45 @@ async function resolveActiveToken(role: McpRole): Promise<string | null> {
   return session?.access_token ?? null;
 }
 
+/** Qué puede hacer cada herramienta, dicho para personas. */
+const TOOL_LABELS: Record<string, string> = {
+  calcularVuelo: 'Calcular la huella de un vuelo',
+  verMisViajes: 'Ver tus viajes calculados',
+  verMisInsignias: 'Ver tus insignias',
+  verMisCertificados: 'Ver tus certificados',
+  verificarCertificado: 'Verificar un certificado',
+  revisarEstadoPago: 'Revisar el estado de un pago',
+  verHistorialPagos: 'Ver tu historial de pagos',
+  verProyectosDisponibles: 'Ver los proyectos disponibles',
+  verEstadoOnboarding: 'Ver el estado de tu registro',
+  validarDocumentos: 'Revisar tus documentos',
+  verDeudaEmisiones: 'Ver las emisiones pendientes',
+  verMisOrdenes: 'Ver tus órdenes',
+  verMisCertificadosB2B: 'Ver los certificados de tu empresa',
+  verTimelineEmpresa: 'Ver la historia de tu empresa',
+  verResumenPartner: 'Ver tu resumen como partner',
+  verMisProyectosPartner: 'Ver tus proyectos',
+  verMisLiquidacionesPartner: 'Ver tus liquidaciones',
+  verDashboardAdmin: 'Ver el panel de administración',
+  buscarEmpresa: 'Buscar una empresa',
+  verDetalleEmpresa: 'Ver el detalle de una empresa',
+  verEmpresasPendientes: 'Ver empresas pendientes',
+  verEstadoFondoAdmin: 'Ver el estado del fondo',
+  verLiquidacionesAdmin: 'Ver liquidaciones',
+  verPagosYReembolsosAdmin: 'Ver pagos y reembolsos',
+  verOrdenesB2bPendientesAdmin: 'Ver órdenes B2B pendientes',
+  verProyectosEsgAdmin: 'Ver proyectos ESG',
+};
+
+type Tab = 'web' | 'desktop';
+
 /**
- * Botón y modal reutilizable para conectar la sesión activa con clientes MCP
- * externos (Claude Web / Claude Desktop / ChatGPT / OpenAI Responses API).
+ * Botón y ventana para conectar la sesión activa con clientes MCP externos
+ * (Claude, ChatGPT, Claude Desktop, OpenAI Responses API).
+ *
+ * Usa <dialog> nativo (useModalDialog): se abre en la capa superior. Antes era
+ * un div `fixed` dentro del encabezado, y el backdrop-blur del encabezado lo
+ * dejaba posicionado respecto a él: la ventana salía cortada arriba.
  */
 export const McpConnectTrigger: React.FC<McpConnectTriggerProps> = ({
   role,
@@ -96,9 +133,11 @@ export const McpConnectTrigger: React.FC<McpConnectTriggerProps> = ({
   className = '',
 }) => {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>('web');
   const [token, setToken] = useState<string | null>(null);
   const [loadingToken, setLoadingToken] = useState(false);
   const [copiedKey, setCopiedKey] = useState<'url' | 'json' | null>(null);
+  const titleId = useId();
 
   const meta = ROLE_META[role];
   const endpoint = getMcpBaseEndpoint();
@@ -120,6 +159,8 @@ export const McpConnectTrigger: React.FC<McpConnectTriggerProps> = ({
     2
   );
 
+  const modal = useModalDialog({ open, onClose: () => setOpen(false) });
+
   const handleOpen = useCallback(async () => {
     setOpen(true);
     setLoadingToken(true);
@@ -130,15 +171,6 @@ export const McpConnectTrigger: React.FC<McpConnectTriggerProps> = ({
       setLoadingToken(false);
     }
   }, [role]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open]);
 
   const handleCopy = async (key: 'url' | 'json', text: string) => {
     try {
@@ -157,6 +189,43 @@ export const McpConnectTrigger: React.FC<McpConnectTriggerProps> = ({
       ? `adm-btn ${className}`.trim()
       : `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-sm font-medium transition-colors cursor-pointer ${className}`.trim();
 
+  const copyButton = (key: 'url' | 'json', text: string, label: string) => (
+    <button
+      type="button"
+      onClick={() => handleCopy(key, text)}
+      disabled={loadingToken}
+      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-900 transition-colors cursor-pointer border-0 disabled:opacity-50"
+    >
+      {copiedKey === key ? (
+        <>
+          <Check className="w-4 h-4" aria-hidden="true" />
+          Copiado
+        </>
+      ) : (
+        <>
+          <Copy className="w-4 h-4" aria-hidden="true" />
+          {label}
+        </>
+      )}
+    </button>
+  );
+
+  const tabButton = (id: Tab, label: string) => (
+    <button
+      type="button"
+      role="tab"
+      id={`${titleId}-tab-${id}`}
+      aria-selected={tab === id}
+      aria-controls={`${titleId}-panel`}
+      onClick={() => setTab(id)}
+      className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer border-0 ${
+        tab === id ? 'bg-white text-slate-900 shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <>
       <button
@@ -166,137 +235,107 @@ export const McpConnectTrigger: React.FC<McpConnectTriggerProps> = ({
         title="Conectar este portal con Claude o ChatGPT vía MCP"
       >
         <PlugZap className="w-4 h-4" aria-hidden="true" />
-        <span>Conectar MCP (Claude / ChatGPT)</span>
+        {/* En celular solo "MCP": el texto completo desbordaba el encabezado. */}
+        <span>
+          <span className="hidden sm:inline">Conectar </span>MCP<span className="hidden md:inline"> (Claude / ChatGPT)</span>
+        </span>
       </button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="mcp-connect-title"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setOpen(false);
-          }}
-        >
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                  <PlugZap className="w-5 h-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <h2 id="mcp-connect-title" className="text-base font-semibold text-slate-900">
-                    Conectar con Claude / ChatGPT (MCP)
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Rol activo: <strong className="text-slate-700">{meta.label}</strong>
-                  </p>
-                </div>
+      {/* m-auto: el preflight de Tailwind pone margin 0 y el <dialog> dejaría de centrarse. */}
+      <dialog
+        {...modal}
+        aria-labelledby={titleId}
+        className="m-auto p-0 w-[calc(100%-2rem)] max-w-xl max-h-[90dvh] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white text-left text-slate-700 shadow-2xl backdrop:bg-slate-900/50"
+      >
+        {open && (
+          <>
+            <div className="flex items-start gap-3 px-6 pt-6">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-800 text-white">
+                <PlugZap className="w-5 h-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 id={titleId} className="m-0 text-lg font-semibold text-slate-900">
+                  Usa CompensaTuViaje desde Claude o ChatGPT
+                </h2>
+                <p className="m-0 mt-1 text-sm text-slate-500">
+                  Tu asistente podrá consultar los datos de tu cuenta con tu sesión actual.
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors bg-transparent border-0 cursor-pointer"
                 aria-label="Cerrar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-5 overflow-y-auto text-sm text-slate-700">
-              <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" aria-hidden="true" />
-                <div>
-                  {loadingToken ? (
-                    'Cargando token de sesión...'
-                  ) : token ? (
-                    'Esta URL y configuración contienen tu token JWT personal. No las compartas públicamente; expiran al cerrar o caducar tu sesión.'
-                  ) : (
-                    'No se detectó un token activo en esta pestaña. Inicia sesión para reemplazar <TU_TOKEN_DE_SESION> automáticamente.'
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-medium text-slate-900">
-                    1. URL directa (Claude Web / Conectores sin headers)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy('url', directUrl)}
-                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    {copiedKey === 'url' ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
-                        Copiada
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                        Copiar URL
-                      </>
-                    )}
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  readOnly
-                  value={directUrl}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-medium text-slate-900">
-                    2. JSON MCP (Claude Desktop / OpenAI Responses API)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy('json', jsonConfig)}
-                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    {copiedKey === 'json' ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
-                        Copiado
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                        Copiar JSON
-                      </>
-                    )}
-                  </button>
-                </div>
-                <pre className="rounded-lg border border-slate-200 bg-slate-900 p-3 font-mono text-xs text-slate-100 overflow-x-auto">
-                  {jsonConfig}
-                </pre>
-              </div>
-
-              <div>
-                <p className="font-medium text-slate-900 mb-2">
-                  Herramientas habilitadas para {meta.label} ({meta.tools.length})
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {meta.tools.map((tool) => (
-                    <span
-                      key={tool}
-                      className="rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 font-mono text-xs text-slate-700"
-                    >
-                      {tool}
-                    </span>
-                  ))}
-                </div>
+            <div className="px-6 pt-5">
+              <div role="tablist" aria-label="Dónde lo vas a usar" className="flex gap-1 rounded-xl bg-slate-100 p-1">
+                {tabButton('web', 'Claude o ChatGPT')}
+                {tabButton('desktop', 'Claude Desktop o API')}
               </div>
             </div>
-          </div>
-        </div>
-      )}
+
+            <div id={`${titleId}-panel`} role="tabpanel" aria-labelledby={`${titleId}-tab-${tab}`} className="px-6 pt-5 space-y-4 text-sm">
+              {tab === 'web' ? (
+                <>
+                  <ol className="m-0 pl-5 list-decimal space-y-1.5 text-slate-600 marker:text-emerald-700 marker:font-semibold">
+                    <li>Copia tu enlace personal.</li>
+                    <li>En Claude o ChatGPT, agrega un conector personalizado (MCP).</li>
+                    <li>Pega el enlace y guarda. Listo: pregúntale por tus datos.</li>
+                  </ol>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={loadingToken ? 'Preparando tu enlace…' : directUrl}
+                      aria-label="Tu enlace personal"
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    {copyButton('url', directUrl, 'Copiar enlace')}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="m-0 text-slate-600">
+                    Agrega este bloque a la configuración MCP de Claude Desktop o a tu llamada a la API de OpenAI.
+                  </p>
+                  <pre className="m-0 max-h-56 overflow-auto rounded-xl bg-slate-900 p-4 font-mono text-xs leading-relaxed text-slate-100">
+                    {jsonConfig}
+                  </pre>
+                  <div className="flex justify-end">{copyButton('json', jsonConfig, 'Copiar configuración')}</div>
+                </>
+              )}
+
+              <p className="m-0 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-900">
+                <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600" aria-hidden="true" />
+                <span>
+                  {loadingToken
+                    ? 'Cargando tu sesión…'
+                    : token
+                    ? 'Incluye tu token de sesión: no lo compartas. Deja de funcionar cuando cierras sesión o caduca.'
+                    : 'No encontramos una sesión activa en esta pestaña. Inicia sesión y vuelve a abrir esta ventana.'}
+                </span>
+              </p>
+            </div>
+
+            <div className="px-6 pt-5 pb-6">
+              <h3 className="m-0 mb-2.5 text-sm font-semibold text-slate-900">Lo que podrá hacer</h3>
+              <ul className="m-0 p-0 list-none grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                {meta.tools.map((tool) => (
+                  <li key={tool} className="flex items-center gap-2 text-sm text-slate-600" title={tool}>
+                    <Check className="w-4 h-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                    {TOOL_LABELS[tool] ?? tool}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+      </dialog>
     </>
   );
 };

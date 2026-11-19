@@ -27,6 +27,11 @@ interface B2CLayoutProps {
   title?: string;
   subtitle?: string;
   headerRightExtra?: React.ReactNode;
+  /**
+   * El contenido ocupa todo el alto bajo el encabezado, sin márgenes ni ancho
+   * máximo (p. ej. el asistente IA, que maneja su propio scroll).
+   */
+  fullBleed?: boolean;
 }
 
 interface NavGroup {
@@ -66,7 +71,7 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, headerRightExtra }) => {
+const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, headerRightExtra, fullBleed = false }) => {
   const { user, logout } = useAuth();
   // Sin estos dos, el menú lateral tapaba el contenido (el reset global
   // anulaba lg:ml-60 y todos los rellenos) y en modo oscuro las cifras
@@ -271,7 +276,9 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, header
       </AnimatePresence>
 
       {/* Contenido */}
-      <main className="flex-1 min-h-screen lg:ml-60 bg-gray-50 w-full min-w-0">
+      <main
+        className={`flex-1 lg:ml-60 bg-gray-50 w-full min-w-0 ${fullBleed ? 'h-dvh flex flex-col' : 'min-h-screen'}`}
+      >
         <header className="bg-white/95 backdrop-blur border-b border-gray-200 sticky top-0 z-40 w-full">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -307,7 +314,11 @@ const B2CLayout: React.FC<B2CLayoutProps> = ({ children, title, subtitle, header
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div>
+        {fullBleed ? (
+          <div className="flex-1 min-h-0 flex flex-col">{children}</div>
+        ) : (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div>
+        )}
       </main>
     </div>
   );
