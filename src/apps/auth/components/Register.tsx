@@ -1,681 +1,282 @@
-import React, { useState, useRef, useMemo, lazy, Suspense, ChangeEvent, FormEvent } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
-import { 
-  User, Mail, Lock, Building, Phone, MapPin, 
-  Briefcase, FileText, ArrowRight, ArrowLeft, 
-  Check, Loader2, AlertCircle, Eye, EyeOff 
-} from 'lucide-react';
-import { BsGoogle } from 'react-icons/bs';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { AlertCircle, ArrowLeft, Building2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { getErrorMessage } from '../../../shared/utils/errorHandler';
-import { tripOf, routeOf } from './compensationRoute/model';
+import { useAuth as useB2CAuth } from '../../b2c/context/AuthContext';
+import { DEV_LOGIN_ENABLED } from '../../b2c/services/authService';
 import { POPULAR_AIRPORTS } from '../../public/services/publicApi';
+import { routeOf, tripOf } from './compensationRoute/model';
+import LivingForestCanvas from './LivingForestCanvas';
+import './RegisterAtmosphere.css';
 
-// La Fig. 2 solo se ve en escritorio: se carga aparte, igual que en el login.
-const CompensationRoute = lazy(() => import('./compensationRoute/CompensationRoute'));
+interface LocationState {
+  from?: {
+    pathname: string;
+    search?: string;
+  };
+}
+
+/** Emblema oficial de Google en vector para el botón de 1 clic. */
+const GoogleMark: React.FC = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </svg>
+);
+
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
+/** ¿Llegó escaneando el flyer? Acepta ?src=qr, ?ref=flyer o utm_source/utm_medium con qr/flyer. */
+function isFromFlyer(search: string): boolean {
+  const params = new URLSearchParams(search);
+  const values = ['src', 'ref', 'utm_source', 'utm_medium']
+    .map((key) => (params.get(key) ?? '').toLowerCase());
+  return values.some((v) => v.includes('qr') || v.includes('flyer'));
+}
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // El login pasa su state al enlace "Regístrate": si venía un vuelo, sigue aquí.
-  const trip = useMemo(() => tripOf((location.state as { from?: { search?: string } } | null)?.from?.search), [location.state]);
-  const destinationCity = trip ? POPULAR_AIRPORTS.find((a) => a.code === trip.destination)?.city ?? trip.destination : null;
-  const { register, error: authError, clearError } = useAuth();
-  const { login: loginWithGoogle, loading: googleLoading } = useB2CAuth();
-  
-  // Paso 0: selección de tipo de cuenta, Pasos 1-4: formulario B2B
-  const [accountType, setAccountType] = useState<'none' | 'b2b' | 'b2c'>('none');
-  const [currentStep, setCurrentStep] = useState(0); // 0 = selección de cuenta
-  const totalSteps = 2;
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [apiError, setApiError] = useState('');
-  const [docFile, setDocFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const reduceMotion = useReducedMotion();
+  const pageRef = useRef<HTMLDivElement>(null);
 
-  const [formData, setFormData] = useState({
-    // Paso 1: Datos personales
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false,
-    
-    // Paso 2: Información de la Empresa
-    companyName: '',
-    rut: '',
-    businessType: '',
-    tradeName: '',
-    website: '',
-    
-    // Paso 3: Información de Contacto
-    legalRepName: '',
-    legalRepRut: '',
-    contactEmail: '',
-    phone: '',
-    region: '',
-    city: '',
-    address: '',
-    
-    // Paso 4: Información Operacional
-    industry: '',
-    employeeCount: '',
-    annualRevenue: '',
-    description: '',
-    interests: [] as string[],
-  });
+  const { login: loginWithGoogle, loginAsTestUser, loading: googleLoading } = useB2CAuth();
 
-  // Opciones
-  const businessTypes = ['Sociedad Anónima (S.A.)', 'Sociedad de Responsabilidad Limitada (Ltda.)', 'Empresa Individual de Responsabilidad Limitada (E.I.R.L.)', 'Sociedad por Acciones (SpA)', 'Otro'];
-  const industries = ['Agricultura y ganadería', 'Minería', 'Manufactura', 'Construcción', 'Comercio', 'Transporte y logística', 'Servicios financieros', 'Tecnología y telecomunicaciones', 'Turismo y hotelería', 'Salud', 'Educación', 'Energía', 'Otro'];
-  const employeeRanges = ['1-10 empleados (Microempresa)', '11-50 empleados (Pequeña)', '51-200 empleados (Mediana)', '201-1000 empleados (Grande)', 'Más de 1000 empleados (Corporación)'];
-  const revenueRanges = ['Menos de 2.400 UF', '2.400 - 25.000 UF', '25.000 - 100.000 UF', '100.000 - 600.000 UF', 'Más de 600.000 UF'];
-  const chileanRegions = ['Región de Arica y Parinacota', 'Región de Tarapacá', 'Región de Antofagasta', 'Región de Atacama', 'Región de Coquimbo', 'Región de Valparaíso', 'Región Metropolitana de Santiago', 'Región del Libertador General Bernardo O\'Higgins', 'Región del Maule', 'Región de Ñuble', 'Región del Biobío', 'Región de La Araucanía', 'Región de Los Ríos', 'Región de Los Lagos', 'Región de Aysén del General Carlos Ibáñez del Campo', 'Región de Magallanes y de la Antártica Chilena'];
-  const interestOptions = ['Viajes corporativos', 'Transporte de mercancías', 'Consumo energético de oficinas', 'Eventos empresariales', 'Producción/manufactura', 'Otros'];
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  const [isTestSigningIn, setIsTestSigningIn] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    
-    if (type === 'checkbox' && name === 'interests') {
-      setFormData(prev => ({
-        ...prev,
-        interests: checked
-          ? [...prev.interests, value]
-          : prev.interests.filter(i => i !== value)
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
-    
-    clearError();
-    if (validationErrors[name]) {
-      setValidationErrors(prev => ({ ...prev, [name]: '' }));
-    }
+  // Si la persona viene de la calculadora pública, se conserva su vuelo para
+  // personalizar el titular y devolverla allí después de entrar con Google.
+  const locationState = location.state as LocationState | null;
+  const trip = useMemo(() => tripOf(locationState?.from?.search), [locationState]);
+  const destinationCity = trip
+    ? POPULAR_AIRPORTS.find((a) => a.code === trip.destination)?.city ?? trip.destination
+    : null;
+  const fromFlyer = useMemo(() => isFromFlyer(location.search), [location.search]);
+
+  // Barra de estado del móvil en el tono del bosque: la foto llega de borde a borde.
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (!meta) return;
+    const previous = meta.content;
+    meta.content = '#010604';
+    return () => {
+      meta.content = previous;
+    };
+  }, []);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (reduceMotion || e.pointerType !== 'mouse' || !pageRef.current) return;
+    const rect = pageRef.current.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / Math.max(1, rect.width) - 0.5;
+    const ny = (e.clientY - rect.top) / Math.max(1, rect.height) - 0.5;
+    pageRef.current.style.setProperty('--rg-px', `${(-nx * 12).toFixed(2)}px`);
+    pageRef.current.style.setProperty('--rg-py', `${(-ny * 8).toFixed(2)}px`);
   };
 
-  const formatRUT = (value: string) => {
-    const cleaned = value.replace(/[^0-9kK]/g, '');
-    if (cleaned.length <= 1) return cleaned;
-    const rut = cleaned.slice(0, -1);
-    const dv = cleaned.slice(-1);
-    const formatted = rut.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${formatted}-${dv}`;
-  };
-
-  const handleRUTChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const formatted = formatRUT(value);
-    setFormData(prev => ({ ...prev, [name]: formatted }));
-    if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: '' }));
-  };
-
-  const validateStep = (step: number) => {
-    const errors: Record<string, string> = {};
-
-    if (step === 1) {
-      if (!formData.firstName.trim()) errors.firstName = 'El nombre es requerido';
-      if (!formData.lastName.trim()) errors.lastName = 'El apellido es requerido';
-      if (!formData.email.trim()) errors.email = 'El email es requerido';
-      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email inválido';
-      if (!formData.password) errors.password = 'La contraseña es requerida';
-      else if (formData.password.length < 6) errors.password = 'Mínimo 6 caracteres';
-      if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
-      if (!formData.acceptTerms) errors.acceptTerms = 'Debes aceptar los términos';
-    }
-
-    // Paso 2: documento opcional — sin validaciones obligatorias
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (currentStep === 0) {
-      // Si eligió B2B, avanza al paso 1 del formulario
-      if (accountType === 'b2b') {
-        setCurrentStep(1);
-      }
-      return;
-    }
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep === 1) {
-      // Volver al selector de tipo de cuenta
-      setCurrentStep(0);
-      setAccountType('none');
-    } else {
-      setCurrentStep(prev => Math.max(prev - 1, 1));
-    }
-  };
-
-  const handleSelectAccountType = (type: 'b2b' | 'b2c') => {
-    setAccountType(type);
-    if (type === 'b2c') {
-      // Para B2C mostramos directamente la opción de Google
-      setCurrentStep(0);
-    } else if (type === 'b2b') {
-      // Redirigir al wizard B2B dedicado
-      navigate('/register/empresa');
-    }
+  const handlePointerLeave = () => {
+    pageRef.current?.style.setProperty('--rg-px', '0px');
+    pageRef.current?.style.setProperty('--rg-py', '0px');
   };
 
   const handleGoogleRegister = async () => {
     try {
-      await loginWithGoogle();
+      setErrorMessage(null);
+      setIsGoogleSigningIn(true);
+      const from = locationState?.from;
+      await loginWithGoogle(from?.pathname ? `${from.pathname}${from.search ?? ''}` : undefined);
     } catch (error) {
       console.error('Error al registrarse con Google:', error);
-      toast.error('No se pudo continuar con Google', {
-        description: 'Vuelve a intentarlo o crea la cuenta con tu correo.',
-      });
+      setErrorMessage('No pudimos conectar con Google. Revisa tu conexión e inténtalo de nuevo.');
+      toast.error('No se pudo continuar con Google', { description: 'Vuelve a intentarlo en unos segundos.' });
+      setIsGoogleSigningIn(false);
     }
   };
 
-  const handleFileSelect = (file: File) => {
-    const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
-    const ext = (file.name.split('.').pop() || '').toLowerCase();
-    if (!allowed.includes(ext)) {
-      setApiError('Solo se permiten PDF, imágenes o documentos Word');
-      return;
-    }
-    if (file.size > 15 * 1024 * 1024) {
-      setApiError('El archivo no puede superar 15 MB');
-      return;
-    }
-    setDocFile(file);
-    setApiError('');
-  };
-
-  const API_URL = (import.meta as any).env?.VITE_APP_API_URL
-    || (import.meta as any).env?.VITE_API_URL
-    || 'http://localhost:3001/api';
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!validateStep(currentStep)) return;
-
-    setIsLoading(true);
-    setApiError('');
+  const handleDevTestSignIn = async () => {
     try {
-      const body = new FormData();
-      body.append('firstName', formData.firstName.trim());
-      body.append('lastName',  formData.lastName.trim());
-      body.append('email',     formData.email.trim().toLowerCase());
-      body.append('password',  formData.password);
-      if (docFile) body.append('document', docFile);
-
-      const res = await fetch(`${API_URL}/public/companies/register-simple`, {
-        method: 'POST',
-        body,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al crear la cuenta');
-
-      // Se arrastra el destino pendiente (si lo hay) para que sobreviva al
-      // paso por login: quien venia de la calculadora publica vuelve a ella
-      // con su vuelo ya cargado en vez de tener que introducirlo otra vez.
-      navigate('/auth/login', { state: location.state });
+      setErrorMessage(null);
+      setIsTestSigningIn(true);
+      await loginAsTestUser();
+      navigate('/b2c/dashboard', { replace: true });
     } catch (err: any) {
-      setApiError(getErrorMessage(err));
+      const msg = err?.message || 'No se pudo iniciar la sesión de prueba';
+      setErrorMessage(msg);
+      toast.error('No se pudo entrar como persona de prueba', { description: msg });
     } finally {
-      setIsLoading(false);
+      setIsTestSigningIn(false);
     }
   };
 
-  // Animation variants
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
+  const busy = googleLoading || isGoogleSigningIn || isTestSigningIn;
+  const googleBusy = googleLoading || isGoogleSigningIn;
+
+  // Coreografía de entrada: la foto sale de la oscuridad (CSS), luego el
+  // titular sube línea a línea y al final aparecen los botones sobre el agua.
+  const lineVariants: Variants = {
+    hidden: { y: '105%' },
+    show: (i: number) => ({
+      y: '0%',
+      transition: { duration: 0.9, delay: 0.55 + i * 0.12, ease: EASE_OUT },
+    }),
   };
 
-  const formVariants: Variants = {
-    hidden: { x: 50, opacity: 0 },
-    visible: { x: 0, opacity: 1, transition: { duration: 0.6, delay: 0.2, ease: "easeOut" } }
-  };
+  const fadeUp = (delay: number) =>
+    reduceMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 14 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.8, delay, ease: EASE_OUT },
+        };
 
-  const renderInput = (label: string, name: string, type: string = 'text', placeholder: string = '', icon?: React.ReactNode, fullWidth: boolean = false) => (
-    <div className={`!space-y-2 ${fullWidth ? '!col-span-2' : ''}`}>
-      <label htmlFor={name} className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">{label}</label>
-      <div className="!relative !group">
-        <input
-          type={type}
-          id={name}
-          name={name}
-          value={(formData as any)[name]}
-          onChange={name.includes('rut') || name.includes('Rut') ? handleRUTChange : handleChange}
-          placeholder={placeholder}
-          className={`!w-full !px-4 !py-3.5 ${icon ? '!pl-12' : ''} !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors[name] ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none`}
-        />
-        {icon && <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-brand-700">{icon}</div>}
-      </div>
-      {validationErrors[name] && <span className="!text-xs !text-[#991B1B] !ml-2">{validationErrors[name]}</span>}
-    </div>
-  );
+  const titleLines = trip
+    ? [
+        { text: 'Compensa tu vuelo', soft: false },
+        { text: `a ${destinationCity}.`, soft: true },
+      ]
+    : [
+        { text: 'Tu viaje deja huella.', soft: false },
+        { text: 'Haz que crezca un bosque.', soft: true },
+      ];
 
-  const renderSelect = (label: string, name: string, options: string[]) => (
-    <div className="!space-y-2 !col-span-2">
-      <label htmlFor={name} className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">{label}</label>
-      <div className="!relative !group">
-        <select
-          id={name}
-          name={name}
-          value={(formData as any)[name]}
-          onChange={handleChange}
-          className={`!w-full !px-4 !py-3.5 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors[name] ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none appearance-none`}
-        >
-          <option value="">Seleccionar...</option>
-          {options.map(opt => <option key={opt} value={opt} >{opt}</option>)}
-        </select>
-        <div className="!absolute !right-6 !top-1/2 !-translate-y-1/2 !pointer-events-none !text-brand-700">
-          <svg className="!w-4 !h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
-      </div>
-      {validationErrors[name] && <span className="!text-xs !text-[#991B1B] !ml-2">{validationErrors[name]}</span>}
-    </div>
-  );
+  const kicker = trip
+    ? `Vuelo ${routeOf(trip)} · listo para compensar`
+    : fromFlyer
+      ? 'Bienvenido desde el flyer · 10 segundos'
+      : 'DEFRA 2025 · Veritas AI · Polygon';
 
   return (
-    <div className="!min-h-screen !w-full !flex !overflow-hidden !bg-white">
-
-      {/* Panel izquierdo: la Fig. 2, igual que en el login. Antes: colinas,
-          árboles triangulares y una ola con costura, en esmeralda de Tailwind. */}
-      <motion.div
-        className="!hidden lg:!flex !w-[45%] !relative !bg-[#EDF4F1] !flex-col !justify-center !px-10 xl:!px-14 !py-24 !overflow-hidden"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <Link to="/" className="!absolute !top-8 !left-10 xl:!left-14 !z-20" aria-label="Ir al inicio"><img src="/images/brand/logo-horizontal-clean.svg" alt="CompensaTuViaje" className="!h-8 !w-auto" width={1117} height={240} /></Link>
-
-        <div className="!relative !z-10 !w-full !max-w-[640px]">
-          <div className="!flex !items-center !gap-3 !mb-4 !text-xs !font-semibold !uppercase !tracking-[0.16em] !text-brand-900/70">
-            <span className="!w-7 !h-0.5 !bg-brand-500" aria-hidden="true" />
-            <span>{trip ? `Tu vuelo ${routeOf(trip)}` : 'Crea tu cuenta'}</span>
+    <div
+      ref={pageRef}
+      className="rg-page"
+      data-tone="dark"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+    >
+      {/* Escenario: bosque oscuro arriba, árbol al centro, reflejo en el agua abajo */}
+      <div className="rg-backdrop" aria-hidden="true">
+        <img src="/images/auth/register-forest-tree.webp" alt="" className="rg-backdrop__ambient" decoding="async" />
+        <div className="rg-backdrop__stage">
+          <div className="rg-backdrop__parallax">
+            <picture>
+              <source srcSet="/images/auth/register-forest-tree.webp" type="image/webp" />
+              <img
+                src="/images/auth/register-forest-tree.jpg"
+                alt=""
+                className="rg-backdrop__photo"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
           </div>
-          <h2 className="!font-display !text-4xl xl:!text-[2.75rem] !font-semibold !text-brand-900 !mb-3 !tracking-tight !leading-[1.08]">
-            {trip ? `Compensa tu vuelo a ${destinationCity}` : 'Únete a nosotros'}
-          </h2>
-          <p className="!text-lg !text-brand-900/70 !mb-8 !max-w-[52ch]">
-            {trip
-              ? 'Crea tu cuenta y calculamos tu vuelo con los datos que ingresaste. Después sigue esta ruta:'
-              : 'Comienza tu viaje hacia un futuro más sostenible. Esta es la ruta de cada compensación:'}
-          </p>
-          <Suspense fallback={<div className="!aspect-[650/470] !w-full" aria-hidden="true" />}>
-            <CompensationRoute trip={trip} caption={false} />
-          </Suspense>
         </div>
-      </motion.div>
+        <div className="rg-backdrop__aura" />
+        <LivingForestCanvas className="rg-backdrop__canvas" />
+        <div className="rg-backdrop__scrim" />
+        <div className="rg-backdrop__grain" />
+      </div>
 
-      {/* Panel derecho: formulario */}
-      <div className="!w-full lg:!w-[55%] !relative !bg-white !flex !items-center !justify-center !p-4 lg:!p-12 !overflow-y-auto lg:!border-l lg:!border-brand-900/10">
+      <main className="rg-shell">
+        <motion.nav className="rg-nav" aria-label="Navegación de registro" {...fadeUp(0.3)}>
+          <Link to="/" className="rg-brand-link" aria-label="CompensaTuViaje · Ir al inicio">
+            <img
+              src="/images/brand/logo-horizontal-white.svg"
+              alt="CompensaTuViaje"
+              className="rg-brand-logo"
+              width={1117}
+              height={240}
+            />
+          </Link>
+          <Link to="/" className="rg-home">
+            <ArrowLeft size={14} aria-hidden="true" />
+            <span>Inicio</span>
+          </Link>
+        </motion.nav>
 
-        <motion.div 
-          className="!w-full !max-w-2xl !relative !z-30 !py-8"
-          initial="hidden"
-          animate="visible"
-          variants={formVariants}
-        >
-          <div className="!mb-8">
-            <Link to="/" className="!flex !w-fit !items-center !gap-2 !text-sm !text-brand-900/70 hover:!text-brand-700 !transition-colors !mb-6">
-              <ArrowLeft className="!w-4 !h-4" /> <span>Volver al inicio</span>
-            </Link>
-            
-            {/* Header dinámico según el paso */}
-            {currentStep === 0 && accountType === 'none' && (
-              <>
-                <h1 className="!font-display !text-3xl !font-semibold !text-brand-900 !mb-2">¿Qué tipo de cuenta necesitas?</h1>
-                <p className="!text-brand-900/70">Elige la opción que mejor se adapte a ti</p>
-              </>
-            )}
-            {currentStep === 0 && accountType === 'b2c' && (
-              <>
-                <button
-                  onClick={() => setAccountType('none')}
-                  className="!inline-flex !items-center !gap-2 !text-sm !text-brand-900/70 hover:!text-brand-700 !transition-colors !mb-4"
+        <header className="rg-hero">
+          <motion.p className="rg-kicker" {...fadeUp(0.45)}>
+            <span className="rg-kicker__dot" aria-hidden="true" />
+            {kicker}
+          </motion.p>
+
+          <h1 className="rg-title">
+            {titleLines.map((line, i) => (
+              <span key={line.text} className="rg-title__mask">
+                <motion.span
+                  className={`rg-title__line ${line.soft ? 'rg-title__soft' : ''}`}
+                  variants={lineVariants}
+                  custom={i}
+                  initial={reduceMotion ? false : 'hidden'}
+                  animate="show"
                 >
-                  <ArrowLeft className="!w-4 !h-4" /> <span>Cambiar tipo de cuenta</span>
-                </button>
-                <div className="!flex !justify-center !mb-4">
-                  <div className="!w-16 !h-16 !bg-brand-50 !rounded-2xl !flex !items-center !justify-center">
-                    <User className="!w-8 !h-8 !text-brand-700" />
-                  </div>
-                </div>
-                <h1 className="!font-display !text-3xl !font-semibold !text-brand-900 !text-center !mb-2">Crear Cuenta Personal</h1>
-                <p className="!text-brand-900/70 !text-center">Regístrate con tu cuenta de Google</p>
-              </>
-            )}
-            {currentStep >= 1 && (
-              <>
-                <div className="!flex !items-end !justify-between !mb-2">
-                  <h1 className="!font-display !text-3xl !font-semibold !text-brand-900">Crear Cuenta</h1>
-                  <span className="!text-brand-700 !font-medium">Paso {currentStep} de {totalSteps}</span>
-                </div>
-                <div className="!h-2 !w-full !bg-brand-900/10 !rounded-full !overflow-hidden">
-                  <motion.div 
-                    className="!h-full !bg-brand-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+                  {line.text}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
 
-          {authError && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              className="!mb-6 !p-4 !bg-[#FEE2E2] !border !border-[#FCA5A5] !rounded-xl !flex !items-start !gap-3 !text-[#991B1B]"
-            >
-              <AlertCircle className="!w-5 !h-5 !flex-shrink-0 !mt-0.5" />
-              <span className="!text-sm">{authError}</span>
-            </motion.div>
+          <motion.p className="rg-subtitle" {...fadeUp(0.95)}>
+            {trip
+              ? 'Crea tu cuenta y guardamos tu cálculo para emitir tu certificado.'
+              : 'Mide tu vuelo con datos oficiales y compénsalo en proyectos verificados.'}
+          </motion.p>
+        </header>
+
+        {/* Espacio libre: aquí respira el árbol */}
+        <div className="rg-tree-window" aria-hidden="true" />
+
+        <section className="rg-cta" aria-label="Opciones de registro">
+          {errorMessage && (
+            <div className="rg-error" role="alert">
+              <AlertCircle aria-hidden="true" />
+              <span>{errorMessage}</span>
+            </div>
           )}
 
-          <form onSubmit={handleSubmit} className="!space-y-6">
-              <div
-                className={currentStep === 0 ? '' : '!grid !grid-cols-1 md:!grid-cols-2 !gap-6'}
-              >
-                {/* Paso 0: Selección de tipo de cuenta */}
-                {currentStep === 0 && accountType === 'none' && (
-                  <div className="!space-y-4">
-                    {/* Opción Empresarial */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectAccountType('b2b')}
-                      className="!w-full !p-6 !bg-white !border-[1.5px] !border-brand-900/15 !rounded-2xl !text-left hover:!bg-[#F9FBFA] hover:!border-brand-500 !transition-all !group"
-                    >
-                      <div className="!flex !items-start !gap-4">
-                        <div className="!w-12 !h-12 !bg-brand-50 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
-                          <Building className="!w-6 !h-6 !text-brand-900" />
-                        </div>
-                        <div className="!flex-1">
-                          <h3 className="!text-lg !font-bold !text-brand-900 !mb-1">Cuenta Empresarial</h3>
-                          <p className="!text-brand-900/70 !text-sm !mb-3">Para empresas y organizaciones que desean gestionar sus emisiones corporativas.</p>
-                          <div className="!space-y-1">
-                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
-                              <Check className="!w-4 !h-4" /> Dashboard empresarial
-                            </div>
-                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
-                              <Check className="!w-4 !h-4" /> Reportes avanzados
-                            </div>
-                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
-                              <Check className="!w-4 !h-4" /> Múltiples usuarios
-                            </div>
-                          </div>
-                        </div>
-                        <ArrowRight className="!w-5 !h-5 !text-brand-700 group-hover:!translate-x-1 !transition-transform" />
-                      </div>
-                    </button>
+          <motion.button
+            type="button"
+            onClick={handleGoogleRegister}
+            disabled={busy}
+            className="rg-btn rg-btn--google"
+            {...fadeUp(1.15)}
+          >
+            {googleBusy ? <Loader2 size={20} className="animate-spin" aria-hidden="true" /> : <GoogleMark />}
+            <span>{googleBusy ? 'Conectando con Google…' : 'Continuar con Google'}</span>
+          </motion.button>
 
-                    {/* Opción Personal */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectAccountType('b2c')}
-                      className="!w-full !p-6 !bg-white !border-[1.5px] !border-brand-900/15 !rounded-2xl !text-left hover:!bg-[#F9FBFA] hover:!border-brand-500 !transition-all !group"
-                    >
-                      <div className="!flex !items-start !gap-4">
-                        <div className="!w-12 !h-12 !bg-brand-50 !rounded-xl !flex !items-center !justify-center !flex-shrink-0">
-                          <User className="!w-6 !h-6 !text-brand-700" />
-                        </div>
-                        <div className="!flex-1">
-                          <h3 className="!text-lg !font-bold !text-brand-900 !mb-1">Cuenta Personal</h3>
-                          <p className="!text-brand-900/70 !text-sm !mb-3">Para viajeros individuales que quieren compensar sus emisiones personales.</p>
-                          <div className="!space-y-1">
-                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
-                              <Check className="!w-4 !h-4" /> Registro rápido con Google
-                            </div>
-                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
-                              <Check className="!w-4 !h-4" /> Calculadora personal
-                            </div>
-                            <div className="!flex !items-center !gap-2 !text-brand-700 !text-sm">
-                              <Check className="!w-4 !h-4" /> Badges y certificados
-                            </div>
-                          </div>
-                        </div>
-                        <ArrowRight className="!w-5 !h-5 !text-brand-700 group-hover:!translate-x-1 !transition-transform" />
-                      </div>
-                    </button>
-                  </div>
-                )}
-
-                {/* Paso 0 con B2C seleccionado: Mostrar botón de Google */}
-                {currentStep === 0 && accountType === 'b2c' && (
-                  <div className="!space-y-6">
-                    <button
-                      type="button"
-                      onClick={handleGoogleRegister}
-                      disabled={googleLoading}
-                      className="!w-full !py-4 !px-6 !bg-white !border-[1.5px] !border-brand-900/15 !text-brand-900 !font-semibold !rounded-xl hover:!bg-[#EDF4F1] !transition-all !flex !items-center !justify-center !gap-3 disabled:!opacity-50 disabled:!cursor-not-allowed"
-                    >
-                      {googleLoading ? (
-                        <Loader2 className="!w-6 !h-6 !animate-spin !text-brand-700" />
-                      ) : (
-                        <BsGoogle className="!w-5 !h-5" />
-                      )}
-                      {googleLoading ? 'Conectando...' : 'Continuar con Google'}
-                    </button>
-
-                    <div className="!space-y-4">
-                      <div className="!flex !items-start !gap-3 !p-4 !bg-[#EDF4F1] !rounded-xl">
-                        <Check className="!w-5 !h-5 !text-brand-700 !flex-shrink-0 !mt-0.5" />
-                        <div>
-                          <p className="!font-medium !text-brand-900">Calcula tu huella de carbono</p>
-                          <p className="!text-sm !text-brand-900/70">Mide el impacto de tus viajes</p>
-                        </div>
-                      </div>
-                      <div className="!flex !items-start !gap-3 !p-4 !bg-[#EDF4F1] !rounded-xl">
-                        <Check className="!w-5 !h-5 !text-brand-700 !flex-shrink-0 !mt-0.5" />
-                        <div>
-                          <p className="!font-medium !text-brand-900">Compensa tus emisiones</p>
-                          <p className="!text-sm !text-brand-900/70">Proyectos verificados</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 1 && (
-                  <>
-                    {renderInput('Nombre', 'firstName', 'text', 'Juan', <User className="!w-5 !h-5" />)}
-                    {renderInput('Apellido', 'lastName', 'text', 'Pérez', <User className="!w-5 !h-5" />)}
-                    {renderInput('Correo Electrónico', 'email', 'email', 'tu@email.com', <Mail className="!w-5 !h-5" />, true)}
-                    
-                    <div className="!space-y-2 !col-span-2">
-                      <label htmlFor="register-password" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Contraseña</label>
-                      <div className="!relative !group">
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          id="register-password"
-                          name="password"
-                          value={formData.password}
-                          onChange={handleChange}
-                          placeholder="••••••••"
-                          aria-invalid={!!validationErrors.password}
-                          aria-describedby={validationErrors.password ? 'register-password-error' : undefined}
-                          className={`!w-full !px-4 !py-3.5 !pl-12 !pr-12 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors.password ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none`}
-                        />
-                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-brand-700"><Lock className="!w-5 !h-5" /></div>
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="!absolute !right-4 !top-1/2 !-translate-y-1/2 !text-brand-900/50 hover:!text-brand-900">
-                          {showPassword ? <EyeOff className="!w-5 !h-5" /> : <Eye className="!w-5 !h-5" />}
-                        </button>
-                      </div>
-                      {validationErrors.password && <span id="register-password-error" role="alert" className="!text-xs !text-[#991B1B] !ml-2">{validationErrors.password}</span>}
-                    </div>
-
-                    <div className="!space-y-2 !col-span-2">
-                      <label htmlFor="register-confirm-password" className="!text-xs !font-bold !uppercase !tracking-[0.06em] !text-brand-900/60 !ml-1">Confirmar Contraseña</label>
-                      <div className="!relative !group">
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          id="register-confirm-password"
-                          name="confirmPassword"
-                          value={formData.confirmPassword}
-                          onChange={handleChange}
-                          placeholder="••••••••"
-                          aria-invalid={!!validationErrors.confirmPassword}
-                          aria-describedby={validationErrors.confirmPassword ? 'register-confirm-password-error' : undefined}
-                          className={`!w-full !px-4 !py-3.5 !pl-12 !rounded-xl !bg-[#F9FBFA] !border-[1.5px] ${validationErrors.confirmPassword ? '!border-red-400' : '!border-brand-900/15'} !text-brand-900 !placeholder-brand-900/40 focus:!bg-white focus:!border-brand-500 focus:!shadow-[0_0_0_3px_rgba(4,99,2,0.7)] !transition-all !outline-none`}
-                        />
-                        <div className="!absolute !left-4 !top-1/2 !-translate-y-1/2 !text-brand-700"><Lock className="!w-5 !h-5" /></div>
-                      </div>
-                      {validationErrors.confirmPassword && <span id="register-confirm-password-error" role="alert" className="!text-xs !text-[#991B1B] !ml-2">{validationErrors.confirmPassword}</span>}
-                    </div>
-
-                    <div className="!col-span-2 !mt-2">
-                      <label className="!flex !items-center !gap-3 !cursor-pointer !group">
-                        <div className="!relative !flex !items-center">
-                          <input
-                            type="checkbox"
-                            name="acceptTerms"
-                            checked={formData.acceptTerms}
-                            onChange={handleChange}
-                            className="!peer !appearance-none !w-5 !h-5 !border-2 !border-brand-900/30 !rounded !bg-white checked:!bg-brand-900 checked:!border-brand-900 !transition-all"
-                          />
-                          <Check className="!absolute !w-3.5 !h-3.5 !text-white !pointer-events-none !opacity-0 peer-checked:!opacity-100 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2" />
-                        </div>
-                        <span className="!text-brand-900/70 group-hover:!text-brand-900 !transition-colors !text-sm">
-                          Acepto los <Link to="/terminos" target="_blank" className="!text-brand-700 !underline !font-semibold">términos y condiciones</Link> y la <Link to="/privacidad" target="_blank" className="!text-brand-700 !underline !font-semibold">política de privacidad</Link>
-                        </span>
-                      </label>
-                      {validationErrors.acceptTerms && <span className="!text-xs !text-[#991B1B] !ml-2 !block !mt-1">{validationErrors.acceptTerms}</span>}
-                    </div>
-                  </>
-                )}
-
-                {currentStep === 2 && (
-                  <div className="!col-span-2 !space-y-4">
-                    <div>
-                      <p className="!text-sm !text-brand-900/70 !mb-1">
-                        Sube un documento con los datos de tu empresa (RUT, escritura, representante).
-                        <strong className="!text-brand-700"> Este paso es opcional</strong> — puedes
-                        continuar sin él y adjuntarlo más adelante desde tu panel.
-                      </p>
-                      <p className="!text-xs !text-brand-900/60">PDF · JPG · PNG · DOCX — máx. 15 MB</p>
-                    </div>
-
-                    {/* Dropzone */}
-                    <div
-                      className={`!border-2 !border-dashed !rounded-2xl !p-8 !text-center !transition-all
-                        ${isDragging ? '!border-brand-500 !bg-brand-50' : '!border-brand-900/20 !bg-[#F9FBFA]'}
-                        ${docFile ? '!border-solid !border-brand-500 !bg-white !cursor-default' : '!cursor-pointer hover:!border-brand-500 hover:!bg-white'}`}
-                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                      onDragLeave={() => setIsDragging(false)}
-                      onDrop={(e) => {
-                        e.preventDefault(); setIsDragging(false);
-                        const f = e.dataTransfer.files[0]; if (f) handleFileSelect(f);
-                      }}
-                      onClick={() => !docFile && fileInputRef.current?.click()}
-                    >
-                      {docFile ? (
-                        <div className="!flex !items-center !justify-center !gap-4">
-                          <FileText className="!w-8 !h-8 !text-brand-700 !flex-shrink-0" />
-                          <div className="!text-left">
-                            <p className="!font-semibold !text-brand-700">{docFile.name}</p>
-                            <p className="!text-xs !text-brand-900/60">{(docFile.size / 1024).toFixed(1)} KB</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); setDocFile(null); }}
-                            className="!ml-auto !text-red-400 hover:!text-[#991B1B] !text-sm !bg-[#FEE2E2] !px-3 !py-1 !rounded-full !transition-colors"
-                          >
-                            Quitar
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="!space-y-2">
-                          <div className="!w-12 !h-12 !mx-auto !bg-brand-50 !rounded-full !flex !items-center !justify-center">
-                            <Briefcase className="!w-6 !h-6 !text-brand-700" />
-                          </div>
-                          <p className="!font-semibold !text-brand-900">Arrastra tu documento aquí</p>
-                          <p className="!text-sm !text-brand-700">
-                            o <span className="!underline">haz clic para seleccionar</span>
-                          </p>
-                        </div>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        className="!hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0]; if (f) handleFileSelect(f);
-                          e.target.value = '';
-                        }}
-                      />
-                    </div>
-
-                    {apiError && (
-                      <p className="!text-xs !text-[#991B1B]">{apiError}</p>
-                    )}
-
-                    <div className="!flex !items-start !gap-3 !p-4 !bg-[#EDF4F1] !border !border-brand-900/10 !rounded-xl">
-                      <AlertCircle className="!w-5 !h-5 !text-brand-700 !flex-shrink-0 !mt-0.5" />
-                      <p className="!text-sm !text-brand-900/70">
-                        Nuestro equipo revisará tu solicitud en 1–2 días hábiles y te notificará
-                        por correo al activar tu cuenta.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            {/* Botones de navegación solo para pasos B2B */}
-            {currentStep >= 1 && (
-              <div className="!flex !gap-4 !pt-6">
-                {currentStep >= 1 && (
-                  <button
-                    type="button"
-                    onClick={handlePrevious}
-                    className="!flex-1 !py-4 !px-6 !bg-white !border-[1.5px] !border-brand-900/15 !text-brand-900 !font-bold !rounded-xl hover:!bg-[#EDF4F1] !transition-all"
-                  >
-                    Atrás
-                  </button>
-                )}
-                
-                {currentStep < totalSteps ? (
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="!flex-1 !py-4 !px-6 !bg-brand-900 !text-white hover:!bg-[#044443] !font-bold !rounded-xl !shadow-[0_4px_14px_rgba(7,61,61,0.22)] !transition-all !flex !items-center !justify-center !gap-2"
-                  >
-                    Siguiente <ArrowRight className="!w-5 !h-5" />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="!flex-1 !py-4 !px-6 !bg-brand-900 !text-white hover:!bg-[#044443] !font-bold !rounded-xl !shadow-[0_4px_14px_rgba(7,61,61,0.22)] !transition-all disabled:!opacity-70 disabled:!cursor-not-allowed !flex !items-center !justify-center !gap-2"
-                  >
-                    {isLoading ? <Loader2 className="!w-5 !h-5 !animate-spin" /> : 'Crear Cuenta'}
-                  </button>
-                )}
-              </div>
-            )}
-          </form>
-
-          <div className="!mt-8 !text-center">
-            <span className="!text-brand-900/70">¿Ya tienes cuenta? </span>
-            <Link to="/login" className="!text-brand-900 !font-bold hover:!text-brand-700 !underline !decoration-2 !underline-offset-4 !transition-colors">
-              Iniciar sesión
+          <motion.div {...fadeUp(1.27)}>
+            <Link to="/register/empresa" state={location.state} className="rg-btn rg-btn--ghost">
+              <Building2 className="rg-btn__icon" aria-hidden="true" />
+              <span>Registrar mi empresa</span>
             </Link>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+
+          {DEV_LOGIN_ENABLED && (
+            <button type="button" onClick={handleDevTestSignIn} disabled={busy} className="rg-dev-btn">
+              {isTestSigningIn && <Loader2 size={14} className="animate-spin" aria-hidden="true" />}
+              [DEV] Entrar como viajero de prueba
+            </button>
+          )}
+
+          <motion.p className="rg-signin" {...fadeUp(1.4)}>
+            ¿Ya tienes cuenta?{' '}
+            <Link to="/login" state={location.state}>
+              Inicia sesión
+            </Link>
+          </motion.p>
+
+          <motion.p className="rg-legal" {...fadeUp(1.5)}>
+            Al continuar aceptas los{' '}
+            <Link to="/terminos" target="_blank" rel="noopener noreferrer">Términos</Link> y la{' '}
+            <Link to="/privacidad" target="_blank" rel="noopener noreferrer">Política de Privacidad</Link>.
+          </motion.p>
+        </section>
+      </main>
     </div>
   );
 };
