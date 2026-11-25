@@ -166,10 +166,20 @@ const SecuritySection: React.FC = () => {
   );
 };
 
+/** Rubro de la empresa: decide las secciones del panel y qué medios ve su equipo en la app. */
+const COMPANY_TYPES: { value: string; label: string }[] = [
+  { value: 'TRANSPORT', label: 'Transporte de pasajeros o carga' },
+  { value: 'LOGISTICS', label: 'Logística y distribución' },
+  { value: 'CORPORATE', label: 'Empresa con viajes de trabajo' },
+  { value: 'TRAVEL_AGENCY', label: 'Agencia de viajes o aerolínea' },
+  { value: 'EVENTS', label: 'Eventos y turismo' },
+  { value: 'OTHER', label: 'Otro' },
+];
+
 const CompanySection: React.FC<{ onStatus: (s: string) => void }> = ({ onStatus }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ razonSocial: '', nombreComercial: '', rut: '', giroSii: '', direccion: '', phone: '' });
+  const [form, setForm] = useState({ razonSocial: '', nombreComercial: '', rut: '', giroSii: '', companyType: 'OTHER', direccion: '', phone: '' });
 
   useEffect(() => {
     (async () => {
@@ -177,7 +187,7 @@ const CompanySection: React.FC<{ onStatus: (s: string) => void }> = ({ onStatus 
         const res = (await api.get('/b2b/company')) as any;
         if (res?.success && res.data) {
           const c = res.data;
-          setForm({ razonSocial: c.razonSocial || '', nombreComercial: c.nombreComercial || '', rut: c.rut || '', giroSii: c.giroSii || '', direccion: c.direccion || '', phone: c.phone || '' });
+          setForm({ razonSocial: c.razonSocial || '', nombreComercial: c.nombreComercial || '', rut: c.rut || '', giroSii: c.giroSii || '', companyType: c.companyType || 'OTHER', direccion: c.direccion || '', phone: c.phone || '' });
           onStatus(c.status || '');
         }
       } catch {
@@ -219,6 +229,13 @@ const CompanySection: React.FC<{ onStatus: (s: string) => void }> = ({ onStatus 
         </Labeled>
         <Labeled id="c-giro" label="Giro">
           <input id="c-giro" type="text" value={form.giroSii} onChange={(e) => setForm({ ...form, giroSii: e.target.value })} placeholder="Ej.: transporte aéreo de pasajeros" className={inputCls} />
+        </Labeled>
+        <Labeled id="c-type" label="Rubro" hint="Define las secciones del panel y los vehículos que ve tu equipo en la app.">
+          <select id="c-type" value={form.companyType} onChange={(e) => setForm({ ...form, companyType: e.target.value })} className={inputCls}>
+            {COMPANY_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
         </Labeled>
         <Labeled id="c-dir" label="Dirección" className="sm:col-span-2">
           <input id="c-dir" type="text" value={form.direccion} onChange={(e) => setForm({ ...form, direccion: e.target.value })} className={inputCls} />
