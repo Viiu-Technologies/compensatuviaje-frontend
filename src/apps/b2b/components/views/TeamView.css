@@ -1,0 +1,76 @@
+/*
+ * Equipo: tablas que se apilan como tarjetas cuando su contenedor es angosto
+ * y mensajes de error que aparecen solo después de usar el campo.
+ */
+
+.team-table-wrap {
+  overflow: auto;
+  max-inline-size: 100%;
+  container-type: inline-size;
+}
+
+.team-table {
+  inline-size: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.team-table thead {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+}
+
+/* Bajo 640 px de ancho del contenedor (no de la ventana): cada fila es una tarjeta. */
+@container (width < 640px) {
+  .team-table,
+  .team-table thead,
+  .team-table tbody,
+  .team-table tr,
+  .team-table th,
+  .team-table td {
+    display: block;
+  }
+
+  .team-table thead {
+    display: none;
+  }
+
+  .team-table tbody tr {
+    margin-block-end: 0.75rem;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .team-table tbody th {
+    background: rgb(249 250 251);
+  }
+
+  .team-table tbody td {
+    border: 0;
+    padding-block: 0.5rem;
+  }
+
+  .team-table tbody td[data-label]::before {
+    content: attr(data-label) ": ";
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgb(107 114 128);
+  }
+}
+
+/* Errores: solo tras interactuar con el campo o intentar enviar. */
+.team-field-error {
+  display: none;
+}
+
+.team-form :is(input, select, textarea):user-invalid {
+  border-color: rgb(225 29 72);
+  background-color: rgb(255 241 242);
+}
+
+.team-form :is(input, select, textarea):user-invalid ~ .team-field-error {
+  display: flex;
+}
