@@ -20,6 +20,7 @@ import AIKybDetailPage from '../pages/AIKybDetailPage';
 import AICertDetailPage from '../pages/AICertDetailPage';
 import SettingsPage from '../pages/SettingsPage';
 import OrdenesB2BPage from '../pages/OrdenesB2BPage';
+import PilotoPage from '../pages/PilotoPage';
 import FinanzasPage from '../pages/FinanzasPage';
 import NewsQueuePage from '../pages/NewsQueuePage';
 import NewsHealthPage from '../pages/NewsHealthPage';
@@ -84,6 +85,9 @@ const AdminRoutes = () => {
 
         {/* Órdenes B2B */}
         <Route path="ordenes-b2b" element={<OrdenesB2BPage />} />
+
+        {/* Piloto de empresas: acceso a la app de prueba, reportes y diagnósticos */}
+        <Route path="piloto" element={<PilotoPage />} />
 
         {/* Fondo y liquidaciones a partners */}
         <Route path="finanzas" element={<FinanzasPage />} />
