@@ -14,6 +14,7 @@ import {
   Trees,
   Trophy,
   User,
+  Users,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -34,6 +35,7 @@ import OrdersView from './views/OrdersView';
 import ManifestView from './views/ManifestView';
 import CertificatesView from './views/CertificatesView';
 import RankingView from './views/RankingView';
+import TeamView from './views/TeamView';
 
 /**
  * Panel de empresas.
@@ -59,6 +61,7 @@ const ITEMS = {
   panel: { id: 'panel', label: 'Resumen', icon: BarChart3 },
   perfil: { id: 'dashboard', label: 'Tu perfil', icon: User },
   documentos: { id: 'documentos', label: 'Documentos', icon: FileText },
+  equipo: { id: 'equipo', label: 'Equipo', icon: Users },
   proyectos: { id: 'proyectos', label: 'Proyectos', icon: Trees },
   ordenes: { id: 'ordenes', label: 'Órdenes', icon: Package },
   certificados: { id: 'certificados', label: 'Certificados', icon: ShieldCheck },
@@ -68,7 +71,8 @@ const ITEMS = {
   ranking: { id: 'ranking', label: 'Ranking', icon: Trophy },
 } satisfies Record<string, NavItem>;
 
-const BASE_EMPRESA: NavItem[] = [ITEMS.panel, ITEMS.perfil, ITEMS.documentos];
+// Equipo en todas las industrias: el piloto de empresas puede ser de cualquier rubro.
+const BASE_EMPRESA: NavItem[] = [ITEMS.panel, ITEMS.perfil, ITEMS.equipo, ITEMS.documentos];
 const BASE_TOOLS: NavItem[] = [ITEMS.calculadora, ITEMS.asistente];
 
 const DASHBOARD_CONFIGS: Record<CompanyType, { label: string; items: NavItem[] }[]> = {
@@ -116,6 +120,7 @@ const TAB_LABELS: Record<string, string> = {
   panel: 'Resumen',
   dashboard: 'Tu perfil',
   documentos: 'Documentos',
+  equipo: 'Equipo',
   proyectos: 'Proyectos',
   ordenes: 'Órdenes',
   certificados: 'Certificados',
@@ -238,6 +243,7 @@ const B2BDashboard: React.FC = () => {
     switch (activeTab) {
       case 'dashboard': return <ProfileView onNavigate={handleNav} />;
       case 'documentos': return <DocumentsView />;
+      case 'equipo': return <TeamView />;
       case 'proyectos': return <ProjectsView onNavigateToOrders={() => handleNav('ordenes')} />;
       case 'ordenes': return <OrdersView onNavigate={handleNav} />;
       case 'certificados': return <CertificatesView onNavigate={handleNav} />;
