@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   AlertTriangle,
   Building2,
+  Truck,
   Users,
   TreePine,
   FileBarChart,
@@ -73,6 +74,7 @@ const demandEcosystemItems: NavItem[] = [
   { path: '/admin/empresas', icon: Building2, label: 'Empresas B2B' },
   { path: '/admin/ordenes-b2b', icon: Package, label: 'Órdenes B2B' },
   { path: '/admin/usuarios-b2c', icon: Users, label: 'Usuarios B2C' },
+  { path: '/admin/piloto', icon: Truck, label: 'Piloto empresas' },
 ];
 
 // Finanzas: fondo de la plataforma y pagos a partners
